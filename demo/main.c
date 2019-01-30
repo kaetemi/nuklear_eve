@@ -24,16 +24,65 @@ This C source file demonstrates the Nuklear EVE implementation.
 #include "demo/overview.c"
 #include "demo/node_editor.c"
 
+/// API to demonstrate calibrate widget/functionality
+ft_bool_t App_CoPro_Widget_Calibrate(Ft_Gpu_Hal_Context_t *phost)
+{
+#if defined(EVE_SCREEN_CAPACITIVE)
+    Ft_Gpu_Hal_Wr8(phost, REG_CTOUCH_EXTENDED, CTOUCH_MODE_COMPATIBILITY);
+#endif
+
+    eve_printf_debug("App_CoPro_Widget_Calibrate: Start Frame\n");
+    Ft_Gpu_CoCmd_StartFrame(phost);
+
+    Ft_Gpu_CoCmd_DlStart(phost);
+    Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_COLOR_RGB(64, 64, 64));
+    Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 1, 1));
+    Ft_Gpu_CoCmd_SendCmd(phost, COLOR_RGB(0xff, 0xff, 0xff));
+
+    // Ft_Gpu_CoCmd_Text(phost, (FT_DispWidth / 2), (FT_DispHeight / 2), 27, OPT_CENTER, "Please Tap on the dot");
+
+    ft_uint32_t result = Ft_Gpu_CoCmd_Calibrate(phost);
+
+    eve_printf_debug("App_CoPro_Widget_Calibrate: End Frame\n");
+    Ft_Gpu_CoCmd_EndFrame(phost);
+
+    // Print the configured values
+    ft_uint32_t transMatrix[6];
+    Ft_Gpu_Hal_RdMem(phost, REG_TOUCH_TRANSFORM_A, (ft_uint8_t *)transMatrix, 4 * 6); //read all the 6 coefficients
+    eve_printf_debug("Touch screen transform values are A 0x%x,B 0x%x,C 0x%x,D 0x%x,E 0x%x, F 0x%x\n",
+        transMatrix[0], transMatrix[1], transMatrix[2], transMatrix[3], transMatrix[4], transMatrix[5]);
+
+    return result != 0;
+}
+
 int main(void)
 {
+    Ft_Gpu_HalInit_t halinit;
+    Ft_Gpu_Hal_Context_t host;
+    nk_evefont *font;
     struct nk_context *ctx;
 
     int running = 1;
     int needs_refresh = 1;
 
+    Ft_Mcu_Init();
+
+    Ft_Gpu_Hal_Init(&halinit);
+    Ft_Gpu_Hal_Open(&host);
+
+    Eve_BootupConfig(&host);
+
+#ifndef BT8XXEMU_PLATFORM
+    if (!App_CoPro_Widget_Calibrate(phost))
+    {
+        eve_printf_debug("Calibrate failed\n");
+    }
+#endif
+
     /* Initialize Nuklear EVE */
     /* ... TODO ... */
-    /* TODO: ctx = nk_eve_init(host); */
+    font = nk_evefont_create_rom(27);
+    ctx = nk_eve_init(font, &host);
 
     /* Main Loop */
     while (running)
@@ -75,11 +124,14 @@ int main(void)
         /* ----------------------------------------- */
 
         /* Draw */
-        /* TODO: nk_eve_render(nk_rgb(30,30,30)); */
+        nk_eve_render(nk_rgb(30, 30, 30));
     }
 
     /* Release Nuklear EVE */
-    /* ... TODO ... */
+    nk_eve_shutdown();
+
+    Ft_Gpu_Hal_Close(&host);
+    Ft_Gpu_Hal_DeInit();
 
     return EXIT_SUCCESS;
 }
