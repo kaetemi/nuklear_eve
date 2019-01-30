@@ -56,6 +56,19 @@ ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 #endif
 }
 
+ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
+{
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_FALSE;
+#endif
+	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
+	Ft_Gpu_Hal_TransferString_S(phost, s, length);
+	Ft_Gpu_Hal_EndTransfer(phost);
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_TRUE;
+#endif
+}
+
 ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 {
 #if defined(_DEBUG)

@@ -118,9 +118,9 @@ int main(void)
         nk_end(ctx);
 
         /* -------------- EXAMPLES ---------------- */
-        calculator(ctx);
-        overview(ctx);
-        node_editor(ctx);
+        // calculator(ctx);
+		// overview(ctx);
+		// node_editor(ctx);
         /* ----------------------------------------- */
 
         /* Draw */

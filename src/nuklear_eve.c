@@ -118,6 +118,18 @@ nk_eve_fill_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w
     Ft_Gpu_CoCmd_SendCmd(phost, END());
 }
 
+static void
+nk_eve_draw_text(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w, unsigned short h,
+	const char *text, int len, nk_evefont *font, struct nk_color cfg)
+{
+	if (!len)
+		return;
+
+	Ft_Gpu_CoCmd_SendCmd(phost, COLOR_RGB(cfg.r, cfg.g, cfg.b));
+	Ft_Gpu_CoCmd_SendCmd(phost, COLOR_A(cfg.a));
+	Ft_Gpu_CoCmd_Text_S(phost, x, y, font->rom_handle, 0, text, len);
+}
+
 NK_API void
 nk_eve_render(struct nk_color clear)
 {
@@ -195,6 +207,10 @@ nk_eve_render(struct nk_color clear)
         case NK_COMMAND_TEXT:
         {
             const struct nk_command_text *t = (const struct nk_command_text *)cmd;
+			nk_eve_draw_text(phost, t->x, t->y, t->w, t->h,
+				(const char*)t->string, t->length,
+				(nk_evefont*)t->font->userdata.ptr,
+				t->foreground);
         }
         break;
         case NK_COMMAND_CURVE:

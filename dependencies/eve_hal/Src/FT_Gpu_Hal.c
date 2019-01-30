@@ -198,6 +198,21 @@ ft_void_t Ft_Gpu_DownloadJ1Firmware(Ft_Gpu_Hal_Context_t *phost)
 	eve_assert_do(Ft_Gpu_Hal_WaitCmdFifoEmpty(phost));
 }
 
+ft_void_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str, int length)
+{
+	int i = 0;
+	for (; i < length; ++i)
+	{
+		Ft_Gpu_Hal_Transfer8(phost, str[i]);
+	}
+	Ft_Gpu_Hal_Transfer8(phost, 0);
+	++i;
+	while ((i++ & 0x3))
+	{
+		Ft_Gpu_Hal_Transfer8(phost, 0);
+	}
+}
+
 ft_void_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str)
 {
 	int i = 0;

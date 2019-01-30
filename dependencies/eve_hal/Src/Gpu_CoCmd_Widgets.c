@@ -83,6 +83,26 @@ ft_void_t Ft_Gpu_CoCmd_Text(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_
 #endif
 }
 
+ft_void_t Ft_Gpu_CoCmd_Text_S(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s, int length)
+{
+	if (font >= 32)
+	{
+		if (font != 63)
+			eve_printf_debug("Invalid font handle specified: %i\n", (int)font);
+		return;
+	}
+	uint32_t cmd[3] = {
+		CMD_TEXT,
+		(((ft_uint32_t)y << 16) | (x & 0xffff)),
+		(((ft_uint32_t)options << 16) | (font & 0xffff)),
+	};
+	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Ft_Gpu_CoCmd_SendStr_S(phost, s, length);
+#ifdef ESD_FRAMEWORK
+	Ft_Esd_Primitive = 0;
+#endif
+}
+
 ft_void_t Ft_Gpu_CoCmd_Text_Ex(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_bool_t bottom, ft_int16_t baseLine, ft_int16_t capsHeight, const ft_char8_t *s)
 {
 	ft_int16_t yOffset;

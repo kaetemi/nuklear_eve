@@ -36,6 +36,7 @@ ft_void_t Ft_Gpu_CoCmd_SetBitmap(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t source
 ft_void_t Ft_Gpu_CoCmd_SetScratch(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t handle);
 ft_void_t Ft_Gpu_CoCmd_RomFont(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft_uint32_t romslot);
 ft_void_t Ft_Gpu_CoCmd_Text(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s);
+ft_void_t Ft_Gpu_CoCmd_Text_S(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s, int length);
 ft_void_t Ft_Gpu_CoCmd_Text_Ex(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_bool_t bottom, ft_int16_t baseLine, ft_int16_t capsHeight, const ft_char8_t *s);
 ft_void_t Ft_Gpu_CoCmd_Number(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_int32_t n);
 ft_void_t Ft_Gpu_CoCmd_LoadIdentity(Ft_Gpu_Hal_Context_t *phost);
@@ -105,6 +106,7 @@ void Ft_Gpu_CoCmd_AnimFrame(Ft_Gpu_Hal_Context_t *phost, int16_t x, int16_t y, u
 
 ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd);
 ft_void_t Ft_Gpu_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb);
+ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length);
 ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s);
 ft_void_t Ft_Gpu_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost);
 ft_void_t Ft_Gpu_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost);
