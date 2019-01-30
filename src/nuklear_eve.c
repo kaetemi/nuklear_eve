@@ -11,4 +11,10 @@ It depends on:
 - EVE Hardware Abstraction Layer
 */
 
+#define NK_IMPLEMENTATION
+#define NK_EVE_IMPLEMENTATION
+#include "nuklear_eve.h"
+
+
+
 /* end of file */

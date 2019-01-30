@@ -19,6 +19,6 @@ NamespaceIndentation: None
 PointerAlignment: Right
 SortIncludes: 'false'
 TabWidth: '4'
-UseTab: Never
+UseTab: ForIndentation
 
 ...

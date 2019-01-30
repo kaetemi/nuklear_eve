@@ -6,6 +6,7 @@ SOURCE_GROUP("" FILES ${SRCS} ${HDRS})
 FILE(GLOB EVE_HAL ../dependencies/eve_hal/Hdr/*.h ../dependencies/eve_hal/Hdr/Simulation/*.h ../dependencies/eve_hal/Src/*.c ../dependencies/eve_hal/Src/Simulation/*.c)
 SOURCE_GROUP("EVE HAL" FILES ${EVE_HAL})
 
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal/Hdr")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal/Hdr/MSVC")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal/Hdr/Simulation")
