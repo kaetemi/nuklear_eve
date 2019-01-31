@@ -111,25 +111,25 @@ nk_eve_scissor(Ft_Gpu_Hal_Context_t *phost, float x, float y, float w, float h)
 
 static void
 nk_eve_placeholder(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
-	unsigned short h, struct nk_color col) 
+    unsigned short h, struct nk_color col)
 {
-	nk_eve_color_rgba(phost, col);
-	Ft_Gpu_CoCmd_SendCmd(phost, LINE_WIDTH(16));
-	Ft_Gpu_CoCmd_SendCmd(phost, BEGIN(LINE_STRIP));
+    nk_eve_color_rgba(phost, col);
+    Ft_Gpu_CoCmd_SendCmd(phost, LINE_WIDTH(16));
+    Ft_Gpu_CoCmd_SendCmd(phost, BEGIN(LINE_STRIP));
 #if (EVE_MODEL >= EVE_FT810)
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX_FORMAT(0));
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX_FORMAT(0));
 #endif
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x, y));
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x, y + h));
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x + w, y + h));
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x + w, y));
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x, y));
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x + w, y + h));
-	Ft_Gpu_CoCmd_SendCmd(phost, END());
-	Ft_Gpu_CoCmd_SendCmd(phost, BEGIN(LINES));
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x, y + h));
-	Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x + w, y));
-	Ft_Gpu_CoCmd_SendCmd(phost, END());
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x, y));
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x, y + h));
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x + w, y + h));
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x + w, y));
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x, y));
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x + w, y + h));
+    Ft_Gpu_CoCmd_SendCmd(phost, END());
+    Ft_Gpu_CoCmd_SendCmd(phost, BEGIN(LINES));
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x, y + h));
+    Ft_Gpu_CoCmd_SendCmd(phost, VERTEX2F(x + w, y));
+    Ft_Gpu_CoCmd_SendCmd(phost, END());
 }
 
 static void
@@ -198,7 +198,7 @@ nk_eve_rect_multi_color(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned 
     struct nk_color right, struct nk_color bottom)
 {
     /* ... TODO ... */
-	nk_eve_placeholder(phost, x, y, w, h, top);
+    nk_eve_placeholder(phost, x, y, w, h, top);
 }
 
 static void
@@ -206,11 +206,11 @@ nk_eve_fill_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
     short y1, short x2, short y2, struct nk_color col)
 {
     /* ... TODO ... */
-	int minx = min(x0, min(x1, x2));
-	int maxx = max(x0, max(x1, x2));
-	int miny = min(y0, min(y1, y2));
-	int maxy = max(y0, max(y1, y2));
-	nk_eve_placeholder(phost, minx, miny, maxx - minx, maxy - miny, col);
+    int minx = min(x0, min(x1, x2));
+    int maxx = max(x0, max(x1, x2));
+    int miny = min(y0, min(y1, y2));
+    int maxy = max(y0, max(y1, y2));
+    nk_eve_placeholder(phost, minx, miny, maxx - minx, maxy - miny, col);
 }
 
 static void
@@ -307,7 +307,7 @@ nk_eve_stroke_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned sho
     /* ... TODO ... */
     // - Donut rendering for thick line
     // - Line stroke for thin line?
-	nk_eve_placeholder(phost, x, y, w, h, col);
+    nk_eve_placeholder(phost, x, y, w, h, col);
 }
 
 static void
@@ -335,7 +335,7 @@ nk_eve_draw_image(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short 
     struct nk_image img, struct nk_color col)
 {
     /* ... TODO ... */
-	nk_eve_placeholder(phost, x, y, w, h, col);
+    nk_eve_placeholder(phost, x, y, w, h, col);
 }
 
 static void
