@@ -93,6 +93,7 @@ int main(void)
         nk_input_end(ctx);
 
         /* GUI */
+		/*
         if (nk_begin(ctx, "Demo", nk_rect(50, 50, 200, 200),
                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
         {
@@ -116,10 +117,11 @@ int main(void)
             nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
         }
         nk_end(ctx);
+		*/
 
         /* -------------- EXAMPLES ---------------- */
         // calculator(ctx);
-		// overview(ctx);
+		overview(ctx);
 		// node_editor(ctx);
         /* ----------------------------------------- */
 
