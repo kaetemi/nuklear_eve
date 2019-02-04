@@ -21,3 +21,15 @@ TARGET_LINK_LIBRARIES(nuklear_eve_demo
   ${BT8XXEMU_LIBRARY}
   eve_hal
 )
+
+IF (WIN32)
+  ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${BT8XXEMU_BINDIR}/bt8xxemu.dll
+    ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/bt8xxemu.dll)
+  
+  ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${BT8XXEMU_BINDIR}/mx25lemu.dll
+    ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/mx25lemu.dll)
+ENDIF()
