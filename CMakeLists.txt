@@ -84,6 +84,7 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 ########################################################################
 
 ADD_SUBDIRECTORY(dependencies/eve_hal)
+ADD_SUBDIRECTORY(dependencies/esd_core)
 ADD_SUBDIRECTORY(demo)
 
 ########################################################################

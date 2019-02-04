@@ -8,6 +8,7 @@ INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal/Hdr")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal/Hdr/Simulation")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal/Hdr/MSVC")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal/Hdr/FT900")
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/esd_core")
 
 ADD_DEFINITIONS(-DEVE_GRAPHICS_VM816C)
 ADD_DEFINITIONS(-DEVE_PLATFORM_BT8XXEMU)
@@ -19,7 +20,7 @@ ADD_EXECUTABLE(nuklear_eve_demo
 
 TARGET_LINK_LIBRARIES(nuklear_eve_demo
   ${BT8XXEMU_LIBRARY}
-  eve_hal
+  esd_core
 )
 
 IF (WIN32)
