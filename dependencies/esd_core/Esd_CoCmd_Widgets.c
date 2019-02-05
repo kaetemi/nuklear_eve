@@ -31,6 +31,8 @@
 
 #include "FT_Platform.h"
 
+#include "Ft_Esd_Dl.h"
+
 #if ESD_DL_OPTIMIZE
 extern ft_uint8_t Ft_Esd_Primitive;
 #endif
