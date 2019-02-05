@@ -33,12 +33,20 @@
 #define EVE_CO_CMD__H
 
 #include "FT_Platform.h"
-ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd);
-ft_void_t Ft_Gpu_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb);
-ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length);
-ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s);
-ft_void_t Ft_Gpu_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost);
-ft_void_t Ft_Gpu_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost);
+
+// Backport compatibility
+#define Eve_CoCmd_SendCmd Ft_Gpu_CoCmd_SendCmd
+#define Eve_CoCmd_SendCmdArr Ft_Gpu_CoCmd_SendCmdArr
+#define Eve_CoCmd_SendStr Ft_Gpu_CoCmd_SendStr
+#define Eve_CoCmd_StartFrame Ft_Gpu_CoCmd_StartFrame
+#define Eve_CoCmd_EndFrame Ft_Gpu_CoCmd_EndFrame
+
+ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd);
+ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb);
+ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length);
+ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s);
+ft_void_t Eve_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost);
+ft_void_t Eve_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost);
 
 // Deprecated
 #define Ft_Gpu_Copro_SendCmd Ft_Gpu_CoCmd_SendCmd

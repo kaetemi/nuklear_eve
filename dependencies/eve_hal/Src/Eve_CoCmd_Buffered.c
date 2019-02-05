@@ -38,38 +38,38 @@
 static ft_uint8_t s_CmdBuffer[FT_BUFFER_CAPACITY];
 static ft_uint16_t s_CmdBufferIndex = 0;
 
-ft_void_t Ft_Gpu_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb)
+ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb)
 {
 	eve_assert(phost->cmd_frame);
 	ft_uint16_t len = (sizeof(cmd[0]) * nb) & FT_CMD_FIFO_MASK;
 	if ((s_CmdBufferIndex + len) > FT_BUFFER_CAPACITY)
 	{
-		Ft_Gpu_CoCmd_EndFrame(phost);
-		Ft_Gpu_CoCmd_StartFrame(phost);
+		Eve_CoCmd_EndFrame(phost);
+		Eve_CoCmd_StartFrame(phost);
 	}
 	memcpy(&s_CmdBuffer[s_CmdBufferIndex], cmd, len);
 	s_CmdBufferIndex += len;
 }
 
-ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 {
 	eve_assert(phost->cmd_frame);
 	if ((s_CmdBufferIndex + sizeof(cmd)) > FT_BUFFER_CAPACITY)
 	{
-		Ft_Gpu_CoCmd_EndFrame(phost);
-		Ft_Gpu_CoCmd_StartFrame(phost);
+		Eve_CoCmd_EndFrame(phost);
+		Eve_CoCmd_StartFrame(phost);
 	}
 	memcpy(&s_CmdBuffer[s_CmdBufferIndex], &cmd, sizeof(cmd));
 	s_CmdBufferIndex += sizeof(cmd);
 }
 
-ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
+ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
 {
 	eve_assert(phost->cmd_frame);
 	if ((s_CmdBufferIndex + length + 4) > FT_BUFFER_CAPACITY)
 	{
-		Ft_Gpu_CoCmd_EndFrame(phost);
-		Ft_Gpu_CoCmd_StartFrame(phost);
+		Eve_CoCmd_EndFrame(phost);
+		Eve_CoCmd_StartFrame(phost);
 	}
 	memcpy(&s_CmdBuffer[s_CmdBufferIndex], s, length);
 	s_CmdBufferIndex += length;
@@ -82,14 +82,14 @@ ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *
 	}
 }
 
-ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
+ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 {
 	eve_assert(phost->cmd_frame);
 	ft_uint16_t length = (ft_uint16_t)strlen(s) + 1;
 	if ((s_CmdBufferIndex + length + 3) > FT_BUFFER_CAPACITY)
 	{
-		Ft_Gpu_CoCmd_EndFrame(phost);
-		Ft_Gpu_CoCmd_StartFrame(phost);
+		Eve_CoCmd_EndFrame(phost);
+		Eve_CoCmd_StartFrame(phost);
 	}
 	memcpy(&s_CmdBuffer[s_CmdBufferIndex], s, length);
 	s_CmdBufferIndex += length;
@@ -100,7 +100,7 @@ ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 	}
 }
 
-ft_void_t Ft_Gpu_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
 {
 	eve_assert(!phost->cmd_frame);
 	phost->cmd_frame = FT_TRUE;
@@ -108,7 +108,7 @@ ft_void_t Ft_Gpu_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
 	memset(s_CmdBuffer, 0, FT_BUFFER_CAPACITY);
 }
 
-ft_void_t Ft_Gpu_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost)
 {
 	eve_assert(phost->cmd_frame);
 	phost->cmd_frame = FT_FALSE;

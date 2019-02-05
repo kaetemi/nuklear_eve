@@ -39,7 +39,7 @@ ft_void_t Ft_Gpu_CoCmd_MemCpy(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t dest, ft_
 		src,
 		num,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_MemSet(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t value, ft_uint32_t num)
@@ -50,7 +50,7 @@ ft_void_t Ft_Gpu_CoCmd_MemSet(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_u
 		value,
 		num,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_MemZero(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t num)
@@ -60,7 +60,7 @@ ft_void_t Ft_Gpu_CoCmd_MemZero(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_
 		ptr,
 		num,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_MemWrite(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t num)
@@ -70,7 +70,7 @@ ft_void_t Ft_Gpu_CoCmd_MemWrite(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft
 		ptr,
 		num,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_MemCrc(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t num, ft_uint32_t result)
@@ -81,7 +81,7 @@ ft_void_t Ft_Gpu_CoCmd_MemCrc(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_u
 		num,
 		result,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_LoadImage(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t options)
@@ -91,7 +91,7 @@ ft_void_t Ft_Gpu_CoCmd_LoadImage(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, f
 		ptr,
 		options,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_Inflate(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr)
@@ -100,7 +100,7 @@ ft_void_t Ft_Gpu_CoCmd_Inflate(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr)
 		CMD_INFLATE,
 		ptr,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 #if (EVE_MODEL >= EVE_FT810)
@@ -111,7 +111,7 @@ ft_void_t Ft_Gpu_CoCmd_MediaFifo(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, f
 		ptr,
 		size,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 #endif
 
@@ -121,7 +121,7 @@ ft_void_t Ft_Gpu_CoCmd_Snapshot(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr)
 		CMD_SNAPSHOT,
 		ptr,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 #if (EVE_MODEL >= EVE_FT810)
@@ -134,7 +134,7 @@ ft_void_t Ft_Gpu_CoCmd_Snapshot2(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t fmt, f
 		(((ft_uint32_t)y << 16) | (x & 0xffff)),
 		(((ft_uint32_t)h << 16) | (w & 0xffff)),
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 #endif
 

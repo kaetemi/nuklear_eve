@@ -9,6 +9,7 @@ This C source file provides the Nuklear implementation for Bridgetek EVE.
 It depends on:
 - Nuklear (https://github.com/vurtun/nuklear/)
 - EVE Hardware Abstraction Layer
+- EVE Screen Designer Framework Core
 */
 
 /*

@@ -32,7 +32,7 @@
 #include "FT_Platform.h"
 #if !defined(FT_GPU_COCMD_BUFFERED)
 
-ft_void_t Ft_Gpu_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb)
+ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb)
 {
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
@@ -43,7 +43,7 @@ ft_void_t Ft_Gpu_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd,
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 {
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
@@ -56,7 +56,7 @@ ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
+ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
 {
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
@@ -69,7 +69,7 @@ ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
+ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 {
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
@@ -82,12 +82,12 @@ ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
 {
 	phost->cmd_frame = FT_TRUE;
 }
 
-ft_void_t Ft_Gpu_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost)
 {
 	phost->cmd_frame = FT_FALSE;
 }

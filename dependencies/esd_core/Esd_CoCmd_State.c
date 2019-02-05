@@ -33,12 +33,12 @@
 
 ft_void_t Ft_Gpu_CoCmd_ColdStart(Ft_Gpu_Hal_Context_t *phost)
 {
-	Ft_Gpu_CoCmd_SendCmd(phost, CMD_COLDSTART);
+	Eve_CoCmd_SendCmd(phost, CMD_COLDSTART);
 }
 
 ft_void_t Ft_Gpu_CoCmd_LoadIdentity(Ft_Gpu_Hal_Context_t *phost)
 {
-	Ft_Gpu_CoCmd_SendCmd(phost, CMD_LOADIDENTITY);
+	Eve_CoCmd_SendCmd(phost, CMD_LOADIDENTITY);
 }
 
 ft_void_t Ft_Gpu_CoCmd_Translate(Ft_Gpu_Hal_Context_t *phost, ft_int32_t tx, ft_int32_t ty)
@@ -48,7 +48,7 @@ ft_void_t Ft_Gpu_CoCmd_Translate(Ft_Gpu_Hal_Context_t *phost, ft_int32_t tx, ft_
 		tx,
 		ty,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_Rotate(Ft_Gpu_Hal_Context_t *phost, ft_int32_t a)
@@ -57,7 +57,7 @@ ft_void_t Ft_Gpu_CoCmd_Rotate(Ft_Gpu_Hal_Context_t *phost, ft_int32_t a)
 		CMD_ROTATE,
 		a,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_Scale(Ft_Gpu_Hal_Context_t *phost, ft_int32_t sx, ft_int32_t sy)
@@ -67,12 +67,12 @@ ft_void_t Ft_Gpu_CoCmd_Scale(Ft_Gpu_Hal_Context_t *phost, ft_int32_t sx, ft_int3
 		sx,
 		sy,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_SetMatrix(Ft_Gpu_Hal_Context_t *phost)
 {
-	Ft_Gpu_CoCmd_SendCmd(phost, CMD_SETMATRIX);
+	Eve_CoCmd_SendCmd(phost, CMD_SETMATRIX);
 }
 
 #if (EVE_MODEL >= EVE_FT810)
@@ -82,7 +82,7 @@ ft_void_t Ft_Gpu_CoCmd_SetRotate(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t r)
 		CMD_SETROTATE,
 		r,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 #endif
 
@@ -104,7 +104,7 @@ ft_void_t Ft_Gpu_CoCmd_BitmapTransform(Ft_Gpu_Hal_Context_t *phost, ft_int32_t x
 		ty2,
 		result,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_FgColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
@@ -113,7 +113,7 @@ ft_void_t Ft_Gpu_CoCmd_FgColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
 		CMD_FGCOLOR,
 		c,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_BgColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
@@ -122,7 +122,7 @@ ft_void_t Ft_Gpu_CoCmd_BgColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
 		CMD_BGCOLOR,
 		c,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_GradColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
@@ -131,7 +131,7 @@ ft_void_t Ft_Gpu_CoCmd_GradColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
 		CMD_GRADCOLOR,
 		c,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_SetFont(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft_uint32_t ptr)
@@ -141,7 +141,7 @@ ft_void_t Ft_Gpu_CoCmd_SetFont(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft
 		font,
 		ptr,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 #if (EVE_MODEL >= EVE_FT810)
@@ -153,7 +153,7 @@ ft_void_t Ft_Gpu_CoCmd_SetFont2(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, f
 		ptr,
 		firstchar,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_SetBase(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t base)
@@ -162,7 +162,7 @@ ft_void_t Ft_Gpu_CoCmd_SetBase(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t base)
 		CMD_SETBASE,
 		base,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_SetBitmap(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t source, ft_uint16_t fmt, ft_uint16_t w, ft_uint16_t h)
@@ -173,7 +173,7 @@ ft_void_t Ft_Gpu_CoCmd_SetBitmap(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t source
 		(((ft_uint32_t)w << 16) | (fmt & 0xffff)),
 		h,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_SetScratch(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t handle)
@@ -182,7 +182,7 @@ ft_void_t Ft_Gpu_CoCmd_SetScratch(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t handl
 		CMD_SETSCRATCH,
 		handle,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 ft_void_t Ft_Gpu_CoCmd_RomFont(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft_uint32_t romslot)
@@ -192,7 +192,7 @@ ft_void_t Ft_Gpu_CoCmd_RomFont(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft
 		font,
 		romslot,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 #endif
 
