@@ -321,6 +321,22 @@ It may also set platform, display, and flash values if none are configured.
 #define EVE_FLASH_W25Q128
 #endif
 
+#elif defined(EVE_GRAPHICS_VM810C)
+
+#define FT_810_ENABLE
+// #define ENABLE_SPI_QUAD
+#define RESISTANCE_THRESHOLD (1800)
+
+#ifndef EVE_DISPLAY_AVAILABLE
+#define EVE_DISPLAY_AVAILABLE
+#define DISPLAY_RESOLUTION_WVGA
+#endif
+
+#ifndef EVE_PLATFORM_AVAILABLE
+#define EVE_PLATFORM_AVAILABLE
+#define FT4222_PLATFORM
+#endif
+
 #elif defined(PANL35)
 
 #define FT_811_ENABLE

@@ -190,7 +190,9 @@ void Esd_Start(Esd_Context *ec)
 
 	// Initialize storage
 	Ft_Hal_LoadSDCard();
+#if defined(EVE_FLASH_AVAILABLE)
 	Esd_AttachFlashFast();
+#endif
 
 	// Initialize application
 	if (ec->Start)
@@ -215,7 +217,9 @@ void Esd_Update(Esd_Context *ec)
 
 	// Verify initialization
 	Ft_Hal_LoadSDCard();
+#if defined(EVE_FLASH_AVAILABLE)
 	Esd_AttachFlashFast();
+#endif
 
 	// Idle at least once every frame
 	ec->LoopState = ESD_LOOPSTATE_IDLE;
