@@ -304,7 +304,9 @@ ft_uint8_t Ft_Esd_Dl_Font_Setup(Esd_FontInfo *fontInfo)
 			// Set the font
 			romFontInfo->BitmapHandle = handle;
 			Ft_Gpu_CoCmd_RomFont(Ft_Esd_Host, handle, font);
+#if ESD_DL_OPTIMIZE
 			FT_ESD_STATE.Handle = handle;
+#endif
 			Esd_CurrentContext->HandleState.Resized[handle] = 0;
 			Esd_CurrentContext->HandleState.Page[handle] = 0;
 		}
@@ -356,7 +358,9 @@ ft_uint8_t Ft_Esd_Dl_Font_Setup(Esd_FontInfo *fontInfo)
 			// Set the font
 			fontInfo->BitmapHandle = handle;
 			Ft_Gpu_CoCmd_SetFont2(Ft_Esd_Host, handle, addr, fontInfo->FirstChar);
+#if ESD_DL_OPTIMIZE
 			FT_ESD_STATE.Handle = handle;
+#endif
 			Esd_CurrentContext->HandleState.Resized[handle] = 0;
 			Esd_CurrentContext->HandleState.Page[handle] = 0;
 		}

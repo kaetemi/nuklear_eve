@@ -15,15 +15,18 @@ extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 // GPU state for the current display list
+#if ESD_DL_OPTIMIZE
 Ft_Esd_GpuState_T Ft_Esd_GpuState[ESD_DL_STATE_STACK_SIZE];
 ft_uint8_t Ft_Esd_GpuState_I;
 ft_uint8_t Ft_Esd_Primitive;
 // ft_uint32_t Esd_CurrentContext->CoFgColor;
 // ft_uint32_t Esd_CurrentContext->CoBgColor;
+#endif
 Ft_Esd_Rect16 Ft_Esd_ScissorRect;
 
 void Esd_ResetGpuState() // Begin of frame
 {
+#if ESD_DL_OPTIMIZE
 	Ft_Esd_GpuState_I = 0;
 	Ft_Esd_GpuState[0] = (Ft_Esd_GpuState_T)
 	{
@@ -38,6 +41,7 @@ void Esd_ResetGpuState() // Begin of frame
 	};
 
 	Ft_Esd_Primitive = 0;
+#endif
 
 	// Reset scissor state to display size
 	Ft_Esd_ScissorRect.X = 0;
@@ -48,8 +52,10 @@ void Esd_ResetGpuState() // Begin of frame
 
 void Esd_ResetCoState()
 {
+#if ESD_DL_OPTIMIZE
 	Esd_CurrentContext->CoFgColor = 0x003870;
 	Esd_CurrentContext->CoBgColor = 0x002040;
+#endif
 
 #if (EVE_MODEL >= EVE_FT810)
 	Esd_CurrentContext->CoScratchHandle = 15;
@@ -93,8 +99,10 @@ void Ft_Esd_Dl_Scissor_Adjust(Ft_Esd_Rect16 rect, Ft_Esd_Rect16 state)
 		rect.Height += y2diff;
 	}
 	// Ft_Gpu_CoCmd_StartFunc(Ft_Esd_Host, FT_CMD_SIZE * 2);
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_XY(rect.X, rect.Y));
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_SIZE(rect.Width, rect.Height));
+	if (Ft_Esd_ScissorRect.X != rect.X || Ft_Esd_ScissorRect.Y != rect.Y)
+		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_XY(rect.X, rect.Y));
+	if (Ft_Esd_ScissorRect.Width != rect.Width || Ft_Esd_ScissorRect.Height != rect.Height)
+		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_SIZE(rect.Width, rect.Height));
 	// Ft_Gpu_CoCmd_EndFunc(Ft_Esd_Host);
 	Ft_Esd_ScissorRect = rect;
 }
@@ -102,8 +110,10 @@ void Ft_Esd_Dl_Scissor_Adjust(Ft_Esd_Rect16 rect, Ft_Esd_Rect16 state)
 void Ft_Esd_Dl_Scissor_Reset(Ft_Esd_Rect16 state)
 {
 	// Ft_Gpu_CoCmd_StartFunc(Ft_Esd_Host, FT_CMD_SIZE * 2);
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_XY(state.X, state.Y));
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_SIZE(state.Width, state.Height));
+	if (Ft_Esd_ScissorRect.X != state.X || Ft_Esd_ScissorRect.Y != state.Y)
+		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_XY(state.X, state.Y));
+	if (Ft_Esd_ScissorRect.Width != state.Width || Ft_Esd_ScissorRect.Height != state.Height)
+		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_SIZE(state.Width, state.Height));
 	// Ft_Gpu_CoCmd_EndFunc(Ft_Esd_Host);
 	Ft_Esd_ScissorRect = state;
 }

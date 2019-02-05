@@ -17,6 +17,13 @@ ESD_CATEGORY(EveRenderFunctions, DisplayName = "Display List", Category = EsdRen
 
 ESD_TYPE(Ft_Gpu_Hal_Context_t *, Native = Pointer, Edit = Library)
 
+// Keep cache of displaylist values that don't often change but are generally set by every widget to reduce display list size
+#define ESD_DL_OPTIMIZE 1
+#define ESD_DL_STATE_STACK_SIZE 5
+
+// Whether the END command is sent
+#define ESD_DL_END_PRIMITIVE 0
+
 // Backport compatibility
 #define Esd_Dl_Scissor_Get Ft_Esd_Dl_Scissor_Get
 #define Esd_Dl_Scissor_Set Ft_Esd_Dl_Scissor_Set
@@ -38,13 +45,6 @@ ESD_TYPE(Ft_Gpu_Hal_Context_t *, Native = Pointer, Edit = Library)
 #define FT_Esd_Dl_POINT_SIZE Ft_Esd_Dl_POINT_SIZE
 #define Esd_Dl_BEGIN Ft_Esd_Dl_BEGIN
 #define Esd_Dl_END Ft_Esd_Dl_END
-
-// Keep cache of displaylist values that don't often change but are generally set by every widget to reduce display list size
-#define ESD_DL_OPTIMIZE 1
-#define ESD_DL_STATE_STACK_SIZE 5
-
-// Whether the END command is sent
-#define ESD_DL_END_PRIMITIVE 0
 
 //
 // Structs
@@ -80,8 +80,8 @@ extern ft_uint8_t Ft_Esd_GpuState_I;
 extern ft_uint8_t Ft_Esd_Primitive;
 // extern ft_uint32_t Esd_CurrentContext->CoFgColor;
 // extern ft_uint32_t Esd_CurrentContext->CoBgColor;
-extern Ft_Esd_Rect16 Ft_Esd_ScissorRect;
 #endif
+// extern Ft_Esd_Rect16 Ft_Esd_ScissorRect;
 
 // Reset any cached state
 void Esd_ResetGpuState();
@@ -120,8 +120,8 @@ ESD_FUNCTION(Ft_Esd_Dl_COLOR_RGB, Type = ft_void_t, Category = EveRenderFunction
 ESD_PARAMETER(c, Type = ft_rgb32_t, DisplayName = "Color")
 inline static ft_void_t Ft_Esd_Dl_COLOR_RGB(ft_rgb32_t c)
 {
-#if ESD_DL_OPTIMIZE
 	ft_rgb32_t rgb = c & 0xFFFFFF;
+#if ESD_DL_OPTIMIZE
 	if (rgb != FT_ESD_STATE.ColorRGB)
 	{
 #endif
@@ -308,7 +308,7 @@ inline static ft_void_t Ft_Esd_Dl_BEGIN(ft_uint8_t primitive)
 ESD_FUNCTION(Ft_Esd_Dl_END, Type = ft_void_t, Category = EveRenderFunctions, Inline)
 inline static ft_void_t Ft_Esd_Dl_END()
 {
-#if ESD_DL_END_PRIMITIVE
+#if ESD_DL_END_PRIMITIVE || !ESD_DL_OPTIMIZE
 #if ESD_DL_OPTIMIZE
 	if (Ft_Esd_Primitive != 0)
 	{
@@ -321,6 +321,7 @@ inline static ft_void_t Ft_Esd_Dl_END()
 #else
 	// For continuous primitives, reset the active primitive.
 	// This causes the BEGIN to be called for the next vertex series.
+#if ESD_DL_OPTIMIZE
 	switch (Ft_Esd_Primitive)
 	{
 	case LINE_STRIP:
@@ -330,6 +331,7 @@ inline static ft_void_t Ft_Esd_Dl_END()
 	case EDGE_STRIP_B:
 		Ft_Esd_Primitive = 0;
 	}
+#endif
 #endif
 }
 

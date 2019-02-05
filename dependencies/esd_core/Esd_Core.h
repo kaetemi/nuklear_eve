@@ -39,6 +39,7 @@
 #include "FT_Esd_Dl.h"
 #include "FT_Esd_CoCmd.h"
 #include "Ft_Esd_BitmapHandle.h"
+#include "Ft_Esd_TouchTag.h"
 
 /// Runtime context of ESD
 typedef struct
@@ -60,8 +61,10 @@ typedef struct
 	ft_bool_t SpinnerPopped; //< Spinner is currently visible
 	void *CmdOwner; //< Owner of currently long-running coprocessor function (sketch, spinner, etc.)
 
+#if ESD_DL_OPTIMIZE
 	ft_uint32_t CoFgColor; //< Current coprocessor foreground color
 	ft_uint32_t CoBgColor; //< Current coprocessor background color
+#endif
 #if (EVE_MODEL >= EVE_FT810)
 	ft_uint8_t CoScratchHandle; //< Current coprocessor scratch handle (reset 15)
 #endif
