@@ -343,6 +343,13 @@ nk_eve_cb_start(void *context)
 static void
 nk_eve_cb_update(void *context)
 {
+    nk_input_begin(&eve.ctx);
+    ft_bool_t touching = !!Ft_Esd_TouchTag_CurrentTag(NULL);
+    ft_int16_t touchX = Ft_Esd_TouchTag_TouchX(NULL);
+    ft_int16_t touchY = Ft_Esd_TouchTag_TouchY(NULL);
+    nk_input_motion(&eve.ctx, touchX, touchY);
+    nk_input_button(&eve.ctx, NK_BUTTON_LEFT, touchX, touchY, touching);
+    nk_input_end(&eve.ctx);
 }
 
 static void
@@ -512,9 +519,15 @@ nk_eve_shutdown(void)
 }
 
 NK_API void
+nk_eve_update()
+{
+    Esd_Update(&eve.ec);
+}
+
+NK_API void
 nk_eve_render(struct nk_color clear)
 {
-    Esd_Update(&eve.ec, FT_TRUE);
+    Esd_Render(&eve.ec);
     Esd_WaitSwap(&eve.ec);
     nk_clear(&eve.ctx);
 }

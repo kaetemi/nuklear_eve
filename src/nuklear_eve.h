@@ -18,7 +18,8 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 #include "nuklear.h"
 
 typedef struct nk_evefont nk_evefont;
-NK_API struct nk_context *nk_eve_init(nk_evefont *evefont, Ft_Gpu_Hal_Context_t *phost);
+NK_API struct nk_context *nk_eve_init(nk_evefont *evefont);
+NK_API void nk_eve_update();
 NK_API void nk_eve_render(struct nk_color clear);
 NK_API void nk_eve_shutdown(void);
 

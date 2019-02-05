@@ -170,7 +170,8 @@ void Esd_Loop(Esd_Context *ec)
 
 	while (Ft_Main__Running__ESD() && !ec->RequestStop)
 	{
-		Esd_Update(ec, FT_TRUE);
+		Esd_Update(ec);
+		Esd_Render(ec);
 		Esd_WaitSwap(ec);
 	}
 
@@ -196,7 +197,7 @@ void Esd_Start(Esd_Context *ec)
 		ec->Start(ec->UserContext);
 }
 
-void Esd_Update(Esd_Context *ec, ft_bool_t render)
+void Esd_Update(Esd_Context *ec)
 {
 	Esd_SetCurrent(ec);
 	Ft_Gpu_Hal_Context_t *phost = &ec->HalContext;
@@ -207,11 +208,10 @@ void Esd_Update(Esd_Context *ec, ft_bool_t render)
 	// Ft_Esd_Widget_ProcessFree(); // TODO: Link this back up!!!
 	Esd_BitmapHandle_FrameStart(&ec->HandleState);
 
-	// Show logo
-	if (ec->ShowLogo && render)
-	{
-		Esd_BeginLogo();
-	}
+	if (ec->ShowLogo)
+		return;
+	if (ec->ShowingLogo)
+		ec->Millis = ft_millis(); // Reset time
 
 	// Verify initialization
 	Ft_Hal_LoadSDCard();
@@ -226,14 +226,6 @@ void Esd_Update(Esd_Context *ec, ft_bool_t render)
 		Ft_Gpu_Hal_ESD_Idle(phost);
 	}
 
-	// End logo
-	if (ec->ShowLogo && render)
-	{
-		Esd_EndLogo();
-		ec->ShowLogo = false;
-		ec->Millis = ft_millis(); // Reset time
-	}
-
 	// Update GUI state before render
 	ec->LoopState = ESD_LOOPSTATE_UPDATE;
 	ft_uint32_t ms = ft_millis(); // Calculate frame time delta
@@ -245,50 +237,65 @@ void Esd_Update(Esd_Context *ec, ft_bool_t render)
 		ec->Update(ec->UserContext);
 	// Ft_Esd_Timer_UpdateGlobal(); // TODO
 
-	if (render)
+	// Return to idle state inbetween
+	ec->LoopState = ESD_LOOPSTATE_IDLE;
+}
+
+void Esd_Render(Esd_Context *ec)
+{
+	Esd_SetCurrent(ec);
+	Ft_Gpu_Hal_Context_t *phost = &ec->HalContext;
+
+	if (ec->ShowLogo)
 	{
-		// Process all coprocessor commands
-		ec->LoopState = ESD_LOOPSTATE_RENDER;
-
-		Ft_Gpu_CoCmd_StartFrame(phost);
-
-		// Ft_Gpu_CoCmd_StartFunc(phost, FT_CMD_SIZE * 4);
-		Ft_Gpu_CoCmd_SendCmd(phost, CMD_DLSTART);
-		Ft_Gpu_CoCmd_SendCmd(phost, (2UL << 24) | ec->ClearColor); // Set CLEAR_COLOR_RGB from user var
-		Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_TAG(255)); // Always default to 255, so no touch = 0, touch non-tag = 255
-		Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 1, 1));
-		// Ft_Gpu_CoCmd_EndFunc(phost);
-		if (ec->Render)
-			ec->Render(ec->UserContext);
-
-		if (ec->SpinnerPopup)
-		{
-			// Spinner used for switching longer loading pages with bitmaps etc
-			Ft_Esd_Dl_COLOR_RGB(~(ec->ClearColor));
-			Ft_Esd_CoCmd_Spinner(Esd_Update, FT_DispWidth / 2, FT_DispHeight / 2, 0, 0);
-			ec->SpinnerPopup = FT_FALSE;
-			ec->SpinnerPopped = FT_TRUE;
-		}
-		else if (ec->SpinnerPopped)
-		{
-			Ft_Esd_CoCmd_Stop(Esd_Update);
-			ec->SpinnerPopped = FT_FALSE;
-		}
-
-		// Ft_Gpu_CoCmd_StartFunc(phost, FT_CMD_SIZE * 1);
-		Ft_Gpu_CoCmd_SendCmd(phost, DISPLAY());
-		// Ft_Gpu_CoCmd_EndFunc(Ft_Esd_Host);
-		Ft_Gpu_CoCmd_Swap(phost);
-
-		Ft_Gpu_CoCmd_EndFrame(phost);
+		ec->ShowLogo = FT_FALSE;
+		ec->ShowingLogo = FT_TRUE;
+		Esd_BeginLogo();
+		return;
 	}
+
+	if (ec->ShowingLogo)
+	{
+		ec->ShowingLogo = FT_FALSE;
+		Esd_EndLogo();
+	}
+
+	// Process all coprocessor commands
+	ec->LoopState = ESD_LOOPSTATE_RENDER;
+
+	Ft_Gpu_CoCmd_StartFrame(phost);
+
+	Ft_Gpu_CoCmd_SendCmd(phost, CMD_DLSTART);
+	Ft_Gpu_CoCmd_SendCmd(phost, (2UL << 24) | ec->ClearColor); // Set CLEAR_COLOR_RGB from user var
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_TAG(255)); // Always default to 255, so no touch = 0, touch non-tag = 255
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 1, 1));
+	if (ec->Render)
+		ec->Render(ec->UserContext);
+
+	if (ec->SpinnerPopup)
+	{
+		// Spinner used for switching longer loading pages with bitmaps etc
+		Ft_Esd_Dl_COLOR_RGB(~(ec->ClearColor));
+		Ft_Esd_CoCmd_Spinner(Esd_Update, FT_DispWidth / 2, FT_DispHeight / 2, 0, 0);
+		ec->SpinnerPopup = FT_FALSE;
+		ec->SpinnerPopped = FT_TRUE;
+	}
+	else if (ec->SpinnerPopped)
+	{
+		Ft_Esd_CoCmd_Stop(Esd_Update);
+		ec->SpinnerPopped = FT_FALSE;
+	}
+
+	Ft_Gpu_CoCmd_SendCmd(phost, DISPLAY());
+	Ft_Gpu_CoCmd_Swap(phost);
+
+	Ft_Gpu_CoCmd_EndFrame(phost);
 
 	// Replacement for Ft_Gpu_Hal_WaitCmdfifo_empty(phost); with idle function
 	ec->LoopState = ESD_LOOPSTATE_IDLE;
 
 	// Advance frame count
-	if (render)
-		++ec->Frame;
+	++ec->Frame;
 }
 
 void Esd_WaitSwap(Esd_Context *ec)

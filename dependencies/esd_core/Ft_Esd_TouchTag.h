@@ -89,7 +89,7 @@ ft_int16_t Ft_Esd_TouchTag_TouchXDelta(Ft_Esd_TouchTag *context);
 ESD_OUTPUT(TouchYDelta, DisplayName = "Touch Y Delta", Type = ft_int16_t)
 ft_int16_t Ft_Esd_TouchTag_TouchYDelta(Ft_Esd_TouchTag *context);
 
-//Suppress the current tag
+// Suppress the current tag
 ESD_FUNCTION(Ft_Esd_TouchTag_SuppressCurrentTags, DisplayName = "Suppress Current Tags", Category = EsdUtilities)
 void Ft_Esd_TouchTag_SuppressCurrentTags();
 

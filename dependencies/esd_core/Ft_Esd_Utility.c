@@ -104,6 +104,8 @@ void Esd_AttachFlashFast()
 
 void Esd_BeginLogo()
 {
+	Ft_Esd_GpuAlloc_Reset(Ft_Esd_GAlloc);
+	Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GAlloc, RAM_G_SIZE, 0); // Block allocation
 	Ft_Gpu_CoCmd_StartFrame(Ft_Esd_Host);
 	Ft_Gpu_CoCmd_DlStart(Ft_Esd_Host);
 	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, CLEAR_COLOR_RGB(255, 255, 255));
@@ -126,11 +128,11 @@ void Esd_BeginLogo()
 	Ft_Gpu_CoCmd_Logo(Ft_Esd_Host);
 	Ft_Gpu_CoCmd_EndFrame(Ft_Esd_Host);
 	Ft_Gpu_Hal_WaitLogo_Finish(Ft_Esd_Host);
+	ft_delay(3000);
 }
 
 void Esd_EndLogo()
 {
-	ft_delay(3000);
 	Ft_Gpu_CoCmd_StartFrame(Ft_Esd_Host);
 	Ft_Gpu_CoCmd_DlStart(Ft_Esd_Host);
 	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, CLEAR_COLOR_RGB(255, 255, 255));

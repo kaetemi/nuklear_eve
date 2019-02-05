@@ -59,6 +59,7 @@ typedef struct
 
 	ft_bool_t SwapIdled; //< True if idled during swap
 	ft_bool_t SpinnerPopped; //< Spinner is currently visible
+	ft_bool_t ShowingLogo; //< Logo is currently showing (animation already finished)
 	void *CmdOwner; //< Owner of currently long-running coprocessor function (sketch, spinner, etc.)
 
 #if ESD_DL_OPTIMIZE
@@ -109,7 +110,8 @@ void Esd_Shutdown();
 void Esd_Loop(Esd_Context *ec);
 
 void Esd_Start(Esd_Context *ec);
-void Esd_Update(Esd_Context *ec, ft_bool_t render);
+void Esd_Update(Esd_Context *ec);
+void Esd_Render(Esd_Context *ec);
 void Esd_WaitSwap(Esd_Context *ec);
 void Esd_Stop(Esd_Context *ec);
 
