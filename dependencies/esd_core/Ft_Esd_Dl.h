@@ -81,7 +81,7 @@ extern ft_uint8_t Ft_Esd_Primitive;
 // extern ft_uint32_t Esd_CurrentContext->CoFgColor;
 // extern ft_uint32_t Esd_CurrentContext->CoBgColor;
 #endif
-// extern Ft_Esd_Rect16 Ft_Esd_ScissorRect;
+extern Ft_Esd_Rect16 Ft_Esd_ScissorRect;
 
 // Reset any cached state
 void Esd_ResetGpuState();

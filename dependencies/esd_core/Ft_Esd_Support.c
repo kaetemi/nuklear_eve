@@ -32,15 +32,15 @@
 #include "Esd_Core.h"
 
 /// A function to get milliseconds for current frame
-ESD_FUNCTION(Ft_Esd_GetMillis, Type = ft_uint32_t, DisplayName = "Get Milliseconds", Category = EsdUtilities, Macro)
+ESD_FUNCTION(Ft_Esd_GetMillis, Type = ft_uint32_t, DisplayName = "Get Milliseconds", Category = EsdUtilities)
 ft_uint32_t Ft_Esd_GetMillis() { return Esd_CurrentContext->Millis; }
 
 /// A function to get the difference in milliseconds since last frame Update call
-ESD_FUNCTION(Ft_Esd_GetDeltaMs, Type = ft_uint32_t, DisplayName = "Get Delta Ms", Category = EsdUtilities, Macro)
+ESD_FUNCTION(Ft_Esd_GetDeltaMs, Type = ft_uint32_t, DisplayName = "Get Delta Ms", Category = EsdUtilities)
 ft_uint32_t Ft_Esd_GetDeltaMs() { return Esd_CurrentContext->DeltaMs; }
 
 /// A function to get the current HAL context data structure
-ESD_FUNCTION(Ft_Esd_GetHost, Type = Ft_Gpu_Hal_Context_t *, DisplayName = "Get EVE Host", Category = EsdUtilities, Macro)
+ESD_FUNCTION(Ft_Esd_GetHost, Type = Ft_Gpu_Hal_Context_t *, DisplayName = "Get EVE Host", Category = EsdUtilities)
 Ft_Gpu_Hal_Context_t *Ft_Esd_GetHost() { return Ft_Esd_Host; }
 
 #ifdef ESD_SIMULATION
@@ -81,16 +81,21 @@ ft_void_t Ft_Main__Render__ESD();
 ft_void_t Ft_Main__Idle__ESD();
 ft_void_t Ft_Main__End__ESD();
 
+static void Main_Start(void *context) { Ft_Main__Start__ESD(); }
+static void Main_Update(void *context) { Ft_Main__Update__ESD(); }
+static void Main_Render(void *context) { Ft_Main__Render__ESD(); }
+static void Main_Idle(void *context) { Ft_Main__Idle__ESD(); }
+static void Main_End(void *context) { Ft_Main__End__ESD(); }
 /* Main entry point */
 ft_int32_t main(ft_int32_t argc, ft_char8_t *argv[])
 {
 	Esd_Parameters ep;
 	Esd_Defaults(&ep);
-	ep.Start = Ft_Main__Start__ESD;
-	ep.Update = Ft_Main__Update__ESD;
-	ep.Render = Ft_Main__Render__ESD;
-	ep.Idle = Ft_Main__Idle__ESD;
-	ep.End = Ft_Main__End__ESD;
+	ep.Start = Main_Start;
+	ep.Update = Main_Update;
+	ep.Render = Main_Render;
+	ep.Idle = Main_Idle;
+	ep.End = Main_End;
 	Esd_Context ec;
 	Esd_Initialize(&ec, &ep);
 	Esd_Loop(&ec);
