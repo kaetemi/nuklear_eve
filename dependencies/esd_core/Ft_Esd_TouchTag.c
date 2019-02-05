@@ -2,7 +2,7 @@
 #include "Ft_Esd_TouchTag.h"
 #include "Ft_Gpu_Hal.h"
 
-#include "Ft_Esd_Core.h"
+#include "Esd_Core.h"
 
 extern void Ft_Esd_Noop(void *context);
 

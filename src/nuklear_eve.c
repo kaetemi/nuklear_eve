@@ -24,8 +24,6 @@ TODO:
 #define NK_EVE_IMPLEMENTATION
 #include "nuklear_eve.h"
 
-#include "FT_Gpu.h"
-
 static struct
 {
     struct nk_context ctx;

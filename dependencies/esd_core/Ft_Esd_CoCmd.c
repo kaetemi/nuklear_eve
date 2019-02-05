@@ -1,6 +1,6 @@
 #include "Ft_Esd_CoCmd.h"
 #include "FT_Esd_Dl.h"
-#include "Ft_Esd_Core.h"
+#include "Esd_Core.h"
 
 ft_void_t Ft_Esd_CoCmd_Spinner(void *owner, ft_int16_t x, ft_int16_t y, ft_uint16_t style, ft_uint16_t scale)
 {

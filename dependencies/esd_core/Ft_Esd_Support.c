@@ -29,7 +29,7 @@
 * has no liability in relation to those amendments.
 */
 
-#include "Ft_Esd_Core.h"
+#include "Esd_Core.h"
 
 /// A function to get milliseconds for current frame
 ESD_FUNCTION(Ft_Esd_GetMillis, Type = ft_uint32_t, DisplayName = "Get Milliseconds", Category = EsdUtilities, Macro)
@@ -59,6 +59,44 @@ ft_uint32_t Ft_Esd_GAlloc_GetTotal(Ft_Esd_GpuAlloc *ga)
 	if (!Ft_Esd_GAlloc)
 		return 0;
 	return Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GAlloc);
+}
+
+#endif
+
+#if 0
+
+// When not in the simulation, use the Ft_Main__Start etc symbols
+// as exported by the single Application logic document included
+#ifndef ESD_SIMULATION
+#define Ft_Main__Start__ESD Ft_Main__Start
+#define Ft_Main__Update__ESD Ft_Main__Update
+#define Ft_Main__Render__ESD Ft_Main__Render
+#define Ft_Main__Idle__ESD Ft_Main__Idle
+#define Ft_Main__End__ESD Ft_Main__End
+#endif
+
+ft_void_t Ft_Main__Start__ESD();
+ft_void_t Ft_Main__Update__ESD();
+ft_void_t Ft_Main__Render__ESD();
+ft_void_t Ft_Main__Idle__ESD();
+ft_void_t Ft_Main__End__ESD();
+
+/* Main entry point */
+ft_int32_t main(ft_int32_t argc, ft_char8_t *argv[])
+{
+	Esd_Parameters ep;
+	Esd_Defaults(&ep);
+	ep.Start = Ft_Main__Start__ESD;
+	ep.Update = Ft_Main__Update__ESD;
+	ep.Render = Ft_Main__Render__ESD;
+	ep.Idle = Ft_Main__Idle__ESD;
+	ep.End = Ft_Main__End__ESD;
+	Esd_Context ec;
+	Esd_Initialize(&ec, &ep);
+	Esd_Loop(&ec);
+	Esd_Release(&ec);
+	Esd_Shutdown();
+	return EXIT_SUCCESS;
 }
 
 #endif

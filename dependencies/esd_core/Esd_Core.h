@@ -29,8 +29,8 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_CORE_H
-#define FT_ESD_CORE_H
+#ifndef ESD_CORE__H
+#define ESD_CORE__H
 
 #include <FT_Platform.h>
 
@@ -40,9 +40,9 @@
 #include "FT_Esd_CoCmd.h"
 #include "Ft_Esd_BitmapHandle.h"
 
+/// Runtime context of ESD
 typedef struct
 {
-	Ft_Gpu_HalInit_t HalInit;
 	Ft_Gpu_Hal_Context_t HalContext; //< Pointer to current s_Host
 	Ft_Esd_GpuAlloc GpuAlloc; //< Pointer to current s_GAlloc
 	ft_uint32_t Millis; //< Time in milliseconds for current frame
@@ -50,6 +50,8 @@ typedef struct
 	ft_uint32_t Frame; //< Number of times Render has been called
 	ft_rgb32_t ClearColor; //< Screen clear color (default is 0x212121)
 	ft_uint8_t LoopState; //< Current state of loop
+
+	ft_bool_t RequestStop; //< Flag to stop the loop
 
 	ft_bool_t ShowLogo; //< True to pop up logo during next render
 	ft_bool_t SpinnerPopup;
@@ -66,7 +68,28 @@ typedef struct
 
 	Esd_HandleState HandleState;
 
+	/// Callbacks called by Esd_Loop
+	void(*Start)(void *context);
+	void(*Update)(void *context);
+	void(*Render)(void *context);
+	void(*Idle)(void *context);
+	void(*End)(void *context);
+	void *UserContext;
+
 } Esd_Context;
+
+/// Parameters for initializing an ESD context
+typedef struct
+{
+	/// Callbacks called by Esd_Loop
+	void(*Start)(void *context);
+	void(*Update)(void *context);
+	void(*Render)(void *context);
+	void(*Idle)(void *context);
+	void(*End)(void *context);
+	void *UserContext;
+
+} Esd_Parameters;
 
 extern Esd_Context *Esd_CurrentContext; //< Pointer to current ESD context
 extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host; //< Pointer to current EVE hal context
@@ -74,10 +97,12 @@ extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc; //< Pointer to current allocator
 
 void Esd_SetCurrent(Esd_Context *ec);
 
-void Esd_Initialize(Esd_Context *ec);
+void Esd_Defaults(Esd_Parameters *ep);
+void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep);
 void Esd_Release(Esd_Context *ec);
 void Esd_Shutdown();
 
+/// Main loop, calls Esd_Start, Esd_Update, Esd_WaitSwap, and Esd_Stop
 void Esd_Loop(Esd_Context *ec);
 
 void Esd_Start(Esd_Context *ec);
@@ -85,6 +110,6 @@ void Esd_Update(Esd_Context *ec, ft_bool_t render);
 void Esd_WaitSwap(Esd_Context *ec);
 void Esd_Stop(Esd_Context *ec);
 
-#endif /* #ifndef FT_ESD_CORE_H */
+#endif /* #ifndef ESD_CORE__H */
 
 /* end of file */

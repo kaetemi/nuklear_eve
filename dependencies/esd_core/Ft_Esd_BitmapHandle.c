@@ -5,7 +5,7 @@ Author: Jan Boon <kaetemi@no-break.space>
 */
 
 #include "Ft_Esd_BitmapHandle.h"
-#include "Ft_Esd_Core.h"
+#include "Esd_Core.h"
 
 // Number of bitmap handles to use (and also the scratch handle)
 // List which bitmap info is using a handle

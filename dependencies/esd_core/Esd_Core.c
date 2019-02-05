@@ -29,7 +29,7 @@
 * has no liability in relation to those amendments.
 */
 
-#include "Ft_Esd_Core.h"
+#include "Esd_Core.h"
 #include "Ft_Esd_Utility.h"
 
 #include "Ft_Esd_GpuAlloc.h"
@@ -70,21 +70,10 @@ extern void Ft_Hal_LoadSDCard();
 #else
 #define Ft_Main__Running__ESD() (1)
 #endif
-#define Ft_Main__Start__ESD Ft_Main__Start
-#define Ft_Main__Update__ESD Ft_Main__Update
-#define Ft_Main__Render__ESD Ft_Main__Render
-#define Ft_Main__Idle__ESD Ft_Main__Idle
-#define Ft_Main__End__ESD Ft_Main__End
 #else
 int Ft_Main__Running__ESD();
 int Ft_Sleep__ESD(int ms);
 #endif
-
-ft_void_t Ft_Main__Start__ESD();
-ft_void_t Ft_Main__Update__ESD();
-ft_void_t Ft_Main__Render__ESD();
-ft_void_t Ft_Main__Idle__ESD();
-ft_void_t Ft_Main__End__ESD();
 
 void Esd_ResetGpuState();
 void Esd_ResetCoState(); // TODO: Call after coprocessor reset procedure
@@ -104,10 +93,21 @@ void Esd_SetCurrent(Esd_Context *ec)
 	Ft_Esd_GAlloc = &ec->GpuAlloc;
 }
 
-void Esd_Initialize(Esd_Context *ec)
+void Esd_Defaults(Esd_Parameters *ep)
+{
+	memset(ep, 0, sizeof(Esd_Parameters));
+}
+
+void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 {
 	memset(ec, 0, sizeof(Esd_Context));
 	ec->ClearColor = 0x212121;
+	ec->Start = (void (*)(void *))ep->Start;
+	ec->Update = (void (*)(void *))ep->Update;
+	ec->Render = (void (*)(void *))ep->Render;
+	ec->Idle = (void (*)(void *))ep->Idle;
+	ec->End = (void (*)(void *))ep->End;
+	ec->UserContext = ep->UserContext;
 	Esd_SetCurrent(ec);
 
 #ifdef ESD_SIMULATION
@@ -121,9 +121,10 @@ void Esd_Initialize(Esd_Context *ec)
 
 	Ft_Mcu_Init();
 
-	Ft_Gpu_Hal_Init(&ec->HalInit);
-	Ft_Gpu_Hal_Open(&ec->HalContext);
+	Ft_Gpu_HalInit_t halInit;
+	Ft_Gpu_Hal_Init(&halInit);
 
+	Ft_Gpu_Hal_Open(&ec->HalContext);
 	Eve_BootupConfig(&ec->HalContext);
 
 #ifndef ESD_SIMULATION
@@ -160,12 +161,12 @@ void Esd_Loop(Esd_Context *ec)
 	Esd_SetCurrent(ec);
 	Ft_Gpu_Hal_Context_t *phost = &ec->HalContext;
 
-	if (!Ft_Main__Running__ESD())
+	if (!Ft_Main__Running__ESD() || ec->RequestStop)
 		return;
 
 	Esd_Start(ec);
 
-	while (Ft_Main__Running__ESD())
+	while (Ft_Main__Running__ESD() && !ec->RequestStop)
 	{
 		Esd_Update(ec, FT_TRUE);
 		Esd_WaitSwap(ec);
@@ -189,7 +190,8 @@ void Esd_Start(Esd_Context *ec)
 	Esd_AttachFlashFast();
 
 	// Initialize application
-	Ft_Main__Start__ESD();
+	if (ec->Start)
+		ec->Start(ec->UserContext);
 }
 
 void Esd_Update(Esd_Context *ec, ft_bool_t render)
@@ -217,7 +219,8 @@ void Esd_Update(Esd_Context *ec, ft_bool_t render)
 	ec->LoopState = ESD_LOOPSTATE_IDLE;
 	if (!ec->SwapIdled)
 	{
-		Ft_Main__Idle__ESD();
+		if (ec->Idle)
+			ec->Idle(ec->UserContext);
 		Ft_Gpu_Hal_ESD_Idle(phost);
 	}
 
@@ -236,7 +239,8 @@ void Esd_Update(Esd_Context *ec, ft_bool_t render)
 	ec->Millis = ms;
 	Ft_Esd_GpuAlloc_Update(Ft_Esd_GAlloc); // Run GC
 	Ft_Esd_TouchTag_Update(NULL); // Update touch
-	Ft_Main__Update__ESD();
+	if (ec->Update)
+		ec->Update(ec->UserContext);
 	// Ft_Esd_Timer_UpdateGlobal(); // TODO
 
 	// Process all coprocessor commands
@@ -250,7 +254,8 @@ void Esd_Update(Esd_Context *ec, ft_bool_t render)
 	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_TAG(255)); // Always default to 255, so no touch = 0, touch non-tag = 255
 	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 1, 1));
 	// Ft_Gpu_CoCmd_EndFunc(phost);
-	Ft_Main__Render__ESD();
+	if (ec->Render)
+		ec->Render(ec->UserContext);
 
 	if (ec->SpinnerPopup)
 	{
@@ -303,7 +308,8 @@ void Esd_WaitSwap(Esd_Context *ec)
 		}
 
 		// Loop an idle task instead of doing nothing
-		Ft_Main__Idle__ESD();
+		if (ec->Idle)
+			ec->Idle(ec->UserContext);
 		Ft_Gpu_Hal_ESD_Idle(&ec->HalContext);
 		ec->SwapIdled = FT_TRUE;
 
@@ -318,7 +324,8 @@ void Esd_Stop(Esd_Context *ec)
 	// Cleanup application (generally unreachable)
 	ec->LoopState = ESD_LOOPSTATE_NONE;
 	// Ft_Esd_Timer_CancelGlobal(); // TODO
-	Ft_Main__End__ESD();
+	if (ec->End)
+		ec->End(ec->UserContext);
 }
 
 /* end of file */

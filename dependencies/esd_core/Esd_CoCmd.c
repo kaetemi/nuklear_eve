@@ -172,7 +172,7 @@ void Ft_Gpu_CoCmd_AnimXY(Ft_Gpu_Hal_Context_t *phost, int32_t ch, int16_t x, int
 	if (phost->cmd_frame)
 		Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 	else
-		Ft_Gpu_Hal_WrCmdBuf(phost, cmd, sizeof(cmd));
+		Ft_Gpu_Hal_WrCmdBuf(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
 void Ft_Gpu_CoCmd_AnimDraw(Ft_Gpu_Hal_Context_t *phost, int32_t ch)
@@ -181,7 +181,7 @@ void Ft_Gpu_CoCmd_AnimDraw(Ft_Gpu_Hal_Context_t *phost, int32_t ch)
 		CMD_ANIMDRAW,
 		ch,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, (ft_uint8_t *)cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 void Ft_Gpu_CoCmd_AnimFrame(Ft_Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_t aoptr, uint32_t frame)
