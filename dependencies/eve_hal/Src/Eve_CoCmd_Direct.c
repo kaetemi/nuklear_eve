@@ -43,40 +43,71 @@ ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft
 #endif
 }
 
+// TODO: This does not check for free space!
 ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 {
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
 #endif
+#if 1
+	Ft_Gpu_Hal_WrCmd32(phost, cmd);
+#else
+#if (EVE_MODEL < EVE_FT810)
+	ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
+	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, RAM_CMD + wp);
+#else
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
+#endif
 	Ft_Gpu_Hal_Transfer32(phost, cmd);
 	Ft_Gpu_Hal_EndTransfer(phost);
+#if (EVE_MODEL < EVE_FT810)
+	Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + 4) & FIFO_SIZE_MASK);
+#endif
+#endif
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_TRUE;
 #endif
 }
 
+// TODO: This does not check for free space!
 ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
 {
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
 #endif
+#if (EVE_MODEL < EVE_FT810)
+	ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
+	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, RAM_CMD + wp);
+#else
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-	Ft_Gpu_Hal_TransferString_S(phost, s, length);
+#endif
+	ft_int16_t len = Ft_Gpu_Hal_TransferString_S(phost, s, length);
 	Ft_Gpu_Hal_EndTransfer(phost);
+#if (EVE_MODEL < EVE_FT810)
+	Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + len) & FIFO_SIZE_MASK);
+#endif
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_TRUE;
 #endif
 }
 
+// TODO: This does not check for free space!
 ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 {
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
 #endif
+#if (EVE_MODEL < EVE_FT810)
+	ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
+	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, RAM_CMD + wp);
+#else
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-	Ft_Gpu_Hal_TransferString(phost, s);
+#endif
+	ft_int16_t len = Ft_Gpu_Hal_TransferString(phost, s);
 	Ft_Gpu_Hal_EndTransfer(phost);
+#if (EVE_MODEL < EVE_FT810)
+	Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + len) & FIFO_SIZE_MASK);
+#endif
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_TRUE;
 #endif

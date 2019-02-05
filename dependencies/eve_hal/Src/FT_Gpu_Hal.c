@@ -85,10 +85,15 @@ ft_int32_t Ft_Gpu_Hal_Dec2Ascii(ft_char8_t *pSrc, ft_int32_t value)
 ft_void_t Ft_Gpu_Hal_RdCmdRpWp(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t *rp, ft_uint16_t *wp)
 {
 	eve_assert((REG_CMD_READ + 4) == REG_CMD_WRITE);
+#if 0
 	ft_uint8_t rpwp[6];
 	Ft_Gpu_Hal_RdMem(phost, REG_CMD_READ, rpwp, 6);
 	*rp = rpwp[0] | (rpwp[1] << 8);
 	*wp = rpwp[4] | (rpwp[5] << 8);
+#else
+	*rp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_READ);
+	*wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
+#endif
 }
 
 ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(Ft_Gpu_Hal_Context_t *phost)
@@ -282,7 +287,7 @@ ft_void_t Ft_Gpu_DownloadJ1Firmware(Ft_Gpu_Hal_Context_t *phost)
 	eve_assert_do(Ft_Gpu_Hal_WaitCmdFifoEmpty(phost));
 }
 
-ft_void_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str, int length)
+ft_int16_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str, int length)
 {
 	int i = 0;
 	for (; i < length; ++i)
@@ -295,9 +300,10 @@ ft_void_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_char
 	{
 		Ft_Gpu_Hal_Transfer8(phost, 0);
 	}
+	return i - 1;
 }
 
-ft_void_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str)
+ft_int16_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str)
 {
 	int i = 0;
 	ft_char8_t c;
@@ -312,6 +318,7 @@ ft_void_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8_
 	{
 		Ft_Gpu_Hal_Transfer8(phost, 0);
 	}
+	return i - 1;
 }
 
 #if (EVE_MODEL >= EVE_FT810)

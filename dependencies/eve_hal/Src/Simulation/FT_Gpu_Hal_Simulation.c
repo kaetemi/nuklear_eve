@@ -108,7 +108,10 @@ ft_void_t Ft_Gpu_Hal_DeInit()
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
 ft_void_t Ft_Gpu_Hal_StartTransfer(Ft_Gpu_Hal_Context_t *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {
+#if (EVE_MODEL >= EVE_FT810)
 	eve_assert(!(phost->cmd_frame && (addr == REG_CMDB_WRITE)));
+#endif
+	eve_assert(!(phost->cmd_frame && addr >= RAM_CMD && addr < (RAM_CMD + FT_CMD_FIFO_SIZE)));
 	if (FT_GPU_READ == rw)
 	{
 		BT8XXEMU_chipSelect(phost->emu, 1);
@@ -201,25 +204,39 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t *buffer, f
 	eve_assert(!phost->cmd_frame);
 	const ft_uint32_t *buf32 = (const ft_uint32_t *)(void *)(buffer);
 	ft_int32_t length = 0, availablefreesize = 0;
-	count = (count + 3) & ~0x3;
+	ft_uint32_t remaining = (count + 3) & ~0x3;
 	do
 	{
-		length = count;
+		length = remaining;
+#if (EVE_MODEL < EVE_FT810)
+		ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
+		ft_uint16_t rp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_READ);
+		availablefreesize = (wp - rp - 4) & FIFO_SIZE_MASK;
+#else
 		availablefreesize = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & FIFO_SIZE_MASK;
+#endif
 		if (FT_COCMD_FAULT(availablefreesize))
 			return FT_FALSE; // Co processor fault
 		if (length > availablefreesize)
 			length = availablefreesize;
 		if (length)
 		{
-			count -= length;
+			remaining -= length;
 			length >>= 2;
+#if (EVE_MODEL < EVE_FT810)
+			ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
+			Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, RAM_CMD + wp);
+#else
 			Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
+#endif
 			for (int i = 0; i < length; ++i)
 				Ft_Gpu_Hal_Transfer32(phost, *(buf32++));
 			Ft_Gpu_Hal_EndTransfer(phost);
+#if (EVE_MODEL < EVE_FT810)
+			Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + (length << 2)) & FIFO_SIZE_MASK);
+#endif
 		}
-	} while (count > 0);
+	} while (remaining > 0);
 	return FT_TRUE;
 }
 
@@ -229,10 +246,17 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_prog_uchar
 	return Ft_Gpu_Hal_WrCmdBuf(phost, buffer, count);
 }
 
+// TODO: This does not check for free space!
 ft_void_t Ft_Gpu_Hal_WrCmd32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 {
 	eve_assert_ex(!phost->cmd_frame, "Did you mean 'Ft_Gpu_CoCmd_SendCmd'?");
+#if (EVE_MODEL < EVE_FT810)
+	ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
+	Ft_Gpu_Hal_Wr32(phost, RAM_CMD + wp, cmd);
+	Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + 4) & FIFO_SIZE_MASK);
+#else
 	Ft_Gpu_Hal_Wr32(phost, REG_CMDB_WRITE, cmd);
+#endif
 }
 
 /* Toggle PD_N pin of FT800 board for a power cycle*/
@@ -331,10 +355,14 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(Ft_Gpu_Hal_Context_t *phost, FT_GPU_SPI_NUMCHANNELS
 
 	//swicth EVE to multi channel SPI mode
 	writebyte = numchnls;
+
+#if EVE_MODEL >= EVE_FT810
 	if (numdummy == FT_GPU_SPI_TWODUMMY)
 		writebyte |= FT_SPI_TWO_DUMMY_BYTE;
 	Ft_Gpu_Hal_Wr8(phost, REG_SPI_WIDTH, writebyte);
 	//FT81x swicthed to dual/quad mode, now update global HAL context
+#endif
+
 	phost->spichannel = numchnls;
 	phost->spinumdummy = numdummy;
 	return 0;

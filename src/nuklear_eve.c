@@ -80,6 +80,12 @@ nk_eve_color_rgba(Ft_Gpu_Hal_Context_t *phost, struct nk_color col)
     Esd_Dl_COLOR_A(col.a);
 }
 
+#if (EVE_MODEL >= EVE_FT810)
+#define nk_eve_vertex(x, y) Esd_Dl_VERTEX2F((x), (y))
+#else
+#define nk_eve_vertex(x, y) Esd_Dl_VERTEX2F((x) << 4, (y) << 4)
+#endif
+
 static void
 nk_eve_scissor(Ft_Gpu_Hal_Context_t *phost, float x, float y, float w, float h)
 {
@@ -102,16 +108,16 @@ nk_eve_placeholder(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    Esd_Dl_VERTEX2F(x, y);
-    Esd_Dl_VERTEX2F(x, y + h);
-    Esd_Dl_VERTEX2F(x + w, y + h);
-    Esd_Dl_VERTEX2F(x + w, y);
-    Esd_Dl_VERTEX2F(x, y);
-    Esd_Dl_VERTEX2F(x + w, y + h);
+    nk_eve_vertex(x, y);
+    nk_eve_vertex(x, y + h);
+    nk_eve_vertex(x + w, y + h);
+    nk_eve_vertex(x + w, y);
+    nk_eve_vertex(x, y);
+    nk_eve_vertex(x + w, y + h);
     Esd_Dl_END();
     Esd_Dl_BEGIN(LINES);
-    Esd_Dl_VERTEX2F(x, y + h);
-    Esd_Dl_VERTEX2F(x + w, y);
+    nk_eve_vertex(x, y + h);
+    nk_eve_vertex(x + w, y);
     Esd_Dl_END();
 }
 
@@ -125,8 +131,8 @@ nk_eve_stroke_line(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    Esd_Dl_VERTEX2F(x0, y0);
-    Esd_Dl_VERTEX2F(x1, y1);
+    nk_eve_vertex(x0, y0);
+    nk_eve_vertex(x1, y1);
     Esd_Dl_END();
 }
 
@@ -144,11 +150,11 @@ nk_eve_stroke_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    Esd_Dl_VERTEX2F(x, y);
-    Esd_Dl_VERTEX2F(x, y + h);
-    Esd_Dl_VERTEX2F(x + w, y + h);
-    Esd_Dl_VERTEX2F(x + w, y);
-    Esd_Dl_VERTEX2F(x, y);
+    nk_eve_vertex(x, y);
+    nk_eve_vertex(x, y + h);
+    nk_eve_vertex(x + w, y + h);
+    nk_eve_vertex(x + w, y);
+    nk_eve_vertex(x, y);
     Esd_Dl_END();
 }
 
@@ -170,8 +176,8 @@ nk_eve_fill_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    Esd_Dl_VERTEX2F(x0, y0);
-    Esd_Dl_VERTEX2F(x1, y1);
+    nk_eve_vertex(x0, y0);
+    nk_eve_vertex(x1, y1);
     Esd_Dl_END();
 }
 
@@ -195,10 +201,10 @@ nk_eve_fill_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    Esd_Dl_VERTEX2F(x0, y0);
-    Esd_Dl_VERTEX2F(x1, y1);
-    Esd_Dl_VERTEX2F(x2, y2);
-    Esd_Dl_VERTEX2F(x0, y0);
+    nk_eve_vertex(x0, y0);
+    nk_eve_vertex(x1, y1);
+    nk_eve_vertex(x2, y2);
+    nk_eve_vertex(x0, y0);
     Esd_Dl_END();
 }
 
@@ -212,10 +218,10 @@ nk_eve_stroke_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    Esd_Dl_VERTEX2F(x0, y0);
-    Esd_Dl_VERTEX2F(x1, y1);
-    Esd_Dl_VERTEX2F(x2, y2);
-    Esd_Dl_VERTEX2F(x0, y0);
+    nk_eve_vertex(x0, y0);
+    nk_eve_vertex(x1, y1);
+    nk_eve_vertex(x2, y2);
+    nk_eve_vertex(x0, y0);
     Esd_Dl_END();
 }
 
@@ -240,10 +246,10 @@ nk_eve_stroke_polygon(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts, 
 #endif
     for (int i = 0; i < count; ++i)
     {
-        Esd_Dl_VERTEX2F(pnts[i].x, pnts[i].y);
+        nk_eve_vertex(pnts[i].x, pnts[i].y);
     }
     // TODO: Validate if it's necessary to close the polygon
-    // Esd_Dl_VERTEX2F(pnts[0].x, pnts[0].x);
+    // nk_eve_vertex(pnts[0].x, pnts[0].x);
     Esd_Dl_END();
 }
 
@@ -264,10 +270,10 @@ nk_eve_stroke_polyline(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts,
 #endif
     for (int i = 0; i < count; ++i)
     {
-        Esd_Dl_VERTEX2F(pnts[i].x, pnts[i].y);
+        nk_eve_vertex(pnts[i].x, pnts[i].y);
     }
     // TODO: Validate if it's necessary to close the polygon
-    // Esd_Dl_VERTEX2F(pnts[0].x, pnts[0].x));
+    // nk_eve_vertex(pnts[0].x, pnts[0].x));
     Esd_Dl_END();
 }
 
@@ -284,8 +290,10 @@ nk_eve_fill_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
     Esd_Dl_BEGIN(POINTS);
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(1);
-#endif
     Esd_Dl_VERTEX2F(xc, yc);
+#else
+    Esd_Dl_VERTEX2F(xc << 3, yc << 3);
+#endif
     Esd_Dl_END();
 }
 

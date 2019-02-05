@@ -352,7 +352,9 @@ ESD_PARAMETER(x, Type = ft_int16_f4_t)
 ESD_PARAMETER(y, Type = ft_int16_f4_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_4(ft_int16_f4_t x, ft_int16_f4_t y)
 {
+#if (EVE_MODEL >= EVE_FT810)
 	Esd_Dl_VERTEX_FORMAT(4);
+#endif
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
 }
 
@@ -362,7 +364,12 @@ ESD_PARAMETER(x, Type = ft_int16_f2_t)
 ESD_PARAMETER(y, Type = ft_int16_f2_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_2(ft_int16_f2_t x, ft_int16_f2_t y)
 {
+#if (EVE_MODEL >= EVE_FT810)
 	Esd_Dl_VERTEX_FORMAT(2);
+#else
+	x <<= 2;
+	y <<= 2;
+#endif
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
 }
 
@@ -372,7 +379,12 @@ ESD_PARAMETER(x, Type = ft_uint16_t)
 ESD_PARAMETER(y, Type = ft_uint16_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_0(ft_uint16_t x, ft_uint16_t y)
 {
+#if (EVE_MODEL >= EVE_FT810)
 	Esd_Dl_VERTEX_FORMAT(0);
+#else
+	x <<= 4;
+	y <<= 4;
+#endif
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
 }
 

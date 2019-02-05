@@ -286,8 +286,8 @@ ft_void_t Ft_Gpu_Hal_WrMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, const 
 ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, const ft_prog_uchar8_t *buffer, ft_uint32_t length);
 ft_void_t Ft_Gpu_Hal_RdMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length);
 ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(Ft_Gpu_Hal_Context_t *phost);
-ft_void_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str);
-ft_void_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str, int length);
+ft_int16_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str);
+ft_int16_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str, int length);
 ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t cmd);
 ft_void_t Ft_Gpu_HostCommand_Ext3(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd);
 ft_int32_t Ft_Gpu_Hal_Dec2Ascii(ft_char8_t *pSrc, ft_int32_t value);

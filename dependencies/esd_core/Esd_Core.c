@@ -128,13 +128,11 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 	Eve_BootupConfig(&ec->HalContext);
 
 #ifndef ESD_SIMULATION
-#ifndef BT8XXEMU_PLATFORM
 	// TODO: Store calibration somewhere!
 	if (!Esd_Calibrate())
 	{
 		eve_printf_debug("Calibrate failed\n");
 	}
-#endif
 #endif
 
 	Ft_Esd_GpuAlloc_Reset(&ec->GpuAlloc);

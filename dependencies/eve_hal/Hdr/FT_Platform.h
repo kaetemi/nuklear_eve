@@ -398,6 +398,17 @@ It may also set platform, display, and flash values if none are configured.
 #define TINYPRINTF_OVERRIDE_LIBC (0)
 #endif
 
+#elif defined(EVE_GRAPHICS_FT800)
+
+#define FT_801_ENABLE
+// #define ENABLE_SPI_QUAD
+#define RESISTANCE_THRESHOLD (1800)
+
+#ifndef EVE_DISPLAY_AVAILABLE
+#define EVE_DISPLAY_AVAILABLE
+#define DISPLAY_RESOLUTION_QVGA
+#endif
+
 #elif defined(EVE_GRAPHICS_FT801)
 
 #define FT_801_ENABLE
@@ -427,6 +438,11 @@ It may also set platform, display, and flash values if none are configured.
 #define DISPLAY_RESOLUTION_WVGA
 #endif
 
+#ifndef EVE_FLASH_AVAILABLE
+#define EVE_FLASH_AVAILABLE
+#define EVE_FLASH_MX25L128
+#endif
+
 #elif defined(EVE_GRAPHICS_BT816)
 
 #define BT_816_ENABLE
@@ -436,6 +452,11 @@ It may also set platform, display, and flash values if none are configured.
 #ifndef EVE_DISPLAY_AVAILABLE
 #define EVE_DISPLAY_AVAILABLE
 #define DISPLAY_RESOLUTION_WVGA
+#endif
+
+#ifndef EVE_FLASH_AVAILABLE
+#define EVE_FLASH_AVAILABLE
+#define EVE_FLASH_MX25L128
 #endif
 
 #endif

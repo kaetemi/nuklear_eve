@@ -213,7 +213,11 @@ ft_uint8_t Ft_Esd_Dl_Bitmap_Setup(Ft_Esd_BitmapInfo *bitmapInfo)
 			format = RGB565; // TODO: Support for grayscale
 		else if (format == PNG)
 			format = RGB565; // TODO: Support for other PNG formats
+#if (EVE_MODEL >= EVE_FT810)
 		Ft_Gpu_CoCmd_SetBitmap(Ft_Esd_Host, addr, format, bitmapInfo->Width, bitmapInfo->Height); // TODO: What with stride?
+#else
+		eve_assert_ex(false, "No support yet in ESD for bitmaps for FT800 target");
+#endif
 #if (EVE_MODEL >= EVE_BT815)
 		// Important. Bitmap swizzle not reset by SETBITMAP
 		if (bitmapInfo->Swizzle)
@@ -303,7 +307,11 @@ ft_uint8_t Ft_Esd_Dl_Font_Setup(Esd_FontInfo *fontInfo)
 
 			// Set the font
 			romFontInfo->BitmapHandle = handle;
+#if (EVE_MODEL >= EVE_FT810)
 			Ft_Gpu_CoCmd_RomFont(Ft_Esd_Host, handle, font);
+#else
+			eve_assert_ex(false, "No support yet in ESD for rom fonts");
+#endif
 #if ESD_DL_OPTIMIZE
 			FT_ESD_STATE.Handle = handle;
 #endif
@@ -357,7 +365,11 @@ ft_uint8_t Ft_Esd_Dl_Font_Setup(Esd_FontInfo *fontInfo)
 
 			// Set the font
 			fontInfo->BitmapHandle = handle;
+#if (EVE_MODEL >= EVE_FT810)
 			Ft_Gpu_CoCmd_SetFont2(Ft_Esd_Host, handle, addr, fontInfo->FirstChar);
+#else
+			eve_assert_ex(false, "No support yet in ESD for custom fonts");
+#endif
 #if ESD_DL_OPTIMIZE
 			FT_ESD_STATE.Handle = handle;
 #endif

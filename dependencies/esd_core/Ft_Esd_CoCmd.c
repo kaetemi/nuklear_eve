@@ -5,7 +5,9 @@
 ft_void_t Ft_Esd_CoCmd_Spinner(void *owner, ft_int16_t x, ft_int16_t y, ft_uint16_t style, ft_uint16_t scale)
 {
 	Esd_CurrentContext->CmdOwner = owner;
+#if (EVE_MODEL >= EVE_FT810)
 	Ft_Esd_Dl_VERTEX_FORMAT(4);
+#endif
 	Ft_Gpu_CoCmd_Spinner(Ft_Esd_Host, x, y, style, scale);
 }
 
