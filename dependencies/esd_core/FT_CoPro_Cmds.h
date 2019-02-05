@@ -29,11 +29,12 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_COCMD_H
-#define FT_ESD_COCMD_H
+#ifndef FT_COPRO_CMDS_H
+#define FT_COPRO_CMDS_H
 
+#include "Eve_CoCmd.h"
 #include "Esd_CoCmd.h"
 
-#endif /* #ifndef FT_ESD_COCMD_H */
+#endif /* FT_COPRO_CMDS_H */
 
 /* end of file */

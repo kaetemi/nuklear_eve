@@ -29,11 +29,69 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_COCMD_H
-#define FT_ESD_COCMD_H
+#include "FT_Platform.h"
+#if !defined(FT_GPU_COCMD_BUFFERED)
 
-#include "Esd_CoCmd.h"
+ft_void_t Ft_Gpu_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb)
+{
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_FALSE;
+#endif
+	Ft_Gpu_Hal_WrCmdBuf(phost, (void *)cmd, (ft_uint32_t)(nb * sizeof(ft_uint32_t)));
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_TRUE;
+#endif
+}
 
-#endif /* #ifndef FT_ESD_COCMD_H */
+ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+{
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_FALSE;
+#endif
+	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
+	Ft_Gpu_Hal_Transfer32(phost, cmd);
+	Ft_Gpu_Hal_EndTransfer(phost);
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_TRUE;
+#endif
+}
 
-/* end of file */
+ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
+{
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_FALSE;
+#endif
+	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
+	Ft_Gpu_Hal_TransferString_S(phost, s, length);
+	Ft_Gpu_Hal_EndTransfer(phost);
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_TRUE;
+#endif
+}
+
+ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
+{
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_FALSE;
+#endif
+	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
+	Ft_Gpu_Hal_TransferString(phost, s);
+	Ft_Gpu_Hal_EndTransfer(phost);
+#if defined(_DEBUG)
+	phost->cmd_frame = FT_TRUE;
+#endif
+}
+
+ft_void_t Ft_Gpu_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
+{
+	phost->cmd_frame = FT_TRUE;
+}
+
+ft_void_t Ft_Gpu_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost)
+{
+	phost->cmd_frame = FT_FALSE;
+}
+
+#endif
+
+/* Nothing beyond this */

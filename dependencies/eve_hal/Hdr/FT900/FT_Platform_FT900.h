@@ -240,7 +240,7 @@
 /* HAL inclusions */
 #include "FT_Gpu_Hal.h"
 #include "FT_Gpu.h"
-#include "FT_CoPro_Cmds.h"
+#include "Eve_CoCmd.h"
 #include "FT_Hal_Utils.h"
 #include "FT_ILI9488.h"
 #include "FT_KD2401.h"

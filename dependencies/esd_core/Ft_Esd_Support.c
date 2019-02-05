@@ -49,16 +49,16 @@ int Ft_Esd_DesignerMode = 0;
 
 ft_uint32_t Ft_Esd_GAlloc_GetTotalUsed(Ft_Esd_GpuAlloc *ga)
 {
-    if (!Ft_Esd_GAlloc)
-        return 0;
-    return Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GAlloc);
+	if (!Ft_Esd_GAlloc)
+		return 0;
+	return Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GAlloc);
 }
 
 ft_uint32_t Ft_Esd_GAlloc_GetTotal(Ft_Esd_GpuAlloc *ga)
 {
-    if (!Ft_Esd_GAlloc)
-        return 0;
-    return Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GAlloc);
+	if (!Ft_Esd_GAlloc)
+		return 0;
+	return Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GAlloc);
 }
 
 #endif

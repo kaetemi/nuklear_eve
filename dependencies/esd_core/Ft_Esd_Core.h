@@ -42,29 +42,29 @@
 
 typedef struct
 {
-    Ft_Gpu_HalInit_t HalInit;
-    Ft_Gpu_Hal_Context_t HalContext; //< Pointer to current s_Host
-    Ft_Esd_GpuAlloc GpuAlloc; //< Pointer to current s_GAlloc
-    ft_uint32_t Millis; //< Time in milliseconds for current frame
-    ft_uint32_t DeltaMs; //< Delta time in milliseconds between frames
-    ft_uint32_t Frame; //< Number of times Render has been called
-    ft_rgb32_t ClearColor; //< Screen clear color (default is 0x212121)
-    ft_uint8_t LoopState; //< Current state of loop
+	Ft_Gpu_HalInit_t HalInit;
+	Ft_Gpu_Hal_Context_t HalContext; //< Pointer to current s_Host
+	Ft_Esd_GpuAlloc GpuAlloc; //< Pointer to current s_GAlloc
+	ft_uint32_t Millis; //< Time in milliseconds for current frame
+	ft_uint32_t DeltaMs; //< Delta time in milliseconds between frames
+	ft_uint32_t Frame; //< Number of times Render has been called
+	ft_rgb32_t ClearColor; //< Screen clear color (default is 0x212121)
+	ft_uint8_t LoopState; //< Current state of loop
 
-    ft_bool_t ShowLogo; //< True to pop up logo during next render
-    ft_bool_t SpinnerPopup;
+	ft_bool_t ShowLogo; //< True to pop up logo during next render
+	ft_bool_t SpinnerPopup;
 
-    ft_bool_t SwapIdled; //< True if idled during swap
-    ft_bool_t SpinnerPopped; //< Spinner is currently visible
-    void *CmdOwner; //< Owner of currently long-running coprocessor function (sketch, spinner, etc.)
+	ft_bool_t SwapIdled; //< True if idled during swap
+	ft_bool_t SpinnerPopped; //< Spinner is currently visible
+	void *CmdOwner; //< Owner of currently long-running coprocessor function (sketch, spinner, etc.)
 
-    ft_uint32_t CoFgColor; //< Current coprocessor foreground color
-    ft_uint32_t CoBgColor; //< Current coprocessor background color
+	ft_uint32_t CoFgColor; //< Current coprocessor foreground color
+	ft_uint32_t CoBgColor; //< Current coprocessor background color
 #if (EVE_MODEL >= EVE_FT810)
-    ft_uint8_t CoScratchHandle; //< Current coprocessor scratch handle (reset 15)
+	ft_uint8_t CoScratchHandle; //< Current coprocessor scratch handle (reset 15)
 #endif
 
-    Esd_HandleState HandleState;
+	Esd_HandleState HandleState;
 
 } Esd_Context;
 

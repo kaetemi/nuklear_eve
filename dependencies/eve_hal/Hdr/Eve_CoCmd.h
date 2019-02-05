@@ -29,69 +29,20 @@
 * has no liability in relation to those amendments.
 */
 
+#ifndef EVE_CO_CMD__H
+#define EVE_CO_CMD__H
+
 #include "FT_Platform.h"
-#if !defined(FT_GPU_COCMD_BUFFERED)
+ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd);
+ft_void_t Ft_Gpu_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb);
+ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length);
+ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s);
+ft_void_t Ft_Gpu_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost);
+ft_void_t Ft_Gpu_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost);
 
-ft_void_t Ft_Gpu_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb)
-{
-#if defined(_DEBUG)
-	phost->cmd_frame = FT_FALSE;
-#endif
-	Ft_Gpu_Hal_WrCmdBuf(phost, (void *)cmd, nb * sizeof(ft_uint32_t));
-#if defined(_DEBUG)
-	phost->cmd_frame = FT_TRUE;
-#endif
-}
+// Deprecated
+#define Ft_Gpu_Copro_SendCmd Ft_Gpu_CoCmd_SendCmd
 
-ft_void_t Ft_Gpu_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
-{
-#if defined(_DEBUG)
-	phost->cmd_frame = FT_FALSE;
-#endif
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-	Ft_Gpu_Hal_Transfer32(phost, cmd);
-	Ft_Gpu_Hal_EndTransfer(phost);
-#if defined(_DEBUG)
-	phost->cmd_frame = FT_TRUE;
-#endif
-}
+#endif /* EVE_CO_CMD__H */
 
-ft_void_t Ft_Gpu_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
-{
-#if defined(_DEBUG)
-	phost->cmd_frame = FT_FALSE;
-#endif
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-	Ft_Gpu_Hal_TransferString_S(phost, s, length);
-	Ft_Gpu_Hal_EndTransfer(phost);
-#if defined(_DEBUG)
-	phost->cmd_frame = FT_TRUE;
-#endif
-}
-
-ft_void_t Ft_Gpu_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
-{
-#if defined(_DEBUG)
-	phost->cmd_frame = FT_FALSE;
-#endif
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-	Ft_Gpu_Hal_TransferString(phost, s);
-	Ft_Gpu_Hal_EndTransfer(phost);
-#if defined(_DEBUG)
-	phost->cmd_frame = FT_TRUE;
-#endif
-}
-
-ft_void_t Ft_Gpu_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
-{
-	phost->cmd_frame = FT_TRUE;
-}
-
-ft_void_t Ft_Gpu_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost)
-{
-	phost->cmd_frame = FT_FALSE;
-}
-
-#endif
-
-/* Nothing beyond this */
+/* end of file */

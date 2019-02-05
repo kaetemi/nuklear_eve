@@ -12,18 +12,22 @@ Author: Jan Boon <kaetemi@no-break.space>
 #include "Ft_Esd_FontInfo.h"
 
 // Handle allocation state
-typedef struct {
-    void *Info[FT_ESD_BITMAPHANDLE_NB];
-    Ft_Esd_GpuHandle GpuHandle[FT_ESD_BITMAPHANDLE_NB];
-    ft_uint8_t Use[FT_ESD_BITMAPHANDLE_NB];
+typedef struct
+{
+	void *Info[FT_ESD_BITMAPHANDLE_NB];
+	Ft_Esd_GpuHandle GpuHandle[FT_ESD_BITMAPHANDLE_NB];
+	ft_uint8_t Use[FT_ESD_BITMAPHANDLE_NB];
 
-    ft_bool_t Resized[FT_ESD_BITMAPHANDLE_NB];
-    ft_uint8_t Page[FT_ESD_BITMAPHANDLE_NB];
+	ft_bool_t Resized[FT_ESD_BITMAPHANDLE_NB];
+	ft_uint8_t Page[FT_ESD_BITMAPHANDLE_NB];
 
 } Esd_HandleState;
 
-void Ft_Esd_BitmapHandle_Init();
-void Ft_Esd_BitmapHandle_OnDlStart();
+/// Initialize bitmap handle tracking globally
+void Esd_BitmapHandle_Initialize();
+
+/// Call at start of frame to start tracking handle usage for the new frame for the current context
+void Esd_BitmapHandle_FrameStart(Esd_HandleState *state);
 
 ft_uint32_t Ft_Esd_BitmapHandle_GetTotalUsed();
 ft_uint32_t Ft_Esd_BitmapHandle_GetTotal();

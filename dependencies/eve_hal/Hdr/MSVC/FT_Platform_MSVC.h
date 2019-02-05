@@ -154,7 +154,7 @@
 #include "FT_DataTypes.h"
 #include "FT_Gpu_Hal.h"
 #include "FT_Gpu.h"
-#include "FT_CoPro_Cmds.h"
+#include "Eve_CoCmd.h"
 #include "FT_Hal_Utils.h"
 
 #ifdef FT4222_PLATFORM

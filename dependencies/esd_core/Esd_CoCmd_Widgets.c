@@ -31,9 +31,7 @@
 
 #include "FT_Platform.h"
 
-#ifdef ESD_FRAMEWORK
 extern ft_uint8_t Ft_Esd_Primitive;
-#endif
 
 ft_void_t Ft_Gpu_CoCmd_Gradient(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x0, ft_int16_t y0, ft_uint32_t rgb0, ft_int16_t x1, ft_int16_t y1, ft_uint32_t rgb1)
 {
@@ -45,9 +43,7 @@ ft_void_t Ft_Gpu_CoCmd_Gradient(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x0, ft_i
 		rgb1,
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Spinner(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t style, ft_uint16_t scale)
@@ -58,9 +54,7 @@ ft_void_t Ft_Gpu_CoCmd_Spinner(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int
 		(((ft_uint32_t)scale << 16) | (style & 0xffff)),
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Text(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
@@ -78,9 +72,7 @@ ft_void_t Ft_Gpu_CoCmd_Text(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 	Ft_Gpu_CoCmd_SendStr(phost, s);
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Text_S(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s, int length)
@@ -98,9 +90,7 @@ ft_void_t Ft_Gpu_CoCmd_Text_S(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 	Ft_Gpu_CoCmd_SendStr_S(phost, s, length);
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Text_Ex(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_bool_t bottom, ft_int16_t baseLine, ft_int16_t capsHeight, const ft_char8_t *s)
@@ -129,9 +119,7 @@ ft_void_t Ft_Gpu_CoCmd_Number(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 		n,
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Toggle(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t font, ft_uint16_t options, ft_uint16_t state, const ft_char8_t *s)
@@ -144,9 +132,7 @@ ft_void_t Ft_Gpu_CoCmd_Toggle(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 	Ft_Gpu_CoCmd_SendStr(phost, s);
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Slider(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t range)
@@ -159,9 +145,7 @@ ft_void_t Ft_Gpu_CoCmd_Slider(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 		range,
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Button(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
@@ -174,9 +158,7 @@ ft_void_t Ft_Gpu_CoCmd_Button(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 	Ft_Gpu_CoCmd_SendStr(phost, s);
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Keys(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
@@ -189,9 +171,7 @@ ft_void_t Ft_Gpu_CoCmd_Keys(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 	Ft_Gpu_CoCmd_SendStr(phost, s);
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Dial(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t val)
@@ -203,9 +183,7 @@ ft_void_t Ft_Gpu_CoCmd_Dial(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_
 		val,
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 /* Error handling for val is not done, so better to always use range of 65535 in order that needle is drawn within display region */
@@ -219,9 +197,7 @@ ft_void_t Ft_Gpu_CoCmd_Gauge(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16
 		(((ft_uint32_t)range << 16) | (val & 0xffff)),
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Clock(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t h, ft_uint16_t m, ft_uint16_t s, ft_uint16_t ms)
@@ -234,9 +210,7 @@ ft_void_t Ft_Gpu_CoCmd_Clock(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16
 		(((ft_uint32_t)ms << 16) | (s & 0xffff)),
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Scrollbar(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t size, ft_uint16_t range)
@@ -249,9 +223,7 @@ ft_void_t Ft_Gpu_CoCmd_Scrollbar(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_i
 		(((ft_uint32_t)range << 16) | (size & 0xffff)),
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 ft_void_t Ft_Gpu_CoCmd_Progress(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t range)
@@ -264,9 +236,7 @@ ft_void_t Ft_Gpu_CoCmd_Progress(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_in
 		range,
 	};
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-#ifdef ESD_FRAMEWORK
 	Ft_Esd_Primitive = 0;
-#endif
 }
 
 /* end of file */

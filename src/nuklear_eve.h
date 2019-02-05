@@ -10,6 +10,7 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 #include "FT_Platform.h"
 #include "FT_Gpu.h"
 #include "FT_Mcu_Hal.h"
+#include "Esd_CoCmd.h"
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO

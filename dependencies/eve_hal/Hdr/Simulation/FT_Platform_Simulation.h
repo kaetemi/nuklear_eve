@@ -154,7 +154,7 @@
 #include "FT_Emulator.h"
 #include "FT_Gpu_Hal.h"
 #include "FT_Gpu.h"
-#include "FT_CoPro_Cmds.h"
+#include "Eve_CoCmd.h"
 #include "FT_Hal_Utils.h"
 
 #ifdef ENABLE_ILI9488_HVGA_PORTRAIT

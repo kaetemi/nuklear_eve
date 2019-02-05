@@ -15,15 +15,14 @@ extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 // GPU state for the current display list
-Ft_Esd_GpuState_T Ft_Esd_GpuState[FT_ESD_STATE_STACK_SIZE];
+Ft_Esd_GpuState_T Ft_Esd_GpuState[ESD_DL_STATE_STACK_SIZE];
 ft_uint8_t Ft_Esd_GpuState_I;
 ft_uint8_t Ft_Esd_Primitive;
 // ft_uint32_t Esd_CurrentContext->CoFgColor;
 // ft_uint32_t Esd_CurrentContext->CoBgColor;
 Ft_Esd_Rect16 Ft_Esd_ScissorRect;
 
-void Ft_Esd_BitmapHandle_OnDlStart();
-void Ft_Esd_ResetGpuState() // Begin of frame
+void Esd_ResetGpuState() // Begin of frame
 {
 	Ft_Esd_GpuState_I = 0;
 	Ft_Esd_GpuState[0] = (Ft_Esd_GpuState_T)
@@ -38,7 +37,6 @@ void Ft_Esd_ResetGpuState() // Begin of frame
 #endif
 	};
 
-	Ft_Esd_BitmapHandle_OnDlStart();
 	Ft_Esd_Primitive = 0;
 
 	// Reset scissor state to display size
@@ -48,13 +46,13 @@ void Ft_Esd_ResetGpuState() // Begin of frame
 	Ft_Esd_ScissorRect.Height = FT_DispHeight;
 }
 
-void Ft_Esd_ResetCoState()
+void Esd_ResetCoState()
 {
-    Esd_CurrentContext->CoFgColor = 0x003870;
-    Esd_CurrentContext->CoBgColor = 0x002040;
+	Esd_CurrentContext->CoFgColor = 0x003870;
+	Esd_CurrentContext->CoBgColor = 0x002040;
 
 #if (EVE_MODEL >= EVE_FT810)
-    Esd_CurrentContext->CoScratchHandle = 15;
+	Esd_CurrentContext->CoScratchHandle = 15;
 #endif
 }
 
@@ -110,7 +108,7 @@ void Ft_Esd_Dl_Scissor_Reset(Ft_Esd_Rect16 state)
 	Ft_Esd_ScissorRect = state;
 }
 
-//////////// old stuff below for testing compat
+/* end of supported functions */
 
 // Deprecated
 void FT_Esd_Render_Rect_Grad(ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_argb32_t color1, ft_argb32_t color2, ft_int16_t direction)

@@ -33,9 +33,6 @@
 #if defined(BT8XXEMU_PLATFORM)
 
 #include "FT_Mcu_Hal.h"
-#if defined(ESD_FRAMEWORK)
-#include "Ft_Esd.h"
-#endif
 
 ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 {

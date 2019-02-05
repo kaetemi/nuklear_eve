@@ -276,9 +276,6 @@ typedef enum
 #define FT_SPI_DUAL_CHANNEL (0x01)
 #define FT_SPI_QUAD_CHANNEL (0x02)
 
-ft_int32_t hal_strlen(const ft_char8_t *s);
-ft_void_t Ft_Gpu_Hal_DLSwap(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t DL_Swap_Type);
-
 ft_void_t Ft_Gpu_Hal_Sleep(ft_uint32_t ms);
 ft_void_t Ft_Gpu_ClockSelect(Ft_Gpu_Hal_Context_t *phost, FT_GPU_PLL_SOURCE_T pllsource);
 ft_void_t Ft_Gpu_PLL_FreqSelect(Ft_Gpu_Hal_Context_t *phost, FT_GPU_PLL_FREQ_T freq);
@@ -290,6 +287,7 @@ ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr
 ft_void_t Ft_Gpu_Hal_RdMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length);
 ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(Ft_Gpu_Hal_Context_t *phost);
 ft_void_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str);
+ft_void_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str, int length);
 ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t cmd);
 ft_void_t Ft_Gpu_HostCommand_Ext3(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd);
 ft_int32_t Ft_Gpu_Hal_Dec2Ascii(ft_char8_t *pSrc, ft_int32_t value);
@@ -304,7 +302,7 @@ ft_void_t Ft_Gpu_81X_ResetRemoval(Ft_Gpu_Hal_Context_t *phost);
 #endif
 
 ft_uint32_t Ft_Gpu_CurrentFrequency(Ft_Gpu_Hal_Context_t *phost);
-ft_int32_t Ft_Gpu_ClockTrimming(Ft_Gpu_Hal_Context_t *phost, ft_int32_t LowFreq);
+ft_int32_t Ft_Gpu_ClockTrimming(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t lowFreq);
 ft_void_t Ft_Gpu_DownloadJ1Firmware(Ft_Gpu_Hal_Context_t *phost);
 
 /* Globals for polling implementation */

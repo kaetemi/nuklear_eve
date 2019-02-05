@@ -22,7 +22,7 @@ static ft_uint32_t s_FlashErrorLast = ~0;
 ESD_FUNCTION(Ft_Esd_Spinner_Popup, DisplayName = "Pop-up Spinner", Category = EsdUtilities)
 void Ft_Esd_Spinner_Popup()
 {
-    Esd_CurrentContext->SpinnerPopup = FT_TRUE;
+	Esd_CurrentContext->SpinnerPopup = FT_TRUE;
 }
 
 #if defined(EVE_FLASH_AVAILABLE)
@@ -144,40 +144,40 @@ void Esd_EndLogo()
 
 void Esd_ShowLogo()
 {
-    Esd_CurrentContext->ShowLogo = FT_TRUE;
+	Esd_CurrentContext->ShowLogo = FT_TRUE;
 }
 
 /// Run calibrate procedure
 ft_bool_t Esd_Calibrate()
 {
-    Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
 
 #if defined(EVE_SCREEN_CAPACITIVE)
-    Ft_Gpu_Hal_Wr8(phost, REG_CTOUCH_EXTENDED, CTOUCH_MODE_COMPATIBILITY);
+	Ft_Gpu_Hal_Wr8(phost, REG_CTOUCH_EXTENDED, CTOUCH_MODE_COMPATIBILITY);
 #endif
 
-    eve_printf_debug("App_CoPro_Widget_Calibrate: Start Frame\n");
-    Ft_Gpu_CoCmd_StartFrame(phost);
+	eve_printf_debug("App_CoPro_Widget_Calibrate: Start Frame\n");
+	Ft_Gpu_CoCmd_StartFrame(phost);
 
-    Ft_Gpu_CoCmd_DlStart(phost);
-    Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_COLOR_RGB(64, 64, 64));
-    Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 1, 1));
-    Ft_Gpu_CoCmd_SendCmd(phost, COLOR_RGB(0xff, 0xff, 0xff));
+	Ft_Gpu_CoCmd_DlStart(phost);
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_COLOR_RGB(64, 64, 64));
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 1, 1));
+	Ft_Gpu_CoCmd_SendCmd(phost, COLOR_RGB(0xff, 0xff, 0xff));
 
-    // Ft_Gpu_CoCmd_Text(phost, (FT_DispWidth / 2), (FT_DispHeight / 2), 27, OPT_CENTER, "Please Tap on the dot");
+	// Ft_Gpu_CoCmd_Text(phost, (FT_DispWidth / 2), (FT_DispHeight / 2), 27, OPT_CENTER, "Please Tap on the dot");
 
-    ft_uint32_t result = Ft_Gpu_CoCmd_Calibrate(phost);
+	ft_uint32_t result = Ft_Gpu_CoCmd_Calibrate(phost);
 
-    eve_printf_debug("App_CoPro_Widget_Calibrate: End Frame\n");
-    Ft_Gpu_CoCmd_EndFrame(phost);
+	eve_printf_debug("App_CoPro_Widget_Calibrate: End Frame\n");
+	Ft_Gpu_CoCmd_EndFrame(phost);
 
-    // Print the configured values
-    ft_uint32_t transMatrix[6];
-    Ft_Gpu_Hal_RdMem(phost, REG_TOUCH_TRANSFORM_A, (ft_uint8_t *)transMatrix, 4 * 6); //read all the 6 coefficients
-    eve_printf_debug("Touch screen transform values are A 0x%x,B 0x%x,C 0x%x,D 0x%x,E 0x%x, F 0x%x\n",
-        transMatrix[0], transMatrix[1], transMatrix[2], transMatrix[3], transMatrix[4], transMatrix[5]);
+	// Print the configured values
+	ft_uint32_t transMatrix[6];
+	Ft_Gpu_Hal_RdMem(phost, REG_TOUCH_TRANSFORM_A, (ft_uint8_t *)transMatrix, 4 * 6); //read all the 6 coefficients
+	eve_printf_debug("Touch screen transform values are A 0x%x,B 0x%x,C 0x%x,D 0x%x,E 0x%x, F 0x%x\n",
+	    transMatrix[0], transMatrix[1], transMatrix[2], transMatrix[3], transMatrix[4], transMatrix[5]);
 
-    return result != 0;
+	return result != 0;
 }
 
 /* end of file */

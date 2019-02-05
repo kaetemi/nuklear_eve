@@ -84,23 +84,23 @@ ft_uint16_t Esd_GetFontCapsHeight(Esd_FontInfo *fontInfo)
 	return 0;
 }
 
-void Ft_Esd_BitmapHandle_Init()
+void Esd_BitmapHandle_Initialize()
 {
 	// memset(Ft_Esd_BitmapHandleGpuHandle, 0, sizeof(Ft_Esd_BitmapHandleGpuHandle));
 	Esd_InitRomFontHeight();
 }
 
-void Ft_Esd_BitmapHandle_OnDlStart()
+void Esd_BitmapHandle_FrameStart(Esd_HandleState *handleState)
 {
 	for (int i = 0; i < FT_ESD_BITMAPHANDLE_NB; ++i)
 	{
 		// 2: In use last frame
 		// 1: Not in use anymore
 		// 0: Not in use
-		if (Esd_CurrentContext->HandleState.Use[i] < 2)
-            Esd_CurrentContext->HandleState.Use[i] = 0;
+		if (handleState->Use[i] < 2)
+			handleState->Use[i] = 0;
 		else
-			--Esd_CurrentContext->HandleState.Use[i];
+			--handleState->Use[i];
 		// 2: In use this frame
 		// 1: In use last frame
 		// 0: Not in use
@@ -150,7 +150,7 @@ void Ft_Esd_Dl_Bitmap_Page(ft_uint8_t handle, ft_uint8_t page)
 #endif
 		ft_uint32_t pageAddr = addr + pageOffset;
 		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_SOURCE(pageAddr));
-        Esd_CurrentContext->HandleState.Page[handle] = page;
+		Esd_CurrentContext->HandleState.Page[handle] = page;
 	}
 }
 
@@ -236,7 +236,7 @@ ft_uint8_t Ft_Esd_Dl_Bitmap_Setup(Ft_Esd_BitmapInfo *bitmapInfo)
 
 	if (FT_ESD_BITMAPHANDLE_VALID(handle) && (handle != FT_ESD_SCRATCHHANDLE)) // When valid and not using scratch handle
 	{
-        Esd_CurrentContext->HandleState.Use[handle] = 2; // In use
+		Esd_CurrentContext->HandleState.Use[handle] = 2; // In use
 	}
 
 #if (EVE_MODEL >= EVE_FT810)
@@ -364,7 +364,7 @@ ft_uint8_t Ft_Esd_Dl_Font_Setup(Esd_FontInfo *fontInfo)
 
 	if (FT_ESD_BITMAPHANDLE_VALID(handle) && (handle != FT_ESD_SCRATCHHANDLE)) // When valid and not using scratch handle
 	{
-        Esd_CurrentContext->HandleState.Use[handle] = 2; // In use
+		Esd_CurrentContext->HandleState.Use[handle] = 2; // In use
 	}
 
 	return handle;
@@ -377,7 +377,7 @@ void Ft_Esd_Dl_Bitmap_WidthHeight(ft_uint8_t handle, ft_uint16_t width, ft_uint1
 #if (EVE_MODEL >= EVE_FT810)
 	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_SIZE_H(width >> 9, height >> 9));
 #endif
-    Esd_CurrentContext->HandleState.Resized[handle] = 1;
+	Esd_CurrentContext->HandleState.Resized[handle] = 1;
 }
 
 void Ft_Esd_Dl_Bitmap_WidthHeight_BILINEAR(ft_uint8_t handle, ft_uint16_t width, ft_uint16_t height)
@@ -387,7 +387,7 @@ void Ft_Esd_Dl_Bitmap_WidthHeight_BILINEAR(ft_uint8_t handle, ft_uint16_t width,
 #if (EVE_MODEL >= EVE_FT810)
 	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_SIZE_H(width >> 9, height >> 9));
 #endif
-    Esd_CurrentContext->HandleState.Resized[handle] = 1;
+	Esd_CurrentContext->HandleState.Resized[handle] = 1;
 }
 
 void Ft_Esd_Dl_Bitmap_WidthHeightReset(ft_uint8_t handle)
@@ -396,7 +396,7 @@ void Ft_Esd_Dl_Bitmap_WidthHeightReset(ft_uint8_t handle)
 	{
 		Ft_Esd_BitmapInfo *bitmapInfo = (Ft_Esd_BitmapInfo *)Esd_CurrentContext->HandleState.Info[handle];
 		Ft_Esd_Dl_Bitmap_WidthHeight(handle, bitmapInfo->Width, bitmapInfo->Height);
-        Esd_CurrentContext->HandleState.Resized[handle] = 0;
+		Esd_CurrentContext->HandleState.Resized[handle] = 0;
 	}
 }
 

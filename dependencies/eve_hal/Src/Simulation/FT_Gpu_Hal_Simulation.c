@@ -35,10 +35,6 @@
 #include "FT_Gpu_Hal.h"
 #include "FT_Emulator.h"
 
-#ifdef ESD_FRAMEWORK
-#include "Ft_Esd.h"
-#endif
-
 #include "FT_EmulatorMain.h"
 #if defined(ESD_SIMULATION)
 void Ft_MainReady__ESD(BT8XXEMU_Emulator *emulator);
