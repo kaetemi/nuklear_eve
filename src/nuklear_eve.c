@@ -15,10 +15,10 @@ It depends on:
 /*
 TODO:
 - Rounded rectangle stroke
-- Circle stroke
 - Font metrics
 - Unicode font
 - Bitmap
+- Oval
 */
 
 #define NK_IMPLEMENTATION
@@ -382,10 +382,11 @@ static void
 nk_eve_stroke_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
     unsigned short h, unsigned short line_thickness, struct nk_color col)
 {
-    /* ... TODO ... */
-    // - Donut rendering for thick line
-    // - Line stroke for thin line?
-    nk_eve_placeholder(phost, x, y, w, h, col);
+    // Only support circles, not ovals
+    int r = (int)(w > h ? h : w) << 3;
+    int xc = ((int)x << 1) + (int)w;
+    int yc = ((int)y << 1) + (int)h;
+    Esd_Render_Circle_Stroke(xc << 3, yc << 3, r, line_thickness, ESD_COMPOSE_ARGB8888(col.r, col.g, col.b, col.a));
 }
 
 static void
