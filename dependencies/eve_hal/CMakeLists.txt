@@ -12,7 +12,3 @@ ADD_LIBRARY(eve_hal
   ${SRCS}
   ${HDRS}
 )
-
-TARGET_LINK_LIBRARIES(eve_hal
-  ${BT8XXEMU_LIBRARY}
-)

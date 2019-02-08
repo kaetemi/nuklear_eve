@@ -16,18 +16,40 @@ ADD_EXECUTABLE(nuklear_eve_demo
 )
 
 TARGET_LINK_LIBRARIES(nuklear_eve_demo
-  ${BT8XXEMU_LIBRARY}
   esd_core
 )
 
-IF (WIN32)
-  ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${BT8XXEMU_BINDIR}/bt8xxemu.dll
-    ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/bt8xxemu.dll)
-  
-  ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${BT8XXEMU_BINDIR}/mx25lemu.dll
-    ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/mx25lemu.dll)
+IF(NUKLEAR_EVE_DEMO_PLATFORM STREQUAL "BT8XXEMU")
+  TARGET_LINK_LIBRARIES(nuklear_eve_demo
+    ${BT8XXEMU_LIBRARY}
+  )
+  IF (WIN32)
+    ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${BT8XXEMU_BINDIR}/bt8xxemu.dll
+      ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/bt8xxemu.dll)
+    ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${BT8XXEMU_BINDIR}/mx25lemu.dll
+      ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/mx25lemu.dll)
+  ENDIF()
+ELSEIF(NUKLEAR_EVE_DEMO_PLATFORM STREQUAL "FT4222")
+  TARGET_LINK_LIBRARIES(nuklear_eve_demo
+    LibFT4222
+    ftd2xx
+  )
+  IF (WIN32)
+    IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/dependencies/ft4222/lib/amd64/LibFT4222-64.dll
+        ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/LibFT4222-64.dll)
+    ELSE()
+      ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/dependencies/ft4222/lib/i386/LibFT4222.dll
+        ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/LibFT4222.dll)
+    ENDIF()
+  ENDIF()
 ENDIF()
+
