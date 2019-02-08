@@ -165,6 +165,9 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_prog_uchar
 /// Wait for the command buffer to fully empty. Returns FT_FALSE in case a co processor fault occured
 ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(Ft_Gpu_Hal_Context_t *phost);
 
+/// Wait for the command buffer to have at least the requested amount of free space
+ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t bytes);
+
 /// Reads co processor read pointer and write pointer
 ft_void_t Ft_Gpu_Hal_RdCmdRpWp(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t *rp, ft_uint16_t *wp);
 

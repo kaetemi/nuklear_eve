@@ -70,6 +70,9 @@ ft_bool_t Ft_Hal_LoadRawFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, c
 
 ft_bool_t Ft_Hal_LoadInflateFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, const char *filename)
 {
+	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 8))
+		return FT_FALSE; // Space for CMD_INFLATE
+
 	ft_bool_t cmdFrame = phost->cmd_frame;
 	phost->cmd_frame = FT_FALSE; // Can safely bypass active frame
 
@@ -108,6 +111,9 @@ ft_bool_t Ft_Hal_LoadInflateFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addres
 
 ft_bool_t Ft_Hal_LoadImageFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format)
 {
+	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 12))
+		return FT_FALSE; // Space for CMD_LOADIMAGE
+
 	ft_bool_t cmdFrame = phost->cmd_frame;
 	phost->cmd_frame = FT_FALSE; // Can safely bypass active frame
 

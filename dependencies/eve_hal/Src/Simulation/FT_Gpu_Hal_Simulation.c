@@ -246,7 +246,6 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_prog_uchar
 	return Ft_Gpu_Hal_WrCmdBuf(phost, buffer, count);
 }
 
-// TODO: This does not check for free space!
 ft_void_t Ft_Gpu_Hal_WrCmd32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 {
 	eve_assert_ex(!phost->cmd_frame, "Did you mean 'Ft_Gpu_CoCmd_SendCmd'?");

@@ -43,35 +43,23 @@ ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft
 #endif
 }
 
-// TODO: This does not check for free space!
 ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 {
+	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 4))
+		return;
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
 #endif
-#if 1
 	Ft_Gpu_Hal_WrCmd32(phost, cmd);
-#else
-#if (EVE_MODEL < EVE_FT810)
-	ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, RAM_CMD + wp);
-#else
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-#endif
-	Ft_Gpu_Hal_Transfer32(phost, cmd);
-	Ft_Gpu_Hal_EndTransfer(phost);
-#if (EVE_MODEL < EVE_FT810)
-	Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + 4) & FIFO_SIZE_MASK);
-#endif
-#endif
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_TRUE;
 #endif
 }
 
-// TODO: This does not check for free space!
 ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
 {
+	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, (length + 3) & ~3))
+		return;
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
 #endif
@@ -91,9 +79,10 @@ ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, 
 #endif
 }
 
-// TODO: This does not check for free space!
 ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 {
+	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, (strlen(s) + 3) & ~3))
+		return; // TODO: This strlen can be avoided
 #if defined(_DEBUG)
 	phost->cmd_frame = FT_FALSE;
 #endif

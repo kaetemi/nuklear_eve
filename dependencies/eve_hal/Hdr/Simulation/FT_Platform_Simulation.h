@@ -37,7 +37,7 @@
 #if defined(BT8XXEMU_PLATFORM)
 
 /* Platform-specific HAL features */
-#define FT_GPU_COCMD_BUFFERED
+// #define FT_GPU_COCMD_BUFFERED
 
 /* Disable legacy C functions under TCC */
 #ifndef NO_OLDNAMES
