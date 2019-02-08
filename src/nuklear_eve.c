@@ -25,6 +25,8 @@ TODO:
 #define NK_EVE_IMPLEMENTATION
 #include "nuklear_eve.h"
 
+#include "Ft_Esd_Primitives.h"
+
 static struct
 {
     struct nk_context ctx;
@@ -186,8 +188,17 @@ nk_eve_rect_multi_color(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned 
     unsigned short h, struct nk_color left, struct nk_color top,
     struct nk_color right, struct nk_color bottom)
 {
-    /* ... TODO ... */
-    nk_eve_placeholder(phost, x, y, w, h, top);
+    Ft_Esd_Rect16 rect = {
+        .X = x,
+        .Y = y,
+        .Width = w,
+        .Height = h,
+    };
+    Esd_Render_MultiGradient(rect,
+        ESD_COMPOSE_ARGB8888(left.r, left.g, left.b, left.a),
+        ESD_COMPOSE_ARGB8888(top.r, top.g, top.b, top.a),
+        ESD_COMPOSE_ARGB8888(bottom.r, bottom.g, bottom.b, bottom.a),
+        ESD_COMPOSE_ARGB8888(right.r, right.g, right.b, right.a));
 }
 
 static void

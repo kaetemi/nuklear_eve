@@ -28,6 +28,29 @@ static inline ft_argb32_t Ft_Esd_ColorARGB_Combine(ft_rgb32_t rgb, ft_uint8_t a)
 	return (rgb & 0xFFFFFF) | (((ft_argb32_t)a) << 24);
 }
 
+#define ESD_DECOMPOSE_ALPHA(argb) ((argb) >> 24)
+#define ESD_DECOMPOSE_RED(rgb) (((rgb) >> 16) & 0xFF)
+#define ESD_DECOMPOSE_GREEN(rgb) (((rgb) >> 8) & 0xFF)
+#define ESD_DECOMPOSE_BLUE(rgb) ((rgb) & 0xFF)
+
+#define ESD_COMPOSE_ARGB4(r, g, b, a) (((a & 0xF0) << 8) | ((r & 0xF0) << 4) | (g & 0xF0) | (b >> 4))
+#define ESD_COMPOSE_RGB565(r, g, b) (((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3))
+#define ESD_COMPOSE_ARGB1555(r, g, b, a) ((((a) & 0x80) << 8) | (((r) & 0xF8) << 7) | (((g) & 0xF8) << 2) | ((b) >> 3))
+#define ESD_COMPOSE_ARGB8888(r, g, b, a) ((a) << 24) | ((r) << 16) | ((g) << 8) | (b)
+
+#define ESD_COLOR_ARGB4(argb) ESD_COMPOSE_ARGB4(ESD_DECOMPOSE_RED(argb), ESD_DECOMPOSE_GREEN(argb), ESD_DECOMPOSE_BLUE(argb), ESD_DECOMPOSE_ALPHA(argb))
+#define ESD_COLOR_RGB565(rgb) ESD_COMPOSE_RGB565(ESD_DECOMPOSE_RED(rgb), ESD_DECOMPOSE_GREEN(rgb), ESD_DECOMPOSE_BLUE(rgb))
+#define ESD_COLOR_ARGB1555(argb) ESD_COMPOSE_ARGB1555(ESD_DECOMPOSE_RED(argb), ESD_DECOMPOSE_GREEN(argb), ESD_DECOMPOSE_BLUE(argb), ESD_DECOMPOSE_ALPHA(argb))
+
+// Rectangular gradient with four colored corners
+ESD_RENDER(Esd_Render_MultiGradient, Type = ft_void_t, DisplayName = "ESD Multi Gradient", Include = "FT_Esd_Primitives.h", Category = EsdPrimitives)
+ESD_PARAMETER(globalRect, Type = Ft_Esd_Rect16, DisplayName = "Global Rectangle", Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(topLeft, Type = ft_argb32_t, DisplayName = "Top Left", Default = #FFFF0000)
+ESD_PARAMETER(topRight, Type = ft_argb32_t, DisplayName = "Top Right", Default = #FF00FF00)
+ESD_PARAMETER(bottomLeft, Type = ft_argb32_t, DisplayName = "Bottom Left", Default = #FF0000FF)
+ESD_PARAMETER(bottomRight, Type = ft_argb32_t, DisplayName = "Bottom Right", Default = #FF000000)
+ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight);
+
 // Basic bitmap rendering
 ESD_RENDER(Ft_Esd_Render_Bitmap, Type = ft_void_t, DisplayName = "ESD Bitmap", Category = EsdPrimitives, Icon = ":/icons/image.png", Include = "FT_Esd_Primitives.h")
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0)

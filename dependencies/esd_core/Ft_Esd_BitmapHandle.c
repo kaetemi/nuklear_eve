@@ -12,12 +12,8 @@ Author: Jan Boon <kaetemi@no-break.space>
 // void *Ft_Esd_BitmapHandleInfo[FT_ESD_BITMAPHANDLE_NB] = { 0 };
 // Ft_Esd_GpuHandle Ft_Esd_BitmapHandleGpuHandle[FT_ESD_BITMAPHANDLE_NB] = { 0 };
 // ft_uint8_t Ft_Esd_BitmapHandleUse[FT_ESD_BITMAPHANDLE_NB] = { 0 };
-#if (EVE_MODEL >= EVE_FT810)
 // ft_uint8_t Ft_Esd_ScratchHandle = 15;
-#define FT_ESD_SCRATCHHANDLE (Esd_CurrentContext->CoScratchHandle)
-#else
-#define FT_ESD_SCRATCHHANDLE (15)
-#endif
+#define FT_ESD_SCRATCHHANDLE ESD_CO_SCRATCH_HANDLE
 
 // ft_bool_t Ft_Esd_BitmapHandleResized[FT_ESD_BITMAPHANDLE_NB] = { 0 };
 // ft_uint8_t Ft_Esd_BitmapHandlePage[FT_ESD_BITMAPHANDLE_NB] = { 0 };

@@ -99,6 +99,12 @@ extern Esd_Context *Esd_CurrentContext; //< Pointer to current ESD context
 extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host; //< Pointer to current EVE hal context
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc; //< Pointer to current allocator
 
+#if (EVE_MODEL >= EVE_FT810)
+#define ESD_CO_SCRATCH_HANDLE (Esd_CurrentContext->CoScratchHandle)
+#else
+#define ESD_CO_SCRATCH_HANDLE (15)
+#endif
+
 void Esd_SetCurrent(Esd_Context *ec);
 
 void Esd_Defaults(Esd_Parameters *ep);

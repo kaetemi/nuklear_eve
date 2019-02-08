@@ -24,6 +24,10 @@ void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga)
 	{
 		ga->AllocRefs[id].Idx = MAX_NUM_ALLOCATIONS;
 		++ga->AllocRefs[id].Seq; // Seq is always cycled, initial value not important
+
+		// Skip seq 0 to simplify invalid values
+		if (ga->AllocRefs[id].Seq == 0)
+			ga->AllocRefs[id].Seq = 1;
 	}
 
 	for (int idx = 0; idx < MAX_NUM_ALLOCATIONS; ++idx)
@@ -94,6 +98,10 @@ Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, ft_uint32_t size, ft
 					ga->AllocEntries[idx].Flags = flags;
 					ga->AllocRefs[id].Idx = idx;
 					++ga->AllocRefs[id].Seq;
+
+					// Skip seq 0 to simplify invalid values
+					if (ga->AllocRefs[id].Seq == 0)
+						ga->AllocRefs[id].Seq = 1;
 
 					// Insert free space entry after
 					if (remaining)
@@ -198,6 +206,10 @@ void Ft_Esd_GpuAlloc_FreeId(Ft_Esd_GpuAlloc *ga, int id)
 	// Invalidate handle reference
 	ga->AllocRefs[id].Idx = MAX_NUM_ALLOCATIONS;
 	++ga->AllocRefs[id].Seq;
+
+	// Skip seq 0 to simplify invalid values
+	if (ga->AllocRefs[id].Seq == 0)
+		ga->AllocRefs[id].Seq = 1;
 
 	// Free entry
 	ga->AllocEntries[idx].Id = MAX_NUM_ALLOCATIONS;
