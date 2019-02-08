@@ -14,9 +14,9 @@ It depends on:
 
 /*
 TODO:
-- Touch input
-- Stroke shapes
-- Curves
+- Rounded rectangle stroke
+- Circle stroke
+- Font metrics
 - Unicode font
 - Bitmap
 */
@@ -202,10 +202,85 @@ nk_eve_rect_multi_color(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned 
 }
 
 static void
+nk_eve_fill_polygon(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts, int count, struct nk_color col)
+{
+    short xmin = 4095, xmax = 0, ymin = 4095, ymax = 0;
+
+    if (!count)
+        return;
+
+    /* Set color */
+    nk_eve_color_rgba(phost, col);
+
+    /* Find boundaries */
+    for (int i = 0; i < count; ++i)
+    {
+        if (pnts[i].x < xmin)
+            xmin = pnts[i].x;
+        if (pnts[i].x > xmax)
+            xmax = pnts[i].x;
+        if (pnts[i].y < ymin)
+            ymin = pnts[i].y;
+        if (pnts[i].y > ymax)
+            ymax = pnts[i].y;
+    }
+
+    /* Clear stencil */
+    Ft_Esd_Rect16 boundary = {
+        .X = xmin,
+        .Y = ymin,
+        .Width = xmax - xmin,
+        .Height = ymax - ymin,
+    };
+    Ft_Esd_Rect16 scissor = Esd_Dl_Scissor_Set(boundary);
+
+    /* Prepare state */
+#if (EVE_MODEL >= EVE_FT810)
+    Esd_Dl_VERTEX_FORMAT(0);
+#endif
+    Esd_Dl_SAVE_CONTEXT();
+    Esd_Dl_CLEAR(0, 1, 0);
+
+    /* Draw polygon mask */
+    Eve_CoCmd_SendCmd(phost, COLOR_MASK(0, 0, 0, 0));
+    Eve_CoCmd_SendCmd(phost, STENCIL_OP(KEEP, INVERT));
+    Eve_CoCmd_SendCmd(phost, STENCIL_FUNC(ALWAYS, 255, 255));
+    Esd_Dl_BEGIN(EDGE_STRIP_B);
+    for (int i = 0; i < count; ++i)
+    {
+        nk_eve_vertex(pnts[i].x, pnts[i].y);
+    }
+    Esd_Dl_END();
+
+    /* Draw color */
+    Eve_CoCmd_SendCmd(phost, COLOR_MASK(1, 1, 1, 1));
+    Eve_CoCmd_SendCmd(phost, STENCIL_FUNC(EQUAL, 255, 255));
+    Esd_Dl_BEGIN(RECTS);
+    nk_eve_vertex(xmin, ymin);
+    nk_eve_vertex(xmax, ymax);
+    Esd_Dl_END();
+
+    /* Restore state */
+    Esd_Dl_RESTORE_CONTEXT();
+    Esd_Dl_Scissor_Reset(scissor);
+}
+
+static void
 nk_eve_fill_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
     short y1, short x2, short y2, struct nk_color col)
 {
-    /* ... TODO ... */
+    struct nk_vec2i pnts[4];
+    pnts[0].x = x0;
+    pnts[0].y = y0;
+    pnts[1].x = x1;
+    pnts[1].y = y1;
+    pnts[2].x = x2;
+    pnts[2].y = y2;
+    pnts[3].x = x0;
+    pnts[3].y = y0;
+    nk_eve_fill_polygon(phost, pnts, 4, col);
+
+    /*
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(8);
     Esd_Dl_BEGIN(LINE_STRIP);
@@ -217,29 +292,7 @@ nk_eve_fill_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
     nk_eve_vertex(x2, y2);
     nk_eve_vertex(x0, y0);
     Esd_Dl_END();
-}
-
-static void
-nk_eve_stroke_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
-    short y1, short x2, short y2, unsigned short line_thickness, struct nk_color col)
-{
-    nk_eve_color_rgba(phost, col);
-    Esd_Dl_LINE_WIDTH(line_thickness << 4);
-    Esd_Dl_BEGIN(LINE_STRIP);
-#if (EVE_MODEL >= EVE_FT810)
-    Esd_Dl_VERTEX_FORMAT(0);
-#endif
-    nk_eve_vertex(x0, y0);
-    nk_eve_vertex(x1, y1);
-    nk_eve_vertex(x2, y2);
-    nk_eve_vertex(x0, y0);
-    Esd_Dl_END();
-}
-
-static void
-nk_eve_fill_polygon(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts, int count, struct nk_color col)
-{
-    /* ... TODO ... */
+    */
 }
 
 static void
@@ -289,6 +342,23 @@ nk_eve_stroke_polyline(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts,
 }
 
 static void
+nk_eve_stroke_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
+    short y1, short x2, short y2, unsigned short line_thickness, struct nk_color col)
+{
+    nk_eve_color_rgba(phost, col);
+    Esd_Dl_LINE_WIDTH(line_thickness << 4);
+    Esd_Dl_BEGIN(LINE_STRIP);
+#if (EVE_MODEL >= EVE_FT810)
+    Esd_Dl_VERTEX_FORMAT(0);
+#endif
+    nk_eve_vertex(x0, y0);
+    nk_eve_vertex(x1, y1);
+    nk_eve_vertex(x2, y2);
+    nk_eve_vertex(x0, y0);
+    Esd_Dl_END();
+}
+
+static void
 nk_eve_fill_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
@@ -319,11 +389,41 @@ nk_eve_stroke_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned sho
 }
 
 static void
-nk_eve_stroke_curve(Ft_Gpu_Hal_Context_t *phost, struct nk_vec2i p1,
-    struct nk_vec2i p2, struct nk_vec2i p3, struct nk_vec2i p4,
+nk_eve_stroke_curve(Ft_Gpu_Hal_Context_t *phost,
+    struct nk_vec2i p1, struct nk_vec2i p2,
+    struct nk_vec2i p3, struct nk_vec2i p4, unsigned int num_segments,
     unsigned short line_thickness, struct nk_color col)
 {
-    /* ... TODO ... */
+    unsigned int i_step;
+    float t_step;
+    struct nk_vec2i last = p1;
+
+    if (num_segments < 1)
+        num_segments = 1;
+    t_step = 1.0f / (float)num_segments;
+
+    nk_eve_color_rgba(phost, col);
+    Esd_Dl_LINE_WIDTH(line_thickness << 4);
+#if (EVE_MODEL >= EVE_FT810)
+    Esd_Dl_VERTEX_FORMAT(4);
+#endif
+
+    Esd_Dl_BEGIN(LINE_STRIP);
+    Esd_Dl_VERTEX2F(p1.x << 4, p1.y << 4);
+    for (i_step = 1; i_step < num_segments; ++i_step)
+    {
+        float t = t_step * (float)i_step;
+        float u = 1.0f - t;
+        float w1 = u * u * u;
+        float w2 = 3 * u * u * t;
+        float w3 = 3 * u * t * t;
+        float w4 = t * t * t;
+        float x = w1 * p1.x + w2 * p2.x + w3 * p3.x + w4 * p4.x;
+        float y = w1 * p1.y + w2 * p2.y + w3 * p3.y + w4 * p4.y;
+        Esd_Dl_VERTEX2F(x * 16.f, y * 16.f);
+    }
+    Esd_Dl_VERTEX2F(p4.x << 4, p4.y << 4);
+    Esd_Dl_END();
 }
 
 static void
@@ -468,7 +568,7 @@ nk_eve_cb_render(void *context)
         {
             const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
             nk_eve_stroke_curve(phost, q->begin, q->ctrl[0], q->ctrl[1],
-                q->end, q->line_thickness, q->color);
+                q->end, 22, q->line_thickness, q->color);
         }
         break;
         case NK_COMMAND_RECT_MULTI_COLOR:
