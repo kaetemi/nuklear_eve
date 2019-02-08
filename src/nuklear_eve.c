@@ -523,6 +523,29 @@ nk_eve_cb_render(void *context)
         case NK_COMMAND_RECT_FILLED:
         {
             const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled *)cmd;
+            const struct nk_command *next = nk__next(&eve.ctx, cmd);
+            if (next->type == NK_COMMAND_RECT)
+            {
+                const struct nk_command_rect *rs = (const struct nk_command_rect *)next;
+                if (rs->x == r->x && rs->y == r->y && rs->w == r->w && rs->h == r->h && rs->rounding == r->rounding)
+                {
+                    short half_thickness = rs->line_thickness >> 1;
+                    short outer_x0 = r->x - half_thickness;
+                    short outer_y0 = r->y - half_thickness;
+                    short outer_x1 = r->x + r->w + half_thickness;
+                    short outer_y1 = r->y + r->h + half_thickness;
+                    nk_eve_fill_rect(phost, outer_x0, outer_y0, outer_x1 - outer_x0, outer_y1 - outer_y0,
+                        r->rounding, rs->color);
+                    short inner_x0 = outer_x0 + rs->line_thickness;
+                    short inner_y0 = outer_y0 + rs->line_thickness;
+                    short inner_x1 = outer_x1 - rs->line_thickness;
+                    short inner_y1 = outer_y1 - rs->line_thickness;
+                    nk_eve_fill_rect(phost, inner_x0, inner_y0, inner_x1 - inner_x0, inner_y1 - inner_y0,
+                        r->rounding, r->color);
+                    cmd = next;
+                    break;
+                }
+            }
             nk_eve_fill_rect(phost, r->x, r->y, r->w, r->h,
                 r->rounding, r->color);
         }
