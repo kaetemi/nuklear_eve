@@ -125,7 +125,7 @@ inline static ft_void_t Ft_Esd_Dl_COLOR_RGB(ft_rgb32_t c)
 	if (rgb != FT_ESD_STATE.ColorRGB)
 	{
 #endif
-		Eve_CoCmd_SendCmd(Ft_Esd_Host, COLOR_RGB(0, 0, 0)| (rgb));
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, COLOR_RGB(0, 0, 0) | (rgb));
 #if ESD_DL_OPTIMIZE
 		FT_ESD_STATE.ColorRGB = rgb;
 	}
@@ -381,11 +381,10 @@ inline static ft_void_t Esd_Dl_VERTEX2F_0(ft_uint16_t x, ft_uint16_t y)
 {
 #if (EVE_MODEL >= EVE_FT810)
 	Esd_Dl_VERTEX_FORMAT(0);
-#else
-	x <<= 4;
-	y <<= 4;
-#endif
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
+#else
+	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2II(x, y, 0, 0));
+#endif
 }
 
 // Display list calls without state caching

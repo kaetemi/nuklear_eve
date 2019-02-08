@@ -73,11 +73,11 @@ typedef struct
 	Esd_HandleState HandleState;
 
 	/// Callbacks called by Esd_Loop
-	void(*Start)(void *context);
-	void(*Update)(void *context);
-	void(*Render)(void *context);
-	void(*Idle)(void *context);
-	void(*End)(void *context);
+	void (*Start)(void *context);
+	void (*Update)(void *context);
+	void (*Render)(void *context);
+	void (*Idle)(void *context);
+	void (*End)(void *context);
 	void *UserContext;
 
 } Esd_Context;
@@ -86,11 +86,11 @@ typedef struct
 typedef struct
 {
 	/// Callbacks called by Esd_Loop
-	void(*Start)(void *context);
-	void(*Update)(void *context);
-	void(*Render)(void *context);
-	void(*Idle)(void *context);
-	void(*End)(void *context);
+	void (*Start)(void *context);
+	void (*Update)(void *context);
+	void (*Render)(void *context);
+	void (*Idle)(void *context);
+	void (*End)(void *context);
 	void *UserContext;
 
 } Esd_Parameters;

@@ -116,4 +116,35 @@ ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft
 	s_MultiGradient_Cell &= (ESD_MULTIGRADIENT_MAX_NB - 1);
 }
 
+ft_void_t Esd_Render_MultiGradient_Rounded(Ft_Esd_Rect16 globalRect, ft_int32_f4_t radius, ft_uint8_t alpha, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight)
+{
+	// Esd_Dl_SAVE_CONTEXT();
+
+	// Set alpha of the target rendering area to 255
+	// Esd_Dl_CLEAR_COLOR_A(255);
+	// Ft_Esd_Rect16 scissor = Esd_Dl_Scissor_Set(globalRect);
+	// Esd_Dl_CLEAR(1, 0, 0);
+	// Esd_Dl_Scissor_Reset(scissor);
+	Esd_Dl_COLOR_ARGB(ESD_ARGB_WHITE);
+	Eve_CoCmd_SendCmd(Ft_Esd_Host, COLOR_MASK(0, 0, 0, 1));
+	Esd_Dl_LINE_WIDTH(16);
+	Esd_Dl_BEGIN(RECTS);
+	Esd_Dl_VERTEX2F_0(globalRect.X, globalRect.Y);
+	Esd_Dl_VERTEX2F_0(globalRect.X + globalRect.Width, globalRect.Y + globalRect.Height);
+	Esd_Dl_END();
+	Eve_CoCmd_SendCmd(Ft_Esd_Host, COLOR_MASK(1, 1, 1, 1));
+
+	// Draw rounded rectangle as masking shape
+	Eve_CoCmd_SendCmd(Ft_Esd_Host, BLEND_FUNC(ZERO, ONE_MINUS_SRC_ALPHA));
+	Ft_Esd_Render_Rectangle(globalRect.X, globalRect.Y, globalRect.Width, globalRect.Height, radius, Ft_Esd_ColorARGB_Combine(0xFFFFFF, alpha));
+
+	// Draw color using mask alpha
+	Eve_CoCmd_SendCmd(Ft_Esd_Host, BLEND_FUNC(ONE_MINUS_DST_ALPHA, ONE));
+	Esd_Render_MultiGradient(globalRect, topLeft | 0xFF000000, topRight | 0xFF000000, bottomLeft | 0xFF000000, bottomRight | 0xFF000000);
+
+	// Restore context
+	// Esd_Dl_RESTORE_CONTEXT();
+	Eve_CoCmd_SendCmd(Ft_Esd_Host, BLEND_FUNC(SRC_ALPHA, ONE_MINUS_SRC_ALPHA));
+}
+
 /* end of file */

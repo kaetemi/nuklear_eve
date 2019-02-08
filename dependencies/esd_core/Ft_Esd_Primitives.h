@@ -54,6 +54,17 @@ ESD_PARAMETER(bottomLeft, Type = ft_argb32_t, DisplayName = "Bottom Left", Defau
 ESD_PARAMETER(bottomRight, Type = ft_argb32_t, DisplayName = "Bottom Right", Default = #FF000000)
 ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight);
 
+// Rounded rectangular gradient with four colored corners
+ESD_RENDER(Esd_Render_MultiGradient_Rounded, Type = ft_void_t, DisplayName = "ESD Multi Gradient (Rounded)", Include = "FT_Esd_Primitives.h", Category = EsdPrimitives)
+ESD_PARAMETER(globalRect, Type = Ft_Esd_Rect16, DisplayName = "Global Rectangle", Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(radius, Type = ft_int32_f4_t, DisplayName = "Radius", Default = 4)
+ESD_PARAMETER(alpha, Type = ft_uint8_t, DisplayName = "Alpha", Default = 255)
+ESD_PARAMETER(topLeft, Type = ft_rgb32_t, DisplayName = "Top Left", Default = #FF0000)
+ESD_PARAMETER(topRight, Type = ft_rgb32_t, DisplayName = "Top Right", Default = #00FF00)
+ESD_PARAMETER(bottomLeft, Type = ft_rgb32_t, DisplayName = "Bottom Left", Default = #0000FF)
+ESD_PARAMETER(bottomRight, Type = ft_rgb32_t, DisplayName = "Bottom Right", Default = #000000)
+ft_void_t Esd_Render_MultiGradient_Rounded(Ft_Esd_Rect16 globalRect, ft_int32_f4_t radius, ft_uint8_t alpha, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight);
+
 // Basic bitmap rendering
 ESD_RENDER(Ft_Esd_Render_Bitmap, Type = ft_void_t, DisplayName = "ESD Bitmap", Category = EsdPrimitives, Icon = ":/icons/image.png", Include = "FT_Esd_Primitives.h")
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0)
