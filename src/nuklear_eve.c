@@ -148,15 +148,30 @@ nk_eve_stroke_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
 
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
-    Esd_Dl_BEGIN(LINE_STRIP);
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    nk_eve_vertex(x, y);
-    nk_eve_vertex(x, y + h - 1);
-    nk_eve_vertex(x + w - 1, y + h - 1);
-    nk_eve_vertex(x + w - 1, y);
-    nk_eve_vertex(x, y);
+    if (!r)
+    {
+        Esd_Dl_BEGIN(LINE_STRIP);
+        nk_eve_vertex(x, y);
+        nk_eve_vertex(x, y + h - 1);
+        nk_eve_vertex(x + w - 1, y + h - 1);
+        nk_eve_vertex(x + w - 1, y);
+        nk_eve_vertex(x, y);
+    }
+    else
+    {
+        Esd_Dl_BEGIN(LINES);
+        nk_eve_vertex(x, y + r);
+        nk_eve_vertex(x, y + h - r - 1);
+        nk_eve_vertex(x + r, y + h - 1);
+        nk_eve_vertex(x + w - r - 1, y + h - 1);
+        nk_eve_vertex(x + w - 1, y + h - 1 - r);
+        nk_eve_vertex(x + w - 1, y + r);
+        nk_eve_vertex(x + w - r - 1, y);
+        nk_eve_vertex(x + r, y);
+    }
     Esd_Dl_END();
 }
 
