@@ -42,6 +42,9 @@ static inline ft_argb32_t Ft_Esd_ColorARGB_Combine(ft_rgb32_t rgb, ft_uint8_t a)
 #define ESD_COLOR_RGB565(rgb) ESD_COMPOSE_RGB565(ESD_DECOMPOSE_RED(rgb), ESD_DECOMPOSE_GREEN(rgb), ESD_DECOMPOSE_BLUE(rgb))
 #define ESD_COLOR_ARGB1555(argb) ESD_COMPOSE_ARGB1555(ESD_DECOMPOSE_RED(argb), ESD_DECOMPOSE_GREEN(argb), ESD_DECOMPOSE_BLUE(argb), ESD_DECOMPOSE_ALPHA(argb))
 
+#define ESD_ARGB_WHITE 0xFFFFFFFF
+#define ESD_ARGB_BLACK 0xFF000000
+
 // Rectangular gradient with four colored corners
 ESD_RENDER(Esd_Render_MultiGradient, Type = ft_void_t, DisplayName = "ESD Multi Gradient", Include = "FT_Esd_Primitives.h", Category = EsdPrimitives)
 ESD_PARAMETER(globalRect, Type = Ft_Esd_Rect16, DisplayName = "Global Rectangle", Default = 0) // SCREEN_SIZE

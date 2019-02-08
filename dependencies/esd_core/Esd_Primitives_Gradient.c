@@ -59,6 +59,9 @@ ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft
 	Ft_Gpu_CoCmd_MemWrite(Ft_Esd_Host, addr, 8);
 	Eve_CoCmd_SendCmdArr(Ft_Esd_Host, (ft_uint32_t *)colors, 2);
 
+	// Set required state
+	Esd_Dl_COLOR_ARGB(ESD_ARGB_WHITE);
+
 	// Use the scratch handle
 	Esd_Dl_BITMAP_HANDLE(ESD_CO_SCRATCH_HANDLE);
 #if (EVE_MODEL >= EVE_FT810)
