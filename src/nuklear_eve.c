@@ -128,7 +128,7 @@ nk_eve_stroke_line(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
     short y1, unsigned int line_thickness, struct nk_color col)
 {
     nk_eve_color_rgba(phost, col);
-    Esd_Dl_LINE_WIDTH(line_thickness << 4);
+    Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINES);
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
@@ -147,15 +147,15 @@ nk_eve_stroke_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
     // - Line stroke with manually drawn round corners for thin line
 
     nk_eve_color_rgba(phost, col);
-    Esd_Dl_LINE_WIDTH(line_thickness << 4);
+    Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
     nk_eve_vertex(x, y);
-    nk_eve_vertex(x, y + h);
-    nk_eve_vertex(x + w, y + h);
-    nk_eve_vertex(x + w, y);
+    nk_eve_vertex(x, y + h - 1);
+    nk_eve_vertex(x + w - 1, y + h - 1);
+    nk_eve_vertex(x + w - 1, y);
     nk_eve_vertex(x, y);
     Esd_Dl_END();
 }
@@ -303,7 +303,7 @@ nk_eve_stroke_polygon(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts, 
         return;
 
     nk_eve_color_rgba(phost, col);
-    Esd_Dl_LINE_WIDTH(line_thickness << 4);
+    Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
@@ -327,7 +327,7 @@ nk_eve_stroke_polyline(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts,
         return;
 
     nk_eve_color_rgba(phost, col);
-    Esd_Dl_LINE_WIDTH(line_thickness << 4);
+    Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
@@ -346,7 +346,7 @@ nk_eve_stroke_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1
     short y1, short x2, short y2, unsigned short line_thickness, struct nk_color col)
 {
     nk_eve_color_rgba(phost, col);
-    Esd_Dl_LINE_WIDTH(line_thickness << 4);
+    Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
@@ -364,8 +364,8 @@ nk_eve_fill_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
 {
     // Only support circles, not ovals
     int r = (int)(w > h ? h : w) << 3;
-    int xc = ((int)x << 1) + (int)w;
-    int yc = ((int)y << 1) + (int)h;
+    int xc = ((int)x << 1) + (int)w - 1;
+    int yc = ((int)y << 1) + (int)h - 1;
     nk_eve_color_rgba(phost, col);
     Esd_Dl_POINT_SIZE(r);
     Esd_Dl_BEGIN(POINTS);
@@ -384,8 +384,8 @@ nk_eve_stroke_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned sho
 {
     // Only support circles, not ovals
     int r = (int)(w > h ? h : w) << 3;
-    int xc = ((int)x << 1) + (int)w;
-    int yc = ((int)y << 1) + (int)h;
+    int xc = ((int)x << 1) + (int)w - 1;
+    int yc = ((int)y << 1) + (int)h - 1;
     Esd_Render_Circle_Stroke(xc << 3, yc << 3, r, line_thickness, ESD_COMPOSE_ARGB8888(col.r, col.g, col.b, col.a));
 }
 
@@ -404,7 +404,7 @@ nk_eve_stroke_curve(Ft_Gpu_Hal_Context_t *phost,
     t_step = 1.0f / (float)num_segments;
 
     nk_eve_color_rgba(phost, col);
-    Esd_Dl_LINE_WIDTH(line_thickness << 4);
+    Esd_Dl_LINE_WIDTH(line_thickness << 3);
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(4);
 #endif
