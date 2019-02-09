@@ -339,17 +339,6 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 ** TRANSFER **
 *************/
 
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
-{
-	eve_assert(phost->Status == EVE_HalStatusOpened);
-
-	phost->SpiRamGAddr = addr;
-	if (rw == EVE_HalTransferRead)
-		phost->Status = EVE_HalStatusReading;
-	else
-		phost->Status = EVE_HalStatusWriting;
-}
-
 static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
 {
 	FT4222_STATUS status;
@@ -557,12 +546,34 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 	}
 }
 
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
+{
+	eve_assert(phost->Status == EVE_HalStatusOpened);
+
+	if (addr != phost->SpiRamGAddr)
+	{
+		if (phost->SpiWrBufIndex)
+			wrBuffer(phost, NULL, 0);
+
+		phost->SpiRamGAddr = addr;
+	}
+
+	if (rw == EVE_HalTransferRead)
+		phost->Status = EVE_HalStatusReading;
+	else
+		phost->Status = EVE_HalStatusWriting;
+}
+
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
 	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
 
-	if (phost->SpiWrBufIndex)
-		wrBuffer(phost, NULL, 0);
+	uint32_t addr = phost->SpiRamGAddr;
+	if (addr != REG_CMDB_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
+	{
+		if (phost->SpiWrBufIndex)
+			wrBuffer(phost, NULL, 0);
+	}
 
 	phost->Status = EVE_HalStatusOpened;
 }
