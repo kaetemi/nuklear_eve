@@ -38,9 +38,9 @@
 static ft_uint8_t s_CmdBuffer[FT_BUFFER_CAPACITY];
 static ft_uint16_t s_CmdBufferIndex = 0;
 
-ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb)
+ft_void_t Eve_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
 {
-	eve_assert(phost->cmd_frame);
+	eve_assert(phost->CmdFrame);
 	ft_uint16_t len = (sizeof(cmd[0]) * nb) & FT_CMD_FIFO_MASK;
 	if ((s_CmdBufferIndex + len) > FT_BUFFER_CAPACITY)
 	{
@@ -51,9 +51,9 @@ ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft
 	s_CmdBufferIndex += len;
 }
 
-ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+ft_void_t Eve_CoCmd_SendCmd(EVE_HalContext *phost, ft_uint32_t cmd)
 {
-	eve_assert(phost->cmd_frame);
+	eve_assert(phost->CmdFrame);
 	if ((s_CmdBufferIndex + sizeof(cmd)) > FT_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);
@@ -63,9 +63,9 @@ ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 	s_CmdBufferIndex += sizeof(cmd);
 }
 
-ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
+ft_void_t Eve_CoCmd_SendStr_S(EVE_HalContext *phost, const ft_char8_t *s, int length)
 {
-	eve_assert(phost->cmd_frame);
+	eve_assert(phost->CmdFrame);
 	if ((s_CmdBufferIndex + length + 4) > FT_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);
@@ -82,9 +82,9 @@ ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, 
 	}
 }
 
-ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
+ft_void_t Eve_CoCmd_SendStr(EVE_HalContext *phost, const ft_char8_t *s)
 {
-	eve_assert(phost->cmd_frame);
+	eve_assert(phost->CmdFrame);
 	ft_uint16_t length = (ft_uint16_t)strlen(s) + 1;
 	if ((s_CmdBufferIndex + length + 3) > FT_BUFFER_CAPACITY)
 	{
@@ -100,18 +100,18 @@ ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 	}
 }
 
-ft_void_t Eve_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_CoCmd_StartFrame(EVE_HalContext *phost)
 {
-	eve_assert(!phost->cmd_frame);
-	phost->cmd_frame = FT_TRUE;
+	eve_assert(!phost->CmdFrame);
+	phost->CmdFrame = FT_TRUE;
 	s_CmdBufferIndex = 0;
 	memset(s_CmdBuffer, 0, FT_BUFFER_CAPACITY);
 }
 
-ft_void_t Eve_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_CoCmd_EndFrame(EVE_HalContext *phost)
 {
-	eve_assert(phost->cmd_frame);
-	phost->cmd_frame = FT_FALSE;
+	eve_assert(phost->CmdFrame);
+	phost->CmdFrame = FT_FALSE;
 	Ft_Gpu_Hal_WrCmdBuf(phost, s_CmdBuffer, s_CmdBufferIndex);
 }
 

@@ -159,7 +159,7 @@ void Esd_Shutdown()
 void Esd_Loop(Esd_Context *ec)
 {
 	Esd_SetCurrent(ec);
-	Ft_Gpu_Hal_Context_t *phost = &ec->HalContext;
+	EVE_HalContext *phost = &ec->HalContext;
 
 	if (!Ft_Main__Running__ESD() || ec->RequestStop)
 		return;
@@ -200,7 +200,7 @@ void Esd_Start(Esd_Context *ec)
 void Esd_Update(Esd_Context *ec)
 {
 	Esd_SetCurrent(ec);
-	Ft_Gpu_Hal_Context_t *phost = &ec->HalContext;
+	EVE_HalContext *phost = &ec->HalContext;
 
 	// Restore initial frame values
 	// Ft_Gpu_CoCmd_LoadIdentity(phost); // ?
@@ -246,7 +246,7 @@ void Esd_Update(Esd_Context *ec)
 void Esd_Render(Esd_Context *ec)
 {
 	Esd_SetCurrent(ec);
-	Ft_Gpu_Hal_Context_t *phost = &ec->HalContext;
+	EVE_HalContext *phost = &ec->HalContext;
 
 	if (ec->ShowLogo)
 	{
@@ -303,7 +303,7 @@ void Esd_Render(Esd_Context *ec)
 void Esd_WaitSwap(Esd_Context *ec)
 {
 	Esd_SetCurrent(ec);
-	Ft_Gpu_Hal_Context_t *phost = &ec->HalContext;
+	EVE_HalContext *phost = &ec->HalContext;
 
 	ec->SwapIdled = FT_FALSE;
 	ft_uint16_t rp, wp;

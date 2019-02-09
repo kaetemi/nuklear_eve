@@ -13,6 +13,12 @@ It depends on:
 */
 
 /*
+References:
+- https://github.com/vurtun/nuklear/blob/master/nuklear.h
+- https://github.com/vurtun/nuklear/blob/master/demo/gdi/nuklear_gdi.h
+- https://github.com/vurtun/nuklear/blob/master/demo/allegro5/nuklear_allegro5.h
+
+/*
 TODO:
 - Rounded rectangle stroke
 - Font metrics
@@ -76,7 +82,7 @@ nk_eve_set_font(nk_evefont *evefont)
 }
 
 static void
-nk_eve_color_rgba(Ft_Gpu_Hal_Context_t *phost, struct nk_color col)
+nk_eve_color_rgba(EVE_HalContext *phost, struct nk_color col)
 {
     Esd_Dl_COLOR_RGB((((col.r) & 255UL) << 16) | (((col.g) & 255UL) << 8) | ((col.b) & 255UL));
     Esd_Dl_COLOR_A(col.a);
@@ -89,7 +95,7 @@ nk_eve_color_rgba(Ft_Gpu_Hal_Context_t *phost, struct nk_color col)
 #endif
 
 static void
-nk_eve_scissor(Ft_Gpu_Hal_Context_t *phost, float x, float y, float w, float h)
+nk_eve_scissor(EVE_HalContext *phost, float x, float y, float w, float h)
 {
     Ft_Esd_Rect16 rect = {
         .X = (int)x,
@@ -101,7 +107,7 @@ nk_eve_scissor(Ft_Gpu_Hal_Context_t *phost, float x, float y, float w, float h)
 }
 
 static void
-nk_eve_placeholder(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
+nk_eve_placeholder(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
     nk_eve_color_rgba(phost, col);
@@ -124,7 +130,7 @@ nk_eve_placeholder(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
 }
 
 static void
-nk_eve_stroke_line(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
+nk_eve_stroke_line(EVE_HalContext *phost, short x0, short y0, short x1,
     short y1, unsigned int line_thickness, struct nk_color col)
 {
     nk_eve_color_rgba(phost, col);
@@ -139,7 +145,7 @@ nk_eve_stroke_line(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
 }
 
 static void
-nk_eve_stroke_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
+nk_eve_stroke_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, unsigned short r, unsigned short line_thickness, struct nk_color col)
 {
     // TODO: Support rounding
@@ -176,7 +182,7 @@ nk_eve_stroke_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
 }
 
 static void
-nk_eve_fill_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
+nk_eve_fill_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, unsigned short r, struct nk_color col)
 {
     if (r < 1)
@@ -199,7 +205,7 @@ nk_eve_fill_rect(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w
 }
 
 static void
-nk_eve_rect_multi_color(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
+nk_eve_rect_multi_color(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, struct nk_color left, struct nk_color top,
     struct nk_color right, struct nk_color bottom)
 {
@@ -217,7 +223,7 @@ nk_eve_rect_multi_color(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned 
 }
 
 static void
-nk_eve_fill_polygon(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts, int count, struct nk_color col)
+nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int count, struct nk_color col)
 {
     short xmin = 4095, xmax = 0, ymin = 4095, ymax = 0;
 
@@ -281,7 +287,7 @@ nk_eve_fill_polygon(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts, in
 }
 
 static void
-nk_eve_fill_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
+nk_eve_fill_triangle(EVE_HalContext *phost, short x0, short y0, short x1,
     short y1, short x2, short y2, struct nk_color col)
 {
     struct nk_vec2i pnts[4];
@@ -311,7 +317,7 @@ nk_eve_fill_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
 }
 
 static void
-nk_eve_stroke_polygon(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts, int count,
+nk_eve_stroke_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int count,
     unsigned short line_thickness, struct nk_color col)
 {
     if (!count)
@@ -333,7 +339,7 @@ nk_eve_stroke_polygon(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts, 
 }
 
 static void
-nk_eve_stroke_polyline(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts,
+nk_eve_stroke_polyline(EVE_HalContext *phost, const struct nk_vec2i *pnts,
     int count, unsigned short line_thickness, struct nk_color col)
 {
     // TODO: This is just the same as nk_eve_stroke_polygon?
@@ -357,7 +363,7 @@ nk_eve_stroke_polyline(Ft_Gpu_Hal_Context_t *phost, const struct nk_vec2i *pnts,
 }
 
 static void
-nk_eve_stroke_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1,
+nk_eve_stroke_triangle(EVE_HalContext *phost, short x0, short y0, short x1,
     short y1, short x2, short y2, unsigned short line_thickness, struct nk_color col)
 {
     nk_eve_color_rgba(phost, col);
@@ -374,7 +380,7 @@ nk_eve_stroke_triangle(Ft_Gpu_Hal_Context_t *phost, short x0, short y0, short x1
 }
 
 static void
-nk_eve_fill_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
+nk_eve_fill_circle(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
     // Only support circles, not ovals
@@ -394,7 +400,7 @@ nk_eve_fill_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short
 }
 
 static void
-nk_eve_stroke_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w,
+nk_eve_stroke_circle(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, unsigned short line_thickness, struct nk_color col)
 {
     // Only support circles, not ovals
@@ -405,7 +411,7 @@ nk_eve_stroke_circle(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned sho
 }
 
 static void
-nk_eve_stroke_curve(Ft_Gpu_Hal_Context_t *phost,
+nk_eve_stroke_curve(EVE_HalContext *phost,
     struct nk_vec2i p1, struct nk_vec2i p2,
     struct nk_vec2i p3, struct nk_vec2i p4, unsigned int num_segments,
     unsigned short line_thickness, struct nk_color col)
@@ -443,7 +449,7 @@ nk_eve_stroke_curve(Ft_Gpu_Hal_Context_t *phost,
 }
 
 static void
-nk_eve_draw_text(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w, unsigned short h,
+nk_eve_draw_text(EVE_HalContext *phost, short x, short y, unsigned short w, unsigned short h,
     const char *text, int len, nk_evefont *font, struct nk_color cfg)
 {
     if (!len)
@@ -455,7 +461,7 @@ nk_eve_draw_text(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w
 }
 
 static void
-nk_eve_draw_image(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short w, unsigned short h,
+nk_eve_draw_image(EVE_HalContext *phost, short x, short y, unsigned short w, unsigned short h,
     struct nk_image img, struct nk_color col)
 {
     /* ... TODO ... */
@@ -463,7 +469,7 @@ nk_eve_draw_image(Ft_Gpu_Hal_Context_t *phost, short x, short y, unsigned short 
 }
 
 static void
-nk_eve_clear(Ft_Gpu_Hal_Context_t *phost, struct nk_color col)
+nk_eve_clear(EVE_HalContext *phost, struct nk_color col)
 {
     Esd_Dl_CLEAR_COLOR_RGB((((col.r) & 255UL) << 16) | (((col.g) & 255UL) << 8) | ((col.b) & 255UL));
     Esd_Dl_CLEAR_COLOR_A(col.a);
@@ -491,7 +497,7 @@ static void
 nk_eve_cb_render(void *context)
 {
     const struct nk_command *cmd;
-    Ft_Gpu_Hal_Context_t *phost = &eve.ec.HalContext;
+    EVE_HalContext *phost = &eve.ec.HalContext;
     eve.scissor = Esd_Dl_Scissor_Get();
 
     nk_foreach(cmd, &eve.ctx)

@@ -27,30 +27,38 @@
 * distributed by that other user ("Adapted Software").  If so that user may
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
+*
+* File Description:
+*    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
+*    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
+*    I2C and SPI is selected by compiler switch "FT_I2C_MODE"  and "FT_SPI_MODE". In addition, there are
+*    some helper functions defined for FT800 coprocessor engine as well as phost commands.
+*
 */
 
-#ifndef EVE_CO_CMD__H
-#define EVE_CO_CMD__H
+#ifndef EVE_HAL__H
+#define EVE_HAL__H
 
-#include "FT_Platform.h"
+#define EVE_FIFO_SIZE_MASK (0xFFF) // FIFO valid range from 0 to 4095
+#define EVE_FIFO_BYTE_ALIGNMENT_MASK (0xFFC)
 
-// Backport compatibility
-#define Eve_CoCmd_SendCmd Ft_Gpu_CoCmd_SendCmd
-#define Eve_CoCmd_SendCmdArr Ft_Gpu_CoCmd_SendCmdArr
-#define Eve_CoCmd_SendStr Ft_Gpu_CoCmd_SendStr
-#define Eve_CoCmd_StartFrame Ft_Gpu_CoCmd_StartFrame
-#define Eve_CoCmd_EndFrame Ft_Gpu_CoCmd_EndFrame
+typedef enum EVE_HalMode
+{
+	EVE_HAL_MODE_UNKNOWN = 0,
+	EVE_HAL_MODE_I2C,
+	EVE_HAL_MODE_SPI,
 
-ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd);
-ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb);
-ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length);
-ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s);
-ft_void_t Eve_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost);
-ft_void_t Eve_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost);
+} EVE_HalMode;
 
-// Deprecated
-#define Ft_Gpu_Copro_SendCmd Ft_Gpu_CoCmd_SendCmd
+typedef enum
+{
+	EVE_HAL_STATUS_UNKNOWN = 0,
+	EVE_HAL_STATUS_OPENED,
+	EVE_HAL_STATUS_READING,
+	EVE_HAL_STATUS_WRITING,
+	EVE_HAL_STATUS_CLOSED,
+} EVE_HalStatus;
 
-#endif /* EVE_CO_CMD__H */
+#endif /* #ifndef EVE_HAL__H */
 
 /* end of file */

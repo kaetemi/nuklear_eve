@@ -75,14 +75,14 @@ ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 	return FT_TRUE;
 }
 
-ft_void_t Ft_Gpu_Hal_ESD_Idle(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
 {
 #if defined(BT_MODULE_PANL)
 	panl_bacnet_task();
 #endif
 }
 
-ft_bool_t Ft_Gpu_Hal_Open(Ft_Gpu_Hal_Context_t *phost)
+ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 {
 	phost->hal_config.channel_no = 0;
 	phost->hal_config.pdn_pin_no = FT800_PD_N;
@@ -96,14 +96,14 @@ ft_bool_t Ft_Gpu_Hal_Open(Ft_Gpu_Hal_Context_t *phost)
 	gpio_write(phost->hal_config.pdn_pin_no, 1);
 
 	/* Initialize the context valriables */
-	phost->spinumdummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
-	phost->spichannel = 0;
+	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
+	phost->SpiChannel = 0;
 	phost->status = FT_GPU_HAL_OPENED;
 
 	return FT_TRUE;
 }
 
-ft_void_t Ft_Gpu_Hal_Close(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
 {
 	phost->status = FT_GPU_HAL_CLOSED;
 	//spi_close(SPIM,0);
@@ -115,9 +115,9 @@ ft_void_t Ft_Gpu_Hal_DeInit()
 }
 
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
-ft_void_t Ft_Gpu_Hal_StartTransfer(Ft_Gpu_Hal_Context_t *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
+ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {
-	eve_assert(!(phost->cmd_frame && (addr == REG_CMDB_WRITE)));
+	eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
 	if (phost->status != FT_GPU_HAL_OPENED)
 	{
 		eve_printf_debug("Cannot start transfer on current host status %i\n", (int)phost->status);
@@ -129,7 +129,7 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(Ft_Gpu_Hal_Context_t *phost, FT_GPU_TRANSFERD
 		spidata[1] = (addr >> 8);
 		spidata[2] = addr & 0xff;
 		spi_open(SPIM, phost->hal_config.spi_cs_pin_no);
-		spi_writen(SPIM, spidata, 3 + phost->spinumdummy);
+		spi_writen(SPIM, spidata, 3 + phost->SpiNumDummy);
 		phost->status = FT_GPU_HAL_READING;
 	}
 	else
@@ -146,7 +146,7 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(Ft_Gpu_Hal_Context_t *phost, FT_GPU_TRANSFERD
 	}
 }
 
-ft_uint8_t Ft_Gpu_Hal_Transfer8(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t value)
+ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 {
 	if (phost->status == FT_GPU_HAL_WRITING)
 	{
@@ -160,13 +160,13 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t value)
 	}
 }
 
-ft_void_t Ft_Gpu_Hal_EndTransfer(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost)
 {
 	spi_close(SPIM, phost->hal_config.spi_cs_pin_no);
 	phost->status = FT_GPU_HAL_OPENED;
 }
 
-ft_uint8_t Ft_Gpu_Hal_Rd8(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
+ft_uint8_t Ft_Gpu_Hal_Rd8(EVE_HalContext *phost, ft_uint32_t addr)
 {
 	ft_uint8_t value;
 
@@ -179,7 +179,7 @@ ft_uint8_t Ft_Gpu_Hal_Rd8(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
 	return value;
 }
 
-ft_uint16_t Ft_Gpu_Hal_Rd16(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
+ft_uint16_t Ft_Gpu_Hal_Rd16(EVE_HalContext *phost, ft_uint32_t addr)
 {
 	ft_uint16_t value;
 	ft_uint8_t spiData[2];
@@ -190,7 +190,7 @@ ft_uint16_t Ft_Gpu_Hal_Rd16(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
 	return value;
 }
 
-ft_uint32_t Ft_Gpu_Hal_Rd32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
+ft_uint32_t Ft_Gpu_Hal_Rd32(EVE_HalContext *phost, ft_uint32_t addr)
 {
 	ft_uint32_t value;
 	ft_uint8_t spiData[4];
@@ -202,28 +202,28 @@ ft_uint32_t Ft_Gpu_Hal_Rd32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
 	return value;
 }
 
-ft_void_t Ft_Gpu_Hal_Wr8(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint8_t v)
+ft_void_t Ft_Gpu_Hal_Wr8(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t v)
 {
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
 	Ft_Gpu_Hal_Transfer8(phost, v);
 	Ft_Gpu_Hal_EndTransfer(phost);
 }
 
-ft_void_t Ft_Gpu_Hal_Wr16(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint16_t v)
+ft_void_t Ft_Gpu_Hal_Wr16(EVE_HalContext *phost, ft_uint32_t addr, ft_uint16_t v)
 {
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
 	Ft_Gpu_Hal_Transfer16(phost, v);
 	Ft_Gpu_Hal_EndTransfer(phost);
 }
 
-ft_void_t Ft_Gpu_Hal_Wr32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint32_t v)
+ft_void_t Ft_Gpu_Hal_Wr32(EVE_HalContext *phost, ft_uint32_t addr, ft_uint32_t v)
 {
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
 	Ft_Gpu_Hal_Transfer32(phost, v);
 	Ft_Gpu_Hal_EndTransfer(phost);
 }
 
-ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t cmd)
+ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 {
 	ft_uint8_t hcmd[4] = { 0 };
 	hcmd[0] = cmd;
@@ -236,7 +236,7 @@ ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t cmd)
 	spi_close(SPIM, phost->hal_config.spi_cs_pin_no);
 }
 //This API sends a 3byte command to the phost
-ft_void_t Ft_Gpu_HostCommand_Ext3(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 {
 	ft_uint8_t hcmd[4] = { 0 };
 	hcmd[0] = cmd & 0xff;
@@ -248,7 +248,7 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 	spi_close(SPIM, phost->hal_config.spi_cs_pin_no);
 }
 
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t *buffer, ft_uint32_t count)
+ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint32_t count)
 {
 	ft_int32_t length = 0, availablefreesize = 0;
 	count = (count + 3) & ~0x3;
@@ -273,9 +273,9 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t *buffer, f
 	return FT_TRUE;
 }
 
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_prog_uchar8_t *buffer, ft_uint32_t count)
+ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(EVE_HalContext *phost, ft_prog_uchar8_t *buffer, ft_uint32_t count)
 {
-	eve_assert(!phost->cmd_frame);
+	eve_assert(!phost->CmdFrame);
 	eve_assert(!((uintptr_t)buffer & 0x3)); // must have 32-bit alignment
 	ft_uint32_t FT_PROGMEM_CONST *buf32 = (ft_uint32_t FT_PROGMEM_CONST *)(void FT_PROGMEM_CONST *)(buffer);
 	ft_int32_t length = 0, availablefreesize = 0;
@@ -301,13 +301,13 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_prog_uchar
 	return FT_TRUE;
 }
 
-ft_void_t Ft_Gpu_Hal_WrCmd32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+ft_void_t Ft_Gpu_Hal_WrCmd32(EVE_HalContext *phost, ft_uint32_t cmd)
 {
 	Ft_Gpu_Hal_Wr32(phost, REG_CMDB_WRITE, cmd);
 }
 
 /* Toggle PD_N pin of FT800 board for a power cycle*/
-ft_void_t Ft_Gpu_Hal_Powercycle(Ft_Gpu_Hal_Context_t *phost, ft_bool_t up)
+ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 {
 	if (up)
 	{
@@ -325,7 +325,7 @@ ft_void_t Ft_Gpu_Hal_Powercycle(Ft_Gpu_Hal_Context_t *phost, ft_bool_t up)
 	}
 }
 
-ft_void_t Ft_Gpu_Hal_WrMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length)
+ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length)
 {
 	ft_uint32_t SizeTransfered = 0;
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
@@ -333,7 +333,7 @@ ft_void_t Ft_Gpu_Hal_WrMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, const 
 	Ft_Gpu_Hal_EndTransfer(phost);
 }
 
-ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, const ft_prog_uchar8_t *buffer, ft_uint32_t length)
+ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_prog_uchar8_t *buffer, ft_uint32_t length)
 {
 	eve_assert(!((uintptr_t)buffer & 0x3)); // must be 32-bit aligned
 	eve_assert(!(length & 0x3)); // must be 32-bit aligned
@@ -345,7 +345,7 @@ ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr
 	Ft_Gpu_Hal_EndTransfer(phost);
 }
 
-ft_void_t Ft_Gpu_Hal_RdMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
+ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
 {
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
 	spi_readn(SPIM, buffer, length);
@@ -357,7 +357,7 @@ ft_void_t Ft_Gpu_Hal_Sleep(ft_uint32_t ms)
 	delayms(ms);
 }
 
-ft_int16_t Ft_Gpu_Hal_SetSPI(Ft_Gpu_Hal_Context_t *phost, FT_GPU_SPI_NUMCHANNELS_T numchnls, FT_GPU_SPI_NUMDUMMYBYTES numdummy)
+ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T numchnls, FT_GPU_SPI_NUMDUMMYBYTES numdummy)
 {
 	ft_uint8_t writebyte = 0;
 
@@ -372,8 +372,8 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(Ft_Gpu_Hal_Context_t *phost, FT_GPU_SPI_NUMCHANNELS
 		writebyte |= FT_SPI_TWO_DUMMY_BYTE;
 	Ft_Gpu_Hal_Wr8(phost, REG_SPI_WIDTH, writebyte);
 	//FT81x swicthed to dual/quad mode, now update global HAL context
-	phost->spichannel = numchnls;
-	phost->spinumdummy = numdummy;
+	phost->SpiChannel = numchnls;
+	phost->SpiNumDummy = numdummy;
 	return 0;
 }
 
@@ -384,7 +384,7 @@ ft_void_t getFlashTextString(char __flash__ *str, ft_uchar8_t *destArray, ft_uin
 		destArray[i] = str[i];
 }
 
-ft_uint32_t Ft_Gpu_CurrentFrequency(Ft_Gpu_Hal_Context_t *phost)
+ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
 {
 	ft_uint32_t t0, t1;
 	ft_uint32_t addr = REG_CLOCK;
@@ -422,7 +422,7 @@ ft_uint32_t Ft_Gpu_CurrentFrequency(Ft_Gpu_Hal_Context_t *phost)
 	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
 }
 
-ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(EVE_HalContext *phost)
 {
 #if defined(PANL70) || defined(PANL70PLUS)
 	gpio_function(GOODIXGPIO, pad_gpio33);

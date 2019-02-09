@@ -31,8 +31,8 @@
 
 #include "FT_Platform.h"
 
-ft_bool_t Ft_Hal_LoadRawFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, const char *filename);
-ft_bool_t Ft_Hal_LoadInflateFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, const char *filename);
-ft_bool_t Ft_Hal_LoadImageFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format); // Outputs format
+ft_bool_t Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename);
+ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename);
+ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format); // Outputs format
 
 /* end of file */

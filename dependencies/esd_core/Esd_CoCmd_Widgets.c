@@ -37,7 +37,7 @@
 extern ft_uint8_t Ft_Esd_Primitive;
 #endif
 
-ft_void_t Ft_Gpu_CoCmd_Gradient(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x0, ft_int16_t y0, ft_uint32_t rgb0, ft_int16_t x1, ft_int16_t y1, ft_uint32_t rgb1)
+ft_void_t Ft_Gpu_CoCmd_Gradient(EVE_HalContext *phost, ft_int16_t x0, ft_int16_t y0, ft_uint32_t rgb0, ft_int16_t x1, ft_int16_t y1, ft_uint32_t rgb1)
 {
 	uint32_t cmd[5] = {
 		CMD_GRADIENT,
@@ -52,7 +52,7 @@ ft_void_t Ft_Gpu_CoCmd_Gradient(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x0, ft_i
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Spinner(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t style, ft_uint16_t scale)
+ft_void_t Ft_Gpu_CoCmd_Spinner(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t style, ft_uint16_t scale)
 {
 	uint32_t cmd[3] = {
 		CMD_SPINNER,
@@ -65,7 +65,7 @@ ft_void_t Ft_Gpu_CoCmd_Spinner(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Text(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
+ft_void_t Ft_Gpu_CoCmd_Text(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
 {
 	if (font >= 32)
 	{
@@ -85,7 +85,7 @@ ft_void_t Ft_Gpu_CoCmd_Text(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Text_S(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s, int length)
+ft_void_t Ft_Gpu_CoCmd_Text_S(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s, int length)
 {
 	if (font >= 32)
 	{
@@ -105,7 +105,7 @@ ft_void_t Ft_Gpu_CoCmd_Text_S(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Text_Ex(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_bool_t bottom, ft_int16_t baseLine, ft_int16_t capsHeight, const ft_char8_t *s)
+ft_void_t Ft_Gpu_CoCmd_Text_Ex(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_bool_t bottom, ft_int16_t baseLine, ft_int16_t capsHeight, const ft_char8_t *s)
 {
 	ft_int16_t yOffset;
 	if (options & OPT_CENTERY)
@@ -117,7 +117,7 @@ ft_void_t Ft_Gpu_CoCmd_Text_Ex(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int
 	Ft_Gpu_CoCmd_Text(phost, x, y - yOffset, font, options & ~OPT_CENTERY, s);
 }
 
-ft_void_t Ft_Gpu_CoCmd_Number(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_int32_t n)
+ft_void_t Ft_Gpu_CoCmd_Number(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_int32_t n)
 {
 	if (font >= 32)
 	{
@@ -136,7 +136,7 @@ ft_void_t Ft_Gpu_CoCmd_Number(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Toggle(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t font, ft_uint16_t options, ft_uint16_t state, const ft_char8_t *s)
+ft_void_t Ft_Gpu_CoCmd_Toggle(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t font, ft_uint16_t options, ft_uint16_t state, const ft_char8_t *s)
 {
 	uint32_t cmd[4] = {
 		CMD_TOGGLE,
@@ -151,7 +151,7 @@ ft_void_t Ft_Gpu_CoCmd_Toggle(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Slider(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t range)
+ft_void_t Ft_Gpu_CoCmd_Slider(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t range)
 {
 	uint32_t cmd[5] = {
 		CMD_SLIDER,
@@ -166,7 +166,7 @@ ft_void_t Ft_Gpu_CoCmd_Slider(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Button(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
+ft_void_t Ft_Gpu_CoCmd_Button(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
 {
 	uint32_t cmd[4] = {
 		CMD_BUTTON,
@@ -181,7 +181,7 @@ ft_void_t Ft_Gpu_CoCmd_Button(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Keys(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
+ft_void_t Ft_Gpu_CoCmd_Keys(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
 {
 	uint32_t cmd[4] = {
 		CMD_KEYS,
@@ -196,7 +196,7 @@ ft_void_t Ft_Gpu_CoCmd_Keys(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Dial(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t val)
+ft_void_t Ft_Gpu_CoCmd_Dial(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t val)
 {
 	uint32_t cmd[4] = {
 		CMD_DIAL,
@@ -211,7 +211,7 @@ ft_void_t Ft_Gpu_CoCmd_Dial(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_
 }
 
 /* Error handling for val is not done, so better to always use range of 65535 in order that needle is drawn within display region */
-ft_void_t Ft_Gpu_CoCmd_Gauge(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t major, ft_uint16_t minor, ft_uint16_t val, ft_uint16_t range)
+ft_void_t Ft_Gpu_CoCmd_Gauge(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t major, ft_uint16_t minor, ft_uint16_t val, ft_uint16_t range)
 {
 	uint32_t cmd[5] = {
 		CMD_GAUGE,
@@ -226,7 +226,7 @@ ft_void_t Ft_Gpu_CoCmd_Gauge(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Clock(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t h, ft_uint16_t m, ft_uint16_t s, ft_uint16_t ms)
+ft_void_t Ft_Gpu_CoCmd_Clock(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t h, ft_uint16_t m, ft_uint16_t s, ft_uint16_t ms)
 {
 	uint32_t cmd[5] = {
 		CMD_CLOCK,
@@ -241,7 +241,7 @@ ft_void_t Ft_Gpu_CoCmd_Clock(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Scrollbar(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t size, ft_uint16_t range)
+ft_void_t Ft_Gpu_CoCmd_Scrollbar(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t size, ft_uint16_t range)
 {
 	uint32_t cmd[5] = {
 		CMD_SCROLLBAR,
@@ -256,7 +256,7 @@ ft_void_t Ft_Gpu_CoCmd_Scrollbar(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_i
 #endif
 }
 
-ft_void_t Ft_Gpu_CoCmd_Progress(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t range)
+ft_void_t Ft_Gpu_CoCmd_Progress(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t range)
 {
 	uint32_t cmd[5] = {
 		CMD_PROGRESS,

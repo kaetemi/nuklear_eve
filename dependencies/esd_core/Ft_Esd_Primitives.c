@@ -25,7 +25,7 @@ ft_void_t Ft_Esd_Render_RectangleF_Gradient(
 // Rectangle drawing with some logic to convert from radius to line width and width height to positions to simplify usage
 ft_void_t Ft_Esd_Render_RectangleF(ft_int32_f4_t x, ft_int32_f4_t y, ft_int32_f4_t w, ft_int32_f4_t h, ft_int32_f4_t radius, ft_argb32_t color)
 {
-	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_int32_t width = radius + 8;
 	ft_int32_t x0 = x + radius;
 	ft_int32_t y0 = y + radius;
@@ -44,7 +44,7 @@ ft_void_t Ft_Esd_Render_RectangleF(ft_int32_f4_t x, ft_int32_f4_t y, ft_int32_f4
 
 ft_void_t Ft_Esd_Render_LineF(ft_int32_f4_t x0, ft_int32_f4_t y0, ft_int32_f4_t x1, ft_int32_f4_t y1, ft_int32_f3_t width, ft_argb32_t color)
 {
-	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = Ft_Esd_Host;
 	Ft_Esd_Dl_COLOR_ARGB(color);
 	Ft_Esd_Dl_LINE_WIDTH(width);
 	Ft_Esd_Dl_BEGIN(LINES);
@@ -58,7 +58,7 @@ ft_void_t Ft_Esd_Render_LineF(ft_int32_f4_t x0, ft_int32_f4_t y0, ft_int32_f4_t 
 
 void Ft_Esd_Dl_Bitmap_Vertex(ft_int16_t x, ft_int16_t y, ft_uint8_t handle, ft_uint16_t cell)
 {
-	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = Ft_Esd_Host;
 #if (EVE_MODEL >= EVE_FT810)
 	if (x < 0 || y < 0 || x >= 512 || y >= 512)
 	{
@@ -80,7 +80,7 @@ void Ft_Esd_Dl_Bitmap_Vertex(ft_int16_t x, ft_int16_t y, ft_uint8_t handle, ft_u
 // Also Ft_Gpu_CoCmd_LoadIdentity must be called afterwards to fully restore the context
 void Ft_Esd_Dl_Bitmap_Vertex_DXT1(ft_int16_t x, ft_int16_t y, ft_uint8_t handle, ft_uint8_t additional, ft_uint16_t cell, ft_uint16_t cells)
 {
-	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = Ft_Esd_Host;
 	Ft_Gpu_CoCmd_SendCmd(phost, BLEND_FUNC(ONE, ZERO));
 	Ft_Gpu_CoCmd_SendCmd(phost, COLOR_A(0x55));
 	Ft_Esd_Dl_Bitmap_Vertex(x, y, handle, cell);
@@ -100,7 +100,7 @@ void Ft_Esd_Dl_Bitmap_Vertex_DXT1(ft_int16_t x, ft_int16_t y, ft_uint8_t handle,
 // NOTE: This function may only be used within a Ft_Esd_Dl_SAVE_CONTEXT block, because it does not clean up state
 void Ft_Esd_Dl_Bitmap_Vertex_PALETTED8(ft_int16_t x, ft_int16_t y, ft_uint8_t handle, ft_uint16_t cell, ft_uint32_t paletteAddr)
 {
-	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = Ft_Esd_Host;
 	Ft_Esd_Dl_Alpha_Func(ALWAYS, 0);
 	Ft_Gpu_CoCmd_SendCmd(phost, BLEND_FUNC(ONE, ZERO));
 	Ft_Gpu_CoCmd_SendCmd(phost, COLOR_MASK(0, 0, 0, 1));
@@ -126,7 +126,7 @@ void Ft_Esd_Render_Bitmap(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCell bitmapCe
 
 	Ft_Esd_BitmapInfo *bitmapInfo = bitmapCell.Info;
 	ft_uint16_t cell = bitmapCell.Cell;
-	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_uint8_t handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
 
 	if (FT_ESD_BITMAPHANDLE_VALID(handle))
@@ -175,7 +175,7 @@ ft_void_t Ft_Esd_Render_BitmapScaled(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCe
 
 	Ft_Esd_BitmapInfo *bitmapInfo = bitmapCell.Info;
 	ft_uint16_t cell = bitmapCell.Cell;
-	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_uint8_t handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
 
 	if (FT_ESD_BITMAPHANDLE_VALID(handle))

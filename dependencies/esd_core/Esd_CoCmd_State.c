@@ -31,17 +31,17 @@
 
 #include "FT_Platform.h"
 
-ft_void_t Ft_Gpu_CoCmd_ColdStart(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_ColdStart(EVE_HalContext *phost)
 {
 	Eve_CoCmd_SendCmd(phost, CMD_COLDSTART);
 }
 
-ft_void_t Ft_Gpu_CoCmd_LoadIdentity(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_LoadIdentity(EVE_HalContext *phost)
 {
 	Eve_CoCmd_SendCmd(phost, CMD_LOADIDENTITY);
 }
 
-ft_void_t Ft_Gpu_CoCmd_Translate(Ft_Gpu_Hal_Context_t *phost, ft_int32_t tx, ft_int32_t ty)
+ft_void_t Ft_Gpu_CoCmd_Translate(EVE_HalContext *phost, ft_int32_t tx, ft_int32_t ty)
 {
 	uint32_t cmd[3] = {
 		CMD_TRANSLATE,
@@ -51,7 +51,7 @@ ft_void_t Ft_Gpu_CoCmd_Translate(Ft_Gpu_Hal_Context_t *phost, ft_int32_t tx, ft_
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_Rotate(Ft_Gpu_Hal_Context_t *phost, ft_int32_t a)
+ft_void_t Ft_Gpu_CoCmd_Rotate(EVE_HalContext *phost, ft_int32_t a)
 {
 	uint32_t cmd[2] = {
 		CMD_ROTATE,
@@ -60,7 +60,7 @@ ft_void_t Ft_Gpu_CoCmd_Rotate(Ft_Gpu_Hal_Context_t *phost, ft_int32_t a)
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_Scale(Ft_Gpu_Hal_Context_t *phost, ft_int32_t sx, ft_int32_t sy)
+ft_void_t Ft_Gpu_CoCmd_Scale(EVE_HalContext *phost, ft_int32_t sx, ft_int32_t sy)
 {
 	uint32_t cmd[3] = {
 		CMD_SCALE,
@@ -70,13 +70,13 @@ ft_void_t Ft_Gpu_CoCmd_Scale(Ft_Gpu_Hal_Context_t *phost, ft_int32_t sx, ft_int3
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_SetMatrix(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_SetMatrix(EVE_HalContext *phost)
 {
 	Eve_CoCmd_SendCmd(phost, CMD_SETMATRIX);
 }
 
 #if (EVE_MODEL >= EVE_FT810)
-ft_void_t Ft_Gpu_CoCmd_SetRotate(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t r)
+ft_void_t Ft_Gpu_CoCmd_SetRotate(EVE_HalContext *phost, ft_uint32_t r)
 {
 	uint32_t cmd[2] = {
 		CMD_SETROTATE,
@@ -86,7 +86,7 @@ ft_void_t Ft_Gpu_CoCmd_SetRotate(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t r)
 }
 #endif
 
-ft_void_t Ft_Gpu_CoCmd_BitmapTransform(Ft_Gpu_Hal_Context_t *phost, ft_int32_t x0, ft_int32_t y0, ft_int32_t x1, ft_int32_t y1, ft_int32_t x2, ft_int32_t y2, ft_int32_t tx0, ft_int32_t ty0, ft_int32_t tx1, ft_int32_t ty1, ft_int32_t tx2, ft_int32_t ty2, ft_uint16_t result)
+ft_void_t Ft_Gpu_CoCmd_BitmapTransform(EVE_HalContext *phost, ft_int32_t x0, ft_int32_t y0, ft_int32_t x1, ft_int32_t y1, ft_int32_t x2, ft_int32_t y2, ft_int32_t tx0, ft_int32_t ty0, ft_int32_t tx1, ft_int32_t ty1, ft_int32_t tx2, ft_int32_t ty2, ft_uint16_t result)
 {
 	uint32_t cmd[FT_CMD_SIZE * 6 * 2 + FT_CMD_SIZE * 2] = {
 		CMD_BITMAP_TRANSFORM,
@@ -107,7 +107,7 @@ ft_void_t Ft_Gpu_CoCmd_BitmapTransform(Ft_Gpu_Hal_Context_t *phost, ft_int32_t x
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_FgColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
+ft_void_t Ft_Gpu_CoCmd_FgColor(EVE_HalContext *phost, ft_uint32_t c)
 {
 	uint32_t cmd[2] = {
 		CMD_FGCOLOR,
@@ -116,7 +116,7 @@ ft_void_t Ft_Gpu_CoCmd_FgColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_BgColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
+ft_void_t Ft_Gpu_CoCmd_BgColor(EVE_HalContext *phost, ft_uint32_t c)
 {
 	uint32_t cmd[2] = {
 		CMD_BGCOLOR,
@@ -125,7 +125,7 @@ ft_void_t Ft_Gpu_CoCmd_BgColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_GradColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
+ft_void_t Ft_Gpu_CoCmd_GradColor(EVE_HalContext *phost, ft_uint32_t c)
 {
 	uint32_t cmd[2] = {
 		CMD_GRADCOLOR,
@@ -134,7 +134,7 @@ ft_void_t Ft_Gpu_CoCmd_GradColor(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t c)
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_SetFont(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft_uint32_t ptr)
+ft_void_t Ft_Gpu_CoCmd_SetFont(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t ptr)
 {
 	uint32_t cmd[3] = {
 		CMD_SETFONT,
@@ -145,7 +145,7 @@ ft_void_t Ft_Gpu_CoCmd_SetFont(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft
 }
 
 #if (EVE_MODEL >= EVE_FT810)
-ft_void_t Ft_Gpu_CoCmd_SetFont2(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft_uint32_t ptr, ft_uint32_t firstchar)
+ft_void_t Ft_Gpu_CoCmd_SetFont2(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t ptr, ft_uint32_t firstchar)
 {
 	uint32_t cmd[4] = {
 		CMD_SETFONT2,
@@ -156,7 +156,7 @@ ft_void_t Ft_Gpu_CoCmd_SetFont2(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, f
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_SetBase(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t base)
+ft_void_t Ft_Gpu_CoCmd_SetBase(EVE_HalContext *phost, ft_uint32_t base)
 {
 	uint32_t cmd[2] = {
 		CMD_SETBASE,
@@ -165,7 +165,7 @@ ft_void_t Ft_Gpu_CoCmd_SetBase(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t base)
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_SetBitmap(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t source, ft_uint16_t fmt, ft_uint16_t w, ft_uint16_t h)
+ft_void_t Ft_Gpu_CoCmd_SetBitmap(EVE_HalContext *phost, ft_uint32_t source, ft_uint16_t fmt, ft_uint16_t w, ft_uint16_t h)
 {
 	uint32_t cmd[4] = {
 		CMD_SETBITMAP,
@@ -176,7 +176,7 @@ ft_void_t Ft_Gpu_CoCmd_SetBitmap(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t source
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_SetScratch(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t handle)
+ft_void_t Ft_Gpu_CoCmd_SetScratch(EVE_HalContext *phost, ft_uint32_t handle)
 {
 	uint32_t cmd[2] = {
 		CMD_SETSCRATCH,
@@ -185,7 +185,7 @@ ft_void_t Ft_Gpu_CoCmd_SetScratch(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t handl
 	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_RomFont(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t font, ft_uint32_t romslot)
+ft_void_t Ft_Gpu_CoCmd_RomFont(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t romslot)
 {
 	uint32_t cmd[3] = {
 		CMD_ROMFONT,

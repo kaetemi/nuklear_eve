@@ -38,7 +38,7 @@ void Ft_Hal_LoadSDCard()
 {
 }
 
-ft_bool_t Ft_Hal_LoadRawFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, const char *filename)
+ft_bool_t Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
 {
 	FILE *afile;
 	ft_uint32_t ftsize = 0;
@@ -68,13 +68,13 @@ ft_bool_t Ft_Hal_LoadRawFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, c
 	return FT_TRUE;
 }
 
-ft_bool_t Ft_Hal_LoadInflateFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, const char *filename)
+ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
 {
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 8))
 		return FT_FALSE; // Space for CMD_INFLATE
 
-	ft_bool_t cmdFrame = phost->cmd_frame;
-	phost->cmd_frame = FT_FALSE; // Can safely bypass active frame
+	ft_bool_t cmdFrame = phost->CmdFrame;
+	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 
 	FILE *afile;
 	ft_uint32_t ftsize = 0;
@@ -85,7 +85,7 @@ ft_bool_t Ft_Hal_LoadInflateFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addres
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
-		phost->cmd_frame = cmdFrame;
+		phost->CmdFrame = cmdFrame;
 		return FT_FALSE;
 	}
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_INFLATE);
@@ -105,17 +105,17 @@ ft_bool_t Ft_Hal_LoadInflateFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addres
 
 	fclose(afile); /* close the opened compressed file */
 
-	phost->cmd_frame = cmdFrame;
+	phost->CmdFrame = cmdFrame;
 	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
 }
 
-ft_bool_t Ft_Hal_LoadImageFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format)
+ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format)
 {
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 12))
 		return FT_FALSE; // Space for CMD_LOADIMAGE
 
-	ft_bool_t cmdFrame = phost->cmd_frame;
-	phost->cmd_frame = FT_FALSE; // Can safely bypass active frame
+	ft_bool_t cmdFrame = phost->CmdFrame;
+	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 
 	FILE *afile;
 	ft_uint32_t ftsize = 0;
@@ -126,7 +126,7 @@ ft_bool_t Ft_Hal_LoadImageFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address,
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
-		phost->cmd_frame = cmdFrame;
+		phost->CmdFrame = cmdFrame;
 		return 0;
 	}
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
@@ -153,7 +153,7 @@ ft_bool_t Ft_Hal_LoadImageFile(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t address,
 
 	fclose(afile); /* close the opened jpg file */
 
-	phost->cmd_frame = cmdFrame;
+	phost->CmdFrame = cmdFrame;
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE;
 

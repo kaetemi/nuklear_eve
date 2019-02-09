@@ -75,10 +75,10 @@
 
 #if defined(FT4222_PLATFORM)
 //extern struct Ft_Gpu_Hal_Context_t;
-//ft_bool_t	  FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost);
-ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(Ft_Gpu_Hal_Context_t *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *divisor);
-ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd, ft_uint8_t *rdbufptr, ft_uint32_t exprdbytes);
-ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hwraddr, const ft_uint8_t *wrbufptr, ft_uint32_t bytestowr);
+//ft_bool_t	  FT4222Drv_Open(EVE_HalContext *phost);
+ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *divisor);
+ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_uint8_t *rdbufptr, ft_uint32_t exprdbytes);
+ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, const ft_uint8_t *wrbufptr, ft_uint32_t bytestowr);
 #endif
 #if defined(MPSSE_PLATFORM)
 //uint8_t    Gpu_Hal_LIBMPSSE_Rd(Gpu_Hal_Context_t *phost, uint8 *buffer, uint32 sizeToTransfer, uint32 *sizeTransfered);

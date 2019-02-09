@@ -34,7 +34,7 @@
 
 #include "FT_Mcu_Hal.h"
 
-ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_BootupConfig(EVE_HalContext *phost)
 {
 	Ft_Gpu_Hal_Powercycle(phost, FT_TRUE);
 

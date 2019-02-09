@@ -32,36 +32,36 @@
 #include "FT_Platform.h"
 #if !defined(FT_GPU_COCMD_BUFFERED)
 
-ft_void_t Eve_CoCmd_SendCmdArr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t *cmd, ft_size_t nb)
+ft_void_t Eve_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
 {
 #if defined(_DEBUG)
-	phost->cmd_frame = FT_FALSE;
+	phost->CmdFrame = FT_FALSE;
 #endif
 	Ft_Gpu_Hal_WrCmdBuf(phost, (void *)cmd, (ft_uint32_t)(nb * sizeof(ft_uint32_t)));
 #if defined(_DEBUG)
-	phost->cmd_frame = FT_TRUE;
+	phost->CmdFrame = FT_TRUE;
 #endif
 }
 
-ft_void_t Eve_CoCmd_SendCmd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+ft_void_t Eve_CoCmd_SendCmd(EVE_HalContext *phost, ft_uint32_t cmd)
 {
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 4))
 		return;
 #if defined(_DEBUG)
-	phost->cmd_frame = FT_FALSE;
+	phost->CmdFrame = FT_FALSE;
 #endif
 	Ft_Gpu_Hal_WrCmd32(phost, cmd);
 #if defined(_DEBUG)
-	phost->cmd_frame = FT_TRUE;
+	phost->CmdFrame = FT_TRUE;
 #endif
 }
 
-ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, int length)
+ft_void_t Eve_CoCmd_SendStr_S(EVE_HalContext *phost, const ft_char8_t *s, int length)
 {
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, (length + 3) & ~3))
 		return;
 #if defined(_DEBUG)
-	phost->cmd_frame = FT_FALSE;
+	phost->CmdFrame = FT_FALSE;
 #endif
 #if (EVE_MODEL < EVE_FT810)
 	ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
@@ -75,16 +75,16 @@ ft_void_t Eve_CoCmd_SendStr_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s, 
 	Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + len) & FIFO_SIZE_MASK);
 #endif
 #if defined(_DEBUG)
-	phost->cmd_frame = FT_TRUE;
+	phost->CmdFrame = FT_TRUE;
 #endif
 }
 
-ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
+ft_void_t Eve_CoCmd_SendStr(EVE_HalContext *phost, const ft_char8_t *s)
 {
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, (strlen(s) + 3) & ~3))
 		return; // TODO: This strlen can be avoided
 #if defined(_DEBUG)
-	phost->cmd_frame = FT_FALSE;
+	phost->CmdFrame = FT_FALSE;
 #endif
 #if (EVE_MODEL < EVE_FT810)
 	ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
@@ -98,18 +98,18 @@ ft_void_t Eve_CoCmd_SendStr(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *s)
 	Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + len) & FIFO_SIZE_MASK);
 #endif
 #if defined(_DEBUG)
-	phost->cmd_frame = FT_TRUE;
+	phost->CmdFrame = FT_TRUE;
 #endif
 }
 
-ft_void_t Eve_CoCmd_StartFrame(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_CoCmd_StartFrame(EVE_HalContext *phost)
 {
-	phost->cmd_frame = FT_TRUE;
+	phost->CmdFrame = FT_TRUE;
 }
 
-ft_void_t Eve_CoCmd_EndFrame(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Eve_CoCmd_EndFrame(EVE_HalContext *phost)
 {
-	phost->cmd_frame = FT_FALSE;
+	phost->CmdFrame = FT_FALSE;
 }
 
 #endif

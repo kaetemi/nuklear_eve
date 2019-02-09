@@ -31,12 +31,12 @@
 
 #include "Esd_CoCmd.h"
 
-ft_void_t Ft_Gpu_CoCmd_DlStart(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_DlStart(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_DLSTART);
 }
 
-ft_void_t Ft_Gpu_CoCmd_Append(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t num)
+ft_void_t Ft_Gpu_CoCmd_Append(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num)
 {
 	uint32_t cmd[3] = {
 		CMD_APPEND,
@@ -46,12 +46,12 @@ ft_void_t Ft_Gpu_CoCmd_Append(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_u
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_Swap(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_Swap(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_SWAP);
 }
 
-ft_void_t Ft_Gpu_CoCmd_Sketch(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format)
+ft_void_t Ft_Gpu_CoCmd_Sketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format)
 {
 	uint32_t cmd[5] = {
 		CMD_SKETCH,
@@ -64,7 +64,7 @@ ft_void_t Ft_Gpu_CoCmd_Sketch(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int1
 }
 
 #if (EVE_MODEL == EVE_FT801)
-ft_void_t Ft_Gpu_CoCmd_CSketch(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format, ft_uint16_t freq)
+ft_void_t Ft_Gpu_CoCmd_CSketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format, ft_uint16_t freq)
 {
 	uint32_t cmd[5] = {
 		CMD_CSKETCH,
@@ -78,7 +78,7 @@ ft_void_t Ft_Gpu_CoCmd_CSketch(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int
 #endif
 
 #if (EVE_MODEL >= EVE_FT810)
-ft_void_t Ft_Gpu_CoCmd_PlayVideo(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t options)
+ft_void_t Ft_Gpu_CoCmd_PlayVideo(EVE_HalContext *phost, ft_uint32_t options)
 {
 	uint32_t cmd[2] = {
 		CMD_PLAYVIDEO,
@@ -88,17 +88,17 @@ ft_void_t Ft_Gpu_CoCmd_PlayVideo(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t option
 }
 #endif
 
-ft_void_t Ft_Gpu_CoCmd_Logo(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_Logo(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_LOGO);
 }
 
-ft_void_t Ft_Gpu_CoCmd_ScreenSaver(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_ScreenSaver(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_SCREENSAVER);
 }
 
-ft_uint32_t Ft_Gpu_CoCmd_Calibrate(Ft_Gpu_Hal_Context_t *phost)
+ft_uint32_t Ft_Gpu_CoCmd_Calibrate(EVE_HalContext *phost)
 {
 	uint32_t cmd[2] = {
 		CMD_CALIBRATE,
@@ -117,13 +117,13 @@ ft_uint32_t Ft_Gpu_CoCmd_Calibrate(Ft_Gpu_Hal_Context_t *phost)
 	return res;
 }
 
-ft_void_t Ft_Gpu_CoCmd_Stop(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_Stop(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_STOP);
 }
 
 #if (EVE_MODEL >= EVE_BT815)
-ft_bool_t Ft_Gpu_CoCmd_AnimStart(Ft_Gpu_Hal_Context_t *phost, int32_t ch, uint32_t aoptr, uint32_t loop)
+ft_bool_t Ft_Gpu_CoCmd_AnimStart(EVE_HalContext *phost, int32_t ch, uint32_t aoptr, uint32_t loop)
 {
 	uint32_t flashStatus = Ft_Gpu_Hal_Rd32(phost, REG_FLASH_STATUS);
 	if (flashStatus < FLASH_STATUS_FULL)
@@ -138,7 +138,7 @@ ft_bool_t Ft_Gpu_CoCmd_AnimStart(Ft_Gpu_Hal_Context_t *phost, int32_t ch, uint32
 		aoptr,
 		loop,
 	};
-	if (phost->cmd_frame)
+	if (phost->CmdFrame)
 	{
 		Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 		return FT_TRUE;
@@ -150,32 +150,32 @@ ft_bool_t Ft_Gpu_CoCmd_AnimStart(Ft_Gpu_Hal_Context_t *phost, int32_t ch, uint32
 	}
 }
 
-void Ft_Gpu_CoCmd_AnimStop(Ft_Gpu_Hal_Context_t *phost, int32_t ch)
+void Ft_Gpu_CoCmd_AnimStop(EVE_HalContext *phost, int32_t ch)
 {
 	uint32_t cmd[2] = {
 		CMD_ANIMSTOP,
 		ch,
 	};
-	if (phost->cmd_frame)
+	if (phost->CmdFrame)
 		Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 	else
 		Ft_Gpu_Hal_WrCmdBuf(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
-void Ft_Gpu_CoCmd_AnimXY(Ft_Gpu_Hal_Context_t *phost, int32_t ch, int16_t x, int16_t y)
+void Ft_Gpu_CoCmd_AnimXY(EVE_HalContext *phost, int32_t ch, int16_t x, int16_t y)
 {
 	uint32_t cmd[3] = {
 		CMD_ANIMXY,
 		ch,
 		(((ft_uint32_t)y << 16) | (x & 0xffff)),
 	};
-	if (phost->cmd_frame)
+	if (phost->CmdFrame)
 		Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 	else
 		Ft_Gpu_Hal_WrCmdBuf(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
-void Ft_Gpu_CoCmd_AnimDraw(Ft_Gpu_Hal_Context_t *phost, int32_t ch)
+void Ft_Gpu_CoCmd_AnimDraw(EVE_HalContext *phost, int32_t ch)
 {
 	uint32_t cmd[2] = {
 		CMD_ANIMDRAW,
@@ -184,7 +184,7 @@ void Ft_Gpu_CoCmd_AnimDraw(Ft_Gpu_Hal_Context_t *phost, int32_t ch)
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void Ft_Gpu_CoCmd_AnimFrame(Ft_Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_t aoptr, uint32_t frame)
+void Ft_Gpu_CoCmd_AnimFrame(EVE_HalContext *phost, int16_t x, int16_t y, uint32_t aoptr, uint32_t frame)
 {
 	uint32_t cmd[4] = {
 		CMD_ANIMFRAME,
@@ -198,7 +198,7 @@ void Ft_Gpu_CoCmd_AnimFrame(Ft_Gpu_Hal_Context_t *phost, int16_t x, int16_t y, u
 
 // FIXME
 /*
-ft_void_t Ft_Gpu_CoCmd_RegRead(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t result)
+ft_void_t Ft_Gpu_CoCmd_RegRead(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t result)
 {
 	uint32_t cmd[3] = {
 		CMD_REGREAD,
@@ -210,12 +210,12 @@ ft_void_t Ft_Gpu_CoCmd_RegRead(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_
 */
 
 #if (EVE_MODEL >= EVE_FT810)
-ft_void_t Ft_Gpu_CoCmd_VideoStart(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_VideoStart(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_VIDEOSTART);
 }
 
-ft_void_t Ft_Gpu_CoCmd_VideoFrame(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t dst, ft_uint32_t ptr)
+ft_void_t Ft_Gpu_CoCmd_VideoFrame(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t ptr)
 {
 	uint32_t cmd[3] = {
 		CMD_VIDEOFRAME,
@@ -228,7 +228,7 @@ ft_void_t Ft_Gpu_CoCmd_VideoFrame(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t dst, 
 
 // FIXME
 /*
-ft_void_t Ft_Gpu_CoCmd_GetProps(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t w, ft_uint32_t h)
+ft_void_t Ft_Gpu_CoCmd_GetProps(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t w, ft_uint32_t h)
 {
 	uint32_t cmd[4] = {
 		CMD_GETPROPS,
@@ -240,7 +240,7 @@ ft_void_t Ft_Gpu_CoCmd_GetProps(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft
 }
 */
 
-ft_void_t Ft_Gpu_CoCmd_TouchTransform(Ft_Gpu_Hal_Context_t *phost, ft_int32_t x0, ft_int32_t y0, ft_int32_t x1, ft_int32_t y1, ft_int32_t x2, ft_int32_t y2, ft_int32_t tx0, ft_int32_t ty0, ft_int32_t tx1, ft_int32_t ty1, ft_int32_t tx2, ft_int32_t ty2, ft_uint16_t result)
+ft_void_t Ft_Gpu_CoCmd_TouchTransform(EVE_HalContext *phost, ft_int32_t x0, ft_int32_t y0, ft_int32_t x1, ft_int32_t y1, ft_int32_t x2, ft_int32_t y2, ft_int32_t tx0, ft_int32_t ty0, ft_int32_t tx1, ft_int32_t ty1, ft_int32_t tx2, ft_int32_t ty2, ft_uint16_t result)
 {
 	uint32_t cmd[FT_CMD_SIZE * 6 * 2 + FT_CMD_SIZE * 2] = {
 		CMD_TOUCH_TRANSFORM,
@@ -261,7 +261,7 @@ ft_void_t Ft_Gpu_CoCmd_TouchTransform(Ft_Gpu_Hal_Context_t *phost, ft_int32_t x0
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_Interrupt(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ms)
+ft_void_t Ft_Gpu_CoCmd_Interrupt(EVE_HalContext *phost, ft_uint32_t ms)
 {
 	uint32_t cmd[2] = {
 		CMD_INTERRUPT,
@@ -272,7 +272,7 @@ ft_void_t Ft_Gpu_CoCmd_Interrupt(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ms)
 
 // FIXME
 /*
-ft_void_t Ft_Gpu_CoCmd_GetMatrix(Ft_Gpu_Hal_Context_t *phost, ft_int32_t a, ft_int32_t b, ft_int32_t c, ft_int32_t d, ft_int32_t e, ft_int32_t f)
+ft_void_t Ft_Gpu_CoCmd_GetMatrix(EVE_HalContext *phost, ft_int32_t a, ft_int32_t b, ft_int32_t c, ft_int32_t d, ft_int32_t e, ft_int32_t f)
 {
 	uint32_t cmd[7] = {
 		CMD_GETMATRIX,
@@ -288,13 +288,13 @@ ft_void_t Ft_Gpu_CoCmd_GetMatrix(Ft_Gpu_Hal_Context_t *phost, ft_int32_t a, ft_i
 */
 
 #if (EVE_MODEL >= EVE_FT810)
-ft_void_t Ft_Gpu_CoCmd_Sync(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoCmd_Sync(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_SYNC);
 }
 #endif
 
-ft_void_t Ft_Gpu_CoCmd_Track(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t tag)
+ft_void_t Ft_Gpu_CoCmd_Track(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t tag)
 {
 	uint32_t cmd[4] = {
 		CMD_TRACK,
@@ -306,7 +306,7 @@ ft_void_t Ft_Gpu_CoCmd_Track(Ft_Gpu_Hal_Context_t *phost, ft_int16_t x, ft_int16
 }
 
 #if (EVE_MODEL >= EVE_FT810)
-ft_void_t Ft_Gpu_CoCmd_Int_RAMShared(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr)
+ft_void_t Ft_Gpu_CoCmd_Int_RAMShared(EVE_HalContext *phost, ft_uint32_t ptr)
 {
 	uint32_t cmd[2] = {
 		CMD_INT_RAMSHARED,
@@ -315,7 +315,7 @@ ft_void_t Ft_Gpu_CoCmd_Int_RAMShared(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t pt
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-ft_void_t Ft_Gpu_CoCmd_Int_SWLoadImage(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t ptr, ft_uint32_t options)
+ft_void_t Ft_Gpu_CoCmd_Int_SWLoadImage(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t options)
 {
 	uint32_t cmd[3] = {
 		CMD_INT_SWLOADIMAGE,
@@ -328,7 +328,7 @@ ft_void_t Ft_Gpu_CoCmd_Int_SWLoadImage(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t 
 
 // FIXME
 /*
-ft_void_t Ft_Gpu_CoCmd_GetPtr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t result)
+ft_void_t Ft_Gpu_CoCmd_GetPtr(EVE_HalContext *phost, ft_uint32_t result)
 {
 	uint32_t cmd[2] = {
 		CMD_GETPTR,

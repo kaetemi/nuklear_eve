@@ -35,7 +35,7 @@
 #include "FT_Gpu_Hal_MSVC.h"
 
 #if defined(FT4222_PLATFORM)
-ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
+ft_bool_t FT4222Drv_Open(EVE_HalContext *phost)
 {
 	FT_STATUS status;
 	//ulong_t numdevs;
@@ -52,7 +52,7 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 
 	ft_bool_t ret = FT_TRUE;
 
-	phost->hal_handle = phost->hal_handle2 = NULL;
+	phost->SpiHandle = phost->GpioHandle = NULL;
 
 	status = FT_CreateDeviceInfoList(&numdevs);
 	if (FT_OK != status)
@@ -93,7 +93,7 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 			else
 				ret = FT_FALSE;
 
-			if (ret && !(devInfo.Flags & 0x01) && ((!strcmp(devInfo.Description, "FT4222 A") && (phost->hal_handle == NULL)) || (!strcmp(devInfo.Description, "FT4222 B") && (phost->hal_handle2 == NULL))))
+			if (ret && !(devInfo.Flags & 0x01) && ((!strcmp(devInfo.Description, "FT4222 A") && (phost->SpiHandle == NULL)) || (!strcmp(devInfo.Description, "FT4222 B") && (phost->GpioHandle == NULL))))
 			{
 				/* obtain handle for the first discovered "FT4222 A" and first "FT4222 B" */
 				status = FT_OpenEx(devInfo.Description, FT_OPEN_BY_DESCRIPTION, &fthandle);
@@ -107,14 +107,14 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 					if (!strcmp(devInfo.Description, "FT4222 A"))
 					{
 						//is SPI
-						phost->hal_handle = fthandle; //SPI communication handle
-						eve_printf_debug("[%d]th of total connected devices is FT4222 A (SPI) : phost->hal_hanlde = %p\n", index + 1, phost->hal_handle);
+						phost->SpiHandle = fthandle; //SPI communication handle
+						eve_printf_debug("[%d]th of total connected devices is FT4222 A (SPI) : phost->hal_hanlde = %p\n", index + 1, phost->SpiHandle);
 					}
 					else if (!strcmp(devInfo.Description, "FT4222 B"))
 					{
 						//is GPIO
-						phost->hal_handle2 = fthandle; //GPIO communication handle
-						eve_printf_debug("[%d]th of total connected devices is FT4222 B (GPIO) : phost->hal_hanlde = %p\n", index + 1, phost->hal_handle);
+						phost->GpioHandle = fthandle; //GPIO communication handle
+						eve_printf_debug("[%d]th of total connected devices is FT4222 B (GPIO) : phost->hal_hanlde = %p\n", index + 1, phost->SpiHandle);
 					}
 					else
 					{
@@ -125,7 +125,7 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 			else
 			{
 				if (
-				    (!strcmp(devInfo.Description, "FT4222 A") && phost->hal_handle != NULL) || (!strcmp(devInfo.Description, "FT4222 B") && phost->hal_handle2 != NULL))
+				    (!strcmp(devInfo.Description, "FT4222 A") && phost->SpiHandle != NULL) || (!strcmp(devInfo.Description, "FT4222 B") && phost->GpioHandle != NULL))
 					eve_printf_debug("[%d]th of total connected devices is not the first %s detected. Hence skipping.\n", index + 1, devInfo.Description);
 				else if (devInfo.Flags & 0x01)
 					eve_printf_debug("[%d]th of total connected devices is already open in another context. Hence skipping.\n", index + 1);
@@ -138,7 +138,7 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 
 	if (ret)
 	{
-		status = FT4222_GetVersion(phost->hal_handle, &pversion);
+		status = FT4222_GetVersion(phost->SpiHandle, &pversion);
 		if (status != FT4222_OK)
 			eve_printf_debug("FT4222_GetVersion failed\n");
 		else
@@ -148,7 +148,7 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 	if (ret)
 	{
 		//Set default Read timeout 5s and Write timeout 5sec
-		status = FT_SetTimeouts(phost->hal_handle, FT4222_ReadTimeout, FT4222_WriteTimeout);
+		status = FT_SetTimeouts(phost->SpiHandle, FT4222_ReadTimeout, FT4222_WriteTimeout);
 		if (FT_OK != status)
 		{
 			eve_printf_debug("FT_SetTimeouts failed!\n");
@@ -159,7 +159,7 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 	if (ret)
 	{
 		// no latency to usb
-		status = FT_SetLatencyTimer(phost->hal_handle, FT4222_LatencyTime);
+		status = FT_SetLatencyTimer(phost->SpiHandle, FT4222_LatencyTime);
 		if (FT_OK != status)
 		{
 			eve_printf_debug("FT_SetLatencyTimerfailed!\n");
@@ -171,21 +171,21 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 	{
 		if (!Ft_Gpu_Hal_FT4222_ComputeCLK(phost, &selclk, &seldiv))
 		{
-			eve_printf_debug("Requested clock %d KHz is not supported in FT4222\n", phost->hal_config.spi_clockrate_khz);
+			eve_printf_debug("Requested clock %d KHz is not supported in FT4222\n", phost->HalConfig.spi_clockrate_khz);
 			ret = FT_FALSE;
 		}
 	}
 
 	if (ret)
 	{
-		status = FT4222_SetClock(phost->hal_handle, selclk);
+		status = FT4222_SetClock(phost->SpiHandle, selclk);
 		if (FT_OK != status)
 		{
 			eve_printf_debug("FT4222_SetClock failed!\n");
 			ret = FT_FALSE;
 		}
 
-		status = FT4222_GetClock(phost->hal_handle, &ftclk);
+		status = FT4222_GetClock(phost->SpiHandle, &ftclk);
 
 		if (FT_OK != status)
 			eve_printf_debug("FT4222_SetClock failed\n");
@@ -197,41 +197,41 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 	{
 		/* Interface 1 is SPI master */
 		status = FT4222_SPIMaster_Init(
-		    phost->hal_handle,
+		    phost->SpiHandle,
 		    SPI_IO_SINGLE,
 		    seldiv,
 		    CLK_IDLE_LOW, //,CLK_IDLE_HIGH
 		    CLK_LEADING, // CLK_LEADING CLK_TRAILING
-		    phost->hal_config.spi_cs_pin_no); /* slave selection output pins */
+		    phost->HalConfig.spi_cs_pin_no); /* slave selection output pins */
 		if (FT_OK != status)
 		{
 			eve_printf_debug("Init FT4222 as SPI master device failed!\n");
 			ret = FT_FALSE;
 		}
 		else
-			phost->spichannel = FT_GPU_SPI_SINGLE_CHANNEL; //SPI_IO_SINGLE;
+			phost->SpiChannel = FT_GPU_SPI_SINGLE_CHANNEL; //SPI_IO_SINGLE;
 
-		status = FT4222_SPI_SetDrivingStrength(phost->hal_handle, DS_4MA, DS_4MA, DS_4MA);
+		status = FT4222_SPI_SetDrivingStrength(phost->SpiHandle, DS_4MA, DS_4MA, DS_4MA);
 		if (FT4222_OK != status)
 			eve_printf_debug("FT4222_SPI_SetDrivingStrength failed!\n");
 
 		Ft_Gpu_Hal_Sleep(20);
 
-		status = FT4222_SetSuspendOut(phost->hal_handle2, FT_FALSE);
+		status = FT4222_SetSuspendOut(phost->GpioHandle, FT_FALSE);
 		if (FT_OK != status)
 		{
 			eve_printf_debug("Disable suspend out function on GPIO2 failed!\n");
 			ret = FT_FALSE;
 		}
 
-		status = FT4222_SetWakeUpInterrupt(phost->hal_handle2, FT_FALSE);
+		status = FT4222_SetWakeUpInterrupt(phost->GpioHandle, FT_FALSE);
 		if (FT_OK != status)
 		{
 			eve_printf_debug("Disable wakeup/interrupt feature on GPIO3 failed!\n");
 			ret = FT_FALSE;
 		}
 		/* Interface 2 is GPIO */
-		status = FT4222_GPIO_Init(phost->hal_handle2, gpio_dir);
+		status = FT4222_GPIO_Init(phost->GpioHandle, gpio_dir);
 		if (FT_OK != status)
 		{
 			eve_printf_debug("Init FT4222 as GPIO interface failed!\n");
@@ -240,7 +240,7 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 	}
 
 	/* dedicated write buffer used for SPI write. Max size is 2^uint16 */
-	if ((phost->spiwrbuf_ptr = malloc(FT4222_DYNAMIC_ALLOCATE_SIZE)) == NULL)
+	if ((phost->SpiWriBufPtr = malloc(FT4222_DYNAMIC_ALLOCATE_SIZE)) == NULL)
 	{
 		eve_printf_debug("malloc error\n");
 		ret = FT_FALSE;
@@ -268,7 +268,7 @@ ft_bool_t FT4222Drv_Open(Ft_Gpu_Hal_Context_t *phost)
 *                             0 - Failure
 * Author                   :
 ****************************************************************************/
-ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd, ft_uint8_t *rdbufptr, ft_uint32_t exprdbytes)
+ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_uint8_t *rdbufptr, ft_uint32_t exprdbytes)
 {
 	FT4222_STATUS status;
 	ft_uint8_t hrdpkt[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //3 byte addr + 2 or1 byte dummy
@@ -280,7 +280,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd,
 
 	if (retcode)
 	{
-		if (phost->spichannel == FT_GPU_SPI_SINGLE_CHANNEL)
+		if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
 		{
 			ft_uint16_t SizeTransfered;
 			/* Compose the HOST MEMORY READ packet */
@@ -289,18 +289,18 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd,
 			hrdpkt[2] = (ft_uint8_t)(hrdcmd & 0xFF);
 
 			status = FT4222_SPIMaster_SingleWrite(
-			    phost->hal_handle,
+			    phost->SpiHandle,
 			    hrdpkt,
-			    3 + phost->spinumdummy, /* 3 address and chosen dummy bytes */
+			    3 + phost->SpiNumDummy, /* 3 address and chosen dummy bytes */
 			    (ft_uint16_t *)&SizeTransfered,
 			    FALSE /* continue transaction */
 			);
-			if ((FT4222_OK != status) || ((ft_uint16_t)SizeTransfered != (3 + phost->spinumdummy)))
+			if ((FT4222_OK != status) || ((ft_uint16_t)SizeTransfered != (3 + phost->SpiNumDummy)))
 			{
 				eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, SizeTransfered is %d with status %d\n", (ft_uint16_t)SizeTransfered, status);
 				retcode = 0;
-				if ((ft_uint16_t)SizeTransfered != (3 + phost->spinumdummy))
-					phost->status = FT_GPU_HAL_STATUS_ERROR;
+				if ((ft_uint16_t)SizeTransfered != (3 + phost->SpiNumDummy))
+					phost->Status = FT_GPU_HAL_STATUS_ERROR;
 			}
 			else
 			{
@@ -324,7 +324,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd,
 						}
 
 						status = FT4222_SPIMaster_SingleRead(
-						    phost->hal_handle,
+						    phost->SpiHandle,
 						    rdbufptr,
 						    bytes_per_read,
 						    (ft_uint16_t *)&SizeTransfered,
@@ -334,7 +334,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd,
 							eve_printf_debug("FT4222_SPIMaster_SingleRead failed,SizeTransfered is %d with status %d\n", (ft_uint16_t)SizeTransfered, status);
 							retcode = 0;
 							if ((ft_uint16_t)SizeTransfered != bytes_per_read)
-								phost->status = FT_GPU_HAL_STATUS_ERROR;
+								phost->Status = FT_GPU_HAL_STATUS_ERROR;
 						}
 
 						//multiple iterations of SPI read needed
@@ -366,11 +366,11 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd,
 					bytes_per_read = FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH;
 
 				status = FT4222_SPIMaster_MultiReadWrite(
-				    phost->hal_handle,
+				    phost->SpiHandle,
 				    rdbufptr + read_data_index,
 				    hrdpkt,
 				    0,
-				    3 + phost->spinumdummy, // 3 addr + dummy bytes
+				    3 + phost->SpiNumDummy, // 3 addr + dummy bytes
 				    bytes_per_read,
 				    &SizeTransfered);
 				if ((FT4222_OK != status) || ((ft_uint16_t)SizeTransfered != bytes_per_read))
@@ -378,7 +378,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd,
 					eve_printf_debug("FT4222_SPIMaster_MultiReadWrite failed, SizeTransfered is %d with status %d\n", SizeTransfered, status);
 					retcode = 0;
 					if ((ft_uint16_t)SizeTransfered != bytes_per_read)
-						phost->status = FT_GPU_HAL_STATUS_ERROR;
+						phost->Status = FT_GPU_HAL_STATUS_ERROR;
 				}
 
 				//its multi SPI read calls
@@ -404,7 +404,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hrdcmd,
 *                             0 - Failure
 * Author                   :
 ****************************************************************************/
-ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hwraddr, const ft_uint8_t *wrbufptr, ft_uint32_t bytestowr)
+ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, const ft_uint8_t *wrbufptr, ft_uint32_t bytestowr)
 {
 
 	FT4222_STATUS status;
@@ -421,16 +421,16 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hwraddr
 	{
 		ft_uint16_t SizeTransfered = 0;
 
-		temp_wrpktptr = phost->spiwrbuf_ptr; //global phost write buffer of size FT4222_MAX_BYTES_PER_CALL
+		temp_wrpktptr = phost->SpiWriBufPtr; //global phost write buffer of size FT4222_MAX_BYTES_PER_CALL
 
-		if (phost->spichannel == FT_GPU_SPI_SINGLE_CHANNEL)
+		if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
 		{
 			*(temp_wrpktptr + 0) = (hwraddr >> 16) | 0x80; //MSB bits 10 for WRITE
 			*(temp_wrpktptr + 1) = (hwraddr >> 8) & 0xFF;
 			*(temp_wrpktptr + 2) = hwraddr & 0xff;
 
 			status = FT4222_SPIMaster_SingleWrite(
-			    phost->hal_handle,
+			    phost->SpiHandle,
 			    temp_wrpktptr,
 			    3, //3 address bytes
 			    (ft_uint16_t *)&SizeTransfered,
@@ -458,7 +458,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hwraddr
 					}
 
 					status = FT4222_SPIMaster_SingleWrite(
-					    phost->hal_handle,
+					    phost->SpiHandle,
 					    wrbufptr,
 					    per_write,
 					    (ft_uint16_t *)&SizeTransfered,
@@ -469,7 +469,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hwraddr
 						eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, SizeTransfered is %d with status %d\n", __LINE__, (ft_uint16_t)SizeTransfered, status);
 						retcode = 0;
 						if ((ft_uint16_t)SizeTransfered != per_write)
-							phost->status = FT_GPU_HAL_STATUS_ERROR;
+							phost->Status = FT_GPU_HAL_STATUS_ERROR;
 					}
 
 					//continue writing more bytes
@@ -497,7 +497,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hwraddr
 				memcpy((temp_wrpktptr + 3), wrbufptr, per_write);
 
 				status = FT4222_SPIMaster_MultiReadWrite(
-				    phost->hal_handle,
+				    phost->SpiHandle,
 				    &dummy_read,
 				    temp_wrpktptr,
 				    0,
@@ -508,7 +508,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hwraddr
 				{
 					eve_printf_debug("FT4222_SPIMaster_MultiReadWrite failed, status %d\n", status);
 					retcode = 0;
-					phost->status = FT_GPU_HAL_STATUS_ERROR;
+					phost->Status = FT_GPU_HAL_STATUS_ERROR;
 				}
 
 				hwraddr += per_write;
@@ -556,22 +556,22 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t hwraddr
 *
 * Author                   :
 ****************************************************************************/
-ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(Ft_Gpu_Hal_Context_t *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *sysdivisor)
+ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *sysdivisor)
 {
 	//phost->hal_config.spi_clockrate_khz is the user requested SPI communication clock
 
-	if (phost->hal_config.spi_clockrate_khz <= 5000)
+	if (phost->HalConfig.spi_clockrate_khz <= 5000)
 	{ //set to 5000 KHz
 		*sysclk = SYS_CLK_80;
 		*sysdivisor = CLK_DIV_16;
 	}
-	else if (phost->hal_config.spi_clockrate_khz > 5000 && phost->hal_config.spi_clockrate_khz <= 10000)
+	else if (phost->HalConfig.spi_clockrate_khz > 5000 && phost->HalConfig.spi_clockrate_khz <= 10000)
 	{
 		//set to 10000 KHz
 		*sysclk = SYS_CLK_80;
 		*sysdivisor = CLK_DIV_8;
 	}
-	else if (phost->hal_config.spi_clockrate_khz > 10000 && phost->hal_config.spi_clockrate_khz <= 15000)
+	else if (phost->HalConfig.spi_clockrate_khz > 10000 && phost->HalConfig.spi_clockrate_khz <= 15000)
 	{
 		//set to 15000 KHz
 		*sysclk = SYS_CLK_60;
@@ -583,7 +583,7 @@ ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(Ft_Gpu_Hal_Context_t *phost, FT4222_Clock
 		*sysclk = SYS_CLK_80;
 		*sysdivisor = CLK_DIV_4;
 	}
-	eve_printf_debug("User Selected SPI clk : %d KHz\n", phost->hal_config.spi_clockrate_khz);
+	eve_printf_debug("User Selected SPI clk : %d KHz\n", phost->HalConfig.spi_clockrate_khz);
 	eve_printf_debug("Configured clk :  Ft4222 sys clk enum = %d , divisor enum = %d\n", *sysclk, *sysdivisor);
 	return (FT_TRUE);
 }
@@ -642,16 +642,16 @@ ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 	return FT_TRUE;
 }
 
-ft_void_t Ft_Gpu_Hal_ESD_Idle(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
 {
 }
 
-ft_bool_t Ft_Gpu_Hal_Open(Ft_Gpu_Hal_Context_t *phost)
+ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 {
-	phost->hal_config.channel_no = 0;
-	phost->hal_config.pdn_pin_no = FT800_PD_N;
-	phost->hal_config.spi_cs_pin_no = FT800_SEL_PIN;
-	phost->hal_config.spi_clockrate_khz = 12000; //in KHz
+	phost->HalConfig.channel_no = 0;
+	phost->HalConfig.pdn_pin_no = FT800_PD_N;
+	phost->HalConfig.spi_cs_pin_no = FT800_SEL_PIN;
+	phost->HalConfig.spi_clockrate_khz = 12000; //in KHz
 
 #if defined(MSVC_PLATFORM)
 	FT_STATUS status;
@@ -685,14 +685,14 @@ ft_bool_t Ft_Gpu_Hal_Open(Ft_Gpu_Hal_Context_t *phost)
 #endif
 #endif
 	/* Initialize the context valriables */
-	phost->spinumdummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
-	phost->spichannel = 0;
-	phost->status = FT_GPU_HAL_OPENED;
+	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
+	phost->SpiChannel = 0;
+	phost->Status = FT_GPU_HAL_OPENED;
 	return FT_TRUE;
 }
-ft_void_t Ft_Gpu_Hal_Close(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
 {
-	phost->status = FT_GPU_HAL_CLOSED;
+	phost->Status = FT_GPU_HAL_CLOSED;
 #ifdef MSVC_PLATFORM
 
 #ifdef MPSSE_PLATFORM
@@ -700,16 +700,16 @@ ft_void_t Ft_Gpu_Hal_Close(Ft_Gpu_Hal_Context_t *phost)
 	SPI_CloseChannel(phost->hal_handle);
 #elif defined(FT4222_PLATFORM)
 	FT4222_STATUS status;
-	if (FT4222_OK != (status = FT4222_UnInitialize(phost->hal_handle)))
+	if (FT4222_OK != (status = FT4222_UnInitialize(phost->SpiHandle)))
 		eve_printf_debug("FT4222_UnInitialize failed %d\n", status);
 
-	if (FT4222_OK != (status = FT4222_UnInitialize(phost->hal_handle2)))
+	if (FT4222_OK != (status = FT4222_UnInitialize(phost->GpioHandle)))
 		eve_printf_debug("FT4222_UnInitialize failed %d\n", status);
 
-	if (FT_OK != (status = FT_Close(phost->hal_handle)))
+	if (FT_OK != (status = FT_Close(phost->SpiHandle)))
 		eve_printf_debug("CLOSE failed %d\n", status);
 
-	if (FT_OK != (status = FT_Close(phost->hal_handle2)))
+	if (FT_OK != (status = FT_Close(phost->GpioHandle)))
 		eve_printf_debug("CLOSE failed %d\n", status);
 #endif
 
@@ -729,9 +729,9 @@ ft_void_t Ft_Gpu_Hal_DeInit()
 }
 
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
-ft_void_t Ft_Gpu_Hal_StartTransfer(Ft_Gpu_Hal_Context_t *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
+ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {
-	eve_assert(!(phost->cmd_frame && (addr == REG_CMDB_WRITE)));
+	eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
 	if (FT_GPU_READ == rw)
 	{
 #ifdef MSVC_PLATFORM
@@ -753,7 +753,7 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(Ft_Gpu_Hal_Context_t *phost, FT_GPU_TRANSFERD
 		eve_debug_break();
 #endif
 #endif
-		phost->status = FT_GPU_HAL_READING;
+		phost->Status = FT_GPU_HAL_READING;
 	}
 	else
 	{
@@ -774,16 +774,16 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(Ft_Gpu_Hal_Context_t *phost, FT_GPU_TRANSFERD
 		eve_debug_break();
 #endif
 #endif
-		phost->status = FT_GPU_HAL_WRITING;
+		phost->Status = FT_GPU_HAL_WRITING;
 	}
 }
 
-ft_uint8_t Ft_Gpu_Hal_Transfer8(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t value)
+ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 {
 //#if defined(MSVC_PLATFORM) && !defined(ESD_SIMULATION)
 #if defined(MSVC_PLATFORM)
 	ft_uint32_t SizeTransfered = 0;
-	if (phost->status == FT_GPU_HAL_WRITING)
+	if (phost->Status == FT_GPU_HAL_WRITING)
 	{
 #ifdef MPSSE_PLATFORM
 		SPI_Write(phost->hal_handle, &value, sizeof(value), &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
@@ -805,12 +805,12 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t value)
 	}
 
 	if (SizeTransfered != sizeof(value))
-		phost->status = FT_GPU_HAL_STATUS_ERROR;
+		phost->Status = FT_GPU_HAL_STATUS_ERROR;
 	return value;
 #endif
 }
 
-ft_void_t Ft_Gpu_Hal_EndTransfer(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost)
 {
 #ifdef MSVC_PLATFORM
 #ifdef MPSSE_PLATFORM
@@ -822,10 +822,10 @@ ft_void_t Ft_Gpu_Hal_EndTransfer(Ft_Gpu_Hal_Context_t *phost)
 	eve_debug_break();
 #endif
 #endif
-	phost->status = FT_GPU_HAL_OPENED;
+	phost->Status = FT_GPU_HAL_OPENED;
 }
 
-ft_uint8_t Ft_Gpu_Hal_Rd8(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
+ft_uint8_t Ft_Gpu_Hal_Rd8(EVE_HalContext *phost, ft_uint32_t addr)
 {
 	ft_uint8_t value;
 #if defined(FT4222_PLATFORM)
@@ -840,7 +840,7 @@ ft_uint8_t Ft_Gpu_Hal_Rd8(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
 #endif
 	return value;
 }
-ft_uint16_t Ft_Gpu_Hal_Rd16(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
+ft_uint16_t Ft_Gpu_Hal_Rd16(EVE_HalContext *phost, ft_uint32_t addr)
 {
 	ft_uint16_t value;
 
@@ -856,7 +856,7 @@ ft_uint16_t Ft_Gpu_Hal_Rd16(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
 #endif
 	return value;
 }
-ft_uint32_t Ft_Gpu_Hal_Rd32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
+ft_uint32_t Ft_Gpu_Hal_Rd32(EVE_HalContext *phost, ft_uint32_t addr)
 {
 	ft_uint32_t value;
 
@@ -873,7 +873,7 @@ ft_uint32_t Ft_Gpu_Hal_Rd32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr)
 	return value;
 }
 
-ft_void_t Ft_Gpu_Hal_Wr8(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint8_t v)
+ft_void_t Ft_Gpu_Hal_Wr8(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t v)
 {
 #if defined(FT4222_PLATFORM)
 	if (!Ft_Gpu_Hal_FT4222_Wr(phost, addr, &v, sizeof(v)))
@@ -887,7 +887,7 @@ ft_void_t Ft_Gpu_Hal_Wr8(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint8
 #endif
 }
 
-ft_void_t Ft_Gpu_Hal_Wr16(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint16_t v)
+ft_void_t Ft_Gpu_Hal_Wr16(EVE_HalContext *phost, ft_uint32_t addr, ft_uint16_t v)
 {
 #if defined(FT4222_PLATFORM)
 	if (!Ft_Gpu_Hal_FT4222_Wr(phost, addr, &v, sizeof(v)))
@@ -901,7 +901,7 @@ ft_void_t Ft_Gpu_Hal_Wr16(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint
 #endif
 }
 
-ft_void_t Ft_Gpu_Hal_Wr32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint32_t v)
+ft_void_t Ft_Gpu_Hal_Wr32(EVE_HalContext *phost, ft_uint32_t addr, ft_uint32_t v)
 {
 #if defined(FT4222_PLATFORM)
 	if (!Ft_Gpu_Hal_FT4222_Wr(phost, addr, &v, sizeof(v)))
@@ -915,7 +915,7 @@ ft_void_t Ft_Gpu_Hal_Wr32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint
 #endif
 }
 
-ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t cmd)
+ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 {
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
 	FT4222_STATUS status;
@@ -932,12 +932,12 @@ ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t cmd)
 #ifdef MPSSE_PLATFORM
 	SPI_Write(phost->hal_handle, Transfer_Array, sizeof(Transfer_Array), &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 #elif defined(FT4222_PLATFORM)
-	switch (phost->spichannel)
+	switch (phost->SpiChannel)
 	{
 	case FT_GPU_SPI_SINGLE_CHANNEL:
 		/* FYI : All HOST CMDs should only be executed in single channel mode*/
 		status = FT4222_SPIMaster_SingleWrite(
-		    phost->hal_handle,
+		    phost->SpiHandle,
 		    Transfer_Array,
 		    sizeof(Transfer_Array),
 		    (ft_uint16_t *)&SizeTransfered,
@@ -949,7 +949,7 @@ ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t cmd)
 	case FT_GPU_SPI_QUAD_CHANNEL:
 		/* only reset command among phost commands can be executed in multi channel mode*/
 		status = FT4222_SPIMaster_MultiReadWrite(
-		    phost->hal_handle,
+		    phost->SpiHandle,
 		    &dummy_read,
 		    Transfer_Array,
 		    0,
@@ -966,7 +966,7 @@ ft_void_t Ft_Gpu_HostCommand(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t cmd)
 #endif
 }
 //This API sends a 3byte command to the phost
-ft_void_t Ft_Gpu_HostCommand_Ext3(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 {
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
 	FT4222_STATUS status;
@@ -984,11 +984,11 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 	SPI_Write(phost->hal_handle, Transfer_Array, sizeof(Transfer_Array), &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 #elif defined(FT4222_PLATFORM)
 
-	switch (phost->spichannel)
+	switch (phost->SpiChannel)
 	{
 	case FT_GPU_SPI_SINGLE_CHANNEL:
 		status = FT4222_SPIMaster_SingleWrite(
-		    phost->hal_handle,
+		    phost->SpiHandle,
 		    Transfer_Array,
 		    sizeof(Transfer_Array),
 		    (ft_uint16_t *)&SizeTransfered,
@@ -1001,7 +1001,7 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 		/* FYI : Mostly all HOST CMDs can be executed in single channel mode
 		* except system reset cmd */
 		status = FT4222_SPIMaster_MultiReadWrite(
-		    phost->hal_handle,
+		    phost->SpiHandle,
 		    &dummy_read,
 		    Transfer_Array,
 		    0,
@@ -1018,7 +1018,7 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
 #endif
 }
 
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t *buffer, ft_uint32_t count)
+ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint32_t count)
 {
 	ft_int32_t length = 0, availablefreesize = 0;
 
@@ -1026,7 +1026,7 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t *buffer, f
 	FT4222_STATUS status;
 	ft_uint8_t *wrpktptr;
 	ft_uint8_t dummy_read;
-	wrpktptr = phost->spiwrbuf_ptr; //Using global buf , FT4222_DYNAMIC_ALLOCATE_SIZE
+	wrpktptr = phost->SpiWriBufPtr; //Using global buf , FT4222_DYNAMIC_ALLOCATE_SIZE
 #endif
 	count = (count + 3) & ~0x3;
 	do
@@ -1053,10 +1053,10 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t *buffer, f
 			*(wrpktptr + 2) = (ft_uint8_t)(REG_CMDB_WRITE & 0xff);
 			memcpy((wrpktptr + 3), buffer, length);
 
-			if (phost->spichannel == FT_GPU_SPI_SINGLE_CHANNEL)
+			if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
 			{
 				status = FT4222_SPIMaster_SingleWrite(
-				    phost->hal_handle,
+				    phost->SpiHandle,
 				    wrpktptr,
 				    (length + 3), //3 for address phase of serial protocol
 				    (ft_uint16_t *)&SizeTransfered,
@@ -1072,7 +1072,7 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t *buffer, f
 				ft_uint32_t sizeOfRead = 0;
 				/* DUAL and QAUD */
 				status = FT4222_SPIMaster_MultiReadWrite(
-				    phost->hal_handle,
+				    phost->SpiHandle,
 				    &dummy_read,
 				    wrpktptr,
 				    0,
@@ -1095,19 +1095,19 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t *buffer, f
 	return FT_TRUE;
 }
 
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_prog_uchar8_t *buffer, ft_uint32_t count)
+ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(EVE_HalContext *phost, ft_prog_uchar8_t *buffer, ft_uint32_t count)
 {
 	return Ft_Gpu_Hal_WrCmdBuf(phost, buffer, count);
 }
 
-ft_void_t Ft_Gpu_Hal_WrCmd32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t cmd)
+ft_void_t Ft_Gpu_Hal_WrCmd32(EVE_HalContext *phost, ft_uint32_t cmd)
 {
-	eve_assert_ex(!phost->cmd_frame, "Did you mean 'Ft_Gpu_CoCmd_SendCmd'?");
+	eve_assert_ex(!phost->CmdFrame, "Did you mean 'Ft_Gpu_CoCmd_SendCmd'?");
 	Ft_Gpu_Hal_Wr32(phost, REG_CMDB_WRITE, cmd);
 }
 
 /* Toggle PD_N pin of FT800 board for a power cycle*/
-ft_void_t Ft_Gpu_Hal_Powercycle(Ft_Gpu_Hal_Context_t *phost, ft_bool_t up)
+ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 {
 	if (up)
 	{
@@ -1126,11 +1126,11 @@ ft_void_t Ft_Gpu_Hal_Powercycle(Ft_Gpu_Hal_Context_t *phost, ft_bool_t up)
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
 		FT4222_STATUS status = FT4222_OTHER_ERROR;
 
-		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->hal_handle2, phost->hal_config.pdn_pin_no, 0)))
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->HalConfig.pdn_pin_no, 0)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		Ft_Gpu_Hal_Sleep(20);
 
-		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->hal_handle2, phost->hal_config.pdn_pin_no, 1)))
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->HalConfig.pdn_pin_no, 1)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		Ft_Gpu_Hal_Sleep(20);
 #endif
@@ -1158,11 +1158,11 @@ ft_void_t Ft_Gpu_Hal_Powercycle(Ft_Gpu_Hal_Context_t *phost, ft_bool_t up)
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
 		FT4222_STATUS status = FT4222_OTHER_ERROR;
 
-		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->hal_handle2, phost->hal_config.pdn_pin_no, 1)))
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->HalConfig.pdn_pin_no, 1)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		Ft_Gpu_Hal_Sleep(20);
 
-		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->hal_handle2, phost->hal_config.pdn_pin_no, 0)))
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->HalConfig.pdn_pin_no, 0)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		Ft_Gpu_Hal_Sleep(20);
 #endif
@@ -1175,7 +1175,7 @@ ft_void_t Ft_Gpu_Hal_Powercycle(Ft_Gpu_Hal_Context_t *phost, ft_bool_t up)
 #endif
 	}
 }
-ft_void_t Ft_Gpu_Hal_WrMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length)
+ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length)
 {
 	ft_uint32_t SizeTransfered = 0;
 
@@ -1212,12 +1212,12 @@ ft_void_t Ft_Gpu_Hal_WrMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, const 
 #endif
 }
 
-ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, const ft_prog_uchar8_t *buffer, ft_uint32_t length)
+ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_prog_uchar8_t *buffer, ft_uint32_t length)
 {
 	Ft_Gpu_Hal_WrMem(phost, addr, buffer, length);
 }
 
-ft_void_t Ft_Gpu_Hal_RdMem(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
+ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
 {
 #ifdef MPSSE_PLATFORM
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
@@ -1237,7 +1237,7 @@ ft_void_t Ft_Gpu_Hal_Sleep(ft_uint32_t ms)
 	Sleep(ms);
 }
 
-ft_int16_t Ft_Gpu_Hal_SetSPI(Ft_Gpu_Hal_Context_t *phost, FT_GPU_SPI_NUMCHANNELS_T numchnls, FT_GPU_SPI_NUMDUMMYBYTES numdummy)
+ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T numchnls, FT_GPU_SPI_NUMDUMMYBYTES numdummy)
 {
 	ft_uint8_t writebyte = 0;
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
@@ -1265,19 +1265,19 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(Ft_Gpu_Hal_Context_t *phost, FT_GPU_SPI_NUMCHANNELS
 	else
 		spimode = SPI_IO_SINGLE;
 
-	ftstatus = FT4222_SPIMaster_SetLines(phost->hal_handle, spimode);
+	ftstatus = FT4222_SPIMaster_SetLines(phost->SpiHandle, spimode);
 	if (FT4222_OK != ftstatus)
 		eve_printf_debug("FT4222_SPIMaster_SetLines failed with status %d\n", ftstatus);
 #endif
 
 	//FT81x swicthed to dual/quad mode, now update global HAL context
-	phost->spichannel = numchnls;
-	phost->spinumdummy = numdummy;
+	phost->SpiChannel = numchnls;
+	phost->SpiNumDummy = numdummy;
 
 	return 0;
 }
 
-ft_uint32_t Ft_Gpu_CurrentFrequency(Ft_Gpu_Hal_Context_t *phost)
+ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
 {
 	ft_uint32_t t0, t1;
 	ft_uint32_t addr = REG_CLOCK;

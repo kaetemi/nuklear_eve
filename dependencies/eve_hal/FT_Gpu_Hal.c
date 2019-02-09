@@ -82,7 +82,7 @@ ft_int32_t Ft_Gpu_Hal_Dec2Ascii(ft_char8_t *pSrc, ft_int32_t value)
 	return 0;
 }
 
-ft_void_t Ft_Gpu_Hal_RdCmdRpWp(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t *rp, ft_uint16_t *wp)
+ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t *rp, ft_uint16_t *wp)
 {
 	eve_assert((REG_CMD_READ + 4) == REG_CMD_WRITE);
 #if 1
@@ -96,10 +96,10 @@ ft_void_t Ft_Gpu_Hal_RdCmdRpWp(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t *rp, ft_
 #endif
 }
 
-ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(Ft_Gpu_Hal_Context_t *phost)
+ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(EVE_HalContext *phost)
 {
-	eve_assert(!phost->cmd_waiting);
-	phost->cmd_waiting = FT_TRUE;
+	eve_assert(!phost->CmdWaiting);
+	phost->CmdWaiting = FT_TRUE;
 	ft_uint16_t rp, wp;
 	Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
 	while (rp != wp)
@@ -108,8 +108,8 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(Ft_Gpu_Hal_Context_t *phost)
 		if (FT_COCMD_FAULT(rp))
 		{
 			// Co processor fault
-			phost->cmd_fault = FT_TRUE;
-			phost->cmd_waiting = FT_FALSE;
+			phost->CmdFault = FT_TRUE;
+			phost->CmdWaiting = FT_FALSE;
 			eve_printf_debug("Co processor fault while waiting for CoCmd FIFO\n");
 #if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
 			char err[128];
@@ -119,12 +119,12 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(Ft_Gpu_Hal_Context_t *phost)
 			eve_debug_break();
 			return FT_FALSE;
 		}
-		if (phost->cb_cmd_wait)
+		if (phost->CbCmdWait)
 		{
-			if (!phost->cb_cmd_wait(phost))
+			if (!phost->CbCmdWait(phost))
 			{
 				// Wait aborted
-				phost->cmd_waiting = FT_FALSE;
+				phost->CmdWaiting = FT_FALSE;
 				eve_printf_debug("Wait for CoCmd FIFO aborted\n");
 				return FT_FALSE;
 			}
@@ -132,11 +132,11 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(Ft_Gpu_Hal_Context_t *phost)
 		Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
 	}
 	// Command buffer empty
-	phost->cmd_waiting = FT_FALSE;
+	phost->CmdWaiting = FT_FALSE;
 	return FT_TRUE;
 }
 
-ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t bytes)
+ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(EVE_HalContext *phost, ft_uint32_t bytes)
 {
 	if (bytes > FT_CMD_FIFO_SIZE)
 	{
@@ -144,8 +144,8 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t b
 		return FT_FALSE;
 	}
 
-	eve_assert(!phost->cmd_waiting);
-	phost->cmd_waiting = FT_TRUE;
+	eve_assert(!phost->CmdWaiting);
+	phost->CmdWaiting = FT_TRUE;
 
 	ft_uint16_t space = 0;
 
@@ -161,8 +161,8 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t b
 		if (FT_COCMD_FAULT(space))
 		{
 			// Co processor fault
-			phost->cmd_fault = FT_TRUE;
-			phost->cmd_waiting = FT_FALSE;
+			phost->CmdFault = FT_TRUE;
+			phost->CmdWaiting = FT_FALSE;
 			eve_printf_debug("Co processor fault while waiting for CoCmd FIFO\n");
 #if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
 			char err[128];
@@ -172,12 +172,12 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t b
 			eve_debug_break();
 			return FT_FALSE;
 		}
-		if (phost->cb_cmd_wait)
+		if (phost->CbCmdWait)
 		{
-			if (!phost->cb_cmd_wait(phost))
+			if (!phost->CbCmdWait(phost))
 			{
 				// Wait aborted
-				phost->cmd_waiting = FT_FALSE;
+				phost->CmdWaiting = FT_FALSE;
 				eve_printf_debug("Wait for CoCmd FIFO aborted\n");
 				return FT_FALSE;
 			}
@@ -191,11 +191,11 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t b
 	}
 
 	// Sufficient space
-	phost->cmd_waiting = FT_FALSE;
+	phost->CmdWaiting = FT_FALSE;
 	return FT_TRUE;
 }
 
-ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(Ft_Gpu_Hal_Context_t *phost)
+ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(EVE_HalContext *phost)
 {
 	ft_int16_t rp, wp;
 	do
@@ -204,7 +204,7 @@ ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(Ft_Gpu_Hal_Context_t *phost)
 		if (FT_COCMD_FAULT(rp))
 		{
 			// Co processor fault
-			phost->cmd_fault = FT_TRUE;
+			phost->CmdFault = FT_TRUE;
 #if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
 			char err[128];
 			Ft_Gpu_Hal_RdMem(phost, RAM_ERR_REPORT, err, 128);
@@ -217,24 +217,24 @@ ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(Ft_Gpu_Hal_Context_t *phost)
 	return FT_TRUE;
 }
 
-ft_void_t Ft_Gpu_ClockSelect(Ft_Gpu_Hal_Context_t *phost, FT_GPU_PLL_SOURCE_T pllsource)
+ft_void_t Ft_Gpu_ClockSelect(EVE_HalContext *phost, FT_GPU_PLL_SOURCE_T pllsource)
 {
 	Ft_Gpu_HostCommand(phost, pllsource);
 }
-ft_void_t Ft_Gpu_PLL_FreqSelect(Ft_Gpu_Hal_Context_t *phost, FT_GPU_PLL_FREQ_T freq)
+ft_void_t Ft_Gpu_PLL_FreqSelect(EVE_HalContext *phost, FT_GPU_PLL_FREQ_T freq)
 {
 	Ft_Gpu_HostCommand(phost, freq);
 }
-ft_void_t Ft_Gpu_PowerModeSwitch(Ft_Gpu_Hal_Context_t *phost, FT_GPU_POWER_MODE_T pwrmode)
+ft_void_t Ft_Gpu_PowerModeSwitch(EVE_HalContext *phost, FT_GPU_POWER_MODE_T pwrmode)
 {
 	Ft_Gpu_HostCommand(phost, pwrmode);
 }
-ft_void_t Ft_Gpu_CoreReset(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_CoreReset(EVE_HalContext *phost)
 {
 	Ft_Gpu_HostCommand(phost, FT_GPU_CORE_RESET);
 }
 
-ft_int32_t Ft_Gpu_ClockTrimming(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t lowFreq)
+ft_int32_t Ft_Gpu_ClockTrimming(EVE_HalContext *phost, ft_uint32_t lowFreq)
 {
 	ft_uint32_t f;
 	ft_uint8_t i;
@@ -339,14 +339,14 @@ static ft_prog_uchar8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
 };
 
 /* Download new touch firmware for FT811 and FT813 chip */
-ft_void_t Ft_Gpu_DownloadJ1Firmware(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_DownloadJ1Firmware(EVE_HalContext *phost)
 {
 	// bug fix pen up section
 	eve_assert_do(Ft_Gpu_Hal_WrCmdBuf_ProgMem(phost, c_TouchDataU8, TOUCH_DATA_LEN));
 	eve_assert_do(Ft_Gpu_Hal_WaitCmdFifoEmpty(phost));
 }
 
-ft_int16_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str, int length)
+ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, const ft_char8_t *str, int length)
 {
 	int i = 0;
 	for (; i < length; ++i)
@@ -362,7 +362,7 @@ ft_int16_t Ft_Gpu_Hal_TransferString_S(Ft_Gpu_Hal_Context_t *phost, const ft_cha
 	return i - 1;
 }
 
-ft_int16_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8_t *str)
+ft_int16_t Ft_Gpu_Hal_TransferString(EVE_HalContext *phost, const ft_char8_t *str)
 {
 	int i = 0;
 	ft_char8_t c;
@@ -382,7 +382,7 @@ ft_int16_t Ft_Gpu_Hal_TransferString(Ft_Gpu_Hal_Context_t *phost, const ft_char8
 
 #if (EVE_MODEL >= EVE_FT810)
 //This API can only be called when PLL is stopped(SLEEP mode).  For compatibility, set frequency to the FT_GPU_12MHZ option in the FT_GPU_SETPLLSP1_T table.
-ft_void_t Ft_Gpu_81X_SelectSysCLK(Ft_Gpu_Hal_Context_t *phost, FT_GPU_81X_PLL_FREQ_T freq)
+ft_void_t Ft_Gpu_81X_SelectSysCLK(EVE_HalContext *phost, FT_GPU_81X_PLL_FREQ_T freq)
 {
 	if (FT_GPU_SYSCLK_72M == freq)
 		Ft_Gpu_HostCommand_Ext3(phost, (ft_uint32_t)0x61 | (0x40 << 8) | (0x06 << 8));
@@ -399,35 +399,35 @@ ft_void_t Ft_Gpu_81X_SelectSysCLK(Ft_Gpu_Hal_Context_t *phost, FT_GPU_81X_PLL_FR
 }
 
 //Power down or up ROMs and ADCs.  Specified one or more elements in the FT_GPU_81X_ROM_AND_ADC_T table to power down, unspecified elements will be powered up.  The application must retain the state of the ROMs and ADCs as they're not readable from the device.
-ft_void_t Ft_GPU_81X_PowerOffComponents(Ft_Gpu_Hal_Context_t *phost, ft_uint8_t val)
+ft_void_t Ft_GPU_81X_PowerOffComponents(EVE_HalContext *phost, ft_uint8_t val)
 {
 	Ft_Gpu_HostCommand_Ext3(phost, (ft_uint32_t)0x49 | (val << 8));
 }
 
 //this API sets the current strength of supported GPIO/IO group(s)
-ft_void_t Ft_GPU_81X_PadDriveStrength(Ft_Gpu_Hal_Context_t *phost, FT_GPU_81X_GPIO_DRIVE_STRENGTH_T strength, FT_GPU_81X_GPIO_GROUP_T group)
+ft_void_t Ft_GPU_81X_PadDriveStrength(EVE_HalContext *phost, FT_GPU_81X_GPIO_DRIVE_STRENGTH_T strength, FT_GPU_81X_GPIO_GROUP_T group)
 {
 	Ft_Gpu_HostCommand_Ext3(phost, (ft_uint32_t)0x70 | (group << 8) | (strength << 8));
 }
 
 //this API will hold the system reset active, Ft_Gpu_81X_ResetRemoval() must be called to release the system reset.
-ft_void_t Ft_Gpu_81X_ResetActive(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_81X_ResetActive(EVE_HalContext *phost)
 {
 	Ft_Gpu_HostCommand_Ext3(phost, FT_GPU_81X_RESET_ACTIVE);
 }
 
 //This API will release the system reset, and the system will exit reset and behave as after POR, settings done through SPI commands will not be affected.
-ft_void_t Ft_Gpu_81X_ResetRemoval(Ft_Gpu_Hal_Context_t *phost)
+ft_void_t Ft_Gpu_81X_ResetRemoval(EVE_HalContext *phost)
 {
 	Ft_Gpu_HostCommand_Ext3(phost, FT_GPU_81X_RESET_REMOVAL);
 }
 #endif
 
-ft_uint16_t Ft_Gpu_Hal_Transfer16(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t value)
+ft_uint16_t Ft_Gpu_Hal_Transfer16(EVE_HalContext *phost, ft_uint16_t value)
 {
 	ft_uint16_t retVal = 0;
 
-	if (phost->status == FT_GPU_HAL_WRITING)
+	if (phost->Status == FT_GPU_HAL_WRITING)
 	{
 		Ft_Gpu_Hal_Transfer8(phost, value & 0xFF); //LSB first
 		Ft_Gpu_Hal_Transfer8(phost, (value >> 8) & 0xFF);
@@ -440,10 +440,10 @@ ft_uint16_t Ft_Gpu_Hal_Transfer16(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t value
 
 	return retVal;
 }
-ft_uint32_t Ft_Gpu_Hal_Transfer32(Ft_Gpu_Hal_Context_t *phost, ft_uint32_t value)
+ft_uint32_t Ft_Gpu_Hal_Transfer32(EVE_HalContext *phost, ft_uint32_t value)
 {
 	ft_uint32_t retVal = 0;
-	if (phost->status == FT_GPU_HAL_WRITING)
+	if (phost->Status == FT_GPU_HAL_WRITING)
 	{
 		Ft_Gpu_Hal_Transfer16(phost, value & 0xFFFF); //LSB first
 		Ft_Gpu_Hal_Transfer16(phost, (value >> 16) & 0xFFFF);

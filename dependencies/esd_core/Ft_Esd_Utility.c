@@ -152,7 +152,7 @@ void Esd_ShowLogo()
 /// Run calibrate procedure
 ft_bool_t Esd_Calibrate()
 {
-	Ft_Gpu_Hal_Context_t *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = Ft_Esd_Host;
 
 #if defined(EVE_SCREEN_CAPACITIVE)
 	Ft_Gpu_Hal_Wr8(phost, REG_CTOUCH_EXTENDED, CTOUCH_MODE_COMPATIBILITY);
