@@ -112,14 +112,14 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	phost->SpiHandle = phost->GpioHandle = NULL;
 
 	status = FT_CreateDeviceInfoList(&numdevs);
-	if (FT_OK != status)
+	if (status != FT_OK)
 	{
 		eve_printf_debug("FT_CreateDeviceInfoList failed");
 		ret = FT_FALSE;
 	}
 
 	status = FT_ListDevices(&numdevs, NULL, FT_LIST_NUMBER_ONLY);
-	if (FT_OK != status)
+	if (status != FT_OK)
 	{
 		eve_printf_debug("FT_ListDevices failed");
 		ret = FT_FALSE;
@@ -206,7 +206,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	{
 		//Set default Read timeout 5s and Write timeout 5sec
 		status = FT_SetTimeouts(phost->SpiHandle, FT4222_ReadTimeout, FT4222_WriteTimeout);
-		if (FT_OK != status)
+		if (status != FT_OK)
 		{
 			eve_printf_debug("FT_SetTimeouts failed!\n");
 			ret = FT_FALSE;
@@ -217,7 +217,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	{
 		// no latency to usb
 		status = FT_SetLatencyTimer(phost->SpiHandle, FT4222_LatencyTime);
-		if (FT_OK != status)
+		if (status != FT_OK)
 		{
 			eve_printf_debug("FT_SetLatencyTimerfailed!\n");
 			ret = FT_FALSE;
@@ -236,7 +236,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	if (ret)
 	{
 		status = FT4222_SetClock(phost->SpiHandle, selclk);
-		if (FT_OK != status)
+		if (status != FT4222_OK)
 		{
 			eve_printf_debug("FT4222_SetClock failed!\n");
 			ret = FT_FALSE;
@@ -244,7 +244,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 
 		status = FT4222_GetClock(phost->SpiHandle, &ftclk);
 
-		if (FT_OK != status)
+		if (status != FT4222_OK)
 			eve_printf_debug("FT4222_SetClock failed\n");
 		else
 			eve_printf_debug("FT4222 clk = %d\n", ftclk);
@@ -260,50 +260,41 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		    CLK_IDLE_LOW, //,CLK_IDLE_HIGH
 		    CLK_LEADING, // CLK_LEADING CLK_TRAILING
 		    phost->Parameters.SpiCsPin); /* slave selection output pins */
-		if (FT_OK != status)
+		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Init FT4222 as SPI master device failed!\n");
 			ret = FT_FALSE;
 		}
-		else
-			phost->SpiChannel = FT_GPU_SPI_SINGLE_CHANNEL; //SPI_IO_SINGLE;
 
 		status = FT4222_SPI_SetDrivingStrength(phost->SpiHandle, DS_4MA, DS_4MA, DS_4MA);
-		if (FT4222_OK != status)
+		if (status != FT4222_OK)
+		{
 			eve_printf_debug("FT4222_SPI_SetDrivingStrength failed!\n");
+		}
 
 		Ft_Gpu_Hal_Sleep(20);
 
 		status = FT4222_SetSuspendOut(phost->GpioHandle, FT_FALSE);
-		if (FT_OK != status)
+		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Disable suspend out function on GPIO2 failed!\n");
 			ret = FT_FALSE;
 		}
 
 		status = FT4222_SetWakeUpInterrupt(phost->GpioHandle, FT_FALSE);
-		if (FT_OK != status)
+		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Disable wakeup/interrupt feature on GPIO3 failed!\n");
 			ret = FT_FALSE;
 		}
 		/* Interface 2 is GPIO */
 		status = FT4222_GPIO_Init(phost->GpioHandle, gpio_dir);
-		if (FT_OK != status)
+		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Init FT4222 as GPIO interface failed!\n");
 			ret = FT_FALSE;
 		}
 	}
-
-	/* dedicated write buffer used for SPI write. Max size is 2^uint16 */
-	/*
-	if ((phost->SpiWriBufPtr = malloc(FT4222_DYNAMIC_ALLOCATE_SIZE)) == NULL)
-	{
-		eve_printf_debug("malloc error\n");
-		ret = FT_FALSE;
-	}
-	*/
 
 	if (ret)
 	{
@@ -322,16 +313,16 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 	phost->Status = FT_GPU_HAL_CLOSED;
 	--g_HalPlatform.OpenedChannels;
 
-	if (FT4222_OK != (status = FT4222_UnInitialize(phost->SpiHandle)))
+	if ((status = FT4222_UnInitialize(phost->SpiHandle)) != FT4222_OK)
 		eve_printf_debug("FT4222_UnInitialize failed %d\n", status);
 
-	if (FT4222_OK != (status = FT4222_UnInitialize(phost->GpioHandle)))
+	if ((status = FT4222_UnInitialize(phost->GpioHandle)) != FT4222_OK)
 		eve_printf_debug("FT4222_UnInitialize failed %d\n", status);
 
-	if (FT_OK != (status = FT_Close(phost->SpiHandle)))
+	if ((status = FT_Close(phost->SpiHandle)) != FT_OK)
 		eve_printf_debug("CLOSE failed %d\n", status);
 
-	if (FT_OK != (status = FT_Close(phost->GpioHandle)))
+	if ((status = FT_Close(phost->GpioHandle)) != FT_OK)
 		eve_printf_debug("CLOSE failed %d\n", status);
 }
 
@@ -368,7 +359,7 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 		    FALSE /* continue transaction */
 		);
 
-		if ((FT4222_OK != status) || (sizeTransferred != (3 + phost->SpiNumDummy)))
+		if ((status != FT4222_OK) || (sizeTransferred != (3 + phost->SpiNumDummy)))
 		{
 			eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", sizeTransferred, status);
 			if (sizeTransferred != (3 + phost->SpiNumDummy))
@@ -400,7 +391,7 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 			    &sizeTransferred,
 			    isEndTransaction);
 
-			if ((FT4222_OK != status) || (sizeTransferred != bytesPerRead))
+			if ((status != FT4222_OK) || (sizeTransferred != bytesPerRead))
 			{
 				eve_printf_debug("FT4222_SPIMaster_SingleRead failed,sizeTransferred is %d with status %d\n", sizeTransferred, status);
 				if (sizeTransferred != bytesPerRead)
@@ -485,7 +476,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 					FALSE /* continue transaction */
 				);
 
-				if ((FT4222_OK != status) || (sizeTransferred != 3))
+				if ((status != FT4222_OK) || (sizeTransferred != 3))
 				{
 					eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
 					if (sizeTransferred != 3)
@@ -517,7 +508,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 						&sizeTransferred,
 						isEndTransaction);
 
-					if ((FT4222_OK != status) || ((ft_uint16_t)sizeTransferred != bytesPerWrite))
+					if ((status != FT4222_OK) || ((ft_uint16_t)sizeTransferred != bytesPerWrite))
 					{
 						eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
 						if (sizeTransferred != bytesPerWrite)
