@@ -112,6 +112,8 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 
 void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
 {
+	eve_assert(phost->Status == EVE_HalStatusOpened);
+
 	if (rw == EVE_HalTransferRead)
 	{
 		BT8XXEMU_chipSelect(phost->Emulator, 1);
@@ -209,14 +211,16 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	}
 	while (transferred & padMask)
 	{
-		transfer8(phost, 0);
 		++transferred;
+		transfer8(phost, 0);
 	}
 	return transferred;
 }
 
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
+	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
+
 	BT8XXEMU_chipSelect(phost->Emulator, 0);
 	phost->Status = EVE_HalStatusOpened;
 }

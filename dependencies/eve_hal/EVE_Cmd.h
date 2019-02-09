@@ -64,6 +64,9 @@ bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value);
 bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value);
 bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value);
 
+/* Move the write pointer forward by the specified number of bytes. Returns the previous write pointer */
+uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes);
+
 /* Wait for the command buffer to fully empty. Returns FT_FALSE in case a co processor fault occured */
 bool EVE_Cmd_waitFlush(EVE_HalContext *phost);
 

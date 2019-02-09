@@ -238,9 +238,23 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 	return true;
 }
 
+/* Move the write pointer forward by the specified number of bytes. Returns the previous write pointer */
+uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
+{
+	if (!EVE_Cmd_waitSpace(phost, bytes))
+		return -1;
+
+	uint16_t wp = EVE_Cmd_wp(phost);
+#if !defined(EVE_SUPPORT_CMDB)
+	EVE_Hal_wr16(phost, REG_CMD_WRITE, wp + bytes);
+#endif
+
+	return wp;
+}
+
 bool EVE_Cmd_waitFlush(EVE_HalContext *phost)
 {
-	ft_uint16_t rp, wp;
+	uint16_t rp, wp;
 
 	eve_assert(!phost->CmdWaiting);
 	phost->CmdWaiting = true;

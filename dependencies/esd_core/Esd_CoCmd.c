@@ -264,22 +264,20 @@ ft_void_t Ft_Gpu_CoCmd_Interrupt(EVE_HalContext *phost, ft_uint32_t ms)
 	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-// FIXME
-/*
-ft_void_t Ft_Gpu_CoCmd_GetMatrix(EVE_HalContext *phost, ft_int32_t a, ft_int32_t b, ft_int32_t c, ft_int32_t d, ft_int32_t e, ft_int32_t f)
+void Ft_Gpu_CoCmd_GetMatrix(EVE_HalContext *phost, int32_t *m)
 {
-	uint32_t cmd[7] = {
-		CMD_GETMATRIX,
-		a,
-		b,
-		c,
-		d,
-		e,
-		f,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_beginFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_GETMATRIX);
+	uint16_t cmdAddr = EVE_Cmd_moveWp(phost, 6 * 4);
+	EVE_Cmd_endFunc(phost);
+	EVE_Cmd_waitFlush(phost);
+	
+	/* Read result */
+	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, RAM_CMD + cmdAddr);
+	for (int i = 0; i < 6; ++i)
+		m[i] = EVE_Hal_transfer32(phost, 0);
+	EVE_Hal_endTransfer(phost);
 }
-*/
 
 #if (EVE_MODEL >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_Sync(EVE_HalContext *phost)
