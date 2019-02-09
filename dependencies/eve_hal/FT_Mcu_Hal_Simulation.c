@@ -36,6 +36,8 @@
 
 ft_void_t Eve_BootupConfig(EVE_HalContext *phost)
 {
+	EVE_HalParameters *parameters = &phost->Parameters;
+
 	Ft_Gpu_Hal_Powercycle(phost, FT_TRUE);
 
 	/* FT81x will be in SPI Single channel after POR
@@ -97,33 +99,22 @@ ft_void_t Eve_BootupConfig(EVE_HalContext *phost)
 			ft_delay(100);
 		}
 		eve_printf_debug("All engines are ready\n");
-	}		
+	}
 
-#ifdef DISPLAY_RESOLUTION_QVGA
-	init_DISPLAY_RESOLUTION_QVGA();
-#endif
-#ifdef DISPLAY_RESOLUTION_WVGA
-	init_DISPLAY_RESOLUTION_WVGA();
-#endif
-
-#ifdef DISPLAY_RESOLUTION_HVGA_PORTRAIT
-	init_DISPLAY_RESOLUTION_HVGA_PORTRAIT();
-#endif
-
-	Ft_Gpu_Hal_Wr16(phost, REG_HCYCLE, FT_DispHCycle);
-	Ft_Gpu_Hal_Wr16(phost, REG_HOFFSET, FT_DispHOffset);
-	Ft_Gpu_Hal_Wr16(phost, REG_HSYNC0, FT_DispHSync0);
-	Ft_Gpu_Hal_Wr16(phost, REG_HSYNC1, FT_DispHSync1);
-	Ft_Gpu_Hal_Wr16(phost, REG_VCYCLE, FT_DispVCycle);
-	Ft_Gpu_Hal_Wr16(phost, REG_VOFFSET, FT_DispVOffset);
-	Ft_Gpu_Hal_Wr16(phost, REG_VSYNC0, FT_DispVSync0);
-	Ft_Gpu_Hal_Wr16(phost, REG_VSYNC1, FT_DispVSync1);
-	Ft_Gpu_Hal_Wr8(phost, REG_SWIZZLE, FT_DispSwizzle);
-	Ft_Gpu_Hal_Wr8(phost, REG_PCLK_POL, FT_DispPCLKPol);
-	Ft_Gpu_Hal_Wr16(phost, REG_HSIZE, FT_DispWidth);
-	Ft_Gpu_Hal_Wr16(phost, REG_VSIZE, FT_DispHeight);
-	Ft_Gpu_Hal_Wr16(phost, REG_CSPREAD, FT_DispCSpread);
-	Ft_Gpu_Hal_Wr16(phost, REG_DITHER, FT_DispDither);
+	Ft_Gpu_Hal_Wr16(phost, REG_HCYCLE, parameters->Display.HCycle);
+	Ft_Gpu_Hal_Wr16(phost, REG_HOFFSET, parameters->Display.HOffset);
+	Ft_Gpu_Hal_Wr16(phost, REG_HSYNC0, parameters->Display.HSync0);
+	Ft_Gpu_Hal_Wr16(phost, REG_HSYNC1, parameters->Display.HSync1);
+	Ft_Gpu_Hal_Wr16(phost, REG_VCYCLE, parameters->Display.VCycle);
+	Ft_Gpu_Hal_Wr16(phost, REG_VOFFSET, parameters->Display.VOffset);
+	Ft_Gpu_Hal_Wr16(phost, REG_VSYNC0, parameters->Display.VSync0);
+	Ft_Gpu_Hal_Wr16(phost, REG_VSYNC1, parameters->Display.VSync1);
+	Ft_Gpu_Hal_Wr8(phost, REG_SWIZZLE, parameters->Display.Swizzle);
+	Ft_Gpu_Hal_Wr8(phost, REG_PCLK_POL, parameters->Display.PCLKPol);
+	Ft_Gpu_Hal_Wr16(phost, REG_HSIZE, parameters->Display.Width);
+	Ft_Gpu_Hal_Wr16(phost, REG_VSIZE, parameters->Display.Height);
+	Ft_Gpu_Hal_Wr16(phost, REG_CSPREAD, parameters->Display.CSpread);
+	Ft_Gpu_Hal_Wr16(phost, REG_DITHER, parameters->Display.Dither);
 
 #ifdef EVE_SCREEN_RESISTIVE
 	/* Touch configuration - configure the resistance value to 1200 - this value is specific to customer requirement and derived by experiment */
@@ -141,7 +132,7 @@ ft_void_t Eve_BootupConfig(EVE_HalContext *phost)
 	Ft_Gpu_Hal_WrMem(phost, RAM_DL, (ft_uint8_t *)FT_DLCODE_BOOTUP, sizeof(FT_DLCODE_BOOTUP));
 	Ft_Gpu_Hal_Wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
 
-	Ft_Gpu_Hal_Wr8(phost, REG_PCLK, FT_DispPCLK);//after this display is visible on the LCD
+	Ft_Gpu_Hal_Wr8(phost, REG_PCLK, parameters->Display.PCLK);//after this display is visible on the LCD
 
 	// Ft_DisplayPanel_Init();
 

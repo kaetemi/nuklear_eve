@@ -59,87 +59,15 @@
 #define FT_GPU_READ EVE_HalTransferRead
 #define FT_GPU_WRITE EVE_HalTransferWrite
 
-typedef struct
-{
-	union
-	{
-		ft_uint8_t spi_cs_pin_no; //< SPI chip select number of FT8XX chip
-		ft_uint8_t i2c_addr; //< I2C address of FT8XX chip
-	};
-	union
-	{
-		ft_uint16_t spi_clockrate_khz; //< In kHz
-		ft_uint16_t i2c_clockrate_khz; //< In kHz
-	};
-	ft_uint8_t channel_no; //< MPSSE channel number
-	ft_uint8_t pdn_pin_no; //< FT8XX power down pin number
-} Ft_Gpu_Hal_Config_t;
+#define Ft_Gpu_Hal_Callback_t EVE_Callback
+#define Ft_Gpu_Hal_Config_t EVE_HalParameters
 
 typedef struct
 {
 	ft_uint32_t total_channel_num; //< Total number channels for libmpsse
 } Ft_Gpu_HalInit_t;
 
-typedef ft_bool_t (*Ft_Gpu_Hal_Callback_t)(void *phost);
-
-typedef struct EVE_HalContext
-{
-	void *AppContext;
-	Ft_Gpu_Hal_Config_t HalConfig;
-	FT_GPU_HAL_STATUS_E Status; //< OUT
-
-	// uint16_t CmdFifoWp; //< OUT. coprocessor fifo write pointer
-
-	union
-	{
-		ft_void_t *SpiHandle; //< IN/OUT
-		ft_void_t *Emulator; //< OUT. FT8XXEMU_Emulator
-	};
-	union
-	{
-		ft_void_t *GpioHandle; //< IN/OUT. LibFT4222 uses this member to store GPIO handle
-		ft_void_t *EmulatorFlash; //< OUT. FT8XXEMU_Flash
-	};
-
-	/* Additions specific to FT81X */
-	ft_uint8_t SpiChannel; //< Variable to contain single/dual/quad channels
-	ft_uint8_t SpiNumDummy; //< Number of dummy bytes as 1 or 2 for SPI read
-	ft_uint8_t *SpiWriBufPtr;
-
-	ft_bool_t CmdFrame; //< OUT. Set while inside a co cmd software buffering frame
-	ft_bool_t CmdFault; //< OUT. Set when co processor is in fault mode and needs to be reset
-	ft_bool_t CmdWaiting; //< OUT. Set to FT_TRUE while waiting for CMD write (check during any function that may be called by cb_cmd_wait)
-	Ft_Gpu_Hal_Callback_t CbCmdWait; //< IN. Called anytime the code is waiting during CMD write. Return FT_FALSE to abort wait
-
-} EVE_HalContext;
 #define Ft_Gpu_Hal_Context_t EVE_HalContext
-
-/* Display parameters */
-typedef struct EVE_DisplayParameters
-{
-	ft_int16_t Width;
-	ft_int16_t Height;
-	ft_int16_t HCycle;
-	ft_int16_t HOffset;
-	ft_int16_t HSync0;
-	ft_int16_t HSync1;
-	ft_int16_t VCycle;
-	ft_int16_t VOffset;
-	ft_int16_t VSync0;
-	ft_int16_t VSync1;
-	ft_uint8_t PCLK;
-	ft_char8_t Swizzle;
-	ft_char8_t PCLKPol;
-	ft_char8_t CSpread;
-	ft_bool_t Dither;
-} Eve_DisplayParameters;
-
-/* Hal paramters */
-typedef struct EVE_Parameters
-{
-	void *AppContext;
-	Eve_DisplayParameters Display;
-} EVE_Parameters;
 
 /*******************************************************************************/
 /*******************************************************************************/

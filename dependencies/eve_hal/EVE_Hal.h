@@ -66,6 +66,87 @@ typedef enum EVE_HalTransfer
 	EVE_HalTransferWrite,
 } EVE_HalTransfer;
 
+/* Display parameters */
+typedef struct EVE_DisplayParameters
+{
+	int16_t Width;
+	int16_t Height;
+	int16_t HCycle;
+	int16_t HOffset;
+	int16_t HSync0;
+	int16_t HSync1;
+	int16_t VCycle;
+	int16_t VOffset;
+	int16_t VSync0;
+	int16_t VSync1;
+	uint8_t PCLK;
+	int8_t Swizzle;
+	int8_t PCLKPol;
+	int8_t CSpread;
+	bool Dither;
+} Eve_DisplayParameters;
+
+typedef int (*EVE_Callback)(void *phost);
+
+/* Hal parameters */
+typedef struct EVE_HalParameters
+{
+	void *UserContext;
+	EVE_Callback CbCmdWait; //< IN. Called anytime the code is waiting during CMD write. Return FT_FALSE to abort wait
+
+	Eve_DisplayParameters Display;
+
+	union
+	{
+		uint8_t SpiCsPin; //< SPI chip select number of FT8XX chip
+		uint8_t I2CAddr; //< I2C address of FT8XX chip
+	};
+	union
+	{
+		uint16_t SpiClockrateKHz; //< In kHz
+		uint16_t I2CClockrateKHz; //< In kHz
+	};
+	uint8_t MpsseChannelNo; //< MPSSE channel number
+	uint8_t PowerDownPin; //< FT8XX power down pin number
+} EVE_HalParameters;
+
+typedef struct EVE_HalContext
+{
+	union
+	{
+		void *UserContext;
+		EVE_HalParameters Parameters;
+	};
+
+	EVE_HalStatus Status;
+
+	/* uint16_t CmdFifoWp; Coprocessor fifo write pointer */
+
+#ifdef BT8XXEMU_PLATFORM
+	void *Emulator; /* FT8XXEMU_Emulator */
+	void *EmulatorFlash; /* FT8XXEMU_Flash */
+#endif
+
+#ifdef FT4222_PLATFORM
+	void *SpiHandle;
+	void *GpioHandle; /* LibFT4222 uses this member to store GPIO handle */
+	uint8_t *SpiWriBufPtr;
+#endif
+
+#ifdef FT900_PLATFORM
+	uint8_t SpiChannel; /* Variable to contain single/dual/quad channels */
+	uint8_t SpiNumDummy; /* Number of dummy bytes as 1 or 2 for SPI read */
+#endif
+
+	bool CmdFrame; /* Flagged while inside a co cmd software buffering frame */
+	bool CmdFault; /* Flagged when co processor is in fault mode and needs to be reset */
+	bool CmdWaiting; /* Flagged while waiting for CMD write (to check during any function that may be called by CbCmdWait) */
+
+} EVE_HalContext;
+
+/* Get the default configuration parameters */
+void EVE_Hal_defaults(EVE_HalParameters *parameters);
+
 #endif /* #ifndef EVE_HAL__H */
 
 /* end of file */

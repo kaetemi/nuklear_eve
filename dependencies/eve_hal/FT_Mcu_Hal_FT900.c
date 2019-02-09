@@ -34,35 +34,37 @@
 
 #include "FT_MCU_Hal.h"
 
-ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host)
+ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 {
-	Ft_Gpu_Hal_Powercycle(s_Host, FT_TRUE);
+	EVE_HalParameters *parameters = &phost->Parameters;
+
+	Ft_Gpu_Hal_Powercycle(phost, FT_TRUE);
 
 	/* FT81x will be in SPI Single channel after POR
 	If we are here with FT4222 in multi channel, then
 	an explicit switch to single channel is essential
 	*/
-	Ft_Gpu_Hal_SetSPI(s_Host, FT_GPU_SPI_SINGLE_CHANNEL, FT_GPU_SPI_ONEDUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, FT_GPU_SPI_ONEDUMMY);
 
 	/* Set the clk to external clock. Must disable it when no external clock source on the board*/
 #if (!defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813AU_WH50C))
-	Ft_Gpu_HostCommand(s_Host, FT_GPU_EXTERNAL_OSC);
+	Ft_Gpu_HostCommand(phost, FT_GPU_EXTERNAL_OSC);
 	Ft_Gpu_Hal_Sleep(10);
 #endif
 
 	/* Access address 0 to wake up the FT800 */
-	Ft_Gpu_HostCommand(s_Host, FT_GPU_ACTIVE_M);
+	Ft_Gpu_HostCommand(phost, FT_GPU_ACTIVE_M);
 	Ft_Gpu_Hal_Sleep(300);
 #if defined(FT_811_ENABLE) || defined(FT_813_ENABLE)
 #if defined(PANL70) || defined(PANL70PLUS)
-	Ft_Gpu_Hal_Wr8(s_Host, REG_CPURESET, 2);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_CYA_TOUCH, 0x05d0);
+	Ft_Gpu_Hal_Wr8(phost, REG_CPURESET, 2);
+	Ft_Gpu_Hal_Wr16(phost, REG_CYA_TOUCH, 0x05d0);
 #endif
 	/* Download new firmware to fix pen up issue */
 	/* It may cause resistive touch not working any more*/
-	Ft_Gpu_DownloadJ1Firmware(s_Host); // FIXME: Shouldn't this be called *after* waiting for REG_ID?
+	Ft_Gpu_DownloadJ1Firmware(phost); // FIXME: Shouldn't this be called *after* waiting for REG_ID?
 #if defined(PANL70) || defined(PANL70PLUS)
-	Ft_Gpu_Panl70_GOODIXGPIO(s_Host);
+	Ft_Gpu_Panl70_GOODIXGPIO(phost);
 #endif
 	Ft_Gpu_Hal_Sleep(100);
 #endif
@@ -71,10 +73,10 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host)
 	{
 		ft_uint8_t chipid;
 		//Read Register ID to check if EVE is ready.
-		chipid = Ft_Gpu_Hal_Rd8(s_Host, REG_ID);
+		chipid = Ft_Gpu_Hal_Rd8(phost, REG_ID);
 		while (chipid != 0x7C)
 		{
-			chipid = Ft_Gpu_Hal_Rd8(s_Host, REG_ID);
+			chipid = Ft_Gpu_Hal_Rd8(phost, REG_ID);
 			eve_printf_debug("EVE register ID after wake up %x\n", chipid);
 			ft_delay(100);
 		}
@@ -90,7 +92,7 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host)
 		Bit 1 for touch engine,
 		Bit 2 for audio engine.
 		*/
-		engine_status = Ft_Gpu_Hal_Rd8(s_Host, REG_CPURESET);
+		engine_status = Ft_Gpu_Hal_Rd8(phost, REG_CPURESET);
 		while (engine_status != 0x00)
 		{
 			if (engine_status & 0x01)
@@ -106,68 +108,57 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host)
 				eve_printf_debug("audio engine is not ready\n");
 			}
 
-			engine_status = Ft_Gpu_Hal_Rd8(s_Host, REG_CPURESET);
+			engine_status = Ft_Gpu_Hal_Rd8(phost, REG_CPURESET);
 			ft_delay(100);
 		}
 		eve_printf_debug("All engines are ready\n");
 	}
 
-#ifdef DISPLAY_RESOLUTION_QVGA
-	init_DISPLAY_RESOLUTION_QVGA();
-#endif
-#ifdef DISPLAY_RESOLUTION_WVGA
-	init_DISPLAY_RESOLUTION_WVGA();
-#endif
-
-#ifdef DISPLAY_RESOLUTION_HVGA_PORTRAIT
-	init_DISPLAY_RESOLUTION_HVGA_PORTRAIT();
-#endif
-
-	Ft_Gpu_Hal_Wr16(s_Host, REG_HCYCLE, FT_DispHCycle);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_HOFFSET, FT_DispHOffset);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_HSYNC0, FT_DispHSync0);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_HSYNC1, FT_DispHSync1);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_VCYCLE, FT_DispVCycle);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_VOFFSET, FT_DispVOffset);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_VSYNC0, FT_DispVSync0);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_VSYNC1, FT_DispVSync1);
-	Ft_Gpu_Hal_Wr8(s_Host, REG_SWIZZLE, FT_DispSwizzle);
-	Ft_Gpu_Hal_Wr8(s_Host, REG_PCLK_POL, FT_DispPCLKPol);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_HSIZE, FT_DispWidth);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_VSIZE, FT_DispHeight);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_CSPREAD, FT_DispCSpread);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_DITHER, FT_DispDither);
+	Ft_Gpu_Hal_Wr16(phost, REG_HCYCLE, parameters->Display.HCycle);
+	Ft_Gpu_Hal_Wr16(phost, REG_HOFFSET, parameters->Display.HOffset);
+	Ft_Gpu_Hal_Wr16(phost, REG_HSYNC0, parameters->Display.HSync0);
+	Ft_Gpu_Hal_Wr16(phost, REG_HSYNC1, parameters->Display.HSync1);
+	Ft_Gpu_Hal_Wr16(phost, REG_VCYCLE, parameters->Display.VCycle);
+	Ft_Gpu_Hal_Wr16(phost, REG_VOFFSET, parameters->Display.VOffset);
+	Ft_Gpu_Hal_Wr16(phost, REG_VSYNC0, parameters->Display.VSync0);
+	Ft_Gpu_Hal_Wr16(phost, REG_VSYNC1, parameters->Display.VSync1);
+	Ft_Gpu_Hal_Wr8(phost, REG_SWIZZLE, parameters->Display.Swizzle);
+	Ft_Gpu_Hal_Wr8(phost, REG_PCLK_POL, parameters->Display.PCLKPol);
+	Ft_Gpu_Hal_Wr16(phost, REG_HSIZE, parameters->Display.Width);
+	Ft_Gpu_Hal_Wr16(phost, REG_VSIZE, parameters->Display.Height);
+	Ft_Gpu_Hal_Wr16(phost, REG_CSPREAD, parameters->Display.CSpread);
+	Ft_Gpu_Hal_Wr16(phost, REG_DITHER, parameters->Display.Dither);
 
 #ifdef EVDEMO
-	Ft_Gpu_Hal_Wr16(s_Host, REG_OUTBITS, 0x1B6);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_ADAPTIVE_FRAMERATE, 1);
+	Ft_Gpu_Hal_Wr16(phost, REG_OUTBITS, 0x1B6);
+	Ft_Gpu_Hal_Wr16(phost, REG_ADAPTIVE_FRAMERATE, 1);
 #endif
 
 #ifdef EVE_SCREEN_RESISTIVE
 	/* Touch configuration - configure the resistance value to 1200 - this value is specific to customer requirement and derived by experiment */
-	Ft_Gpu_Hal_Wr16(s_Host, REG_TOUCH_RZTHRESH, RESISTANCE_THRESHOLD);
+	Ft_Gpu_Hal_Wr16(phost, REG_TOUCH_RZTHRESH, RESISTANCE_THRESHOLD);
 #endif
 
 #if defined(FT_81X_ENABLE) || defined(BT_81X_ENABLE)
-	Ft_Gpu_Hal_Wr16(s_Host, REG_GPIOX_DIR, 0xffff);
-	Ft_Gpu_Hal_Wr16(s_Host, REG_GPIOX, 0xffff);
+	Ft_Gpu_Hal_Wr16(phost, REG_GPIOX_DIR, 0xffff);
+	Ft_Gpu_Hal_Wr16(phost, REG_GPIOX, 0xffff);
 #else
-	Ft_Gpu_Hal_Wr8(s_Host, REG_GPIO_DIR, 0xff);
-	Ft_Gpu_Hal_Wr8(s_Host, REG_GPIO, 0xff);
+	Ft_Gpu_Hal_Wr8(phost, REG_GPIO_DIR, 0xff);
+	Ft_Gpu_Hal_Wr8(phost, REG_GPIO, 0xff);
 #endif
 
-	Ft_Gpu_Hal_WrMem(s_Host, RAM_DL, (ft_uint8_t *)FT_DLCODE_BOOTUP, sizeof(FT_DLCODE_BOOTUP));
-	Ft_Gpu_Hal_Wr8(s_Host, REG_DLSWAP, DLSWAP_FRAME);
+	Ft_Gpu_Hal_WrMem(phost, RAM_DL, (ft_uint8_t *)FT_DLCODE_BOOTUP, sizeof(FT_DLCODE_BOOTUP));
+	Ft_Gpu_Hal_Wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
 
-	Ft_Gpu_Hal_Wr8(s_Host, REG_PCLK, FT_DispPCLK); //after this display is visible on the LCD
+	Ft_Gpu_Hal_Wr8(phost, REG_PCLK, parameters->Display.PCLK); //after this display is visible on the LCD
 
 #if (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
 	/* to cross check reset pin */
-	Ft_Gpu_Hal_Wr8(s_Host, REG_GPIO, 0xff);
+	Ft_Gpu_Hal_Wr8(phost, REG_GPIO, 0xff);
 	ft_delay(120);
-	Ft_Gpu_Hal_Wr8(s_Host, REG_GPIO, 0x7f);
+	Ft_Gpu_Hal_Wr8(phost, REG_GPIO, 0x7f);
 	ft_delay(120);
-	Ft_Gpu_Hal_Wr8(s_Host, REG_GPIO, 0xff);
+	Ft_Gpu_Hal_Wr8(phost, REG_GPIO, 0xff);
 	ft_delay(120);
 #endif
 	Ft_DisplayPanel_Init();
@@ -176,11 +167,11 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host)
 #ifndef FT_80X_ENABLE
 	/* api to set quad and numbe of dummy bytes */
 #ifdef ENABLE_SPI_QUAD
-	Ft_Gpu_Hal_SetSPI(s_Host, FT_GPU_SPI_QUAD_CHANNEL, FT_GPU_SPI_TWODUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_QUAD_CHANNEL, FT_GPU_SPI_TWODUMMY);
 #elif ENABLE_SPI_DUAL
-	Ft_Gpu_Hal_SetSPI(s_Host, FT_GPU_SPI_DUAL_CHANNEL, FT_GPU_SPI_TWODUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_DUAL_CHANNEL, FT_GPU_SPI_TWODUMMY);
 #else
-	Ft_Gpu_Hal_SetSPI(s_Host, FT_GPU_SPI_SINGLE_CHANNEL, FT_GPU_SPI_ONEDUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, FT_GPU_SPI_ONEDUMMY);
 #endif
 
 #endif

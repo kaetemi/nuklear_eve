@@ -54,9 +54,9 @@ ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
 
 ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 {
-	phost->HalConfig.channel_no = 0;
-	phost->HalConfig.pdn_pin_no = 0;
-	phost->HalConfig.spi_cs_pin_no = 0;
+	phost->Parameters.MpsseChannelNo = 0;
+	phost->Parameters.PowerDownPin = 0;
+	phost->Parameters.SpiCsPin = 0;
 
 #if defined(FT_EMULATOR_MAIN)
 	phost->Emulator = Ft_GpuEmu;
@@ -75,8 +75,6 @@ ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 #endif
 
 	/* Initialize the context valriables */
-	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
-	phost->SpiChannel = 0;
 	phost->Status = FT_GPU_HAL_OPENED;
 
 	return !!phost->Emulator;
@@ -362,8 +360,6 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 	//FT81x swicthed to dual/quad mode, now update global HAL context
 #endif
 
-	phost->SpiChannel = numchnls;
-	phost->SpiNumDummy = numdummy;
 	return 0;
 }
 

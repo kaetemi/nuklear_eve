@@ -56,9 +56,6 @@ void Esd_CheckTypeSizes();
 ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host);
 ft_void_t Ft_Mcu_Init();
 
-extern ft_int16_t FT_DispWidth;
-extern ft_int16_t FT_DispHeight;
-
 extern void Ft_Hal_LoadSDCard();
 // extern void Ft_Esd_Widget_ProcessFree(); // TODO: Bind from widgets
 
@@ -278,7 +275,7 @@ void Esd_Render(Esd_Context *ec)
 	{
 		// Spinner used for switching longer loading pages with bitmaps etc
 		Ft_Esd_Dl_COLOR_RGB(~(ec->ClearColor));
-		Ft_Esd_CoCmd_Spinner(Esd_Update, FT_DispWidth / 2, FT_DispHeight / 2, 0, 0);
+		Ft_Esd_CoCmd_Spinner(Esd_Update, parameters->Display.Width / 2, parameters->Display.Height / 2, 0, 0);
 		ec->SpinnerPopup = FT_FALSE;
 		ec->SpinnerPopped = FT_TRUE;
 	}

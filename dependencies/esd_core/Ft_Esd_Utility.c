@@ -166,7 +166,7 @@ ft_bool_t Esd_Calibrate()
 	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 1, 1));
 	Ft_Gpu_CoCmd_SendCmd(phost, COLOR_RGB(0xff, 0xff, 0xff));
 
-	// Ft_Gpu_CoCmd_Text(phost, (FT_DispWidth / 2), (FT_DispHeight / 2), 27, OPT_CENTER, "Please Tap on the dot");
+	// Ft_Gpu_CoCmd_Text(phost, (Ft_Esd_Host->Parameters.Display.Width / 2), (Ft_Esd_Host->Parameters.Display.Height / 2), 27, OPT_CENTER, "Please Tap on the dot");
 
 	ft_uint32_t result = Ft_Gpu_CoCmd_Calibrate(phost);
 

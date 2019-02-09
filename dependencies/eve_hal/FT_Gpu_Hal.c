@@ -117,9 +117,9 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(EVE_HalContext *phost)
 			eve_debug_break();
 			return FT_FALSE;
 		}
-		if (phost->CbCmdWait)
+		if (phost->Parameters.CbCmdWait)
 		{
-			if (!phost->CbCmdWait(phost))
+			if (!phost->Parameters.CbCmdWait(phost))
 			{
 				// Wait aborted
 				phost->CmdWaiting = FT_FALSE;
@@ -174,9 +174,9 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(EVE_HalContext *phost, ft_uint32_t bytes)
 			eve_debug_break();
 			return FT_FALSE;
 		}
-		if (phost->CbCmdWait)
+		if (phost->Parameters.CbCmdWait)
 		{
-			if (!phost->CbCmdWait(phost))
+			if (!phost->Parameters.CbCmdWait(phost))
 			{
 				// Wait aborted
 				phost->CmdWaiting = FT_FALSE;

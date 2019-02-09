@@ -8,9 +8,6 @@
 #define _USE_MATH_DEFINES 1
 #include <math.h>
 
-extern ft_int16_t FT_DispWidth;
-extern ft_int16_t FT_DispHeight;
-
 extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
@@ -46,8 +43,8 @@ void Esd_ResetGpuState() // Begin of frame
 	// Reset scissor state to display size
 	Ft_Esd_ScissorRect.X = 0;
 	Ft_Esd_ScissorRect.Y = 0;
-	Ft_Esd_ScissorRect.Width = FT_DispWidth;
-	Ft_Esd_ScissorRect.Height = FT_DispHeight;
+	Ft_Esd_ScissorRect.Width = Ft_Esd_Host->Parameters.Display.Width;
+	Ft_Esd_ScissorRect.Height = Ft_Esd_Host->Parameters.Display.Height;
 }
 
 void Esd_ResetCoState()
