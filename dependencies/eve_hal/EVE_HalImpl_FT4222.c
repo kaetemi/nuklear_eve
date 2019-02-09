@@ -550,8 +550,9 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t a
 {
 	eve_assert(phost->Status == EVE_HalStatusOpened);
 
-	if (addr != phost->SpiRamGAddr)
+	if (addr != phost->SpiRamGAddr || rw == EVE_HalTransferRead)
 	{
+		/* Close any write transfer that was left open, if the address changed */
 		if (phost->SpiWrBufIndex)
 			wrBuffer(phost, NULL, 0);
 
@@ -568,6 +569,7 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
 	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
 
+	/* Transfers to FIFO are kept open */
 	uint32_t addr = phost->SpiRamGAddr;
 	if (addr != REG_CMDB_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
 	{
