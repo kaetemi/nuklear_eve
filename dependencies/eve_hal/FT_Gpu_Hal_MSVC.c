@@ -273,7 +273,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 	FT4222_STATUS status;
 	ft_uint8_t hrdpkt[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //3 byte addr + 2 or1 byte dummy
 	ft_uint8_t retcode = 1; /* assume successful operation */
-	ft_uint32_t bytes_per_read;
+	ft_uint32_t bytesPerRead;
 
 	if (rdbufptr == NULL || exprdbytes == 0)
 		retcode = 0; //fail
@@ -282,7 +282,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 	{
 		if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
 		{
-			ft_uint16_t SizeTransfered;
+			ft_uint16_t sizeTransferred;
 			/* Compose the HOST MEMORY READ packet */
 			hrdpkt[0] = (ft_uint8_t)(hrdcmd >> 16) & 0xFF;
 			hrdpkt[1] = (ft_uint8_t)(hrdcmd >> 8) & 0xFF;
@@ -292,14 +292,14 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 			    phost->SpiHandle,
 			    hrdpkt,
 			    3 + phost->SpiNumDummy, /* 3 address and chosen dummy bytes */
-			    (ft_uint16_t *)&SizeTransfered,
+			    &sizeTransferred,
 			    FALSE /* continue transaction */
 			);
-			if ((FT4222_OK != status) || ((ft_uint16_t)SizeTransfered != (3 + phost->SpiNumDummy)))
+			if ((FT4222_OK != status) || (sizeTransferred != (3 + phost->SpiNumDummy)))
 			{
-				eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, SizeTransfered is %d with status %d\n", (ft_uint16_t)SizeTransfered, status);
+				eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", sizeTransferred, status);
 				retcode = 0;
-				if ((ft_uint16_t)SizeTransfered != (3 + phost->SpiNumDummy))
+				if (sizeTransferred != (3 + phost->SpiNumDummy))
 					phost->Status = FT_GPU_HAL_STATUS_ERROR;
 			}
 			else
@@ -308,40 +308,40 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 				if (rdbufptr != NULL)
 				{
 					BOOL disable_cs = FALSE; //assume multi SPI read calls
-					bytes_per_read = exprdbytes;
+					bytesPerRead = exprdbytes;
 
 					while (retcode && exprdbytes)
 					{
 						if (exprdbytes <= FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH)
 						{
-							bytes_per_read = exprdbytes;
+							bytesPerRead = exprdbytes;
 							disable_cs = TRUE; //1 iteration of SPI read adequate
 						}
 						else
 						{
-							bytes_per_read = FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH;
+							bytesPerRead = FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH;
 							disable_cs = FALSE;
 						}
 
 						status = FT4222_SPIMaster_SingleRead(
 						    phost->SpiHandle,
 						    rdbufptr,
-						    bytes_per_read,
-						    (ft_uint16_t *)&SizeTransfered,
+						    bytesPerRead,
+						    &sizeTransferred,
 						    disable_cs);
-						if ((FT4222_OK != status) || ((ft_uint16_t)SizeTransfered != bytes_per_read))
+						if ((FT4222_OK != status) || (sizeTransferred != bytesPerRead))
 						{
-							eve_printf_debug("FT4222_SPIMaster_SingleRead failed,SizeTransfered is %d with status %d\n", (ft_uint16_t)SizeTransfered, status);
+							eve_printf_debug("FT4222_SPIMaster_SingleRead failed,sizeTransferred is %d with status %d\n", sizeTransferred, status);
 							retcode = 0;
-							if ((ft_uint16_t)SizeTransfered != bytes_per_read)
+							if (sizeTransferred != bytesPerRead)
 								phost->Status = FT_GPU_HAL_STATUS_ERROR;
 						}
 
 						//multiple iterations of SPI read needed
-						bytes_per_read = (ft_uint16_t)SizeTransfered;
+						bytesPerRead = sizeTransferred;
 
-						exprdbytes -= bytes_per_read;
-						rdbufptr += bytes_per_read;
+						exprdbytes -= bytesPerRead;
+						rdbufptr += bytesPerRead;
 					}
 				}
 			}
@@ -351,7 +351,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 			/* Multi channel SPI communication */
 			ft_uint32_t t_hrdcmd = hrdcmd;
 			ft_uint32_t read_data_index = 0;
-			ft_uint32_t SizeTransfered = 0;
+			ft_uint32_t sizeTransferred = 0;
 
 			while (retcode && exprdbytes)
 			{
@@ -361,9 +361,9 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 				hrdpkt[2] = (ft_uint8_t)(t_hrdcmd & 0xff);
 
 				if (exprdbytes <= FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH)
-					bytes_per_read = exprdbytes;
+					bytesPerRead = exprdbytes;
 				else
-					bytes_per_read = FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH;
+					bytesPerRead = FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH;
 
 				status = FT4222_SPIMaster_MultiReadWrite(
 				    phost->SpiHandle,
@@ -371,22 +371,22 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 				    hrdpkt,
 				    0,
 				    3 + phost->SpiNumDummy, // 3 addr + dummy bytes
-				    bytes_per_read,
-				    &SizeTransfered);
-				if ((FT4222_OK != status) || ((ft_uint16_t)SizeTransfered != bytes_per_read))
+				    bytesPerRead,
+				    &sizeTransferred);
+				if ((FT4222_OK != status) || (sizeTransferred != bytesPerRead))
 				{
-					eve_printf_debug("FT4222_SPIMaster_MultiReadWrite failed, SizeTransfered is %d with status %d\n", SizeTransfered, status);
+					eve_printf_debug("FT4222_SPIMaster_MultiReadWrite failed, sizeTransferred is %d with status %d\n", sizeTransferred, status);
 					retcode = 0;
-					if ((ft_uint16_t)SizeTransfered != bytes_per_read)
+					if (sizeTransferred != bytesPerRead)
 						phost->Status = FT_GPU_HAL_STATUS_ERROR;
 				}
 
 				//its multi SPI read calls
-				bytes_per_read = (ft_uint16_t)SizeTransfered;
+				bytesPerRead = sizeTransferred;
 
-				exprdbytes -= bytes_per_read;
-				read_data_index += bytes_per_read;
-				t_hrdcmd += bytes_per_read;
+				exprdbytes -= bytesPerRead;
+				read_data_index += bytesPerRead;
+				t_hrdcmd += bytesPerRead;
 			}
 		}
 	}
@@ -408,18 +408,18 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 {
 
 	FT4222_STATUS status;
-	ft_uint8_t *temp_wrpktptr;
-	ft_uint16_t per_write = 0;
+	uint8_t *temp_wrpktptr;
+	uint16_t per_write = 0;
 	BOOL disable_cs = FALSE; //assume multi SPI write calls
-	ft_uint8_t dummy_read;
-	ft_uint8_t retcode = 1; /* assume successful operation */
+	uint8_t dummyRead;
+	uint8_t retcode = 1; /* assume successful operation */
 
 	if (wrbufptr == NULL || bytestowr == 0)
 		retcode = 0;
 
 	if (retcode)
 	{
-		ft_uint16_t SizeTransfered = 0;
+		uint16_t sizeTransferred = 0;
 
 		temp_wrpktptr = phost->SpiWriBufPtr; //global phost write buffer of size FT4222_MAX_BYTES_PER_CALL
 
@@ -433,12 +433,12 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 			    phost->SpiHandle,
 			    temp_wrpktptr,
 			    3, //3 address bytes
-			    (ft_uint16_t *)&SizeTransfered,
+			    &sizeTransferred,
 			    FALSE);
 
-			if ((FT4222_OK != status) || ((ft_uint16_t)SizeTransfered != 3))
+			if ((FT4222_OK != status) || (sizeTransferred != 3))
 			{
-				eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, SizeTransfered is %d with status %d\n", __LINE__, (ft_uint16_t)SizeTransfered, status);
+				eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
 				retcode = 0;
 			}
 
@@ -459,21 +459,21 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 
 					status = FT4222_SPIMaster_SingleWrite(
 					    phost->SpiHandle,
-					    wrbufptr,
+					    (uint8_t *)wrbufptr,
 					    per_write,
-					    (ft_uint16_t *)&SizeTransfered,
+					    &sizeTransferred,
 					    disable_cs);
 
-					if ((FT4222_OK != status) || ((ft_uint16_t)SizeTransfered != per_write))
+					if ((FT4222_OK != status) || ((ft_uint16_t)sizeTransferred != per_write))
 					{
-						eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, SizeTransfered is %d with status %d\n", __LINE__, (ft_uint16_t)SizeTransfered, status);
+						eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
 						retcode = 0;
-						if ((ft_uint16_t)SizeTransfered != per_write)
+						if (sizeTransferred != per_write)
 							phost->Status = FT_GPU_HAL_STATUS_ERROR;
 					}
 
 					//continue writing more bytes
-					per_write = (ft_uint16_t)SizeTransfered;
+					per_write = sizeTransferred;
 					wrbufptr += per_write;
 					bytestowr -= per_write;
 				}
@@ -481,7 +481,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 		}
 		else
 		{
-			ft_uint32_t SizeTransfered = 0;
+			ft_uint32_t sizeTransferred = 0;
 			//multi channel SPI communication
 			while (bytestowr && retcode)
 			{
@@ -498,12 +498,12 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 
 				status = FT4222_SPIMaster_MultiReadWrite(
 				    phost->SpiHandle,
-				    &dummy_read,
+				    &dummyRead,
 				    temp_wrpktptr,
 				    0,
 				    per_write + 3, // 3 byte of mem address
 				    0,
-				    &SizeTransfered);
+				    &sizeTransferred);
 				if (FT4222_OK != status)
 				{
 					eve_printf_debug("FT4222_SPIMaster_MultiReadWrite failed, status %d\n", status);
@@ -602,14 +602,15 @@ ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 	if (halinit->total_channel_num > 0)
 	{
 		FT_DEVICE_LIST_INFO_NODE devList;
+#ifdef FT4222_PLATFORM
+		FT_STATUS status;
+		ft_uint32_t numdevs;
+#endif
 
 		memset(&devList, 0, sizeof(devList));
 #ifdef MPSSE_PLATFORM
 		SPI_GetChannelInfo(0, &devList);
 #endif
-#ifdef FT4222_PLATFORM
-		FT_STATUS status;
-		ft_uint32_t numdevs;
 
 		status = FT_CreateDeviceInfoList(&numdevs);
 		if (FT_OK == status)
@@ -628,7 +629,6 @@ ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 			eve_printf_debug("FT_CreateDeviceInfoList failed");
 			return FT_FALSE;
 		}
-#endif
 		eve_printf_debug("Information on channel number %d:\n", 0);
 		/* print the dev info */
 		eve_printf_debug(" Flags=0x%x\n", devList.Flags);
@@ -648,16 +648,20 @@ ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
 
 ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 {
+#if defined(MSVC_PLATFORM)
+#ifdef MPSSE_PLATFORM
+	FT_STATUS status;
+	ChannelConfig channelConf; //channel configuration
+#endif
+#endif
+
 	phost->HalConfig.channel_no = 0;
 	phost->HalConfig.pdn_pin_no = FT800_PD_N;
 	phost->HalConfig.spi_cs_pin_no = FT800_SEL_PIN;
 	phost->HalConfig.spi_clockrate_khz = 12000; //in KHz
 
 #if defined(MSVC_PLATFORM)
-	FT_STATUS status;
 #ifdef MPSSE_PLATFORM
-	ChannelConfig channelConf; //channel configuration
-
 	/* configure the spi settings */
 	channelConf.ClockRate = phost->HalConfig.spi_clockrate_khz * 1000;
 	channelConf.LatencyTimer = 2;
@@ -692,14 +696,15 @@ ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 }
 ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
 {
-	phost->Status = FT_GPU_HAL_CLOSED;
-#ifdef MSVC_PLATFORM
+#ifdef FT4222_PLATFORM
+	FT4222_STATUS status;
+#endif
 
+	phost->Status = FT_GPU_HAL_CLOSED;
 #ifdef MPSSE_PLATFORM
 	/* Close the channel*/
 	SPI_CloseChannel(phost->hal_handle);
 #elif defined(FT4222_PLATFORM)
-	FT4222_STATUS status;
 	if (FT4222_OK != (status = FT4222_UnInitialize(phost->SpiHandle)))
 		eve_printf_debug("FT4222_UnInitialize failed %d\n", status);
 
@@ -712,19 +717,13 @@ ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
 	if (FT_OK != (status = FT_Close(phost->GpioHandle)))
 		eve_printf_debug("CLOSE failed %d\n", status);
 #endif
-
-#endif
 }
 
 ft_void_t Ft_Gpu_Hal_DeInit()
 {
-#ifdef MSVC_PLATFORM
-
 #ifdef MPSSE_PLATFORM
 	//Cleanup the MPSSE Lib
 	Cleanup_libMPSSE();
-#endif
-
 #endif
 }
 
@@ -734,45 +733,45 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T r
 	eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
 	if (FT_GPU_READ == rw)
 	{
-#ifdef MSVC_PLATFORM
-		ft_uint8_t Transfer_Array[4];
-		ft_uint32_t SizeTransfered;
-		ft_uint16_t SizeTransfered16;
+		ft_uint8_t transferArray[4];
+
+#ifdef MPSSE_PLATFORM
+		ft_uint32_t sizeTransferred;
+#endif
 
 		/* Compose the read packet */
-		Transfer_Array[0] = addr >> 16;
-		Transfer_Array[1] = addr >> 8;
-		Transfer_Array[2] = addr;
+		transferArray[0] = addr >> 16;
+		transferArray[1] = addr >> 8;
+		transferArray[2] = addr;
 
-		Transfer_Array[3] = 0; //Dummy Read byte
+		transferArray[3] = 0; //Dummy Read byte
 #ifdef MPSSE_PLATFORM
-		SPI_Write((FT_HANDLE)phost->hal_handle, Transfer_Array, sizeof(Transfer_Array), &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
+		SPI_Write((FT_HANDLE)phost->hal_handle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
 #elif defined(FT4222_PLATFORM)
 		// TODO --------------------------------------------------------------------
 		eve_printf_debug("Ft_Gpu_Hal_StartTransfer not implemented for FT4222_PLATFORM");
 		eve_debug_break();
-#endif
 #endif
 		phost->Status = FT_GPU_HAL_READING;
 	}
 	else
 	{
-#ifdef MSVC_PLATFORM
-		ft_uint8_t Transfer_Array[3];
-		ft_uint32_t SizeTransfered;
-		ft_uint16_t SizeTransfered16;
+		ft_uint8_t transferArray[3];
+
+#ifdef MPSSE_PLATFORM
+		ft_uint32_t sizeTransferred;
+#endif
 
 		/* Compose the read packet */
-		Transfer_Array[0] = (0x80 | (addr >> 16));
-		Transfer_Array[1] = addr >> 8;
-		Transfer_Array[2] = addr;
+		transferArray[0] = (0x80 | (addr >> 16));
+		transferArray[1] = addr >> 8;
+		transferArray[2] = addr;
 #ifdef MPSSE_PLATFORM
-		SPI_Write((FT_HANDLE)phost->hal_handle, Transfer_Array, 3, &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
+		SPI_Write((FT_HANDLE)phost->hal_handle, transferArray, 3, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
 #elif defined(FT4222_PLATFORM)
 		// TODO --------------------------------------------------------------------
 		eve_printf_debug("Ft_Gpu_Hal_StartTransfer not implemented for FT4222_PLATFORM");
 		eve_debug_break();
-#endif
 #endif
 		phost->Status = FT_GPU_HAL_WRITING;
 	}
@@ -782,11 +781,11 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 {
 //#if defined(MSVC_PLATFORM) && !defined(ESD_SIMULATION)
 #if defined(MSVC_PLATFORM)
-	ft_uint32_t SizeTransfered = 0;
+	ft_uint32_t sizeTransferred = 0;
 	if (phost->Status == FT_GPU_HAL_WRITING)
 	{
 #ifdef MPSSE_PLATFORM
-		SPI_Write(phost->hal_handle, &value, sizeof(value), &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+		SPI_Write(phost->hal_handle, &value, sizeof(value), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 #elif defined(FT4222_PLATFORM)
 		// TODO --------------------------------------------------------------------
 		eve_printf_debug("Ft_Gpu_Hal_Transfer8 not implemented for FT4222_PLATFORM");
@@ -796,7 +795,7 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 	else
 	{
 #ifdef MPSSE_PLATFORM
-		SPI_Read(phost->hal_handle, &value, sizeof(value), &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+		SPI_Read(phost->hal_handle, &value, sizeof(value), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 #elif defined(FT4222_PLATFORM)
 		// TODO --------------------------------------------------------------------
 		eve_printf_debug("Ft_Gpu_Hal_Transfer8 not implemented for FT4222_PLATFORM");
@@ -804,7 +803,7 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 #endif
 	}
 
-	if (SizeTransfered != sizeof(value))
+	if (sizeTransferred != sizeof(value))
 		phost->Status = FT_GPU_HAL_STATUS_ERROR;
 	return value;
 #endif
@@ -845,7 +844,7 @@ ft_uint16_t Ft_Gpu_Hal_Rd16(EVE_HalContext *phost, ft_uint32_t addr)
 	ft_uint16_t value;
 
 #if defined(FT4222_PLATFORM)
-	if (!Ft_Gpu_Hal_FT4222_Rd(phost, addr, &value, sizeof(value)))
+	if (!Ft_Gpu_Hal_FT4222_Rd(phost, addr, (uint8_t *)&value, sizeof(value)))
 	{
 		eve_printf_debug("Ft_Gpu_Hal_FT4222_Rd failed\n");
 	}
@@ -861,7 +860,7 @@ ft_uint32_t Ft_Gpu_Hal_Rd32(EVE_HalContext *phost, ft_uint32_t addr)
 	ft_uint32_t value;
 
 #if defined(FT4222_PLATFORM)
-	if (!Ft_Gpu_Hal_FT4222_Rd(phost, addr, &value, sizeof(value)))
+	if (!Ft_Gpu_Hal_FT4222_Rd(phost, addr, (uint8_t *)&value, sizeof(value)))
 	{
 		eve_printf_debug("Ft_Gpu_Hal_FT4222_Rd failed\n");
 	}
@@ -890,7 +889,7 @@ ft_void_t Ft_Gpu_Hal_Wr8(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t v)
 ft_void_t Ft_Gpu_Hal_Wr16(EVE_HalContext *phost, ft_uint32_t addr, ft_uint16_t v)
 {
 #if defined(FT4222_PLATFORM)
-	if (!Ft_Gpu_Hal_FT4222_Wr(phost, addr, &v, sizeof(v)))
+	if (!Ft_Gpu_Hal_FT4222_Wr(phost, addr, (uint8_t *)&v, sizeof(v)))
 	{
 		eve_printf_debug("Ft_Gpu_Hal_FT4222_Wr failed\n");
 	}
@@ -904,7 +903,7 @@ ft_void_t Ft_Gpu_Hal_Wr16(EVE_HalContext *phost, ft_uint32_t addr, ft_uint16_t v
 ft_void_t Ft_Gpu_Hal_Wr32(EVE_HalContext *phost, ft_uint32_t addr, ft_uint32_t v)
 {
 #if defined(FT4222_PLATFORM)
-	if (!Ft_Gpu_Hal_FT4222_Wr(phost, addr, &v, sizeof(v)))
+	if (!Ft_Gpu_Hal_FT4222_Wr(phost, addr, (uint8_t *)&v, sizeof(v)))
 	{
 		eve_printf_debug("Ft_Gpu_Hal_FT4222_Wr failed\n");
 	}
@@ -919,18 +918,23 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 {
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
 	FT4222_STATUS status;
-	ft_uint8_t dummy_read;
+	ft_uint8_t dummyRead;
 #endif
-#ifdef MSVC_PLATFORM
-	ft_uint8_t Transfer_Array[3];
-	ft_uint32_t SizeTransfered;
-	ft_uint16_t SizeTransfered16;
 
-	Transfer_Array[0] = cmd;
-	Transfer_Array[1] = 0;
-	Transfer_Array[2] = 0;
+	ft_uint8_t transferArray[3];
+
 #ifdef MPSSE_PLATFORM
-	SPI_Write(phost->hal_handle, Transfer_Array, sizeof(Transfer_Array), &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
+	ft_uint32_t sizeTransferred;
+#else
+	ft_uint16_t sizeTransferred;
+	ft_uint32_t sizeOfRead;
+#endif
+
+	transferArray[0] = cmd;
+	transferArray[1] = 0;
+	transferArray[2] = 0;
+#ifdef MPSSE_PLATFORM
+	SPI_Write(phost->hal_handle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 #elif defined(FT4222_PLATFORM)
 	switch (phost->SpiChannel)
 	{
@@ -938,9 +942,9 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 		/* FYI : All HOST CMDs should only be executed in single channel mode*/
 		status = FT4222_SPIMaster_SingleWrite(
 		    phost->SpiHandle,
-		    Transfer_Array,
-		    sizeof(Transfer_Array),
-		    (ft_uint16_t *)&SizeTransfered,
+		    transferArray,
+		    sizeof(transferArray),
+		    (ft_uint16_t *)&sizeTransferred,
 		    FT_TRUE);
 		if (FT4222_OK != status)
 			eve_printf_debug("SPI write failed = %d\n", status);
@@ -950,12 +954,12 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 		/* only reset command among phost commands can be executed in multi channel mode*/
 		status = FT4222_SPIMaster_MultiReadWrite(
 		    phost->SpiHandle,
-		    &dummy_read,
-		    Transfer_Array,
+		    &dummyRead,
+		    transferArray,
 		    0,
-		    sizeof(Transfer_Array),
+		    sizeof(transferArray),
 		    0,
-		    &SizeTransfered);
+		    &sizeOfRead);
 		if (FT4222_OK != status)
 			eve_printf_debug("SPI write failed = %d\n", status);
 		break;
@@ -963,25 +967,28 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 		eve_printf_debug("No transfer\n");
 	}
 #endif
-#endif
 }
 //This API sends a 3byte command to the phost
 ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 {
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
 	FT4222_STATUS status;
-	ft_uint8_t dummy_read;
+	ft_uint8_t dummyRead;
 #endif
-#ifdef MSVC_PLATFORM
-	ft_uint8_t Transfer_Array[3];
-	ft_uint32_t SizeTransfered;
-	ft_uint16_t SizeTransfered16;
+	ft_uint8_t transferArray[3];
 
-	Transfer_Array[0] = cmd;
-	Transfer_Array[1] = (cmd >> 8) & 0xff;
-	Transfer_Array[2] = (cmd >> 16) & 0xff;
 #ifdef MPSSE_PLATFORM
-	SPI_Write(phost->hal_handle, Transfer_Array, sizeof(Transfer_Array), &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
+	ft_uint32_t sizeTransferred;
+#else
+	ft_uint16_t sizeTransferred;
+	ft_uint32_t sizeOfRead;
+#endif
+
+	transferArray[0] = cmd;
+	transferArray[1] = (cmd >> 8) & 0xff;
+	transferArray[2] = (cmd >> 16) & 0xff;
+#ifdef MPSSE_PLATFORM
+	SPI_Write(phost->hal_handle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 #elif defined(FT4222_PLATFORM)
 
 	switch (phost->SpiChannel)
@@ -989,9 +996,9 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 	case FT_GPU_SPI_SINGLE_CHANNEL:
 		status = FT4222_SPIMaster_SingleWrite(
 		    phost->SpiHandle,
-		    Transfer_Array,
-		    sizeof(Transfer_Array),
-		    (ft_uint16_t *)&SizeTransfered,
+		    transferArray,
+		    sizeof(transferArray),
+		    &sizeTransferred,
 		    FT_TRUE);
 		if (FT4222_OK != status)
 			eve_printf_debug("SPI write failed = %d\n", status);
@@ -1002,12 +1009,12 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 		* except system reset cmd */
 		status = FT4222_SPIMaster_MultiReadWrite(
 		    phost->SpiHandle,
-		    &dummy_read,
-		    Transfer_Array,
+		    &dummyRead,
+		    transferArray,
 		    0,
-		    sizeof(Transfer_Array),
+		    sizeof(transferArray),
 		    0,
-		    &SizeTransfered);
+		    &sizeOfRead);
 		if (FT4222_OK != status)
 			eve_printf_debug("SPI write failed = %d\n", status);
 		break;
@@ -1015,19 +1022,22 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 		eve_printf_debug("No transfer\n");
 	}
 #endif
-#endif
 }
 
 ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint32_t count)
 {
 	ft_int32_t length = 0, availablefreesize = 0;
 
+#ifdef MPSSE_PLATFORM
+#endif
+
 #if defined(FT4222_PLATFORM)
 	FT4222_STATUS status;
 	ft_uint8_t *wrpktptr;
-	ft_uint8_t dummy_read;
+	ft_uint8_t dummyRead;
 	wrpktptr = phost->SpiWriBufPtr; //Using global buf , FT4222_DYNAMIC_ALLOCATE_SIZE
 #endif
+
 	count = (count + 3) & ~0x3;
 	do
 	{
@@ -1038,15 +1048,17 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint
 		if (length > availablefreesize)
 			length = availablefreesize;
 #ifdef MPSSE_PLATFORM
+		scope
 		{
+			ft_uint32_t sizeTransferred = 0;
 			Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-			ft_uint32_t SizeTransfered32 = 0;
-			SPI_Write(phost->hal_handle, buffer, length, &SizeTransfered32, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+			SPI_Write(phost->hal_handle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 			Ft_Gpu_Hal_EndTransfer(phost);
 		}
 #elif defined(FT4222_PLATFORM)
+		scope
 		{
-			ft_uint16_t SizeTransfered = 0;
+			ft_uint16_t sizeTransferred = 0;
 
 			*(wrpktptr + 0) = (ft_uint8_t)((REG_CMDB_WRITE >> 16) | 0x80);
 			*(wrpktptr + 1) = (ft_uint8_t)((REG_CMDB_WRITE) >> 8);
@@ -1059,11 +1071,11 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint
 				    phost->SpiHandle,
 				    wrpktptr,
 				    (length + 3), //3 for address phase of serial protocol
-				    (ft_uint16_t *)&SizeTransfered,
+				    &sizeTransferred,
 				    FT_TRUE);
-				if ((FT4222_OK != status) || (SizeTransfered != (length + 3)))
+				if ((FT4222_OK != status) || (sizeTransferred != (length + 3)))
 				{
-					eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, SizeTransfered is %d with status %d\n", __LINE__, SizeTransfered, status);
+					eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
 					break;
 				}
 			}
@@ -1073,7 +1085,7 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint
 				/* DUAL and QAUD */
 				status = FT4222_SPIMaster_MultiReadWrite(
 				    phost->SpiHandle,
-				    &dummy_read,
+				    &dummyRead,
 				    wrpktptr,
 				    0,
 				    (length + 3), //3 for address phase of serial protocol
@@ -1177,7 +1189,9 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 }
 ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length)
 {
-	ft_uint32_t SizeTransfered = 0;
+#ifdef MPSSE_PLATFORM
+	ft_uint32_t sizeTransferred = 0;
+#endif
 
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
 	if (!Ft_Gpu_Hal_FT4222_Wr(phost, addr, buffer, length))
@@ -1203,7 +1217,7 @@ ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uin
 	{
 
 #ifdef MPSSE_PLATFORM
-		SPI_Write((FT_HANDLE)phost->hal_handle, buffer, length, &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+		SPI_Write((FT_HANDLE)phost->hal_handle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 #endif
 	}
 #endif
@@ -1220,9 +1234,9 @@ ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(EVE_HalContext *phost, ft_uint32_t addr, cons
 ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
 {
 #ifdef MPSSE_PLATFORM
+	ft_uint32_t sizeTransferred = 0;
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	ft_uint32_t SizeTransfered = 0;
-	SPI_Read((FT_HANDLE)phost->hal_handle, buffer, length, &SizeTransfered, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+	SPI_Read((FT_HANDLE)phost->hal_handle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 	Ft_Gpu_Hal_EndTransfer(phost);
 #elif defined(FT4222_PLATFORM)
 	if (!Ft_Gpu_Hal_FT4222_Rd(phost, addr, buffer, length))
@@ -1281,7 +1295,7 @@ ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
 {
 	ft_uint32_t t0, t1;
 	ft_uint32_t addr = REG_CLOCK;
-	ft_uint8_t spidata[4];
+	// ft_uint8_t spidata[4];
 	ft_int32_t r = 15625;
 
 	t0 = Ft_Gpu_Hal_Rd32(phost, REG_CLOCK); /* t0 read */

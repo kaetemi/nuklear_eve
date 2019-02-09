@@ -45,19 +45,19 @@
 #define FIFO_BYTE_ALIGNMENT_MASK EVE_FIFO_BYTE_ALIGNMENT_MASK
 
 #define FT_GPU_HAL_MODE_E EVE_HalMode
-#define FT_GPU_I2C_MODE EVE_HAL_MODE_I2C
-#define FT_GPU_SPI_MODE EVE_HAL_MODE_SPI
+#define FT_GPU_I2C_MODE EVE_HalModeI2C
+#define FT_GPU_SPI_MODE EVE_HalModeSPI
 
 #define FT_GPU_HAL_STATUS_E EVE_HalStatus
-#define FT_GPU_HAL_STATUS_ERROR EVE_HAL_STATUS_UNKNOWN
-#define FT_GPU_HAL_OPENED EVE_HAL_STATUS_OPENED
-#define FT_GPU_HAL_READING EVE_HAL_STATUS_READING
-#define FT_GPU_HAL_WRITING EVE_HAL_STATUS_WRITING
-#define FT_GPU_HAL_CLOSED EVE_HAL_STATUS_CLOSED
+#define FT_GPU_HAL_STATUS_ERROR EVE_HalStatusUnknown
+#define FT_GPU_HAL_OPENED EVE_HalStatusOpened
+#define FT_GPU_HAL_READING EVE_HalStatusReading
+#define FT_GPU_HAL_WRITING EVE_HalStatusWriting
+#define FT_GPU_HAL_CLOSED EVE_HalStatusClosed
 
 #define FT_GPU_TRANSFERDIR_T EVE_HalTransfer
-#define FT_GPU_READ EVE_HAL_TRANSFER_READ
-#define FT_GPU_WRITE EVE_HAL_TRANSFER_WRITE
+#define FT_GPU_READ EVE_HalTransferRead
+#define FT_GPU_WRITE EVE_HalTransferWrite
 
 typedef struct
 {
@@ -135,11 +135,11 @@ typedef struct EVE_DisplayParameters
 } Eve_DisplayParameters;
 
 /* Hal paramters */
-typedef struct EVE_Paramaters
+typedef struct EVE_Parameters
 {
 	void *AppContext;
 	Eve_DisplayParameters Display;
-} EVE_Paramaters;
+} EVE_Parameters;
 
 /*******************************************************************************/
 /*******************************************************************************/

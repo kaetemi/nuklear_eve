@@ -29,8 +29,8 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef EVE_TYPES__H
-#define EVE_TYPES__H
+#ifndef EVE_INT_TYPES__H
+#define EVE_INT_TYPES__H
 
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
 
@@ -45,6 +45,6 @@
 
 #endif
 
-#endif /* #ifndef EVE_HAL__H */
+#endif /* #ifndef EVE_INT_TYPES__H */
 
 /* end of file */

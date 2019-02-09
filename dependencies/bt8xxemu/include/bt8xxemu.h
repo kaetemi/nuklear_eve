@@ -224,10 +224,10 @@ typedef struct
 	// Write actions to the flash are persisted to the used file.
 	// This is accomplished by memory mapping the file, instead of
 	// the file being copied to memory. Default false
-	bool Persistent;
+	int Persistent;
 
 	// Print log to standard output. Default false
-	bool StdOut;
+	int StdOut;
 
 	// Data buffer that is written to the flash initially,
 	// overriding any existing contents that may have been

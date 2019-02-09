@@ -144,7 +144,7 @@ typedef unsigned long long uintmax_t;
 #ifndef __cplusplus
 
 /* ISOC99 boolean */
-#define bool _Bool
+#define bool int
 #define false 0
 #define true 1
 #define __bool_true_false_are_defined 1

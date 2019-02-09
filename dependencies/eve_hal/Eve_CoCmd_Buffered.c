@@ -40,8 +40,10 @@ static ft_uint16_t s_CmdBufferIndex = 0;
 
 ft_void_t Eve_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
 {
+	ft_uint16_t len;
 	eve_assert(phost->CmdFrame);
-	ft_uint16_t len = (sizeof(cmd[0]) * nb) & FT_CMD_FIFO_MASK;
+
+	len = (sizeof(cmd[0]) * nb) & FT_CMD_FIFO_MASK;
 	if ((s_CmdBufferIndex + len) > FT_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);
@@ -84,8 +86,10 @@ ft_void_t Eve_CoCmd_SendStr_S(EVE_HalContext *phost, const ft_char8_t *s, int le
 
 ft_void_t Eve_CoCmd_SendStr(EVE_HalContext *phost, const ft_char8_t *s)
 {
+	ft_uint16_t length;
+
 	eve_assert(phost->CmdFrame);
-	ft_uint16_t length = (ft_uint16_t)strlen(s) + 1;
+	length = (ft_uint16_t)strlen(s) + 1;
 	if ((s_CmdBufferIndex + length + 3) > FT_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);

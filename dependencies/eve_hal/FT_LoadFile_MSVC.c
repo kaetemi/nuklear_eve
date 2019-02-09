@@ -70,16 +70,17 @@ ft_bool_t Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const c
 
 ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
 {
+	bool cmdFrame;
+	FILE *afile;
+	uint32_t ftsize = 0;
+	uint8_t pbuff[8192];
+	uint16_t blocklen;
+
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 8))
 		return FT_FALSE; // Space for CMD_INFLATE
 
-	ft_bool_t cmdFrame = phost->CmdFrame;
+	cmdFrame = phost->CmdFrame;
 	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-
-	FILE *afile;
-	ft_uint32_t ftsize = 0;
-	ft_uint8_t pbuff[8192];
-	ft_uint16_t blocklen;
 
 	afile = fopen(filename, "rb"); // read Binary (rb)
 	if (afile == NULL)
@@ -111,16 +112,17 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 
 ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format)
 {
+	bool cmdFrame;
+	FILE *afile;
+	uint32_t ftsize = 0;
+	uint8_t pbuff[8192];
+	uint16_t blocklen;
+
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 12))
 		return FT_FALSE; // Space for CMD_LOADIMAGE
 
-	ft_bool_t cmdFrame = phost->CmdFrame;
+	cmdFrame = phost->CmdFrame;
 	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-
-	FILE *afile;
-	ft_uint32_t ftsize = 0;
-	ft_uint8_t pbuff[8192];
-	ft_uint16_t blocklen;
 
 	afile = fopen(filename, "rb"); // read Binary (rb)
 	if (afile == NULL)

@@ -36,7 +36,6 @@
 
 void Ft_Hal_LoadSDCard()
 {
-
 }
 
 ft_bool_t Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
@@ -71,18 +70,19 @@ ft_bool_t Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const c
 
 ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
 {
+	bool cmdFrame;
+	FILE *afile;
+	uint32_t ftsize = 0;
+	uint8_t pbuff[8192];
+	uint16_t blocklen;
+
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 8))
 		return FT_FALSE; // Space for CMD_INFLATE
 
-	ft_bool_t cmdFrame = phost->CmdFrame;
+	cmdFrame = phost->CmdFrame;
 	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 
-	FILE *afile;
-	ft_uint32_t ftsize = 0;
-	ft_uint8_t pbuff[8192];
-	ft_uint16_t blocklen;
-
-	afile = fopen(filename, "rb");		// read Binary (rb)
+	afile = fopen(filename, "rb"); // read Binary (rb)
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
@@ -97,14 +97,14 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 	while (ftsize > 0)
 	{
 		blocklen = ftsize > 8192 ? 8192 : ftsize;
-		fread(pbuff, 1, blocklen, afile);							/* copy the data into pbuff and then transfter it to command buffer */
+		fread(pbuff, 1, blocklen, afile); /* copy the data into pbuff and then transfter it to command buffer */
 		ftsize -= blocklen;
 
 		if (!Ft_Gpu_Hal_WrCmdBuf(phost, (char *)pbuff, blocklen)) /* copy data continuously into command memory */
 			break;
 	}
 
-	fclose(afile);												/* close the opened compressed file */
+	fclose(afile); /* close the opened compressed file */
 
 	phost->CmdFrame = cmdFrame;
 	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
@@ -112,18 +112,19 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 
 ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format)
 {
+	bool cmdFrame;
+	FILE *afile;
+	uint32_t ftsize = 0;
+	uint8_t pbuff[8192];
+	uint16_t blocklen;
+
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 12))
 		return FT_FALSE; // Space for CMD_LOADIMAGE
 
-	ft_bool_t cmdFrame = phost->CmdFrame;
+	cmdFrame = phost->CmdFrame;
 	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 
-	FILE *afile;
-	ft_uint32_t ftsize = 0;
-	ft_uint8_t pbuff[8192];
-	ft_uint16_t blocklen;
-
-	afile = fopen(filename, "rb");		// read Binary (rb)
+	afile = fopen(filename, "rb"); // read Binary (rb)
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
@@ -133,8 +134,8 @@ ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
 	Ft_Gpu_Hal_WrCmd32(phost, address);
 	Ft_Gpu_Hal_WrCmd32(phost, OPT_NODL);
-	// TODO: Let it write into the scratch display list handle, 
-	//  and read it out and write into the bitmapInfo the proper 
+	// TODO: Let it write into the scratch display list handle,
+	//  and read it out and write into the bitmapInfo the proper
 	//  values to use. Replace compressed bool with uint8 enum to
 	//  specify the loading mechanism
 	fseek(afile, 0, SEEK_END);
@@ -143,7 +144,7 @@ ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const
 	while (ftsize > 0)
 	{
 		blocklen = ftsize > 8192 ? 8192 : ftsize;
-		fread(pbuff, 1, blocklen, afile);							/* copy the data into pbuff and then transfter it to command buffer */
+		fread(pbuff, 1, blocklen, afile); /* copy the data into pbuff and then transfter it to command buffer */
 		ftsize -= blocklen;
 		blocklen += 3;
 		blocklen -= blocklen % 4;
@@ -152,7 +153,7 @@ ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const
 			break;
 	}
 
-	fclose(afile);												/* close the opened jpg file */
+	fclose(afile); /* close the opened jpg file */
 
 	phost->CmdFrame = cmdFrame;
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))

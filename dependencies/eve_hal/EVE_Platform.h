@@ -27,45 +27,17 @@
 * distributed by that other user ("Adapted Software").  If so that user may
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
-*
-* File Description:
-*    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
-*    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
-*    I2C and SPI is selected by compiler switch "FT_I2C_MODE"  and "FT_SPI_MODE". In addition, there are
-*    some helper functions defined for FT800 coprocessor engine as well as phost commands.
-*
 */
 
-#ifndef EVE_HAL__H
-#define EVE_HAL__H
-#include "EVE_Config.h"
+/*
+Main file to include the EVE HAL.
+*/
 
-#define EVE_FIFO_SIZE_MASK (0xFFF) // FIFO valid range from 0 to 4095
-#define EVE_FIFO_BYTE_ALIGNMENT_MASK (0xFFC)
+#ifndef EVE_PLATFORM__H
+#define EVE_PLATFORM__H
 
-typedef enum EVE_HalMode
-{
-	EVE_HalModeUnknown = 0,
-	EVE_HalModeI2C,
-	EVE_HalModeSPI,
-} EVE_HalMode;
+#include "FT_Platform.h"
 
-typedef enum EVE_HalStatus
-{
-	EVE_HalStatusUnknown = 0,
-	EVE_HalStatusOpened,
-	EVE_HalStatusReading,
-	EVE_HalStatusWriting,
-	EVE_HalStatusClosed,
-} EVE_HalStatus;
-
-typedef enum EVE_HalTransfer
-{
-	EVE_HalTransferNone = 0,
-	EVE_HalTransferRead,
-	EVE_HalTransferWrite,
-} EVE_HalTransfer;
-
-#endif /* #ifndef EVE_HAL__H */
+#endif /* #ifndef EVE_PLATFORM__H */
 
 /* end of file */

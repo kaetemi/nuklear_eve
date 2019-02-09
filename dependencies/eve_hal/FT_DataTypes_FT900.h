@@ -32,8 +32,6 @@
 #ifndef _FT_DATATYPES_FT900_H_
 #define _FT_DATATYPES_FT900_H_
 
-#if defined(FT900_PLATFORM)
-
 #define ft_delay(x) Ft_Gpu_Hal_Sleep(x)
 #define ft_random(x) (rand() % x)
 
@@ -54,7 +52,5 @@ typedef FT_PROGMEM ft_uchar8_t ft_prog_uchar8_t;
 typedef FT_PROGMEM ft_uint16_t ft_prog_uint16_t;
 
 #endif
-
-#endif /*_FT_DATATYPES_FT900_H_*/
 
 /* Nothing beyond this*/

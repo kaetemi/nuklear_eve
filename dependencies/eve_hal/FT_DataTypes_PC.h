@@ -36,8 +36,6 @@
 #include "bt8xxemu_inttypes.h"
 #endif
 
-#if defined(PC_PLATFORM)
-
 #define ft_strcpy_P strcpy
 #define ft_strlen_P strlen
 
@@ -58,8 +56,6 @@
 typedef FT_PROGMEM ft_char8_t ft_prog_char8_t;
 typedef FT_PROGMEM ft_uchar8_t ft_prog_uchar8_t;
 typedef FT_PROGMEM ft_uint16_t ft_prog_uint16_t;
-
-#endif
 
 #endif /* FT_DATATYPES_PC_H */
 
