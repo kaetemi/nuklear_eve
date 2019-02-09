@@ -8,7 +8,7 @@
 #define _USE_MATH_DEFINES 1
 #include <math.h>
 
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
+extern EVE_HalContext *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 // GPU state for the current display list

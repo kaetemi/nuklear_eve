@@ -224,9 +224,9 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 	if (phost->Status != EVE_STATUS_WRITING)
 	{
 #if defined(EVE_SUPPORT_CMDB)
-		EVE_Hal_startTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
+		EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, REG_CMDB_WRITE);
 #else
-		EVE_Hal_startTransfer(phost, FT_GPU_WRITE, RAM_CMD + buffer->CmdWp);
+		EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + buffer->CmdWp);
 #endif
 	}
 	EVE_Hal_transfer32(phost, value);
@@ -323,7 +323,7 @@ bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size)
 
 	while (space < size)
 	{
-		if (FT_COCMD_FAULT(space))
+		if (EVE_CMD_FAULT(space))
 		{
 			/* Co processor fault */
 			phost->CmdWaiting = false;

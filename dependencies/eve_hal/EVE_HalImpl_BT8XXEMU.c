@@ -64,9 +64,9 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
 	bool ret;
 
-#if defined(FT_EMULATOR_MAIN)
-	phost->Emulator = Ft_GpuEmu;
-	phost->EmulatorFlash = Ft_EmuFlash;
+#if defined(EVE_EMULATOR_MAIN)
+	phost->Emulator = EVE_GpuEmu;
+	phost->EmulatorFlash = EVE_EmuFlash;
 #else
 	BT8XXEMU_EmulatorParameters params;
 	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, Ft_Emulator_Mode());
@@ -91,7 +91,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 /* Close a HAL context */
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
-#if !defined(FT_EMULATOR_MAIN)
+#if !defined(EVE_EMULATOR_MAIN)
 	if (phost->Emulator)
 	{
 		BT8XXEMU_stop(phost->Emulator);

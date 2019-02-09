@@ -83,7 +83,7 @@ ESD_PARAMETER(message, Type = char *)
 void testPrint(char *message);
 
 ESD_FUNCTION(Ft_Gpu_Copro_SendCmd, Include = "FT_Gpu_Hal.h")
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = "Ft_App_Get_Host()", Hidden, Internal)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = "Ft_App_Get_Host()", Hidden, Internal)
 ESD_PARAMETER(cmd, Type = ft_uint32_t)
 
 */

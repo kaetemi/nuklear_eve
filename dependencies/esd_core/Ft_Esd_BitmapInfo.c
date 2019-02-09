@@ -8,7 +8,7 @@
 #define ESD_BITMAPINFO_DEBUG
 #endif
 
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
+extern EVE_HalContext *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 #ifdef EVE_FLASH_AVAILABLE

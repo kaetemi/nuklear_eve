@@ -29,13 +29,14 @@
 * has no liability in relation to those amendments.
 */
 
-#include "FT_Emulator.h"
-#ifdef FT_EMULATOR_MAIN
+#include "EVE_EmulatorMain.h"
+#include "EVE_Platform.h"
+#ifdef EVE_EMULATOR_MAIN
 
 #undef main
 
-BT8XXEMU_Emulator *Ft_GpuEmu = NULL;
-BT8XXEMU_Flash *Ft_EmuFlash = NULL;
+BT8XXEMU_Emulator *EVE_GpuEmu = NULL;
+BT8XXEMU_Flash *EVE_EmuFlash = NULL;
 
 ft_int32_t s_ArgC;
 ft_char8_t **s_ArgV;
@@ -70,11 +71,11 @@ static void flashLog(BT8XXEMU_Flash *sender, void *context, BT8XXEMU_LogType typ
 
 #endif
 
-void Ft_Main(ft_int32_t argc, ft_char8_t *argv[]);
+void EVE_emuMain(ft_int32_t argc, ft_char8_t *argv[]);
 
 void emulatorMain(BT8XXEMU_Emulator *sender, void *context)
 {
-	Ft_Main(s_ArgC, s_ArgV);
+	EVE_emuMain(s_ArgC, s_ArgV);
 }
 
 ft_int32_t main(ft_int32_t argc, ft_char8_t *argv[])
@@ -140,22 +141,22 @@ ft_int32_t main(ft_int32_t argc, ft_char8_t *argv[])
 	// params.Graphics = graphics;
 #if defined(EVE_FLASH_AVAILABLE)
 	params.Flash = flash;
-	Ft_EmuFlash = flash;
+	EVE_EmuFlash = flash;
 #endif
 
-	BT8XXEMU_run(BT8XXEMU_VERSION_API, &Ft_GpuEmu, &params);
+	BT8XXEMU_run(BT8XXEMU_VERSION_API, &EVE_GpuEmu, &params);
 
-	if (Ft_GpuEmu)
+	if (EVE_GpuEmu)
 	{
-		BT8XXEMU_stop(Ft_GpuEmu);
-		BT8XXEMU_destroy(Ft_GpuEmu);
-		Ft_GpuEmu = NULL;
+		BT8XXEMU_stop(EVE_GpuEmu);
+		BT8XXEMU_destroy(EVE_GpuEmu);
+		EVE_GpuEmu = NULL;
 	}
 #if defined(EVE_FLASH_AVAILABLE)
-	if (Ft_EmuFlash)
+	if (EVE_EmuFlash)
 	{
-		BT8XXEMU_Flash_destroy(Ft_EmuFlash);
-		Ft_EmuFlash = NULL;
+		BT8XXEMU_Flash_destroy(EVE_EmuFlash);
+		EVE_EmuFlash = NULL;
 	}
 #endif
 

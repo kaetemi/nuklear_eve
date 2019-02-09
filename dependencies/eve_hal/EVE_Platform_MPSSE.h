@@ -27,17 +27,18 @@
 * distributed by that other user ("Adapted Software").  If so that user may
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
-*
-* File Description:
-*    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
-*    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
-*    I2C and SPI is selected by compiler switch "FT_I2C_MODE"  and "FT_SPI_MODE". In addition, there are
-*    some helper functions defined for FT800 coprocessor engine as well as phost commands.
-*
 */
-#ifndef FT_GPU_HAL_SIMULATION_H
-#define FT_GPU_HAL_SIMULATION_H
 
+#ifndef EVE_PLATFORM_MPSSE__H
+#define EVE_PLATFORM_MPSSE__H
 
+#include "EVE_Config.h"
+#if defined(MPSSE_PLATFORM)
 
-#endif  /* FT_GPU_HAL_SIMULATION_H */
+#include "ftd2xx.h"
+#include "libMPSSE_spi.h"
+
+#endif
+#endif /* #ifndef EVE_PLATFORM_MPSSE__H */
+
+/* end of file */

@@ -21,7 +21,7 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 	} while (false)
 #endif
 
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
+extern EVE_HalContext *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, ft_uint32_t *imageFormat)

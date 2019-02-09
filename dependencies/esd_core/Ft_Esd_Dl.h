@@ -15,7 +15,7 @@ ESD_CATEGORY(EsdUtilities, DisplayName = "ESD Utilities")
 ESD_CATEGORY(EsdRenderable, DisplayName = "ESD Render Functions")
 ESD_CATEGORY(EveRenderFunctions, DisplayName = "Display List", Category = EsdRenderable)
 
-ESD_TYPE(Ft_Gpu_Hal_Context_t *, Native = Pointer, Edit = Library)
+ESD_TYPE(EVE_HalContext *, Native = Pointer, Edit = Library)
 
 // Keep cache of displaylist values that don't often change but are generally set by every widget to reduce display list size
 #define ESD_DL_OPTIMIZE 1
@@ -73,7 +73,7 @@ typedef struct
 //
 // Globals
 //
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
+extern EVE_HalContext *Ft_Esd_Host;
 #if ESD_DL_OPTIMIZE
 extern Ft_Esd_GpuState_T Ft_Esd_GpuState[ESD_DL_STATE_STACK_SIZE];
 extern ft_uint8_t Ft_Esd_GpuState_I;
@@ -571,11 +571,11 @@ ESD_PARAMETER(n, Type = ft_int32_t, Default = 0)
 ft_void_t Ft_Esd_Cmd_Number(ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_int32_t n);
 
 ESD_FUNCTION(Ft_Gpu_Hal_Rd32, Type = ft_uint32_t, Buffered, Include = "FT_Gpu_Hal.h", Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static)
 ESD_PARAMETER(addr, Type = ft_uint32_t, DisplayName = "Address")
 
 ESD_FUNCTION(Eve_CoCmd_SendCmd, Include = "FT_Gpu_Hal.h", Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static)
 ESD_PARAMETER(cmd, Type = ft_uint32_t)
 
 #endif /* #ifndef FT_ESD_DL_H */

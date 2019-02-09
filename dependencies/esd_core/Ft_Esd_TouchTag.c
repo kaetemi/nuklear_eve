@@ -6,7 +6,7 @@
 
 extern void Ft_Esd_Noop(void *context);
 
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
+extern EVE_HalContext *Ft_Esd_Host;
 
 static ft_uint32_t s_LastTagFrame = ~0;
 static Ft_Esd_TouchTag s_NullTag = {

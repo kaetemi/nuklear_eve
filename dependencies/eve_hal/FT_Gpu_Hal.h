@@ -136,6 +136,40 @@ static inline ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t 
 
 /*******************************************************************************/
 /*******************************************************************************/
+
+#define Ft_Gpu_CoCmd_SendCmd EVE_Cmd_wr32
+inline static ft_void_t Ft_Gpu_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
+{
+	EVE_Cmd_wrBuffer(phost, (uint8_t *)cmd, (uint32_t)nb * 4);
+}
+#define Ft_Gpu_CoCmd_SendStr(phost, str) EVE_Cmd_wrString(phost, str, EVE_CMD_STRING_MAX)
+#define Ft_Gpu_CoCmd_SendStr_S EVE_Cmd_wrString
+inline static ft_void_t Ft_Gpu_CoCmd_StartFrame(EVE_HalContext *phost)
+{
+	/* no-op */
+}
+inline static ft_void_t Ft_Gpu_CoCmd_EndFrame(EVE_HalContext *phost)
+{
+	/* no-op */
+}
+
+#define Eve_CoCmd_SendCmd Ft_Gpu_CoCmd_SendCmd
+#define Eve_CoCmd_SendCmdArr Ft_Gpu_CoCmd_SendCmdArr
+#define Eve_CoCmd_SendStr Ft_Gpu_CoCmd_SendStr
+#define Eve_CoCmd_SendStr_S Ft_Gpu_CoCmd_SendStr_S
+#define Eve_CoCmd_StartFrame Ft_Gpu_CoCmd_StartFrame
+#define Eve_CoCmd_EndFrame Ft_Gpu_CoCmd_EndFrame
+#define Ft_Gpu_Copro_SendCmd Ft_Gpu_CoCmd_SendCmd
+
+#define FT_Gpu_Fonts EVE_Gpu_Fonts
+#define FT_Gpu_Fonts_t EVE_Gpu_Fonts
+#define Ft_Gpu_FontsExt EVE_Gpu_FontsExt
+#define Ft_Gpu_FontsExt_t EVE_Gpu_FontsExt
+#define FT_GPU_NUMCHAR_PERFONT EVE_GPU_NUMCHAR_PERFONT
+#define FT_GPU_FONT_TABLE_SIZE EVE_GPU_FONT_TABLE_SIZE
+
+/*******************************************************************************/
+/*******************************************************************************/
 /* Power cycle */
 ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up);
 
@@ -281,11 +315,9 @@ ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(EVE_HalContext *phost);
 #endif
 
 #if defined(BT8XXEMU_PLATFORM) || defined(ESD_SIMULATION)
-#include <FT_Gpu_Hal_Simulation.h>
 #elif defined(MSVC_PLATFORM)
 #include <FT_Gpu_Hal_MSVC.h>
 #elif defined(FT900_PLATFORM)
-#include <FT_Gpu_Hal_FT900.h>
 #endif
 
 ft_void_t Ft_DisplayPanel_Init();

@@ -11,7 +11,7 @@
 #include "Ft_Esd_CoCmd.h"
 #include "Esd_Core.h"
 
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
+extern EVE_HalContext *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 #ifndef NDEBUG

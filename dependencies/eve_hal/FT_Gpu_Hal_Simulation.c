@@ -34,9 +34,8 @@
 
 #include "FT_Gpu_Hal.h"
 #include "EVE_Gpu.h"
-#include "FT_Emulator.h"
 
-#include "FT_EmulatorMain.h"
+#include "EVE_EmulatorMain.h"
 #if defined(ESD_SIMULATION)
 void Ft_MainReady__ESD(BT8XXEMU_Emulator *emulator);
 #endif
@@ -54,7 +53,7 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 /* Toggle PD_N pin of FT800 board for a power cycle*/
 ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 {
-#if !defined(FT_EMULATOR_MAIN)
+#if !defined(EVE_EMULATOR_MAIN)
 	// ESD would need to call MainReady__ESD again...
 	// TODO: Implement powercycle in BT8XXEMU
 	if (up)
@@ -123,7 +122,7 @@ ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
 
 	t0 = Ft_Gpu_Hal_Rd32(phost, REG_CLOCK); /* t0 read */
 	//may not be precise
-	Sleep(15625 / 1000);
+	EVE_sleep(15625 / 1000);
 
 	t1 = Ft_Gpu_Hal_Rd32(phost, REG_CLOCK); /* t1 read */
 	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */

@@ -40,8 +40,8 @@ ESD_FUNCTION(Ft_Esd_GetDeltaMs, Type = ft_uint32_t, DisplayName = "Get Delta Ms"
 ft_uint32_t Ft_Esd_GetDeltaMs() { return Esd_CurrentContext->DeltaMs; }
 
 /// A function to get the current HAL context data structure
-ESD_FUNCTION(Ft_Esd_GetHost, Type = Ft_Gpu_Hal_Context_t *, DisplayName = "Get EVE Host", Category = EsdUtilities)
-Ft_Gpu_Hal_Context_t *Ft_Esd_GetHost() { return Ft_Esd_Host; }
+ESD_FUNCTION(Ft_Esd_GetHost, Type = EVE_HalContext *, DisplayName = "Get EVE Host", Category = EsdUtilities)
+EVE_HalContext *Ft_Esd_GetHost() { return Ft_Esd_Host; }
 
 #ifdef ESD_SIMULATION
 

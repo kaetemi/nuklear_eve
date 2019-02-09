@@ -29,26 +29,46 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_EMULATOR_MAIN_H
-#define FT_EMULATOR_MAIN_H
+#ifndef EVE_PLATFORM_WIN32__H
+#define EVE_PLATFORM_WIN32__H
 
-#include "FT_Platform.h"
-#if defined(BT8XXEMU_PLATFORM) || defined(ESD_SIMULATION)
+#include "EVE_Config.h"
+#if defined(_WIN32)
 
-// FIXME (2018 OCT 13): Currently the ESD simulation requires the main function override mechanism
-#if (1) // defined(ESD_SIMULATION)
-#define FT_EMULATOR_MAIN (1)
+/* Disable legacy C functions under TCC */
+#ifndef NO_OLDNAMES
+#define NO_OLDNAMES
+#endif
 
-#include "bt8xxemu.h"
+/* Sane options for Windows header */
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#if !defined(NTDDI_VERSION) && !defined(_WIN32_WINNT) && !defined(WINVER)
+#define NTDDI_VERSION 0x05010000 /* NTDDI_WINXP */
+#define _WIN32_WINNT 0x0501 /* _WIN32_WINNT_WINXP */
+#define WINVER 0x0501 /* _WIN32_WINNT_WINXP */
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 
-// Override main function with wrapper for initializing the emulator
-#define main Ft_Main
+/* C library inclusions */
+#include <Windows.h>
 
-extern BT8XXEMU_Emulator *Ft_GpuEmu;
-extern BT8XXEMU_Flash *Ft_EmuFlash;
+#include <stdio.h>
+#include <stdlib.h>
 
-#endif /* #if defined(ESD_SIMULATION) */
-#endif /* #if defined(BT8XXEMU_PLATFORM) || defined(ESD_SIMULATION) */
-#endif /* #ifndef FT_EMULATOR_MAIN_H */
+#include <string.h>
+
+#define _USE_MATH_DEFINES 1
+#include <math.h>
+
+#include <direct.h>
+#include <time.h>
+#include <io.h>
+
+#endif
+#endif /* #ifndef EVE_PLATFORM_WIN32__H */
 
 /* end of file */

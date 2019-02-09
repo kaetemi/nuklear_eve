@@ -29,15 +29,11 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef EVE_PLATFORM_FT900_H
-#define EVE_PLATFORM_FT900_H
+#ifndef EVE_PLATFORM_FT900__H
+#define EVE_PLATFORM_FT900__H
 
-#include "FT_Platform.h"
-
+#include "EVE_Config.h"
 #if defined(FT900_PLATFORM)
-
-/* Platform-specific HAL features */
-// #define EVE_CMD_BUFFERED
 
 /* Hardware or Module specific macros for gpio line numbers  */
 #if defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
@@ -149,9 +145,6 @@
 #include <string.h>
 #include <assert.h>
 
-/* Data types */
-#include "FT_DataTypes_FT900.h"
-
 /* FT900 libraries */
 #include "ft900_uart_simple.h"
 #include "ft900_sdhost.h"
@@ -163,93 +156,14 @@
 #include "ft900.h"
 #include "ft900_delay.h"
 
-#if _DEBUG
-#if defined(_MSC_VER)
-#define eve_debug_break() __debugbreak()
-#elif defined(__GCC__)
-#define eve_debug_break() __builtin_trap()
-#else
-#define eve_debug_break() \
-	do                    \
-	{                     \
-	} while (false)
-#endif
-#else
-#define eve_debug_break() \
-	do                    \
-	{                     \
-	} while (false)
-#endif
-
-#define eve_printf(fmt, ...) iprintf(fmt, ##__VA_ARGS__)
-#define eve_sprintf(str, fmt, ...) siprintf(str, fmt, ##__VA_ARGS__)
-#if defined(_DEBUG)
-#define eve_printf_debug(fmt, ...) eve_printf(fmt, ##__VA_ARGS__)
-#define eve_assert(cond)                                                                                                           \
-	do                                                                                                                             \
-	{                                                                                                                              \
-		if (!(cond))                                                                                                               \
-		{                                                                                                                          \
-			const char *str = #cond;                                                                                               \
-			const char *sf = __FILE__;                                                                                             \
-			eve_printf("EVE Assert Failed: %s (in file '%s' on line '%i')\n", str ? str : "<NULL>", sf ? sf : "<NULL>", __LINE__); \
-		}                                                                                                                          \
-	} while (false)
-#define eve_assert_ex(cond, ex)                                                                                                                             \
-	do                                                                                                                                                      \
-	{                                                                                                                                                       \
-		if (!(cond))                                                                                                                                        \
-		{                                                                                                                                                   \
-			const char *str = #cond;                                                                                                                        \
-			const char *sf = __FILE__;                                                                                                                      \
-			eve_printf("EVE Assert Failed: %s (%s) (in file '%s' on line '%i')\n", ex ? ex : "<NULL>", str ? str : "<NULL>", sf ? sf : "<NULL>", __LINE__); \
-			eve_debug_break();                                                                                                                              \
-		}                                                                                                                                                   \
-	} while (false)
-#define eve_assert_do(cond) eve_assert(cond)
-#define eve_trace(str)                                                                                                     \
-	do                                                                                                                     \
-	{                                                                                                                      \
-		const char *sc = __FILE__;                                                                                         \
-		eve_printf("EVE Trace: %s (in file '%s' on line '%i')\n", (str) ? (str) : "<NULL>", sf ? sf : "<NULL>", __LINE__); \
-	} while (false)
-#else
-#define eve_printf_debug(fmt, ...) \
-	do                             \
-	{                              \
-	} while (false)
-#define eve_assert(cond) \
-	do                   \
-	{                    \
-	} while (false)
-#define eve_assert_ex(cond, ex) \
-	do                          \
-	{                           \
-	} while (false)
-#define eve_assert_do(cond)           \
-	do                                \
-	{                                 \
-		ft_bool_t r__assert = (cond); \
-	} while (false)
-#define eve_trace(cond) \
-	do                  \
-	{                   \
-	} while (false)
-#endif
-
-/* HAL inclusions */
-#include "FT_Gpu_Hal.h"
-#include "FT_Gpu.h"
-#include "Eve_CoCmd.h"
-#include "FT_Hal_Utils.h"
-#include "FT_ILI9488.h"
-#include "FT_KD2401.h"
-
 #if defined(EVE_MODULE_PANL)
 #include "panl.h"
 #endif
 
+#define eve_printf(fmt, ...) iprintf(fmt, ##__VA_ARGS__)
+#define eve_sprintf(str, fmt, ...) siprintf(str, fmt, ##__VA_ARGS__)
+
 #endif
-#endif /* EVE_PLATFORM_SIMULATION_H */
+#endif /* #ifndef EVE_PLATFORM_FT900__H */
 
 /* end of file */

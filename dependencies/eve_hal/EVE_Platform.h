@@ -36,13 +36,106 @@ Main file to include the EVE HAL.
 #ifndef EVE_PLATFORM__H
 #define EVE_PLATFORM__H
 
-#include "FT_Platform.h"
-
 #include "EVE_Config.h"
+#include "EVE_Platform_WIN32.h"
+#include "EVE_Platform_BT8XXEMU.h"
+#include "EVE_Platform_FT4222.h"
+#include "EVE_Platform_MPSSE.h"
+#include "EVE_Platform_FT900.h"
 #include "EVE_Hal.h"
 #include "EVE_Cmd.h"
 #include "EVE_Gpu.h"
 #include "EVE_Util.h"
+#include "FT_ILI9488.h"
+#include "FT_KD2401.h"
+
+#if _DEBUG
+#if defined(_MSC_VER)
+#define eve_debug_break() __debugbreak()
+#elif defined(__GCC__)
+#define eve_debug_break() __builtin_trap()
+#else
+#define eve_debug_break() \
+	do                    \
+	{                     \
+	} while (false)
+#endif
+#else
+#define eve_debug_break() \
+	do                    \
+	{                     \
+	} while (false)
+#endif
+
+#ifndef eve_printf
+#define eve_printf(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#endif
+
+#ifndef eve_sprintf
+#define eve_sprintf(str, fmt, ...) sprintf(str, fmt, ##__VA_ARGS__)
+#endif
+
+#if defined(_DEBUG)
+#define eve_printf_debug(fmt, ...) eve_printf(fmt, ##__VA_ARGS__)
+#define eve_assert(cond)                                                                                                           \
+	do                                                                                                                             \
+	{                                                                                                                              \
+		if (!(cond))                                                                                                               \
+		{                                                                                                                          \
+			const char *str = #cond;                                                                                               \
+			const char *sf = __FILE__;                                                                                             \
+			eve_printf("EVE Assert Failed: %s (in file '%s' on line '%i')\n", str ? str : "<NULL>", sf ? sf : "<NULL>", __LINE__); \
+		}                                                                                                                          \
+	} while (false)
+#define eve_assert_ex(cond, ex)                                                                                                                             \
+	do                                                                                                                                                      \
+	{                                                                                                                                                       \
+		if (!(cond))                                                                                                                                        \
+		{                                                                                                                                                   \
+			const char *str = #cond;                                                                                                                        \
+			const char *sf = __FILE__;                                                                                                                      \
+			eve_printf("EVE Assert Failed: %s (%s) (in file '%s' on line '%i')\n", ex ? ex : "<NULL>", str ? str : "<NULL>", sf ? sf : "<NULL>", __LINE__); \
+			eve_debug_break();                                                                                                                              \
+		}                                                                                                                                                   \
+	} while (false)
+#define eve_assert_do(cond) eve_assert(cond)
+#define eve_trace(str)                                                                                                     \
+	do                                                                                                                     \
+	{                                                                                                                      \
+		const char *sc = __FILE__;                                                                                         \
+		eve_printf("EVE Trace: %s (in file '%s' on line '%i')\n", (str) ? (str) : "<NULL>", sf ? sf : "<NULL>", __LINE__); \
+	} while (false)
+#else
+#define eve_printf_debug(fmt, ...) \
+	do                             \
+	{                              \
+	} while (false)
+#define eve_assert(cond) \
+	do                   \
+	{                    \
+	} while (false)
+#define eve_assert_ex(cond, ex) \
+	do                          \
+	{                           \
+	} while (false)
+#define eve_assert_do(cond)           \
+	do                                \
+	{                                 \
+		ft_bool_t r__assert = (cond); \
+	} while (false)
+#define eve_trace(cond) \
+	do                  \
+	{                   \
+	} while (false)
+#endif
+
+#ifndef max
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
 
 #endif /* #ifndef EVE_PLATFORM__H */
 

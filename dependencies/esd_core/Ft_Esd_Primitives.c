@@ -5,7 +5,7 @@
 #include "FT_Esd_Dl.h"
 #include "Ft_Esd_BitmapHandle.h"
 
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
+extern EVE_HalContext *Ft_Esd_Host;
 
 // Rectangle Gradient drawing with some logic to convert from radius to line width and width height to positions to simplify usage
 ft_void_t Ft_Esd_Render_RectangleF_Gradient(

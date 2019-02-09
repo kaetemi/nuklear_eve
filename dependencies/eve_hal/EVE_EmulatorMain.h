@@ -27,15 +27,28 @@
 * distributed by that other user ("Adapted Software").  If so that user may
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
-*
-* File Description:
-*    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
-*    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
-*    I2C and SPI is selected by compiler switch "FT_I2C_MODE"  and "FT_SPI_MODE". In addition, there are
-*    some helper functions defined for FT800 coprocessor engine as well as phost commands.
-*
 */
-#ifndef FT_GPU_HAL_FT900_H
-#define FT_GPU_HAL_FT900_H
 
-#endif /* FT_GPU_HAL_FT900_H */
+#ifndef EVE_EMULATOR_MAIN__H
+#define EVE_EMULATOR_MAIN__H
+
+#include "EVE_Config.h"
+#if defined(BT8XXEMU_PLATFORM)
+
+// FIXME (2018 OCT 13): Currently the ESD simulation requires the main function override mechanism
+#if (1) // defined(ESD_SIMULATION)
+#define EVE_EMULATOR_MAIN (1)
+
+#include "bt8xxemu.h"
+
+// Override main function with wrapper for initializing the emulator
+#define main EVE_emuMain
+
+extern BT8XXEMU_Emulator *EVE_GpuEmu;
+extern BT8XXEMU_Flash *EVE_EmuFlash;
+
+#endif /* #if defined(ESD_SIMULATION) */
+#endif /* #if defined(BT8XXEMU_PLATFORM) || defined(ESD_SIMULATION) */
+#endif /* #ifndef EVE_EMULATOR_MAIN__H */
+
+/* end of file */

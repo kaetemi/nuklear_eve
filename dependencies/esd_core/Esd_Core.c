@@ -42,7 +42,7 @@
 // Globals
 //
 Esd_Context *Esd_CurrentContext = NULL;
-Ft_Gpu_Hal_Context_t *Ft_Esd_Host = NULL; // Pointer to current s_Host
+EVE_HalContext *Ft_Esd_Host = NULL; // Pointer to current s_Host
 Ft_Esd_GpuAlloc *Ft_Esd_GAlloc = NULL; // Pointer to current s_GAlloc
 
 //
@@ -53,7 +53,7 @@ Ft_Esd_GpuAlloc *Ft_Esd_GAlloc = NULL; // Pointer to current s_GAlloc
 void Esd_CheckTypeSizes();
 #endif
 // FT_Mcu_Hal.c
-// ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host);
+// ft_void_t Eve_BootupConfig(EVE_HalContext *s_Host);
 #define Eve_BootupConfig EVE_Util_bootupConfig
 ft_void_t Ft_Mcu_Init();
 

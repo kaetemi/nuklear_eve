@@ -31,7 +31,7 @@
 
 #include "EVE_HalImpl.h"
 #include "EVE_Platform.h"
-#if defined(WIN32)
+#if defined(_WIN32)
 
 /*********
 ** MISC **

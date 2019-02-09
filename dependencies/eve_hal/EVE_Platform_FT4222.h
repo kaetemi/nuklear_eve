@@ -29,23 +29,16 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef _FT_DATATYPES_FT900_H_
-#define _FT_DATATYPES_FT900_H_
+#ifndef EVE_PLATFORM_FT4222__H
+#define EVE_PLATFORM_FT4222__H
 
-#define ft_random(x) (rand() % x)
+#include "EVE_Config.h"
+#if defined(FT4222_PLATFORM)
 
-#define FT_PROGMEM __flash__ const
-#define FT_PROGMEM_CONST __flash__ const
-
-// #define ft_pgm_read_byte_near(x) (*((ft_prog_uchar8_t *)(x)))
-// #define ft_pgm_read_byte(x) (*((ft_prog_uchar8_t *)(x)))
-// #define ft_pgm_read_word(addr) (*((ft_prog_uint16_t *)(addr)))
-
-// #define TRUE (1)
-// typedef ft_uchar8_t byte;
-
-// #define FT_DBGPRINT(x) eve_printf_debug(x)
+#include "ftd2xx.h"
+#include "LibFT4222.h"
 
 #endif
+#endif /* #ifndef EVE_PLATFORM_FT4222__H */
 
-/* Nothing beyond this*/
+/* end of file */

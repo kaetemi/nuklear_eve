@@ -29,17 +29,17 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_EMULATOR_H
-#define FT_EMULATOR_H
+#ifndef EVE_PLATFORM_BT8XXEMU__H
+#define EVE_PLATFORM_BT8XXEMU__H
 
-#include "FT_Platform.h"
-#if defined(BT8XXEMU_PLATFORM) || defined(ESD_SIMULATION)
+#include "EVE_Config.h"
+#if defined(BT8XXEMU_PLATFORM)
 
+#include <string.h>
 #include "bt8xxemu.h"
-#include "FT_EmulatorMain.h"
-#include "FT_Gpu_Hal.h"
+#include "EVE_EmulatorMain.h"
 
-#endif /* #if defined(BT8XXEMU_PLATFORM) || defined(ESD_SIMULATION) */
-#endif /* #ifndef FT_EMULATOR_H */
+#endif
+#endif /* #ifndef EVE_PLATFORM_BT8XXEMU__H */
 
 /* end of file */

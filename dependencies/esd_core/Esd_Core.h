@@ -44,7 +44,7 @@
 /// Runtime context of ESD
 typedef struct
 {
-	Ft_Gpu_Hal_Context_t HalContext; //< Pointer to current s_Host
+	EVE_HalContext HalContext; //< Pointer to current s_Host
 	Ft_Esd_GpuAlloc GpuAlloc; //< Pointer to current s_GAlloc
 	ft_uint32_t Millis; //< Time in milliseconds for current frame
 	ft_uint32_t DeltaMs; //< Delta time in milliseconds between frames
@@ -96,7 +96,7 @@ typedef struct
 } Esd_Parameters;
 
 extern Esd_Context *Esd_CurrentContext; //< Pointer to current ESD context
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host; //< Pointer to current EVE hal context
+extern EVE_HalContext *Ft_Esd_Host; //< Pointer to current EVE hal context
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc; //< Pointer to current allocator
 
 #if (EVE_MODEL >= EVE_FT810)

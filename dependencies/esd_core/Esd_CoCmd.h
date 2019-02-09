@@ -35,7 +35,7 @@
 #include "Ft_Esd.h"
 #include "Ft_Esd_Math.h"
 #include "FT_CoPro_Cmds.h"
-#include "EVE_Gpu.h"
+#include "EVE_Platform.h"
 
 // TODO: Specific min/max handling for multiple target devices
 // #if defined(FT810) || ...
@@ -44,11 +44,11 @@
 // ESD_PARAMETER(source, Type = ft_uint32_t, Default = 0, Max = 99) // MEMORY_ADDRESS
 // #endif
 
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_Host;
-extern Ft_Gpu_Hal_Context_t *Ft_Esd_GetHost();
+extern EVE_HalContext *Ft_Esd_Host;
+extern EVE_HalContext *Ft_Esd_GetHost();
 
 // ESD_FUNCTION(Ft_Gpu_CoCmd_SetBitmap, Type = ft_void_t, Category = _GroupHidden)
-// ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+// ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 // ESD_PARAMETER(source, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 // ESD_PARAMETER(fmt, Type = Ft_Gpu_Format, Default = 0) // BITMAP_FORMAT // TODO: Ft_Gpu_Format enum using defines and typedef as ft_uint16_t
 // ESD_PARAMETER(w, Type = ft_uint16_t, Default = 0) // BITMAP_SIZE
@@ -56,18 +56,18 @@ extern Ft_Gpu_Hal_Context_t *Ft_Esd_GetHost();
 ft_void_t Ft_Gpu_CoCmd_SetBitmap(EVE_HalContext *phost, ft_uint32_t source, ft_uint16_t fmt, ft_uint16_t w, ft_uint16_t h);
 
 // ESD_FUNCTION(Ft_Gpu_CoCmd_SetScratch, Type = ft_void_t, Category = _GroupHidden)
-// ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+// ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 // ESD_PARAMETER(handle, Type = ft_uint32_t, Default = 0, Min = 0, Max = 31) // BITMAP_HANDLE
 ft_void_t Ft_Gpu_CoCmd_SetScratch(EVE_HalContext *phost, ft_uint32_t handle);
 
 // ESD_FUNCTION(Ft_Gpu_CoCmd_RomFont, Type = ft_void_t, Category = _GroupHidden)
-// ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+// ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 // ESD_PARAMETER(font, Type = ft_uint32_t, Default = 0, Min = 0, Max = 31) // BITMAP_HANDLE
 // ESD_PARAMETER(romslot, Type = ft_uint32_t, Default = 16, Min = 16, Max = 34)
 ft_void_t Ft_Gpu_CoCmd_RomFont(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t romslot);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Text, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(font, Type = ft_int16_t, Default = 21, Min = 0, Max = 31) // BITMAP_HANDLE
@@ -78,7 +78,7 @@ ft_void_t Ft_Gpu_CoCmd_Text(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, f
 ft_void_t Ft_Gpu_CoCmd_Text_S(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s, int length);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Text_Ex, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(font, Type = ft_int16_t, Default = 21, Min = 0, Max = 31) // BITMAP_HANDLE
@@ -90,7 +90,7 @@ ESD_PARAMETER(s, Type = const ft_char8_t *, Default = "Text")
 ft_void_t Ft_Gpu_CoCmd_Text_Ex(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_bool_t bottom, ft_int16_t baseLine, ft_int16_t capsHeight, const ft_char8_t *s);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Number, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(font, Type = ft_int16_t, Default = 21, Min = 16, Max = 34) // BITMAP_HANDLE
@@ -99,11 +99,11 @@ ESD_PARAMETER(n, Type = ft_int32_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Number(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t font, ft_uint16_t options, ft_int32_t n);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_LoadIdentity, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ft_void_t Ft_Gpu_CoCmd_LoadIdentity(EVE_HalContext *phost);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Toggle, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(width, Type = ft_int16_t, Default = 60) // SCREEN_SIZE
@@ -114,7 +114,7 @@ ESD_PARAMETER(s, Type = const ft_char8_t *, Default = "on\x00off")
 ft_void_t Ft_Gpu_CoCmd_Toggle(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t font, ft_uint16_t options, ft_uint16_t state, const ft_char8_t *s);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Gauge, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(r, Type = ft_int16_t, Default = 40) // SCREEN_SIZE
@@ -127,33 +127,33 @@ ft_void_t Ft_Gpu_CoCmd_Gauge(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, 
 
 // FIXME: Result parameter (result) is an output that needs to be read back
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_RegRead, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ESD_PARAMETER(result, Type = ft_uint32_t, Default = 0) */
 ft_void_t Ft_Gpu_CoCmd_RegRead(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t result);
 
 // Not exposed to logic editor
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_VideoStart, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST */
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST */
 ft_void_t Ft_Gpu_CoCmd_VideoStart(EVE_HalContext *phost);
 
 // FIXME: Result parameter (width, h) is an output that needs to be read back
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_GetProps, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ESD_PARAMETER(width, Type = ft_uint32_t, Default = 0)
 ESD_PARAMETER(height, Type = ft_uint32_t, Default = 0) */
 ft_void_t Ft_Gpu_CoCmd_GetProps(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t w, ft_uint32_t h);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_MemCpy, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(dest, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ESD_PARAMETER(src, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ESD_PARAMETER(num, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ft_void_t Ft_Gpu_CoCmd_MemCpy(EVE_HalContext *phost, ft_uint32_t dest, ft_uint32_t src, ft_uint32_t num);
 
 // ESD_RENDER(Ft_Gpu_CoCmd_Spinner, Type = ft_void_t, Category = _GroupHidden)
-// ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+// ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 // ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 // ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 // ESD_PARAMETER(style, Type = ft_uint16_t, Default = 0) // TODO: Spinner style enum
@@ -161,38 +161,38 @@ ft_void_t Ft_Gpu_CoCmd_MemCpy(EVE_HalContext *phost, ft_uint32_t dest, ft_uint32
 ft_void_t Ft_Gpu_CoCmd_Spinner(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t style, ft_uint16_t scale);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_BgColor, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(c, Type = ft_rgb32_t, Default = 0) // COLOR
 ft_void_t Ft_Gpu_CoCmd_BgColor(EVE_HalContext *phost, ft_uint32_t c);
 
 // ESD_FUNCTION(Ft_Gpu_CoCmd_Swap, Type = ft_void_t, Category = _GroupHidden)
-// ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+// ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ft_void_t Ft_Gpu_CoCmd_Swap(EVE_HalContext *phost);
 
 // Not exposed directly to logic editor
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_Inflate, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS */
 ft_void_t Ft_Gpu_CoCmd_Inflate(EVE_HalContext *phost, ft_uint32_t ptr);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_Translate, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(tx, Type = ft_int32_t, Default = 0)
 ESD_PARAMETER(ty, Type = ft_int32_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Translate(EVE_HalContext *phost, ft_int32_t tx, ft_int32_t ty);
 
 // Not exposed directly to logic editor
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_Stop, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST */
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST */
 ft_void_t Ft_Gpu_CoCmd_Stop(EVE_HalContext *phost);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_SetBase, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(base, Type = ft_int32_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_SetBase(EVE_HalContext *phost, ft_uint32_t base);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Slider, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(width, Type = ft_int16_t, Default = 60) // SCREEN_SIZE
@@ -206,22 +206,22 @@ ft_void_t Ft_Gpu_CoCmd_Slider(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 ft_void_t Ft_Gpu_CoCmd_VideoFrame(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t ptr);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_Interrupt, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(ms, Type = ft_int32_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Interrupt(EVE_HalContext *phost, ft_uint32_t ms);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_FgColor, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(c, Type = ft_rgb32_t, Default = 0) // COLOR
 ft_void_t Ft_Gpu_CoCmd_FgColor(EVE_HalContext *phost, ft_uint32_t c);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_Rotate, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(a, Type = ft_int32_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Rotate(EVE_HalContext *phost, ft_int32_t a);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Button, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(width, Type = ft_int16_t, Default = 60) // SCREEN_SIZE
@@ -235,7 +235,7 @@ ft_void_t Ft_Gpu_CoCmd_Button(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 ft_void_t Ft_Gpu_CoCmd_MemWrite(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Scrollbar, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(width, Type = ft_int16_t, Default = 60) // SCREEN_SIZE
@@ -259,20 +259,20 @@ ft_void_t Ft_Gpu_CoCmd_CSketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y
 ft_void_t Ft_Gpu_CoCmd_PlayVideo(EVE_HalContext *phost, ft_uint32_t options);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_MemSet, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ESD_PARAMETER(value, Type = ft_uint32_t, Default = 0)
 ESD_PARAMETER(num, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ft_void_t Ft_Gpu_CoCmd_MemSet(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t value, ft_uint32_t num);
 
 // ESD_FUNCTION(Ft_Gpu_CoCmd_SetFont, Type = ft_void_t, Category = _GroupHidden)
-// ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+// ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 // ESD_PARAMETER(font, Type = ft_uint16_t, Default = 21, Min = 0, Max = 31) // BITMAP_HANDLE
 // ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ft_void_t Ft_Gpu_CoCmd_SetFont(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t ptr);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_BitmapTransform, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x0, Type = ft_int32_t, Default = 0)
 ESD_PARAMETER(y0, Type = ft_int32_t, Default = 0)
 ESD_PARAMETER(x1, Type = ft_int32_t, Default = 0)
@@ -289,34 +289,34 @@ ESD_PARAMETER(result, Type = ft_uint16_t, Default = 0) // TODO: Check this
 ft_void_t Ft_Gpu_CoCmd_BitmapTransform(EVE_HalContext *phost, ft_int32_t x0, ft_int32_t y0, ft_int32_t x1, ft_int32_t y1, ft_int32_t x2, ft_int32_t y2, ft_int32_t tx0, ft_int32_t ty0, ft_int32_t tx1, ft_int32_t ty1, ft_int32_t tx2, ft_int32_t ty2, ft_uint16_t result);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_GradColor, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(c, Type = ft_rgb32_t, Default = 0) // COLOR
 ft_void_t Ft_Gpu_CoCmd_GradColor(EVE_HalContext *phost, ft_uint32_t c);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_Sync, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ft_void_t Ft_Gpu_CoCmd_Sync(EVE_HalContext *phost);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_Append, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ESD_PARAMETER(num, Type = ft_uint32_t, Default = 0, Min = 0, Max = 2048)
 ft_void_t Ft_Gpu_CoCmd_Append(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_MemZero, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ESD_PARAMETER(num, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
 ft_void_t Ft_Gpu_CoCmd_MemZero(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_Scale, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(sx, Type = ft_int32_t, Default = 0)
 ESD_PARAMETER(sy, Type = ft_int32_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Scale(EVE_HalContext *phost, ft_int32_t sx, ft_int32_t sy);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Clock, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(r, Type = ft_int16_t, Default = 40) // SCREEN_SIZE
@@ -328,7 +328,7 @@ ESD_PARAMETER(ms, Type = ft_uint16_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Clock(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t h, ft_uint16_t m, ft_uint16_t s, ft_uint16_t ms);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_Gradient, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x0, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y0, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(rgb0, Type = ft_rgb32_t, Default = 0) // COLOR
@@ -338,7 +338,7 @@ ESD_PARAMETER(rgb1, Type = ft_rgb32_t, Default = 0) // COLOR
 ft_void_t Ft_Gpu_CoCmd_Gradient(EVE_HalContext *phost, ft_int16_t x0, ft_int16_t y0, ft_uint32_t rgb0, ft_int16_t x1, ft_int16_t y1, ft_uint32_t rgb1);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_SetMatrix, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ft_void_t Ft_Gpu_CoCmd_SetMatrix(EVE_HalContext *phost);
 
 // Not exposed directly to logic editor
@@ -351,7 +351,7 @@ ft_void_t Ft_Gpu_CoCmd_Int_SWLoadImage(EVE_HalContext *phost, ft_uint32_t ptr, f
 ft_void_t Ft_Gpu_CoCmd_GetPtr(EVE_HalContext *phost, ft_uint32_t result);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Progress, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(width, Type = ft_int16_t, Default = 60) // SCREEN_SIZE
@@ -363,14 +363,14 @@ ft_void_t Ft_Gpu_CoCmd_Progress(EVE_HalContext *phost, ft_int16_t x, ft_int16_t 
 
 // Not exposed directly to logic editor
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_ColdStart, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST */
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST */
 ft_void_t Ft_Gpu_CoCmd_ColdStart(EVE_HalContext *phost);
 
 // Not exposed directly to logic editor
 ft_void_t Ft_Gpu_CoCmd_MediaFifo(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t size);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Keys, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(width, Type = ft_int16_t, Default = 60) // SCREEN_SIZE
@@ -381,7 +381,7 @@ ESD_PARAMETER(s, Type = const ft_char8_t *, Default = "Button")
 ft_void_t Ft_Gpu_CoCmd_Keys(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Dial, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(y, Type = ft_int16_t, Default = 0) // SCREEN_SIZE
 ESD_PARAMETER(r, Type = ft_int16_t, Default = 40) // SCREEN_SIZE
@@ -391,7 +391,7 @@ ft_void_t Ft_Gpu_CoCmd_Dial(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, f
 
 // Not exposed directly to logic editor
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_Snapshot2, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = Ft_Gpu_Hal_Context_t *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 ESD_PARAMETER(fmt, Type = ft_uint32_t, Default = 0) // BITMAP_FORMAT
 ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0)
 ESD_PARAMETER(x, Type = ft_int16_t, Default = 0) // SCREEN_SIZE

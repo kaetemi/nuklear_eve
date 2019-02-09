@@ -35,30 +35,6 @@
 #include "FT_Platform.h"
 #include "EVE_Cmd.h"
 
-#define Ft_Gpu_CoCmd_SendCmd EVE_Cmd_wr32
-inline static ft_void_t Ft_Gpu_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
-{
-	EVE_Cmd_wrBuffer(phost, (uint8_t *)cmd, (uint32_t)nb * 4);
-}
-#define Ft_Gpu_CoCmd_SendStr(phost, str) EVE_Cmd_wrString(phost, str, EVE_CMD_STRING_MAX)
-#define Ft_Gpu_CoCmd_SendStr_S EVE_Cmd_wrString
-inline static ft_void_t Ft_Gpu_CoCmd_StartFrame(EVE_HalContext *phost)
-{
-	/* no-op */
-}
-inline static ft_void_t Ft_Gpu_CoCmd_EndFrame(EVE_HalContext *phost)
-{
-	/* no-op */
-}
-
-#define Eve_CoCmd_SendCmd Ft_Gpu_CoCmd_SendCmd
-#define Eve_CoCmd_SendCmdArr Ft_Gpu_CoCmd_SendCmdArr
-#define Eve_CoCmd_SendStr Ft_Gpu_CoCmd_SendStr
-#define Eve_CoCmd_SendStr_S Ft_Gpu_CoCmd_SendStr_S
-#define Eve_CoCmd_StartFrame Ft_Gpu_CoCmd_StartFrame
-#define Eve_CoCmd_EndFrame Ft_Gpu_CoCmd_EndFrame
-#define Ft_Gpu_Copro_SendCmd Ft_Gpu_CoCmd_SendCmd
-
 #endif /* EVE_CO_CMD__H */
 
 /* end of file */
