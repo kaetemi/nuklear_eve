@@ -34,86 +34,6 @@
 
 #include "FT_Gpu_Hal_FT900.h"
 
-/* API to initialize the SPI interface */
-ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
-{
-	halinit->TotalChannels = 1;
-	// Initialize SPIM HW
-	sys_enable(sys_device_spi_master);
-
-	gpio_function(27, pad_spim_sck); /* GPIO27 to SPIM_CLK */
-	gpio_function(28, pad_spim_ss0); /* GPIO28 as CS */
-	gpio_function(29, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
-	gpio_function(30, pad_spim_miso); /* GPIO30 to SPIM_MISO */
-
-	gpio_dir(27, pad_dir_output);
-	gpio_dir(28, pad_dir_output);
-	gpio_dir(29, pad_dir_output);
-	gpio_dir(30, pad_dir_input);
-#if (defined(ENABLE_SPI_QUAD))
-	/* Initialize IO2 and IO3 pad/pin for quad settings */
-	gpio_function(31, pad_spim_io2); /* GPIO31 to IO2 */
-	gpio_function(32, pad_spim_io3); /* GPIO32 to IO3 */
-	gpio_dir(31, pad_dir_output);
-	gpio_dir(32, pad_dir_output);
-#endif
-
-#if defined(PANL70) || defined(PANL70PLUS)
-	gpio_function(GOODIXGPIO, pad_gpio33);
-	gpio_dir(GOODIXGPIO, pad_dir_output);
-	gpio_write(GOODIXGPIO, 1);
-#endif
-
-	gpio_write(28, 1);
-
-#ifdef EVDEMO
-	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
-#else
-	spi_init(SPIM, spi_dir_master, spi_mode_0, 16); //SPISysInit(SPIM);
-#endif
-
-	return FT_TRUE;
-}
-
-ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
-{
-#if defined(BT_MODULE_PANL)
-	panl_bacnet_task();
-#endif
-}
-
-ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
-{
-	phost->Parameters.MpsseChannelNo = 0;
-	phost->Parameters.PowerDownPin = FT800_PD_N;
-	phost->Parameters.SpiCsPin = FT800_SEL_PIN;
-	gpio_function(phost->Parameters.SpiCsPin, pad_spim_ss0); /* GPIO28 as CS */
-	gpio_write(phost->Parameters.SpiCsPin, 1);
-
-	gpio_function(phost->Parameters.PowerDownPin, pad_gpio43);
-	gpio_dir(phost->Parameters.PowerDownPin, pad_dir_output);
-
-	gpio_write(phost->Parameters.PowerDownPin, 1);
-
-	/* Initialize the context valriables */
-	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
-	phost->SpiChannel = 0;
-	phost->Status = FT_GPU_HAL_OPENED;
-
-	return FT_TRUE;
-}
-
-ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
-{
-	phost->Status = FT_GPU_HAL_CLOSED;
-	//spi_close(SPIM,0);
-}
-
-ft_void_t Ft_Gpu_Hal_DeInit()
-{
-	spi_uninit(SPIM);
-}
-
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
 ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {
@@ -465,7 +385,7 @@ static ft_uint32_t ft_TotalMilliseconds = 0;
 ft_void_t ft_millis_init()
 {
 	ft_TotalMilliseconds = 0;
-#if (defined(BT_MODULE_PANL))
+#if (defined(EVE_MODULE_PANL))
 	panl_timer_register_ms_callback(ft_millis_ticker);
 #else
 	ft_millis_curr = 0;
@@ -487,7 +407,7 @@ ft_void_t ft_millis_init()
 /* global counter to loopback after ~49.71 days */
 ft_uint32_t ft_millis()
 {
-#if (defined(BT_MODULE_PANL))
+#if (defined(EVE_MODULE_PANL))
 	return panl_timer_get_time();
 #else
 	/* Interrupt implementation */

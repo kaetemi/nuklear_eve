@@ -151,10 +151,10 @@ typedef struct EVE_HalContext
 
 } EVE_HalContext;
 
-typedef struct EVE_HalInit
+typedef struct EVE_HalPlatform
 {
 	uint32_t TotalChannels;
-	uint32_t OpenedContexts;
+	uint32_t OpenedChannels;
 
 } EVE_HalPlatform;
 

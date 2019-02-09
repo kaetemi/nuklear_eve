@@ -37,7 +37,6 @@
 #if defined(FT4222_PLATFORM)
 ft_bool_t FT4222Drv_Open(EVE_HalContext *phost)
 {
-	
 }
 #endif
 /*==========================================================================
@@ -380,115 +379,6 @@ ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(EVE_HalContext *phost, FT4222_ClockRate *
 }
 #endif //FT4222_PLATFORM
 
-/* API to initialize the SPI interface */
-#ifdef MPSSE_PLATFORM
-ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
-{
-	/* Initialize the libmpsse */
-	Init_libMPSSE();
-	SPI_GetNumChannels(&halinit->total_channel_num);
-
-	if (halinit->total_channel_num > 0)
-	{
-		FT_DEVICE_LIST_INFO_NODE devList;
-		memset(&devList, 0, sizeof(devList));
-		SPI_GetChannelInfo(0, &devList);
-
-		status = FT_CreateDeviceInfoList(&numdevs);
-		if (FT_OK == status)
-		{
-			eve_printf_debug("Number of D2xx devices connected = %d\n", numdevs);
-			halinit->total_channel_num = numdevs;
-
-			FT_GetDeviceInfoDetail(0, &devList.Flags, &devList.Type, &devList.ID,
-			    &devList.LocId,
-			    devList.SerialNumber,
-			    devList.Description,
-			    &devList.ftHandle);
-		}
-		else
-		{
-			eve_printf_debug("FT_CreateDeviceInfoList failed");
-			return FT_FALSE;
-		}
-		eve_printf_debug("Information on channel number %d:\n", 0);
-		/* print the dev info */
-		eve_printf_debug(" Flags=0x%x\n", devList.Flags);
-		eve_printf_debug(" Type=0x%x\n", devList.Type);
-		eve_printf_debug(" ID=0x%x\n", devList.ID);
-		eve_printf_debug(" LocId=0x%x\n", devList.LocId);
-		eve_printf_debug(" SerialNumber=%s\n", devList.SerialNumber);
-		eve_printf_debug(" Description=%s\n", devList.Description);
-		eve_printf_debug(" ftHandle=0x%x\n", devList.ftHandle); /*is 0 unless open*/
-	}
-	return FT_TRUE;
-}
-#endif
-
-#ifdef MPSSE_PLATFORM
-ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
-{
-}
-#endif
-
-#ifdef MPSSE_PLATFORM
-ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
-{
-	FT_STATUS status;
-	ChannelConfig channelConf; //channel configuration
-	phost->Parameters.MpsseChannelNo = 0;
-
-	phost->Parameters.PowerDownPin = FT800_PD_N;
-	phost->Parameters.SpiCsPin = FT800_SEL_PIN;
-	phost->Parameters.SpiClockrateKHz = 12000; //in KHz
-
-	/* configure the spi settings */
-	channelConf.ClockRate = phost->Parameters.SpiClockrateKHz * 1000;
-	channelConf.LatencyTimer = 2;
-	channelConf.configOptions = SPI_CONFIG_OPTION_MODE0 | SPI_CONFIG_OPTION_CS_DBUS3 | SPI_CONFIG_OPTION_CS_ACTIVELOW;
-	channelConf.Pin = 0x00000000; /*FinalVal-FinalDir-InitVal-InitDir (for dir 0=in, 1=out)*/
-
-	/* Open the first available channel */
-	status = SPI_OpenChannel(phost->Parameters.MpsseChannelNo, (FT_HANDLE *)&phost->hal_handle);
-	if (FT_OK != status)
-	{
-		eve_printf_debug("SPI open channel failed %d %d\n", phost->Parameters.MpsseChannelNo, phost->hal_handle);
-		return FT_FALSE;
-	}
-	status = SPI_InitChannel((FT_HANDLE)phost->hal_handle, &channelConf);
-	if (FT_OK != status)
-	{
-		eve_printf_debug("SPI init channel failed %d %d\n", phost->Parameters.MpsseChannelNo, phost->hal_handle);
-		return FT_FALSE;
-	}
-
-	eve_printf_debug("\nhandle=0x%x status=0x%x\n", phost->hal_handle, status);
-
-	/* Initialize the context valriables */
-	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
-	phost->SpiChannel = 0;
-	phost->Status = FT_GPU_HAL_OPENED;
-	return FT_TRUE;
-}
-#endif
-
-#ifdef MPSSE_PLATFORM
-ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
-{
-	phost->Status = FT_GPU_HAL_CLOSED;
-	/* Close the channel*/
-	SPI_CloseChannel(phost->hal_handle);
-}
-#endif
-
-#ifdef MPSSE_PLATFORM
-ft_void_t Ft_Gpu_Hal_DeInit()
-{
-	//Cleanup the MPSSE Lib
-	Cleanup_libMPSSE();
-}
-#endif
-
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
 ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {
@@ -508,7 +398,7 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T r
 
 		transferArray[3] = 0; //Dummy Read byte
 #ifdef MPSSE_PLATFORM
-		SPI_Write((FT_HANDLE)phost->hal_handle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
+		SPI_Write((FT_HANDLE)phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
 #elif defined(FT4222_PLATFORM)
 		// TODO --------------------------------------------------------------------
 		eve_printf_debug("Ft_Gpu_Hal_StartTransfer not implemented for FT4222_PLATFORM");
@@ -529,7 +419,7 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T r
 		transferArray[1] = addr >> 8;
 		transferArray[2] = addr;
 #ifdef MPSSE_PLATFORM
-		SPI_Write((FT_HANDLE)phost->hal_handle, transferArray, 3, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
+		SPI_Write((FT_HANDLE)phost->SpiHandle, transferArray, 3, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
 #elif defined(FT4222_PLATFORM)
 		// TODO --------------------------------------------------------------------
 		eve_printf_debug("Ft_Gpu_Hal_StartTransfer not implemented for FT4222_PLATFORM");
@@ -547,7 +437,7 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 	if (phost->Status == FT_GPU_HAL_WRITING)
 	{
 #ifdef MPSSE_PLATFORM
-		SPI_Write(phost->hal_handle, &value, sizeof(value), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+		SPI_Write(phost->SpiHandle, &value, sizeof(value), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 #elif defined(FT4222_PLATFORM)
 		// TODO --------------------------------------------------------------------
 		eve_printf_debug("Ft_Gpu_Hal_Transfer8 not implemented for FT4222_PLATFORM");
@@ -557,7 +447,7 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 	else
 	{
 #ifdef MPSSE_PLATFORM
-		SPI_Read(phost->hal_handle, &value, sizeof(value), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+		SPI_Read(phost->SpiHandle, &value, sizeof(value), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 #elif defined(FT4222_PLATFORM)
 		// TODO --------------------------------------------------------------------
 		eve_printf_debug("Ft_Gpu_Hal_Transfer8 not implemented for FT4222_PLATFORM");
@@ -576,7 +466,7 @@ ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost)
 #ifdef MSVC_PLATFORM
 #ifdef MPSSE_PLATFORM
 	//just disbale the CS - send 0 bytes with CS disable
-	SPI_ToggleCS((FT_HANDLE)phost->hal_handle, FALSE);
+	SPI_ToggleCS((FT_HANDLE)phost->SpiHandle, FALSE);
 #elif defined(FT4222_PLATFORM)
 	// TODO --------------------------------------------------------------------
 	eve_printf_debug("Ft_Gpu_Hal_EndTransfer not implemented for FT4222_PLATFORM");
@@ -696,7 +586,7 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 	transferArray[1] = 0;
 	transferArray[2] = 0;
 #ifdef MPSSE_PLATFORM
-	SPI_Write(phost->hal_handle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
+	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 #elif defined(FT4222_PLATFORM)
 	switch (phost->SpiChannel)
 	{
@@ -750,7 +640,7 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 	transferArray[1] = (cmd >> 8) & 0xff;
 	transferArray[2] = (cmd >> 16) & 0xff;
 #ifdef MPSSE_PLATFORM
-	SPI_Write(phost->hal_handle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
+	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 #elif defined(FT4222_PLATFORM)
 
 	switch (phost->SpiChannel)
@@ -814,7 +704,7 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint
 		{
 			ft_uint32_t sizeTransferred = 0;
 			Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-			SPI_Write(phost->hal_handle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+			SPI_Write(phost->SpiHandle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 			Ft_Gpu_Hal_EndTransfer(phost);
 		}
 #elif defined(FT4222_PLATFORM)
@@ -887,13 +777,13 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 	{
 #ifdef MSVC_PLATFORM
 #ifdef MPSSE_PLATFORM
-		//FT_WriteGPIO(phost->hal_handle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
-		FT_WriteGPIO(phost->hal_handle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (0 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		//FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (0 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 
 		Ft_Gpu_Hal_Sleep(20);
 
-		//FT_WriteGPIO(phost->hal_handle, 0xBB, 0x88);//PDN set to 1
-		FT_WriteGPIO(phost->hal_handle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (1 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		//FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x88);//PDN set to 1
+		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (1 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 		Ft_Gpu_Hal_Sleep(20);
 #endif
 
@@ -920,12 +810,12 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 	{
 #ifdef MSVC_PLATFORM
 #ifdef MPSSE_PLATFORM
-		//FT_WriteGPIO(phost->hal_handle, 0xBB, 0x88);//PDN set to 1
-		FT_WriteGPIO(phost->hal_handle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (1 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		//FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x88);//PDN set to 1
+		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (1 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 		Ft_Gpu_Hal_Sleep(20);
 
-		//FT_WriteGPIO(phost->hal_handle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
-		FT_WriteGPIO(phost->hal_handle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (0 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		//FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (0 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 
 		Ft_Gpu_Hal_Sleep(20);
 #endif
@@ -979,7 +869,7 @@ ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uin
 	{
 
 #ifdef MPSSE_PLATFORM
-		SPI_Write((FT_HANDLE)phost->hal_handle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+		SPI_Write((FT_HANDLE)phost->SpiHandle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 #endif
 	}
 #endif
@@ -998,7 +888,7 @@ ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *
 #ifdef MPSSE_PLATFORM
 	ft_uint32_t sizeTransferred = 0;
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	SPI_Read((FT_HANDLE)phost->hal_handle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+	SPI_Read((FT_HANDLE)phost->SpiHandle, buffer, length, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 	Ft_Gpu_Hal_EndTransfer(phost);
 #elif defined(FT4222_PLATFORM)
 	if (!Ft_Gpu_Hal_FT4222_Rd(phost, addr, buffer, length))

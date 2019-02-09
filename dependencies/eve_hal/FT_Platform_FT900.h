@@ -245,7 +245,7 @@
 #include "FT_ILI9488.h"
 #include "FT_KD2401.h"
 
-#if defined(BT_MODULE_PANL)
+#if defined(EVE_MODULE_PANL)
 #include "panl.h"
 #endif
 

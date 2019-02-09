@@ -8,7 +8,7 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host);
 
 ft_void_t Ft_Mcu_Init();
 
-#if (defined(BT_MODULE_PANL)) && !defined(ESD_SIMULATION)
+#if (defined(EVE_MODULE_PANL)) && !defined(ESD_SIMULATION)
 uint8_t ucHeap[PANL_HEAP_SIZE];
 
 void tfp_putc(void *p, char c)
@@ -28,6 +28,6 @@ void bacnet_unconf_msg_received(uint8_t src, const uint8_t *indata, const size_t
 {
 	//Placeholder for user code
 }
-#endif /*(defined(BT_MODULE_PANL)) && !defined(ESD_SIMULATION)*/
+#endif /*(defined(EVE_MODULE_PANL)) && !defined(ESD_SIMULATION)*/
 
 #endif

@@ -203,7 +203,7 @@ Validate the configured options.
 */
 
 #if defined(ME810A_HV35R) || defined(ME812A_WH50R) || defined(ME813A_WV7C) || defined(ME813AU_WH50C) \
-    || defined(BT_MODULE_PANL)                                                                       \
+    || defined(EVE_MODULE_PANL)                                                                       \
     || defined(EVE_GRAPHICS_VM810C) || defined(EVE_GRAPHICS_VM816C)                                  \
     || defined(EVE_GRAPHICS_FT800) || defined(EVE_GRAPHICS_FT801)                                    \
     || defined(EVE_GRAPHICS_FT810) || defined(EVE_GRAPHICS_FT811)                                    \
@@ -642,10 +642,10 @@ These may only be set by one of the platform target definitions, and should not 
 
 #define FT900_PLATFORM
 
-#elif defined(BT_MODULE_PANL)
+#elif defined(EVE_MODULE_PANL)
 
 #define FT900_PLATFORM
-#define BT_MODULE_PANL
+#define EVE_MODULE_PANL
 
 #elif defined(EVE_PLATFORM_FT4222) || defined(EVE_PLATFORM_MPSSE)
 

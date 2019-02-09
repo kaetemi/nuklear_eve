@@ -234,7 +234,7 @@ static ft_void_t init_sdhost()
 
 ft_void_t Ft_Mcu_Init()
 {
-#if (defined(BT_MODULE_PANL))
+#if (defined(EVE_MODULE_PANL))
 #ifndef EVDEMO
 	init_printf(UART0, tfp_putc);
 #endif

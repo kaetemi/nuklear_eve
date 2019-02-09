@@ -45,7 +45,7 @@ EVE_HalPlatform *EVE_Hal_initialize()
 
 void EVE_Hal_release()
 {
-	eve_assert_ex(g_HalPlatform.OpenedContexts == 0, "HAL context still open\n");
+	eve_assert_ex(g_HalPlatform.OpenedChannels == 0, "HAL context still open\n");
 	EVE_HalImpl_release();
 	memset(&g_HalPlatform, 0, sizeof(EVE_HalPlatform));
 }

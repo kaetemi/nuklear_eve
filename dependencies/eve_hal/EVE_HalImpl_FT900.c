@@ -31,9 +31,7 @@
 
 #include "EVE_HalImpl.h"
 #include "EVE_Platform.h"
-#if defined(BT8XXEMU_PLATFORM)
-
-#include <bt8xxemu.h>
+#if defined(FT900_PLATFORM)
 
 EVE_HalPlatform g_HalPlatform;
 
@@ -41,73 +39,90 @@ EVE_HalPlatform g_HalPlatform;
 void EVE_HalImpl_initialize()
 {
 	g_HalPlatform.TotalChannels = 1;
+
+	// Initialize SPIM HW
+	sys_enable(sys_device_spi_master);
+
+	gpio_function(27, pad_spim_sck); /* GPIO27 to SPIM_CLK */
+	gpio_function(28, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_function(29, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
+	gpio_function(30, pad_spim_miso); /* GPIO30 to SPIM_MISO */
+
+	gpio_dir(27, pad_dir_output);
+	gpio_dir(28, pad_dir_output);
+	gpio_dir(29, pad_dir_output);
+	gpio_dir(30, pad_dir_input);
+#if (defined(ENABLE_SPI_QUAD))
+	/* Initialize IO2 and IO3 pad/pin for quad settings */
+	gpio_function(31, pad_spim_io2); /* GPIO31 to IO2 */
+	gpio_function(32, pad_spim_io3); /* GPIO32 to IO3 */
+	gpio_dir(31, pad_dir_output);
+	gpio_dir(32, pad_dir_output);
+#endif
+
+#if defined(PANL70) || defined(PANL70PLUS)
+	gpio_function(GOODIXGPIO, pad_gpio33);
+	gpio_dir(GOODIXGPIO, pad_dir_output);
+	gpio_write(GOODIXGPIO, 1);
+#endif
+
+	gpio_write(28, 1);
+
+#ifdef EVDEMO
+	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
+#else
+	spi_init(SPIM, spi_dir_master, spi_mode_0, 16); //SPISysInit(SPIM);
+#endif
 }
 
 /* Release HAL platform */
 void EVE_HalImpl_release()
 {
-	/* no-op */
+	spi_uninit(SPIM);
 }
 
 /* Get the default configuration parameters */
 void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 {
-	/* no-op */
+	parameters->MpsseChannelNo = 0;
+	parameters->PowerDownPin = FT800_PD_N;
+	parameters->SpiCsPin = FT800_SEL_PIN;
 }
 
 /* Opens a new HAL context using the specified parameters */
 bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
-	bool ret;
+	gpio_function(phost->Parameters.SpiCsPin, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_write(phost->Parameters.SpiCsPin, 1);
 
-#if defined(FT_EMULATOR_MAIN)
-	phost->Emulator = Ft_GpuEmu;
-	phost->EmulatorFlash = Ft_EmuFlash;
-#else
-	BT8XXEMU_EmulatorParameters params;
-	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, Ft_Emulator_Mode());
+	gpio_function(phost->Parameters.PowerDownPin, pad_gpio43);
+	gpio_dir(phost->Parameters.PowerDownPin, pad_dir_output);
 
-	params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
-	BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
-#endif
+	gpio_write(phost->Parameters.PowerDownPin, 1);
 
-#if defined(ESD_SIMULATION)
-	Ft_MainReady__ESD(phost->Emulator);
-#endif
+	/* Initialize the context valriables */
+	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
+	phost->SpiChannel = 0;
+	phost->Status = EVE_HalStatusOpened;
+	++g_HalPlatform.OpenedChannels;
 
-	ret = !!phost->Emulator;
-	if (ret)
-	{
-		phost->Status = EVE_HalStatusOpened;
-		++g_HalPlatform.OpenedChannels;
-	}
-	return ret;
+	return FT_TRUE;
 }
 
 /* Close a HAL context */
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
-#if !defined(FT_EMULATOR_MAIN)
-	if (phost->Emulator)
-	{
-		BT8XXEMU_stop(phost->Emulator);
-		BT8XXEMU_destroy(phost->Emulator);
-	}
-	phost->Emulator = NULL;
-	phost->EmulatorFlash = NULL;
-#else
-	phost->Emulator = NULL;
-	phost->EmulatorFlash = NULL;
-#endif
-
-	phost->Status = EVE_HalStatusClosed;
+	phost->Status = FT_GPU_HAL_CLOSED;
 	--g_HalPlatform.OpenedChannels;
+	/* spi_close(SPIM,0); */
 }
 
 /* Idle. Call regularly to update frequently changing internal state */
 void EVE_HalImpl_idle(EVE_HalContext *phost)
 {
-	/* no-op */
+#if defined(EVE_MODULE_PANL)
+	panl_bacnet_task();
+#endif
 }
 
 #endif /* #if defined(BT8XXEMU_PLATFORM) */
