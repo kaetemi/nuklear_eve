@@ -33,6 +33,7 @@
 #if defined(BT8XXEMU_PLATFORM)
 
 #include "FT_Gpu_Hal.h"
+#include "EVE_Gpu.h"
 #include "FT_Emulator.h"
 
 #include "FT_EmulatorMain.h"
@@ -48,65 +49,6 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 {
 	;
-}
-
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint32_t count)
-{
-	eve_assert(!phost->CmdFrame);
-	const ft_uint32_t *buf32 = (const ft_uint32_t *)(void *)(buffer);
-	ft_int32_t length = 0, availablefreesize = 0;
-	ft_uint32_t remaining = (count + 3) & ~0x3;
-	do
-	{
-		length = remaining;
-#if (EVE_MODEL < EVE_FT810)
-		ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
-		ft_uint16_t rp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_READ);
-		availablefreesize = (wp - rp - 4) & FIFO_SIZE_MASK;
-#else
-		availablefreesize = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
-#endif
-		if (FT_COCMD_FAULT(availablefreesize))
-			return FT_FALSE; // Co processor fault
-		if (length > availablefreesize)
-			length = availablefreesize;
-		if (length)
-		{
-			remaining -= length;
-			length >>= 2;
-#if (EVE_MODEL < EVE_FT810)
-			ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
-			Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, RAM_CMD + wp);
-#else
-			Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-#endif
-			for (int i = 0; i < length; ++i)
-				Ft_Gpu_Hal_Transfer32(phost, *(buf32++));
-			Ft_Gpu_Hal_EndTransfer(phost);
-#if (EVE_MODEL < EVE_FT810)
-			Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + (length << 2)) & FIFO_SIZE_MASK);
-#endif
-		}
-	} while (remaining > 0);
-	return FT_TRUE;
-}
-
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(EVE_HalContext *phost, ft_prog_uchar8_t *buffer, ft_uint32_t count)
-{
-	eve_assert(!((uintptr_t)buffer & 0x3UL)); // must have 32-bit alignment
-	return Ft_Gpu_Hal_WrCmdBuf(phost, buffer, count);
-}
-
-ft_void_t Ft_Gpu_Hal_WrCmd32(EVE_HalContext *phost, ft_uint32_t cmd)
-{
-	eve_assert_ex(!phost->CmdFrame, "Did you mean 'Ft_Gpu_CoCmd_SendCmd'?");
-#if (EVE_MODEL < EVE_FT810)
-	ft_uint16_t wp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_WRITE);
-	Ft_Gpu_Hal_Wr32(phost, RAM_CMD + wp, cmd);
-	Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, (wp + 4) & FIFO_SIZE_MASK);
-#else
-	Ft_Gpu_Hal_Wr32(phost, REG_CMDB_WRITE, cmd);
-#endif
 }
 
 /* Toggle PD_N pin of FT800 board for a power cycle*/
@@ -148,41 +90,6 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 		phost->Emulator = NULL;
 	}
 #endif
-}
-
-ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length)
-{
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	while (length--)
-	{
-		Ft_Gpu_Hal_Transfer8(phost, *buffer);
-		buffer++;
-	}
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_prog_uchar8_t *buffer, ft_uint32_t length)
-{
-	eve_assert(!((uintptr_t)buffer & 0x3)); // must be 32-bit aligned
-	eve_assert(!(length & 0x3)); // must be 32-bit aligned
-	uint32_t FT_PROGMEM_CONST *buf32 = (uint32_t FT_PROGMEM_CONST *)(void FT_PROGMEM_CONST *)buffer;
-	length >>= 2;
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	while (length--)
-		Ft_Gpu_Hal_Transfer32(phost, *(buf32++));
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
-{
-	ft_uint32_t SizeTransfered = 0;
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	while (length--)
-	{
-		*buffer = Ft_Gpu_Hal_Transfer8(phost, 0);
-		buffer++;
-	}
-	Ft_Gpu_Hal_EndTransfer(phost);
 }
 
 ft_void_t Ft_Gpu_Hal_Sleep(ft_uint32_t ms)

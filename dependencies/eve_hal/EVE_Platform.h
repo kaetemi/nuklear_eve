@@ -38,6 +38,11 @@ Main file to include the EVE HAL.
 
 #include "FT_Platform.h"
 
+#include "EVE_Config.h"
+#include "EVE_Hal.h"
+#include "EVE_Cmd.h"
+#include "EVE_Gpu.h"
+
 #endif /* #ifndef EVE_PLATFORM__H */
 
 /* end of file */

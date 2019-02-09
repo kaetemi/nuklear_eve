@@ -33,6 +33,7 @@
 
 #include "FT_Platform.h"
 #include "FT_Gpu_Hal.h"
+#include "EVE_Gpu.h"
 
 /* Helper api for millis */
 /* api to return the time in ms. 0 after reset */
@@ -80,121 +81,6 @@ ft_int32_t Ft_Gpu_Hal_Dec2Ascii(ft_char8_t *pSrc, ft_int32_t value)
 	*pdst++ = '\0';
 
 	return 0;
-}
-
-ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t *rp, ft_uint16_t *wp)
-{
-	ft_uint8_t rpwp[6];
-
-	eve_assert((REG_CMD_READ + 4) == REG_CMD_WRITE);
-
-	Ft_Gpu_Hal_RdMem(phost, REG_CMD_READ, rpwp, 6);
-	*rp = rpwp[0] | (rpwp[1] << 8);
-	*wp = rpwp[4] | (rpwp[5] << 8);
-}
-
-ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(EVE_HalContext *phost)
-{
-	ft_uint16_t rp, wp;
-
-	eve_assert(!phost->CmdWaiting);
-	phost->CmdWaiting = FT_TRUE;
-	Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
-	while (rp != wp)
-	{
-		// eve_printf_debug("Waiting for CoCmd FIFO... rp: %i, wp: %i\n", (int)rp, (int)wp);
-		if (FT_COCMD_FAULT(rp))
-		{
-			// Co processor fault
-			phost->CmdFault = FT_TRUE;
-			phost->CmdWaiting = FT_FALSE;
-			eve_printf_debug("Co processor fault while waiting for CoCmd FIFO\n");
-#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
-			char err[128];
-			Ft_Gpu_Hal_RdMem(phost, RAM_ERR_REPORT, err, 128);
-			eve_printf_debug("%s\n", err);
-#endif
-			eve_debug_break();
-			return FT_FALSE;
-		}
-		if (phost->Parameters.CbCmdWait)
-		{
-			if (!phost->Parameters.CbCmdWait(phost))
-			{
-				// Wait aborted
-				phost->CmdWaiting = FT_FALSE;
-				eve_printf_debug("Wait for CoCmd FIFO aborted\n");
-				return FT_FALSE;
-			}
-		}
-		Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
-	}
-	// Command buffer empty
-	phost->CmdWaiting = FT_FALSE;
-	return FT_TRUE;
-}
-
-ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(EVE_HalContext *phost, ft_uint32_t bytes)
-{
-	ft_uint16_t space;
-#if (EVE_MODEL < EVE_FT810)
-	ft_uint16_t rp, wp;
-#endif
-
-	if (bytes > EVE_CMD_FIFO_SIZE)
-	{
-		eve_printf_debug("Requested free space exceeds CoCmd FIFO\n");
-		return FT_FALSE;
-	}
-
-	eve_assert(!phost->CmdWaiting);
-	phost->CmdWaiting = FT_TRUE;
-
-	space = 0;
-
-#if (EVE_MODEL < EVE_FT810)
-	Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
-	space = (wp - rp - 4) & FIFO_SIZE_MASK;
-#else
-	space = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
-#endif
-	while (space < bytes)
-	{
-		if (FT_COCMD_FAULT(space))
-		{
-			// Co processor fault
-			phost->CmdFault = FT_TRUE;
-			phost->CmdWaiting = FT_FALSE;
-			eve_printf_debug("Co processor fault while waiting for CoCmd FIFO\n");
-#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
-			char err[128];
-			Ft_Gpu_Hal_RdMem(phost, RAM_ERR_REPORT, err, 128);
-			eve_printf_debug("%s\n", err);
-#endif
-			eve_debug_break();
-			return FT_FALSE;
-		}
-		if (phost->Parameters.CbCmdWait)
-		{
-			if (!phost->Parameters.CbCmdWait(phost))
-			{
-				// Wait aborted
-				phost->CmdWaiting = FT_FALSE;
-				eve_printf_debug("Wait for CoCmd FIFO aborted\n");
-				return FT_FALSE;
-			}
-		}
-#if (EVE_MODEL < EVE_FT810)
-		Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
-		space = (wp - rp - 4) & FIFO_SIZE_MASK;
-#else
-		space = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
-#endif
-	}
-
-	// Sufficient space
-	phost->CmdWaiting = FT_FALSE;
-	return FT_TRUE;
 }
 
 ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(EVE_HalContext *phost)

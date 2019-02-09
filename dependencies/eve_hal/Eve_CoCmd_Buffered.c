@@ -30,13 +30,7 @@
 */
 
 #include "FT_Platform.h"
-#if defined(FT_GPU_COCMD_BUFFERED)
-
-#define FT_BUFFER_CAPACITY (EVE_CMD_FIFO_SIZE >> 1)
-#define FT_BUFFER_MASK (FT_BUFFER_CAPACITY - 1)
-
-static ft_uint8_t s_CmdBuffer[FT_BUFFER_CAPACITY];
-static ft_uint16_t s_CmdBufferIndex = 0;
+#if 0
 
 ft_void_t Eve_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
 {
@@ -44,7 +38,7 @@ ft_void_t Eve_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_
 	eve_assert(phost->CmdFrame);
 
 	len = (sizeof(cmd[0]) * nb) & EVE_CMD_FIFO_MASK;
-	if ((s_CmdBufferIndex + len) > FT_BUFFER_CAPACITY)
+	if ((s_CmdBufferIndex + len) > EVE_CMD_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);
 		Eve_CoCmd_StartFrame(phost);
@@ -56,7 +50,7 @@ ft_void_t Eve_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_
 ft_void_t Eve_CoCmd_SendCmd(EVE_HalContext *phost, ft_uint32_t cmd)
 {
 	eve_assert(phost->CmdFrame);
-	if ((s_CmdBufferIndex + sizeof(cmd)) > FT_BUFFER_CAPACITY)
+	if ((s_CmdBufferIndex + sizeof(cmd)) > EVE_CMD_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);
 		Eve_CoCmd_StartFrame(phost);
@@ -68,7 +62,7 @@ ft_void_t Eve_CoCmd_SendCmd(EVE_HalContext *phost, ft_uint32_t cmd)
 ft_void_t Eve_CoCmd_SendStr_S(EVE_HalContext *phost, const ft_char8_t *s, int length)
 {
 	eve_assert(phost->CmdFrame);
-	if ((s_CmdBufferIndex + length + 4) > FT_BUFFER_CAPACITY)
+	if ((s_CmdBufferIndex + length + 4) > EVE_CMD_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);
 		Eve_CoCmd_StartFrame(phost);
@@ -90,7 +84,7 @@ ft_void_t Eve_CoCmd_SendStr(EVE_HalContext *phost, const ft_char8_t *s)
 
 	eve_assert(phost->CmdFrame);
 	length = (ft_uint16_t)strlen(s) + 1;
-	if ((s_CmdBufferIndex + length + 3) > FT_BUFFER_CAPACITY)
+	if ((s_CmdBufferIndex + length + 3) > EVE_CMD_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);
 		Eve_CoCmd_StartFrame(phost);
@@ -109,7 +103,7 @@ ft_void_t Eve_CoCmd_StartFrame(EVE_HalContext *phost)
 	eve_assert(!phost->CmdFrame);
 	phost->CmdFrame = FT_TRUE;
 	s_CmdBufferIndex = 0;
-	memset(s_CmdBuffer, 0, FT_BUFFER_CAPACITY);
+	memset(s_CmdBuffer, 0, EVE_CMD_BUFFER_CAPACITY);
 }
 
 ft_void_t Eve_CoCmd_EndFrame(EVE_HalContext *phost)

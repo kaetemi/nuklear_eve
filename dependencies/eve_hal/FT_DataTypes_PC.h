@@ -42,9 +42,6 @@
 #define ft_delay(x) Ft_Gpu_Hal_Sleep(x)
 #define ft_random(x) (rand() % (x))
 
-#define FT_PROGMEM
-#define FT_PROGMEM_CONST const
-
 // #define ft_pgm_read_byte_near(x) (*(x))
 // #define ft_pgm_read_byte(x) (*(x))
 // #define ft_pgm_read_word(addr) (*(ft_int16_t *)(addr))
@@ -52,10 +49,6 @@
 
 // #define ft_pgm_read_byte_near(x) (*(x))
 // #define ft_pgm_read_byte(x) (*(x))
-
-typedef FT_PROGMEM ft_char8_t ft_prog_char8_t;
-typedef FT_PROGMEM ft_uchar8_t ft_prog_uchar8_t;
-typedef FT_PROGMEM ft_uint16_t ft_prog_uint16_t;
 
 #endif /* FT_DATATYPES_PC_H */
 

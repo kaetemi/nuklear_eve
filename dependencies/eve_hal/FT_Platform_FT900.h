@@ -37,7 +37,7 @@
 #if defined(FT900_PLATFORM)
 
 /* Platform-specific HAL features */
-// #define FT_GPU_COCMD_BUFFERED
+// #define EVE_CMD_BUFFERED
 
 /* Hardware or Module specific macros for gpio line numbers  */
 #if defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)

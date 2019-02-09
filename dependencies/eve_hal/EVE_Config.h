@@ -508,6 +508,7 @@ It may also set platform, display, and flash values if none are configured.
 #if (EVE_MODEL >= EVE_FT810)
 #define EVE_SUPPORT_PNG
 #define EVE_SUPPORT_VIDEO
+#define EVE_SUPPORT_CMDB
 #endif
 #if ((EVE_MODEL & 0x01) == 0x01)
 #define EVE_SCREEN_CAPACITIVE
@@ -609,6 +610,10 @@ typedef volatile ft_int16_t ft_vint16;
 typedef volatile ft_int32_t ft_vint32;
 */
 
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
 /* Scope */
 #ifndef scope
 #define scope ;
@@ -618,6 +623,38 @@ typedef volatile ft_int32_t ft_vint32;
 #ifndef breakable
 #define breakable for (int eve__scope = 0; eve__scope < 1; ++eve__scope)
 #endif
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+#if defined(FT900_EMU)
+#define eve_progmem __flash__ const
+#define eve_progmem_const __flash__ const
+#else
+#define eve_progmem
+#define eve_progmem_const const
+#endif
+
+typedef eve_progmem int8_t eve_prog_int8_t;
+typedef eve_progmem uint8_t eve_prog_uint8_t;
+typedef eve_progmem uint16_t eve_prog_uint16_t;
+
+#define FT_PROGMEM eve_progmem
+#define FT_PROGMEM_CONST eve_progmem_const
+#define ft_prog_char8_t eve_prog_int8_t
+#define ft_prog_uchar8_t eve_prog_uint8_t
+#define ft_prog_uint16_t eve_prog_uint16_t
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+#if defined(PLATFORM_FT4222)
+// #define EVE_CMD_BUFFERED
+#endif
+
+// #define EVE_CMD_BUFFERED
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////

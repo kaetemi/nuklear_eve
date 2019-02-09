@@ -131,35 +131,95 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t a
 	}
 }
 
-uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
+static inline uint8_t transfer8(EVE_HalContext *phost, uint8_t value)
 {
 	return BT8XXEMU_transfer(phost->Emulator, value);
+}
+
+uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
+{
+	return transfer8(phost, value);
 }
 
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 {
 	uint16_t retVal = 0;
-	retVal = BT8XXEMU_transfer(phost->Emulator, value & 0xFF);
-	retVal |= (ft_uint16_t)BT8XXEMU_transfer(phost->Emulator, (value >> 8) & 0xFF) << 8;
+	retVal = transfer8(phost, value & 0xFF);
+	retVal |= (ft_uint16_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
 	return retVal;
 }
 
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 {
 	uint32_t retVal = 0;
-	retVal = BT8XXEMU_transfer(phost->Emulator, value & 0xFF);
-	retVal |= (ft_uint32_t)BT8XXEMU_transfer(phost->Emulator, (value >> 8) & 0xFF) << 8;
-	retVal |= (ft_uint32_t)BT8XXEMU_transfer(phost->Emulator, (value >> 16) & 0xFF) << 16;
-	retVal |= (ft_uint32_t)BT8XXEMU_transfer(phost->Emulator, value >> 24) << 24;
+	retVal = transfer8(phost, value & 0xFF);
+	retVal |= (ft_uint32_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
+	retVal |= (ft_uint32_t)transfer8(phost, (value >> 16) & 0xFF) << 16;
+	retVal |= (ft_uint32_t)transfer8(phost, value >> 24) << 24;
 	return retVal;
+}
+
+void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size)
+{
+	if (result && buffer)
+	{
+		for (uint32_t i = 0; i < size; ++i)
+			result[i] = transfer8(phost, buffer[i]);
+	}
+	else if (result)
+	{
+		for (uint32_t i = 0; i < size; ++i)
+			result[i] = transfer8(phost, 0);
+	}
+	else if (buffer)
+	{
+		for (uint32_t i = 0; i < size; ++i)
+			transfer8(phost, buffer[i]);
+	}
+}
+
+void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
+{
+	if (result && buffer)
+	{
+		for (uint32_t i = 0; i < size; ++i)
+			result[i] = transfer8(phost, buffer[i]);
+	}
+	else if (result)
+	{
+		for (uint32_t i = 0; i < size; ++i)
+			result[i] = transfer8(phost, 0);
+	}
+	else if (buffer)
+	{
+		for (uint32_t i = 0; i < size; ++i)
+			transfer8(phost, buffer[i]);
+	}
+}
+
+uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
+{
+	uint32_t transferred;
+	for (transferred = 0; transferred < size;)
+	{
+		char c = str[index + (transferred++)];
+		transfer8(phost, c);
+		if (!c)
+			break;
+	}
+	while (transferred & padMask)
+	{
+		transfer8(phost, 0);
+		++transferred;
+	}
+	return transferred;
 }
 
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
 	BT8XXEMU_chipSelect(phost->Emulator, 0);
-	phost->Status = FT_GPU_HAL_OPENED;
+	phost->Status = EVE_HalStatusOpened;
 }
-
 
 #endif /* #if defined(BT8XXEMU_PLATFORM) */
 

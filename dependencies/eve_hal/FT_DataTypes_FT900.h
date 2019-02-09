@@ -47,10 +47,6 @@
 
 // #define FT_DBGPRINT(x) eve_printf_debug(x)
 
-typedef FT_PROGMEM ft_char8_t ft_prog_char8_t;
-typedef FT_PROGMEM ft_uchar8_t ft_prog_uchar8_t;
-typedef FT_PROGMEM ft_uint16_t ft_prog_uint16_t;
-
 #endif
 
 /* Nothing beyond this*/

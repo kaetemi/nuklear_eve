@@ -37,7 +37,7 @@
 #if defined(MSVC_PLATFORM)
 
 /* Platform-specific HAL features */
-#define FT_GPU_COCMD_BUFFERED
+#define EVE_CMD_BUFFERED
 
 /* Module connected from PC to basic modules */
 #ifdef VA800A_SPI

@@ -30,7 +30,7 @@
 */
 
 #include "FT_Platform.h"
-#if !defined(FT_GPU_COCMD_BUFFERED)
+#if 0
 
 ft_void_t Eve_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
 {

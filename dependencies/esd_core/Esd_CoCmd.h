@@ -35,6 +35,7 @@
 #include "Ft_Esd.h"
 #include "Ft_Esd_Math.h"
 #include "FT_CoPro_Cmds.h"
+#include "EVE_Gpu.h"
 
 // TODO: Specific min/max handling for multiple target devices
 // #if defined(FT810) || ...

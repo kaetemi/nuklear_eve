@@ -40,6 +40,19 @@
 #define EVE_HAL__H
 #include "EVE_Config.h"
 
+/* Definitions used for FT800 co processor command buffer */
+#define EVE_DL_SIZE (8 * 1024) /* 8kB Display List buffer size */
+#define EVE_CMD_FIFO_SIZE ((4) * 1024) /* 4kB coprocessor Fifo size */
+#define EVE_CMD_FIFO_MASK (EVE_CMD_FIFO_SIZE - 1)
+#define EVE_CMD_FIFO_ALIGNMENT_MASK (EVE_CMD_FIFO_SIZE - ((4) - 1))
+
+#if defined(EVE_CMD_BUFFERED)
+#define EVE_CMD_BUFFER_CAPACITY (EVE_CMD_FIFO_SIZE >> 1)
+#define EVE_CMD_BUFFER_MASK (EVE_CMD_BUFFER_CAPACITY - 1)
+#endif
+
+#define EVE_CMD_FAULT(rp) (rp & 0x3)
+
 typedef enum EVE_HalMode
 {
 	EVE_HalModeUnknown = 0,
@@ -126,12 +139,12 @@ typedef struct EVE_HalContext
 
 	/* uint16_t CmdFifoWp; Coprocessor fifo write pointer */
 
-#ifdef BT8XXEMU_PLATFORM
+#if defined(BT8XXEMU_PLATFORM)
 	void *Emulator; /* FT8XXEMU_Emulator */
 	void *EmulatorFlash; /* FT8XXEMU_Flash */
 #endif
 
-#ifdef FT4222_PLATFORM
+#if defined(FT4222_PLATFORM)
 	void *SpiHandle;
 	void *GpioHandle; /* LibFT4222 uses this member to store GPIO handle */
 	uint8_t *SpiWriBufPtr;
@@ -142,7 +155,23 @@ typedef struct EVE_HalContext
 	uint8_t SpiNumDummy; /* Number of dummy bytes as 1 or 2 for SPI read */
 #endif
 
-	bool CmdFrame; /* Flagged while inside a co cmd software buffering frame */
+#if defined(EVE_CMD_BUFFERED)
+	/* Buffer all cmd writes */
+	uint8_t CmdBuffer[EVE_CMD_BUFFER_CAPACITY];
+	uint16_t CmdBufferIndex;
+#else
+	/* Buffer cmd smaller than a full cmd command */
+	uint8_t CmdBuffer[4];
+	uint8_t CmdBufferIndex;
+#endif
+
+#if defined(EVE_SUPPORT_CMDB)
+	uint16_t CmdSpace; /* Free space */
+#else
+	uint16_t CmdWp; /* Write pointer */
+#endif
+
+	bool CmdFunc; /* Flagged while transfer to cmd is kept open */
 	bool CmdFault; /* Flagged when co processor is in fault mode and needs to be reset */
 	bool CmdWaiting; /* Flagged while waiting for CMD write (to check during any function that may be called by CbCmdWait) */
 
@@ -185,6 +214,9 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t a
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
+void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size);
+void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size);
+uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask);
 void EVE_Hal_endTransfer(EVE_HalContext *phost);
 
 /*********************
@@ -194,10 +226,13 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost);
 uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr);
 uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr);
 uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr);
+void EVE_Hal_rdBuffer(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size);
 
 void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v);
 void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v);
 void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v);
+void EVE_Hal_wrBuffer(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size);
+void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size);
 
 #endif /* #ifndef EVE_HAL__H */
 

@@ -44,6 +44,9 @@
 #include <FT_Platform_FT900.h>
 #endif
 
+#include "EVE_Hal.h"
+#include "EVE_Cmd.h"
+
 #ifndef max
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #endif

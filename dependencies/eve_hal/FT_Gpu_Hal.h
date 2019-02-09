@@ -40,6 +40,7 @@
 #define FT_GPU_HAL_H
 
 #include "EVE_Hal.h"
+#include "EVE_Cmd.h"
 
 #define FIFO_SIZE_MASK EVE_FIFO_SIZE_MASK
 #define FIFO_BYTE_ALIGNMENT_MASK EVE_FIFO_BYTE_ALIGNMENT_MASK
@@ -104,23 +105,34 @@ static inline bool Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 #define Ft_Gpu_Hal_Wr16 EVE_Hal_wr16
 #define Ft_Gpu_Hal_Wr32 EVE_Hal_wr32
 
+#define Ft_Gpu_Hal_WrMem EVE_Hal_wrBuffer
+#define Ft_Gpu_Hal_WrMem_ProgMem EVE_Hal_wrProgmem
+
+static inline ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
+{
+	EVE_Hal_rdBuffer(phost, buffer, addr, length);
+}
+
 /*******************************************************************************/
 /*******************************************************************************/
 /* APIs for coprocessor Fifo read/write and space management */
-ft_void_t Ft_Gpu_Hal_WrCmd32(EVE_HalContext *phost, ft_uint32_t cmd);
+#define Ft_Gpu_Hal_WrCmd32 EVE_Cmd_wr32
 
 /// Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FT_FALSE in case a co processor fault occured
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint32_t count);
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(EVE_HalContext *phost, ft_prog_uchar8_t *buffer, ft_uint32_t count);
+#define Ft_Gpu_Hal_WrCmdBuf EVE_Cmd_wrBuffer
+#define Ft_Gpu_Hal_WrCmdBuf_ProgMem EVE_Cmd_wrProgmem
 
 /// Wait for the command buffer to fully empty. Returns FT_FALSE in case a co processor fault occured
-ft_bool_t Ft_Gpu_Hal_WaitCmdFifoEmpty(EVE_HalContext *phost);
+#define Ft_Gpu_Hal_WaitCmdFifoEmpty EVE_Cmd_waitFlush
 
 /// Wait for the command buffer to have at least the requested amount of free space
-ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(EVE_HalContext *phost, ft_uint32_t bytes);
+#define Ft_Gpu_Hal_WaitCmdFreespace EVE_Cmd_waitSpace
 
-/// Reads co processor read pointer and write pointer
-ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t *rp, ft_uint16_t *wp);
+static inline ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t *rp, ft_uint16_t *wp)
+{
+	*rp = EVE_Cmd_rp(phost);
+	*wp = EVE_Cmd_wp(phost);
+}
 
 /*******************************************************************************/
 /*******************************************************************************/
@@ -235,10 +247,7 @@ ft_void_t Ft_Gpu_ClockSelect(EVE_HalContext *phost, FT_GPU_PLL_SOURCE_T pllsourc
 ft_void_t Ft_Gpu_PLL_FreqSelect(EVE_HalContext *phost, FT_GPU_PLL_FREQ_T freq);
 ft_void_t Ft_Gpu_PowerModeSwitch(EVE_HalContext *phost, FT_GPU_POWER_MODE_T pwrmode);
 ft_void_t Ft_Gpu_CoreReset(EVE_HalContext *phost);
-ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr);
-ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length);
-ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_prog_uchar8_t *buffer, ft_uint32_t length);
-ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length);
+
 ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(EVE_HalContext *phost);
 ft_int16_t Ft_Gpu_Hal_TransferString(EVE_HalContext *phost, const ft_char8_t *str);
 ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, const ft_char8_t *str, int length);

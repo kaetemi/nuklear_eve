@@ -30,6 +30,7 @@
 */
 
 #include "FT_Platform.h"
+#include "EVE_Gpu.h"
 
 ft_void_t Ft_Gpu_CoCmd_ColdStart(EVE_HalContext *phost)
 {
@@ -88,7 +89,7 @@ ft_void_t Ft_Gpu_CoCmd_SetRotate(EVE_HalContext *phost, ft_uint32_t r)
 
 ft_void_t Ft_Gpu_CoCmd_BitmapTransform(EVE_HalContext *phost, ft_int32_t x0, ft_int32_t y0, ft_int32_t x1, ft_int32_t y1, ft_int32_t x2, ft_int32_t y2, ft_int32_t tx0, ft_int32_t ty0, ft_int32_t tx1, ft_int32_t ty1, ft_int32_t tx2, ft_int32_t ty2, ft_uint16_t result)
 {
-	uint32_t cmd[EVE_CMD_SIZE * 6 * 2 + EVE_CMD_SIZE * 2] = {
+	uint32_t cmd[4 * 6 * 2 + 4 * 2] = {
 		CMD_BITMAP_TRANSFORM,
 		x0,
 		y0,

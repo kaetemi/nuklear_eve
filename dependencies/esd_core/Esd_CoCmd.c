@@ -30,6 +30,7 @@
 */
 
 #include "Esd_CoCmd.h"
+#include "EVE_Cmd.h"
 
 ft_void_t Ft_Gpu_CoCmd_DlStart(EVE_HalContext *phost)
 {
@@ -144,16 +145,8 @@ ft_bool_t Ft_Gpu_CoCmd_AnimStart(EVE_HalContext *phost, int32_t ch, uint32_t aop
 			aoptr,
 			loop,
 		};
-		if (phost->CmdFrame)
-		{
-			Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-			return FT_TRUE;
-		}
-		else
-		{
-			Ft_Gpu_Hal_WrCmdBuf(phost, (ft_uint8_t *)cmd, sizeof(cmd));
-			return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
-		}
+		EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+		return EVE_Cmd_waitFlush(phost);
 	}
 }
 
@@ -163,10 +156,7 @@ void Ft_Gpu_CoCmd_AnimStop(EVE_HalContext *phost, int32_t ch)
 		CMD_ANIMSTOP,
 		ch,
 	};
-	if (phost->CmdFrame)
-		Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-	else
-		Ft_Gpu_Hal_WrCmdBuf(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
 void Ft_Gpu_CoCmd_AnimXY(EVE_HalContext *phost, int32_t ch, int16_t x, int16_t y)
@@ -176,10 +166,7 @@ void Ft_Gpu_CoCmd_AnimXY(EVE_HalContext *phost, int32_t ch, int16_t x, int16_t y
 		ch,
 		(((ft_uint32_t)y << 16) | (x & 0xffff)),
 	};
-	if (phost->CmdFrame)
-		Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-	else
-		Ft_Gpu_Hal_WrCmdBuf(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
 void Ft_Gpu_CoCmd_AnimDraw(EVE_HalContext *phost, int32_t ch)
@@ -188,7 +175,7 @@ void Ft_Gpu_CoCmd_AnimDraw(EVE_HalContext *phost, int32_t ch)
 		CMD_ANIMDRAW,
 		ch,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
 void Ft_Gpu_CoCmd_AnimFrame(EVE_HalContext *phost, int16_t x, int16_t y, uint32_t aoptr, uint32_t frame)
@@ -199,7 +186,7 @@ void Ft_Gpu_CoCmd_AnimFrame(EVE_HalContext *phost, int16_t x, int16_t y, uint32_
 		aoptr,
 		frame,
 	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 #endif
 
@@ -249,7 +236,7 @@ ft_void_t Ft_Gpu_CoCmd_GetProps(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint3
 
 ft_void_t Ft_Gpu_CoCmd_TouchTransform(EVE_HalContext *phost, ft_int32_t x0, ft_int32_t y0, ft_int32_t x1, ft_int32_t y1, ft_int32_t x2, ft_int32_t y2, ft_int32_t tx0, ft_int32_t ty0, ft_int32_t tx1, ft_int32_t ty1, ft_int32_t tx2, ft_int32_t ty2, ft_uint16_t result)
 {
-	uint32_t cmd[EVE_CMD_SIZE * 6 * 2 + EVE_CMD_SIZE * 2] = {
+	uint32_t cmd[4 * 6 * 2 + 4 * 2] = {
 		CMD_TOUCH_TRANSFORM,
 		x0,
 		y0,

@@ -183,13 +183,13 @@ ft_bool_t Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, ft_uint32_t dst, ft_uint
 {
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE; // Co processor must be ready
-	ft_bool_t cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
+	// ft_bool_t cmdFrame = phost->CmdFrame;
+	// phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_FLASHREAD);
 	Ft_Gpu_Hal_WrCmd32(phost, dst);
 	Ft_Gpu_Hal_WrCmd32(phost, src);
 	Ft_Gpu_Hal_WrCmd32(phost, size);
-	phost->CmdFrame = cmdFrame;
+	// phost->CmdFrame = cmdFrame;
 	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
 }
 
@@ -197,14 +197,14 @@ ft_bool_t Ft_Gpu_CoCmd_LoadImage_Flash(EVE_HalContext *phost, ft_uint32_t dst, f
 {
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE; // Co processor must be ready
-	ft_bool_t cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
+		    // ft_bool_t cmdFrame = phost->CmdFrame;
+		    // phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_FLASHSOURCE);
 	Ft_Gpu_Hal_WrCmd32(phost, src);
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
 	Ft_Gpu_Hal_WrCmd32(phost, dst);
 	Ft_Gpu_Hal_WrCmd32(phost, OPT_FLASH | OPT_NODL);
-	phost->CmdFrame = cmdFrame;
+	// phost->CmdFrame = cmdFrame;
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE; // Image failed to load
 	if (format)
@@ -216,14 +216,14 @@ ft_bool_t Ft_Gpu_CoCmd_Inflate_Flash(EVE_HalContext *phost, ft_uint32_t dst, ft_
 {
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE; // Co processor must be ready
-	ft_bool_t cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
+		    // ft_bool_t cmdFrame = phost->CmdFrame;
+		    // phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_FLASHSOURCE);
 	Ft_Gpu_Hal_WrCmd32(phost, src);
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_INFLATE2);
 	Ft_Gpu_Hal_WrCmd32(phost, dst);
 	Ft_Gpu_Hal_WrCmd32(phost, OPT_FLASH);
-	phost->CmdFrame = cmdFrame;
+	// phost->CmdFrame = cmdFrame;
 	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost); // Image failed to load
 }
 #endif
@@ -232,13 +232,13 @@ ft_bool_t Ft_Gpu_CoCmd_LoadImage_ProgMem(EVE_HalContext *phost, ft_uint32_t dst,
 {
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE; // Co processor must be ready
-	ft_bool_t cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
+		    // ft_bool_t cmdFrame = phost->CmdFrame;
+		    // phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
 	Ft_Gpu_Hal_WrCmd32(phost, dst);
 	Ft_Gpu_Hal_WrCmd32(phost, OPT_NODL);
 	Ft_Gpu_Hal_WrCmdBuf_ProgMem(phost, src, (size + 3) & ~0x3UL);
-	phost->CmdFrame = cmdFrame;
+	// phost->CmdFrame = cmdFrame;
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE; // Image failed to load
 	if (format)
@@ -250,12 +250,12 @@ ft_bool_t Ft_Gpu_CoCmd_Inflate_ProgMem(EVE_HalContext *phost, ft_uint32_t dst, f
 {
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE; // Co processor must be ready
-	ft_bool_t cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
+		    // ft_bool_t cmdFrame = phost->CmdFrame;
+		    // phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_INFLATE);
 	Ft_Gpu_Hal_WrCmd32(phost, dst);
 	Ft_Gpu_Hal_WrCmdBuf_ProgMem(phost, src, (size + 3) & ~0x3UL);
-	phost->CmdFrame = cmdFrame;
+	// phost->CmdFrame = cmdFrame;
 	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost); // Resource failed to load
 }
 
