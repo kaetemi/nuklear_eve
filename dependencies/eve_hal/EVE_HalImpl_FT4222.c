@@ -519,8 +519,6 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 						return false;
 					}
 
-					bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
-
 					buffer += sizeTransferred;
 					size -= sizeTransferred;
 
@@ -567,10 +565,12 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t a
 
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
+	uint32_t addr;
+
 	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
 
 	/* Transfers to FIFO are kept open */
-	uint32_t addr = phost->SpiRamGAddr;
+	addr = phost->SpiRamGAddr;
 	if (addr != REG_CMDB_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
 	{
 		if (phost->SpiWrBufIndex)

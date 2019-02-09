@@ -55,6 +55,7 @@
 *                             0 - Failure
 * Author                   :
 ****************************************************************************/
+#if 0
 ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_uint8_t *rdbufptr, ft_uint32_t exprdbytes)
 {
 	FT4222_STATUS status;
@@ -179,7 +180,8 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 	}
 	return retcode;
 }
-
+#endif
+#if 0
 uint8_t tempptr[64 * 1024];
 
 /***************************************************************************
@@ -308,6 +310,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 	}
 	return retcode;
 }
+#endif
 
 /***************************************************************************
 * Interface Description    : Function to compute FT4222 sys clock and divisor

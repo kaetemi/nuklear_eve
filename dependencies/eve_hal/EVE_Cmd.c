@@ -45,8 +45,9 @@ static inline void endFunc(EVE_HalContext *phost)
 
 uint16_t EVE_Cmd_rp(EVE_HalContext *phost)
 {
+	uint16_t rp;
 	endFunc(phost);
-	uint16_t rp = EVE_Hal_rd16(phost, REG_CMD_READ) & EVE_CMD_FIFO_MASK;
+	rp = EVE_Hal_rd16(phost, REG_CMD_READ) & EVE_CMD_FIFO_MASK;
 	if (EVE_CMD_FAULT(rp))
 		phost->CmdFault = true;
 	return rp;
@@ -65,25 +66,31 @@ uint16_t EVE_Cmd_wp(EVE_HalContext *phost)
 
 uint16_t EVE_Cmd_space(EVE_HalContext *phost)
 {
+#if defined(EVE_SUPPORT_CMDB)
+	uint16_t space;
+#else
+	ft_uint16_t wp, rp;
+#endif
 	endFunc(phost);
 #if defined(EVE_SUPPORT_CMDB)
-	uint16_t space = EVE_Hal_rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
+	space = EVE_Hal_rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
 	if (EVE_CMD_FAULT(space))
 		phost->CmdFault = true;
 	phost->CmdSpace = space;
 	eve_assert(phost->CmdSpace == space);
 	return space;
 #else
-	ft_uint16_t wp = EVE_Cmd_wp(phost);
-	ft_uint16_t rp = EVE_Cmd_rp(phost);
+	wp = EVE_Cmd_wp(phost);
+	rp = EVE_Cmd_rp(phost);
 	return (wp - rp - 4) & EVE_CMD_FIFO_MASK;
 #endif
 }
 
 static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t size, bool progmem, bool string)
 {
-	eve_assert(string || (size & 0x3) == 0);
 	uint32_t transfered = 0;
+
+	eve_assert(string || (size & 0x3) == 0);
 
 	do
 	{
@@ -170,8 +177,9 @@ bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer,
 
 uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength)
 {
+	uint32_t transfered;
 	eve_assert(phost->CmdBufferIndex == 0);
-	uint32_t transfered = wrBuffer(phost, str, maxLength + 1, false, true);
+	transfered = wrBuffer(phost, str, maxLength + 1, false, true);
 	return transfered;
 }
 
@@ -244,10 +252,12 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 /* Move the write pointer forward by the specified number of bytes. Returns the previous write pointer */
 uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
 {
+	uint16_t wp;
+
 	if (!EVE_Cmd_waitSpace(phost, bytes))
 		return -1;
 
-	uint16_t wp = EVE_Cmd_wp(phost);
+	wp = EVE_Cmd_wp(phost);
 #if !defined(EVE_SUPPORT_CMDB)
 	EVE_Hal_wr16(phost, REG_CMD_WRITE, wp + bytes);
 #endif
