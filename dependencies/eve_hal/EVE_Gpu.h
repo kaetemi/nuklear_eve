@@ -1275,7 +1275,7 @@ typedef struct EVE_Gpu_Fonts
 #if defined(EVE_SUPPORT_UNICODE)
 
 /* BT815 inclusion - extended font table for unicode support */
-typedef struct Ft_Gpu_FontsExt_t
+typedef struct EVE_Gpu_FontsExt
 {
 	uint32_t Signature;
 	uint32_t Size;
@@ -1288,7 +1288,7 @@ typedef struct Ft_Gpu_FontsExt_t
 	uint32_t StartOfGraphicData;
 	uint32_t OffsetGlyphData;
 	// uint32_t OffsetWidthData; // to be OffsetWidthData = Starting adress + StartOfGraphicData * 4.
-} Ft_Gpu_FontsExt_t;
+} EVE_Gpu_FontsExt;
 
 #endif
 

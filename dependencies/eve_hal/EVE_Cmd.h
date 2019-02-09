@@ -45,6 +45,7 @@
 ********************/
 
 #define EVE_CMD_STRING_MAX 511
+#define EVE_CMD_ASSERT_FLUSH
 
 uint16_t EVE_Cmd_rp(EVE_HalContext *phost);
 uint16_t EVE_Cmd_wp(EVE_HalContext *phost);
@@ -76,6 +77,15 @@ bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size);
 /************
 ** UTILITY **
 ************/
+
+#if defined(EVE_CMD_ASSERT_FLUSH)
+#define eve_cmd_assert_flush(phost) eve_assert(EVE_Cmd_waitFlush(phost))
+#else
+#define eve_cmd_assert_flush(phost) \
+	do                   \
+	{                    \
+	} while (false)
+#endif
 
 #if defined(PLATFORM_FT900) || (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 // #define EVE_CMD_PLATFORM_LE

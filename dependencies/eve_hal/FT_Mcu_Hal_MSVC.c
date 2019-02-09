@@ -33,6 +33,7 @@
 #if defined(MSVC_PLATFORM)
 
 #include "FT_MCU_Hal.h"
+#include "FT_Gpu_Hal.h"
 
 ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 {
@@ -58,8 +59,8 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 #if !(defined(ESD_SIMULATION))
 #if defined(FT_811_ENABLE) || defined(FT_813_ENABLE)
 #if defined(PANL70) || defined(PANL70PLUS)
-	Ft_Gpu_Hal_Wr8(phost, REG_CPURESET, 2);
-	Ft_Gpu_Hal_Wr16(phost, REG_CYA_TOUCH, 0x05d0);
+	EVE_Hal_wr8(phost, REG_CPURESET, 2);
+	EVE_Hal_wr16(phost, REG_CYA_TOUCH, 0x05d0);
 #endif
 	/* Download new firmware to fix pen up issue */
 	/* It may cause resistive touch not working any more*/
@@ -71,22 +72,36 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 #endif
 #endif
 
-	;
+	/* Read Register ID to check if EVE is ready. */
+	scope
 	{
 		ft_uint8_t chipid;
-		//Read Register ID to check if EVE is ready.
-		chipid = Ft_Gpu_Hal_Rd8(phost, REG_ID);
+		chipid = EVE_Hal_rd8(phost, REG_ID);
 		while (chipid != 0x7C)
 		{
-			chipid = Ft_Gpu_Hal_Rd8(phost, REG_ID);
+			chipid = EVE_Hal_rd8(phost, REG_ID);
 			eve_printf_debug("EVE register ID after wake up %x\n", chipid);
 			ft_delay(100);
 		}
 		eve_printf_debug("EVE register ID after wake up %x\n", chipid);
 	}
 
+	/* RAM_G self test */
+#ifndef NDEBUG	
+	scope
+	{
+		EVE_Hal_wr8(phost, 0, 123);
+		EVE_Hal_wr8(phost, 123, 210);
+		eve_assert(EVE_Hal_rd8(phost, 0) == 123);
+		eve_assert(EVE_Hal_rd8(phost, 123) == 210);
+		EVE_Hal_wr32(phost, 1234, 54321);
+		eve_assert(EVE_Hal_rd32(phost, 1234) == 54321);
+		eve_printf_debug("%i, %i, %i\n", EVE_Hal_rd8(phost, 0), EVE_Hal_rd8(phost, 123), EVE_Hal_rd32(phost, 1234));
+	}
+#endif
+
 	/* Read REG_CPURESET to confirm 0 is returned */
-	;
+	scope
 	{
 		ft_uint8_t engine_status;
 		/* Read REG_CPURESET to check if engines are ready.
@@ -94,7 +109,7 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 		Bit 1 for touch engine,
 		Bit 2 for audio engine.
 		*/
-		engine_status = Ft_Gpu_Hal_Rd8(phost, REG_CPURESET);
+		engine_status = EVE_Hal_rd8(phost, REG_CPURESET);
 		while (engine_status != 0x00)
 		{
 			if (engine_status & 0x01)
@@ -110,52 +125,52 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 				eve_printf_debug("audio engine is not ready\n");
 			}
 
-			engine_status = Ft_Gpu_Hal_Rd8(phost, REG_CPURESET);
+			engine_status = EVE_Hal_rd8(phost, REG_CPURESET);
 			ft_delay(100);
 		}
 		eve_printf_debug("All engines are ready\n");
 	}
 
-	Ft_Gpu_Hal_Wr16(phost, REG_HCYCLE, parameters->Display.HCycle);
-	Ft_Gpu_Hal_Wr16(phost, REG_HOFFSET, parameters->Display.HOffset);
-	Ft_Gpu_Hal_Wr16(phost, REG_HSYNC0, parameters->Display.HSync0);
-	Ft_Gpu_Hal_Wr16(phost, REG_HSYNC1, parameters->Display.HSync1);
-	Ft_Gpu_Hal_Wr16(phost, REG_VCYCLE, parameters->Display.VCycle);
-	Ft_Gpu_Hal_Wr16(phost, REG_VOFFSET, parameters->Display.VOffset);
-	Ft_Gpu_Hal_Wr16(phost, REG_VSYNC0, parameters->Display.VSync0);
-	Ft_Gpu_Hal_Wr16(phost, REG_VSYNC1, parameters->Display.VSync1);
-	Ft_Gpu_Hal_Wr8(phost, REG_SWIZZLE, parameters->Display.Swizzle);
-	Ft_Gpu_Hal_Wr8(phost, REG_PCLK_POL, parameters->Display.PCLKPol);
-	Ft_Gpu_Hal_Wr16(phost, REG_HSIZE, parameters->Display.Width);
-	Ft_Gpu_Hal_Wr16(phost, REG_VSIZE, parameters->Display.Height);
-	Ft_Gpu_Hal_Wr16(phost, REG_CSPREAD, parameters->Display.CSpread);
-	Ft_Gpu_Hal_Wr16(phost, REG_DITHER, parameters->Display.Dither);
+	EVE_Hal_wr16(phost, REG_HCYCLE, parameters->Display.HCycle);
+	EVE_Hal_wr16(phost, REG_HOFFSET, parameters->Display.HOffset);
+	EVE_Hal_wr16(phost, REG_HSYNC0, parameters->Display.HSync0);
+	EVE_Hal_wr16(phost, REG_HSYNC1, parameters->Display.HSync1);
+	EVE_Hal_wr16(phost, REG_VCYCLE, parameters->Display.VCycle);
+	EVE_Hal_wr16(phost, REG_VOFFSET, parameters->Display.VOffset);
+	EVE_Hal_wr16(phost, REG_VSYNC0, parameters->Display.VSync0);
+	EVE_Hal_wr16(phost, REG_VSYNC1, parameters->Display.VSync1);
+	EVE_Hal_wr8(phost, REG_SWIZZLE, parameters->Display.Swizzle);
+	EVE_Hal_wr8(phost, REG_PCLK_POL, parameters->Display.PCLKPol);
+	EVE_Hal_wr16(phost, REG_HSIZE, parameters->Display.Width);
+	EVE_Hal_wr16(phost, REG_VSIZE, parameters->Display.Height);
+	EVE_Hal_wr16(phost, REG_CSPREAD, parameters->Display.CSpread);
+	EVE_Hal_wr16(phost, REG_DITHER, parameters->Display.Dither);
 
 #ifdef EVE_SCREEN_RESISTIVE
 	/* Touch configuration - configure the resistance value to 1200 - this value is specific to customer requirement and derived by experiment */
-	Ft_Gpu_Hal_Wr16(phost, REG_TOUCH_RZTHRESH, RESISTANCE_THRESHOLD);
+	EVE_Hal_wr16(phost, REG_TOUCH_RZTHRESH, RESISTANCE_THRESHOLD);
 #endif
 
 #if defined(FT_81X_ENABLE)
-	Ft_Gpu_Hal_Wr16(phost, REG_GPIOX_DIR, 0xffff);
-	Ft_Gpu_Hal_Wr16(phost, REG_GPIOX, 0xffff);
+	EVE_Hal_wr16(phost, REG_GPIOX_DIR, 0xffff);
+	EVE_Hal_wr16(phost, REG_GPIOX, 0xffff);
 #else
-	Ft_Gpu_Hal_Wr8(phost, REG_GPIO_DIR, 0xff);
-	Ft_Gpu_Hal_Wr8(phost, REG_GPIO, 0xff);
+	EVE_Hal_wr8(phost, REG_GPIO_DIR, 0xff);
+	EVE_Hal_wr8(phost, REG_GPIO, 0xff);
 #endif
 
-	Ft_Gpu_Hal_WrMem(phost, RAM_DL, (ft_uint8_t *)FT_DLCODE_BOOTUP, sizeof(FT_DLCODE_BOOTUP));
-	Ft_Gpu_Hal_Wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
+	EVE_Hal_wrBuffer(phost, RAM_DL, (ft_uint8_t *)FT_DLCODE_BOOTUP, sizeof(FT_DLCODE_BOOTUP));
+	EVE_Hal_wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
 
-	Ft_Gpu_Hal_Wr8(phost, REG_PCLK, parameters->Display.PCLK); //after this display is visible on the LCD
+	EVE_Hal_wr8(phost, REG_PCLK, parameters->Display.PCLK); //after this display is visible on the LCD
 
 #if (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
 	/* to cross check reset pin */
-	Ft_Gpu_Hal_Wr8(phost, REG_GPIO, 0xff);
+	EVE_Hal_wr8(phost, REG_GPIO, 0xff);
 	ft_delay(120);
-	Ft_Gpu_Hal_Wr8(phost, REG_GPIO, 0x7f);
+	EVE_Hal_wr8(phost, REG_GPIO, 0x7f);
 	ft_delay(120);
-	Ft_Gpu_Hal_Wr8(phost, REG_GPIO, 0xff);
+	EVE_Hal_wr8(phost, REG_GPIO, 0xff);
 	ft_delay(120);
 #endif
 	Ft_DisplayPanel_Init();

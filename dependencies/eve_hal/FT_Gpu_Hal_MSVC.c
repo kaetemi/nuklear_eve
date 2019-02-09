@@ -35,9 +35,6 @@
 #include "FT_Gpu_Hal_MSVC.h"
 
 #if defined(FT4222_PLATFORM)
-ft_bool_t FT4222Drv_Open(EVE_HalContext *phost)
-{
-}
 #endif
 /*==========================================================================
 *
@@ -183,6 +180,8 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 	return retcode;
 }
 
+uint8_t tempptr[64 * 1024];
+
 /***************************************************************************
 * Interface Description    : Function to tranfer HOST MEMORY WRITE command
 *
@@ -211,7 +210,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 	{
 		uint16_t sizeTransferred = 0;
 
-		temp_wrpktptr = phost->SpiWriBufPtr; //global phost write buffer of size FT4222_MAX_BYTES_PER_CALL
+		temp_wrpktptr = tempptr; //global phost write buffer of size FT4222_MAX_BYTES_PER_CALL
 
 		if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
 		{
@@ -379,10 +378,11 @@ ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(EVE_HalContext *phost, FT4222_ClockRate *
 }
 #endif //FT4222_PLATFORM
 
+#if 0
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
 ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {
-	eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
+	// eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
 	if (FT_GPU_READ == rw)
 	{
 		ft_uint8_t transferArray[4];
@@ -565,6 +565,7 @@ ft_void_t Ft_Gpu_Hal_Wr32(EVE_HalContext *phost, ft_uint32_t addr, ft_uint32_t v
 	Ft_Gpu_Hal_EndTransfer(phost);
 #endif
 }
+#endif
 
 ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 {
@@ -676,6 +677,7 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 #endif
 }
 
+#if 0
 ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint32_t count)
 {
 	ft_int32_t length = 0, availablefreesize = 0;
@@ -769,6 +771,7 @@ ft_void_t Ft_Gpu_Hal_WrCmd32(EVE_HalContext *phost, ft_uint32_t cmd)
 	eve_assert_ex(!phost->CmdFrame, "Did you mean 'Ft_Gpu_CoCmd_SendCmd'?");
 	Ft_Gpu_Hal_Wr32(phost, REG_CMDB_WRITE, cmd);
 }
+#endif
 
 /* Toggle PD_N pin of FT800 board for a power cycle*/
 ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
@@ -839,6 +842,8 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 #endif
 	}
 }
+
+#if 0
 ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length)
 {
 #ifdef MPSSE_PLATFORM
@@ -897,6 +902,7 @@ ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *
 	}
 #endif
 }
+#endif
 
 ft_void_t Ft_Gpu_Hal_Sleep(ft_uint32_t ms)
 {

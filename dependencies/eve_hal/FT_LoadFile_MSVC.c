@@ -79,14 +79,10 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 8))
 		return FT_FALSE; // Space for CMD_INFLATE
 
-	cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-
 	afile = fopen(filename, "rb"); // read Binary (rb)
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
-		phost->CmdFrame = cmdFrame;
 		return FT_FALSE;
 	}
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_INFLATE);
@@ -106,7 +102,6 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 
 	fclose(afile); /* close the opened compressed file */
 
-	phost->CmdFrame = cmdFrame;
 	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
 }
 
@@ -121,14 +116,10 @@ ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const
 	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 12))
 		return FT_FALSE; // Space for CMD_LOADIMAGE
 
-	cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-
 	afile = fopen(filename, "rb"); // read Binary (rb)
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
-		phost->CmdFrame = cmdFrame;
 		return 0;
 	}
 	Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
@@ -155,7 +146,6 @@ ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const
 
 	fclose(afile); /* close the opened jpg file */
 
-	phost->CmdFrame = cmdFrame;
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return FT_FALSE;
 

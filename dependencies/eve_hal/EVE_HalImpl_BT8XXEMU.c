@@ -35,6 +35,10 @@
 
 #include <bt8xxemu.h>
 
+/*********
+** INIT **
+*********/
+
 EVE_HalPlatform g_HalPlatform;
 
 /* Initialize HAL platform */
@@ -110,6 +114,10 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 	/* no-op */
 }
 
+/*************
+** TRANSFER **
+*************/
+
 void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
 {
 	eve_assert(phost->Status == EVE_HalStatusOpened);
@@ -131,6 +139,14 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t a
 		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
 		phost->Status = EVE_HalStatusWriting;
 	}
+}
+
+void EVE_Hal_endTransfer(EVE_HalContext *phost)
+{
+	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
+
+	BT8XXEMU_chipSelect(phost->Emulator, 0);
+	phost->Status = EVE_HalStatusOpened;
 }
 
 static inline uint8_t transfer8(EVE_HalContext *phost, uint8_t value)
@@ -201,30 +217,30 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
-	uint32_t transferred;
-	for (transferred = 0; transferred < size;)
+	uint32_t transferred = 0;
+	if (phost->Status == EVE_HalStatusWriting)
 	{
-		char c = str[index + (transferred++)];
-		// putchar(c ? c : '_');
-		transfer8(phost, c);
-		if (!c)
-			break;
+		while (transferred < size)
+		{
+			char c = str[index + (transferred++)];
+			// putchar(c ? c : '_');
+			transfer8(phost, c);
+			if (!c)
+				break;
+		}
+		while (transferred & padMask)
+		{
+			++transferred;
+			// putchar('_');
+			transfer8(phost, 0);
+		}
 	}
-	while (transferred & padMask)
+	else
 	{
-		++transferred;
-		// putchar('_');
-		transfer8(phost, 0);
+		/* not implemented */
+		eve_debug_break();
 	}
 	return transferred;
-}
-
-void EVE_Hal_endTransfer(EVE_HalContext *phost)
-{
-	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
-
-	BT8XXEMU_chipSelect(phost->Emulator, 0);
-	phost->Status = EVE_HalStatusOpened;
 }
 
 #endif /* #if defined(BT8XXEMU_PLATFORM) */

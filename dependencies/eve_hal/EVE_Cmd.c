@@ -71,6 +71,7 @@ uint16_t EVE_Cmd_space(EVE_HalContext *phost)
 	if (EVE_CMD_FAULT(space))
 		phost->CmdFault = true;
 	phost->CmdSpace = space;
+	eve_assert(phost->CmdSpace == space);
 	return space;
 #else
 	ft_uint16_t wp = EVE_Cmd_wp(phost);

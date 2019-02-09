@@ -291,15 +291,17 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	}
 
 	/* dedicated write buffer used for SPI write. Max size is 2^uint16 */
+	/*
 	if ((phost->SpiWriBufPtr = malloc(FT4222_DYNAMIC_ALLOCATE_SIZE)) == NULL)
 	{
 		eve_printf_debug("malloc error\n");
 		ret = FT_FALSE;
 	}
+	*/
 
 	if (ret)
 	{
-		phost->SpiChannel = 0;
+		phost->SpiChannel = FT_GPU_SPI_SINGLE_CHANNEL;
 		phost->Status = EVE_HalStatusOpened;
 		++g_HalPlatform.OpenedChannels;
 	}
@@ -333,6 +335,355 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 	/* no-op */
 }
 
-#endif /* #if defined(BT8XXEMU_PLATFORM) */
+/*************
+** TRANSFER **
+*************/
+
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
+{
+	eve_assert(phost->Status == EVE_HalStatusOpened);
+
+	phost->SpiRamGAddr = addr;
+	if (rw == EVE_HalTransferRead)
+		phost->Status = EVE_HalStatusReading;
+	else
+		phost->Status = EVE_HalStatusWriting;
+}
+
+static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
+{
+	FT4222_STATUS status;
+
+	if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
+	{
+		ft_uint16_t sizeTransferred;
+		uint8_t hrdpkt[8] = { 0 }; // 3 byte addr + 2 or 1 byte dummy
+		uint32_t addr = phost->SpiRamGAddr;
+
+		/* Compose the HOST MEMORY READ packet */
+		hrdpkt[0] = (uint8_t)(addr >> 16) & 0xFF;
+		hrdpkt[1] = (uint8_t)(addr >> 8) & 0xFF;
+		hrdpkt[2] = (uint8_t)(addr & 0xFF);
+
+		status = FT4222_SPIMaster_SingleWrite(
+		    phost->SpiHandle,
+		    hrdpkt,
+		    3 + phost->SpiNumDummy, /* 3 address and chosen dummy bytes */
+		    &sizeTransferred,
+		    FALSE /* continue transaction */
+		);
+
+		if ((FT4222_OK != status) || (sizeTransferred != (3 + phost->SpiNumDummy)))
+		{
+			eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", sizeTransferred, status);
+			if (sizeTransferred != (3 + phost->SpiNumDummy))
+				phost->Status = EVE_HalStatusError;
+			return false;
+		}
+
+		while (size)
+		{
+			uint16_t sizeTransferred;
+			uint32_t bytesPerRead;
+			BOOL isEndTransaction;
+
+			if (size <= FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH)
+			{
+				bytesPerRead = size;
+				isEndTransaction = TRUE;
+			}
+			else
+			{
+				bytesPerRead = FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH;
+				isEndTransaction = FALSE;
+			}
+
+			status = FT4222_SPIMaster_SingleRead(
+			    phost->SpiHandle,
+			    buffer,
+			    bytesPerRead,
+			    &sizeTransferred,
+			    isEndTransaction);
+
+			if ((FT4222_OK != status) || (sizeTransferred != bytesPerRead))
+			{
+				eve_printf_debug("FT4222_SPIMaster_SingleRead failed,sizeTransferred is %d with status %d\n", sizeTransferred, status);
+				if (sizeTransferred != bytesPerRead)
+					phost->Status = EVE_HalStatusError;
+				return false;
+			}
+
+			size -= sizeTransferred;
+			buffer += sizeTransferred;
+
+			if (addr != REG_CMDB_WRITE)
+			{
+				bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
+				addr += sizeTransferred;
+				if (wrapCmdAddr)
+					addr = RAM_CMD + (addr & EVE_CMD_FIFO_MASK);
+				phost->SpiRamGAddr = addr;
+			}
+		}
+
+		return true;
+	}
+	else
+	{
+		eve_debug_break();
+		return false;
+		// TODO
+	}
+}
+
+static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
+{
+	FT4222_STATUS status;
+
+	if (buffer && (size < (sizeof(phost->SpiWrBuf) - phost->SpiWrBufIndex)))
+	{
+		/* Write to buffer */
+		memcpy(&phost->SpiWrBuf[phost->SpiWrBufIndex], buffer, size);
+		phost->SpiWrBufIndex += size;
+		return true;
+	}
+	else
+	{
+		if (buffer && phost->SpiWrBufIndex)
+		{
+			/* Buffer is over size, flush now */
+			if (!wrBuffer(phost, NULL, 0))
+				return false;
+
+			/* Write to buffer */
+			if (size < sizeof(phost->SpiWrBuf))
+				return wrBuffer(phost, buffer, size);
+		}
+		
+		if (buffer || phost->SpiWrBufIndex)
+		{
+			if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
+			{
+				/* Flush now, or write oversize buffer */
+				ft_uint16_t sizeTransferred;
+				uint8_t hrdpkt[8];
+				uint32_t addr = phost->SpiRamGAddr;
+
+				if (!buffer)
+				{
+					/* Flushing */
+					buffer = phost->SpiWrBuf;
+					size = phost->SpiWrBufIndex;
+					phost->SpiWrBufIndex = 0;
+				}
+
+				/* Compose the HOST MEMORY WRITE packet */
+				hrdpkt[0] = (addr >> 16) | 0x80; //MSB bits 10 for WRITE
+				hrdpkt[1] = (addr >> 8) & 0xFF;
+				hrdpkt[2] = addr & 0xff;
+
+				status = FT4222_SPIMaster_SingleWrite(
+					phost->SpiHandle,
+					hrdpkt,
+					3, // 3 address bytes
+					&sizeTransferred,
+					FALSE /* continue transaction */
+				);
+
+				if ((FT4222_OK != status) || (sizeTransferred != 3))
+				{
+					eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
+					if (sizeTransferred != 3)
+						phost->Status = EVE_HalStatusError;
+					return false;
+				}
+
+				while (size)
+				{
+					uint16_t sizeTransferred;
+					uint32_t bytesPerWrite;
+					BOOL isEndTransaction;
+
+					if (size <= FT4222_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH)
+					{
+						bytesPerWrite = size;
+						isEndTransaction = TRUE;
+					}
+					else
+					{
+						bytesPerWrite = FT4222_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH;
+						isEndTransaction = FALSE;
+					}
+
+					status = FT4222_SPIMaster_SingleWrite(
+						phost->SpiHandle,
+						(uint8_t *)buffer,
+						bytesPerWrite,
+						&sizeTransferred,
+						isEndTransaction);
+
+					if ((FT4222_OK != status) || ((ft_uint16_t)sizeTransferred != bytesPerWrite))
+					{
+						eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
+						if (sizeTransferred != bytesPerWrite)
+							phost->Status = EVE_HalStatusError;
+						return false;
+					}
+
+					bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
+
+					buffer += sizeTransferred;
+					size -= sizeTransferred;
+
+					if (addr != REG_CMDB_WRITE)
+					{
+						bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
+						addr += sizeTransferred;
+						if (wrapCmdAddr)
+							addr = RAM_CMD + (addr & EVE_CMD_FIFO_MASK);
+						phost->SpiRamGAddr = addr;
+					}
+				}
+			}
+			else
+			{
+				eve_debug_break();
+				return false;
+				// TODO
+			}
+		}
+
+		return true;
+	}
+}
+
+void EVE_Hal_endTransfer(EVE_HalContext *phost)
+{
+	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
+
+	if (phost->SpiWrBufIndex)
+		wrBuffer(phost, NULL, 0);
+
+	phost->Status = EVE_HalStatusOpened;
+}
+
+uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
+{
+	if (phost->Status == EVE_HalStatusReading)
+	{
+		rdBuffer(phost, &value, 1);
+		return value;
+	}
+	else
+	{
+		wrBuffer(phost, &value, 1);
+		return 0;
+	}
+}
+
+uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
+{
+	uint8_t buffer[2];
+	if (phost->Status == EVE_HalStatusReading)
+	{
+		rdBuffer(phost, buffer, 2);
+		return (uint16_t)buffer[0]
+		    | (uint16_t)buffer[1] << 8;
+	}
+	else
+	{
+		buffer[0] = value & 0xFF;
+		buffer[1] = value >> 8;
+		wrBuffer(phost, buffer, 2);
+		return 0;
+	}
+}
+
+uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
+{
+	uint8_t buffer[4];
+	if (phost->Status == EVE_HalStatusReading)
+	{
+		rdBuffer(phost, buffer, 4);
+		return (uint32_t)buffer[0]
+		    | (uint32_t)buffer[1] << 8
+		    | (uint32_t)buffer[2] << 16
+		    | (uint32_t)buffer[3] << 24;
+	}
+	else
+	{
+		buffer[0] = value & 0xFF;
+		buffer[1] = (value >> 8) & 0xFF;
+		buffer[2] = (value >> 16) & 0xFF;
+		buffer[3] = value >> 24;
+		wrBuffer(phost, buffer, 4);
+		return 0;
+	}
+}
+
+void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size)
+{
+	if (result && buffer)
+	{
+		/* not implemented */
+		eve_debug_break();
+	}
+	else if (result)
+	{
+		rdBuffer(phost, result, size);
+	}
+	else if (buffer)
+	{
+		wrBuffer(phost, buffer, size);
+	}
+}
+
+void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
+{
+	if (result && buffer)
+	{
+		/* not implemented */
+		eve_debug_break();
+	}
+	else if (result)
+	{
+		rdBuffer(phost, result, size);
+	}
+	else if (buffer)
+	{
+		wrBuffer(phost, buffer, size);
+	}
+}
+
+uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
+{
+	uint32_t transferred = 0;
+	if (phost->Status == EVE_HalStatusWriting)
+	{
+		uint8_t buffer[EVE_CMD_STRING_MAX + 1];
+
+		while (transferred < size)
+		{
+			char c = str[index + (transferred)];
+			buffer[transferred++] = c;
+			if (!c)
+				break;
+		}
+		while (transferred & padMask)
+		{
+			buffer[transferred++] = 0;
+		}
+
+		wrBuffer(phost, buffer, transferred);
+	}
+	else
+	{
+		/* not implemented */
+		eve_debug_break();
+	}
+	return transferred;
+}
+
+#endif /* #if defined(FT4222_PLATFORM) */
 
 /* end of file */
