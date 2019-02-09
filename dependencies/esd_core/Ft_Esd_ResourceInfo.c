@@ -26,6 +26,9 @@ extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, ft_uint32_t *imageFormat)
 {
+	ft_uint32_t addr;
+	bool loaded;
+
 	if (!resourceInfo)
 	{
 		esd_resourceinfo_printf("Resource info is NULL\n");
@@ -48,7 +51,7 @@ uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, ft_uint32_t *imageForm
 	}
 
 	// Get address of specified handle
-	ft_uint32_t addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, resourceInfo->GpuHandle);
+	addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, resourceInfo->GpuHandle);
 	if (addr != GA_INVALID)
 	{
 		return ESD_DL_RAM_G_ADDRESS(addr);
@@ -92,7 +95,7 @@ uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, ft_uint32_t *imageForm
 	}
 
 	// Attempt to load
-	bool loaded = false;
+	loaded = false;
 	switch (resourceInfo->Type)
 	{
 	case ESD_RESOURCE_FILE:

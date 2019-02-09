@@ -16,11 +16,13 @@ static int s_ErrorGpuAllocFailed = 0;
 
 void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga)
 {
+	int id, idx;
+
 #ifdef ESD_SIMULATION
 	s_ErrorGpuAllocFailed = 0;
 #endif
 
-	for (int id = 0; id < MAX_NUM_ALLOCATIONS; ++id)
+	for (id = 0; id < MAX_NUM_ALLOCATIONS; ++id)
 	{
 		ga->AllocRefs[id].Idx = MAX_NUM_ALLOCATIONS;
 		++ga->AllocRefs[id].Seq; // Seq is always cycled, initial value not important
@@ -30,7 +32,7 @@ void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga)
 			ga->AllocRefs[id].Seq = 1;
 	}
 
-	for (int idx = 0; idx < MAX_NUM_ALLOCATIONS; ++idx)
+	for (idx = 0; idx < MAX_NUM_ALLOCATIONS; ++idx)
 	{
 		ga->AllocEntries[idx].Address = RAM_G_SIZE;
 		ga->AllocEntries[idx].Length = 0;
@@ -46,10 +48,12 @@ void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga)
 
 void Ft_Esd_GpuAlloc_InsertFree(Ft_Esd_GpuAlloc *ga, uint32_t atidx, uint32_t size)
 {
+	uint32_t idx;
+
 	eve_assert(ga->NbAllocEntries >= 1);
 
 	// First move entries one step forward
-	for (uint32_t idx = (ga->NbAllocEntries - 1); idx >= atidx; --idx)
+	for (idx = (ga->NbAllocEntries - 1); idx >= atidx; --idx)
 	{
 		int id = ga->AllocEntries[idx].Id;
 		if (id < MAX_NUM_ALLOCATIONS)
@@ -70,6 +74,9 @@ void Ft_Esd_GpuAlloc_InsertFree(Ft_Esd_GpuAlloc *ga, uint32_t atidx, uint32_t si
 
 Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, uint32_t size, uint16_t flags)
 {
+	uint32_t idx;
+	Ft_Esd_GpuHandle ret;
+
 	if (ga->NbAllocEntries >= MAX_NUM_ALLOCATIONS)
 	{
 		goto ReturnInvalidHandle;
@@ -79,14 +86,15 @@ Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, uint32_t size, uint1
 	size = (size + 3UL) & ~3UL;
 
 	// Scan through the AllocEntries, find the first open allocation that is large enough
-	for (uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
+	for (idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
 		// Check if allocation entry is unallocated and large enough
 		if (ga->AllocEntries[idx].Id == MAX_NUM_ALLOCATIONS
 		    && ga->AllocEntries[idx].Length >= size)
 		{
 			// Find an unused handle
-			for (int id = 0; id < MAX_NUM_ALLOCATIONS; ++id)
+			int id;
+			for (id = 0; id < MAX_NUM_ALLOCATIONS; ++id)
 			{
 				if (ga->AllocRefs[id].Idx == MAX_NUM_ALLOCATIONS)
 				{
@@ -116,10 +124,9 @@ Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, uint32_t size, uint1
 					// eve_printf_debug("Alloc id %i\n", id);
 
 					// Return the valid gpu ram handle
-					return (Ft_Esd_GpuHandle){
-						.Id = id,
-						.Seq = ga->AllocRefs[id].Seq
-					};
+					ret.Id = id;
+					ret.Seq = ga->AllocRefs[id].Seq;
+					return ret;
 				}
 			}
 
@@ -139,10 +146,9 @@ ReturnInvalidHandle:
 	}
 #endif
 
-	return (Ft_Esd_GpuHandle){
-		.Id = MAX_NUM_ALLOCATIONS,
-		.Seq = 0
-	};
+	ret.Id = MAX_NUM_ALLOCATIONS;
+	ret.Seq = 0;
+	return ret;
 }
 
 uint32_t Ft_Esd_GpuAlloc_Get(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle)
@@ -180,11 +186,13 @@ void Ft_Esd_GpuAlloc_CollapseFree(Ft_Esd_GpuAlloc *ga, uint32_t idxat)
 	if (shift)
 	{
 		// Collapse indices
+		uint32_t idx;
 		ga->NbAllocEntries -= shift;
-		for (uint32_t idx = idxat + 1; idx < ga->NbAllocEntries; ++idx)
+		for (idx = idxat + 1; idx < ga->NbAllocEntries; ++idx)
 		{
+			int id;
 			ga->AllocEntries[idx] = ga->AllocEntries[idx + shift];
-			int id = ga->AllocEntries[idx].Id;
+			id = ga->AllocEntries[idx].Id;
 			if (id < MAX_NUM_ALLOCATIONS)
 			{
 				ga->AllocRefs[id].Idx = idx;
@@ -231,7 +239,8 @@ void Ft_Esd_GpuAlloc_Free(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle)
 
 void Ft_Esd_GpuAlloc_Update(Ft_Esd_GpuAlloc *ga)
 {
-	for (uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
+	uint32_t idx;
+	for (idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
 		// Check if allocation entry is allocated
 		if (ga->AllocEntries[idx].Id < MAX_NUM_ALLOCATIONS)
@@ -259,7 +268,8 @@ void Ft_Esd_GpuAlloc_Update(Ft_Esd_GpuAlloc *ga)
 uint32_t Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GpuAlloc *ga)
 {
 	uint32_t total = 0;
-	for (uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
+	uint32_t idx;
+	for (idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
 		// Check if allocation entry is allocated
 		if (ga->AllocEntries[idx].Id < MAX_NUM_ALLOCATIONS)

@@ -306,6 +306,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	return ret;
 }
 
+/* Close a HAL context */
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
 	FT4222_STATUS status;
@@ -324,6 +325,7 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 		eve_printf_debug("CLOSE failed %d\n", status);
 }
 
+/* Idle. Call regularly to update frequently changing internal state */
 void EVE_HalImpl_idle(EVE_HalContext *phost)
 {
 	/* no-op */

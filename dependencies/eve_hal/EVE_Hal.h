@@ -92,26 +92,29 @@ typedef int (*EVE_Callback)(void *phost);
 typedef struct EVE_HalParameters
 {
 	void *UserContext;
-	EVE_Callback CbCmdWait; //< IN. Called anytime the code is waiting during CMD write. Return FT_FALSE to abort wait
+	EVE_Callback CbCmdWait; /* Called anytime the code is waiting during CMD write. Return FT_FALSE to abort wait */
 
 	Eve_DisplayParameters Display;
 
+#if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
 	union
 	{
-		uint8_t SpiCsPin; //< SPI chip select number of FT8XX chip
-		uint8_t I2CAddr; //< I2C address of FT8XX chip
+		uint8_t SpiCsPin; /* SPI chip select number of FT8XX chip */
+		uint8_t I2CAddr; /* I2C address of FT8XX chip */
 	};
 	union
 	{
-		uint16_t SpiClockrateKHz; //< In kHz
-		uint16_t I2CClockrateKHz; //< In kHz
+		uint16_t SpiClockrateKHz; /* In kHz */
+		uint16_t I2CClockrateKHz; /* In kHz */
 	};
 
-#ifdef MPSSE_PLATFORM
-	uint8_t MpsseChannelNo; //< MPSSE channel number
+	uint8_t PowerDownPin; /* FT8XX power down pin number */
 #endif
 
-	uint8_t PowerDownPin; //< FT8XX power down pin number
+#if defined(MPSSE_PLATFORM)
+	uint8_t MpsseChannelNo; /* MPSSE channel number */
+#endif
+
 } EVE_HalParameters;
 
 typedef struct EVE_HalContext

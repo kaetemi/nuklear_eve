@@ -100,6 +100,9 @@ ft_void_t Ft_Gpu_CoCmd_ScreenSaver(EVE_HalContext *phost)
 
 ft_uint32_t Ft_Gpu_CoCmd_Calibrate(EVE_HalContext *phost)
 {
+	uint32_t resAddr;
+	uint32_t res;
+
 	uint32_t cmd[2] = {
 		CMD_CALIBRATE,
 		0,
@@ -111,8 +114,8 @@ ft_uint32_t Ft_Gpu_CoCmd_Calibrate(EVE_HalContext *phost)
 	eve_printf_debug("Waiting for Calibrate result\n");
 	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
 		return 0;
-	uint32_t resAddr = (Ft_Gpu_Hal_Rd32(phost, REG_CMD_WRITE) - 4) & FIFO_SIZE_MASK;
-	uint32_t res = Ft_Gpu_Hal_Rd32(phost, RAM_CMD + resAddr); // Fetch result
+	resAddr = (Ft_Gpu_Hal_Rd32(phost, REG_CMD_WRITE) - 4) & FIFO_SIZE_MASK;
+	res = Ft_Gpu_Hal_Rd32(phost, RAM_CMD + resAddr); // Fetch result
 	Ft_Gpu_CoCmd_StartFrame(phost);
 	return res;
 }
@@ -132,21 +135,25 @@ ft_bool_t Ft_Gpu_CoCmd_AnimStart(EVE_HalContext *phost, int32_t ch, uint32_t aop
 		eve_printf_debug("Attempt to send CMD_ANIMSTART without FLASH_STATUS_FULL (REG_FLASH_STATUS: %i)\n", (int)flashStatus);
 		return FT_FALSE;
 	}
-	uint32_t cmd[4] = {
-		CMD_ANIMSTART,
-		ch,
-		aoptr,
-		loop,
-	};
-	if (phost->CmdFrame)
+
+	scope
 	{
-		Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-		return FT_TRUE;
-	}
-	else
-	{
-		Ft_Gpu_Hal_WrCmdBuf(phost, (ft_uint8_t *)cmd, sizeof(cmd));
-		return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
+		uint32_t cmd[4] = {
+			CMD_ANIMSTART,
+			ch,
+			aoptr,
+			loop,
+		};
+		if (phost->CmdFrame)
+		{
+			Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+			return FT_TRUE;
+		}
+		else
+		{
+			Ft_Gpu_Hal_WrCmdBuf(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+			return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
+		}
 	}
 }
 

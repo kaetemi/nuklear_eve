@@ -37,6 +37,10 @@
 /* Compatibility for legacy MSVC versions */
 #include "EVE_IntTypes_MSVC12.h"
 
+#ifndef inline
+#define inline __inline
+#endif
+
 #else
 
 /* Include C99 headers */

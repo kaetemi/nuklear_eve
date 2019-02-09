@@ -54,13 +54,14 @@ void Esd_AttachFlashFast()
 	// No need to continue if flash is okay
 	if (flashStatus < FLASH_STATUS_FULL)
 	{
+		ft_uint32_t error;
+
 		Esd_SetFlashStatus__ESD(flashStatus);
 
 		flashStatus = Ft_Gpu_CoCmd_FlashAttach(Ft_Esd_Host);
 		Esd_SetFlashStatus__ESD(flashStatus);
 		Esd_SetFlashSize__ESD(Ft_Gpu_Hal_Rd32(Ft_Esd_Host, REG_FLASH_SIZE));
 
-		ft_uint32_t error;
 		flashStatus = Ft_Gpu_CoCmd_FlashFast(Ft_Esd_Host, &error);
 		Esd_SetFlashStatus__ESD(flashStatus);
 
@@ -153,6 +154,8 @@ void Esd_ShowLogo()
 ft_bool_t Esd_Calibrate()
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
+	ft_uint32_t result;
+	ft_uint32_t transMatrix[6];
 
 #if defined(EVE_SCREEN_CAPACITIVE)
 	Ft_Gpu_Hal_Wr8(phost, REG_CTOUCH_EXTENDED, CTOUCH_MODE_COMPATIBILITY);
@@ -168,13 +171,12 @@ ft_bool_t Esd_Calibrate()
 
 	// Ft_Gpu_CoCmd_Text(phost, (Ft_Esd_Host->Parameters.Display.Width / 2), (Ft_Esd_Host->Parameters.Display.Height / 2), 27, OPT_CENTER, "Please Tap on the dot");
 
-	ft_uint32_t result = Ft_Gpu_CoCmd_Calibrate(phost);
+	result = Ft_Gpu_CoCmd_Calibrate(phost);
 
 	eve_printf_debug("App_CoPro_Widget_Calibrate: End Frame\n");
 	Ft_Gpu_CoCmd_EndFrame(phost);
 
 	// Print the configured values
-	ft_uint32_t transMatrix[6];
 	Ft_Gpu_Hal_RdMem(phost, REG_TOUCH_TRANSFORM_A, (ft_uint8_t *)transMatrix, 4 * 6); //read all the 6 coefficients
 	eve_printf_debug("Touch screen transform values are A 0x%x,B 0x%x,C 0x%x,D 0x%x,E 0x%x, F 0x%x\n",
 	    transMatrix[0], transMatrix[1], transMatrix[2], transMatrix[3], transMatrix[4], transMatrix[5]);

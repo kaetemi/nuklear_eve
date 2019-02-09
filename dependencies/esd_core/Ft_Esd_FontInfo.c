@@ -24,22 +24,26 @@ extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 uint32_t Esd_LoadFont(Esd_FontInfo *fontInfo)
 {
+	uint32_t glyphAddr;
+
 	if (fontInfo->Type != ESD_FONT_LEGACY && fontInfo->Type != ESD_FONT_EXTENDED)
 	{
 		return GA_INVALID;
 	}
 
 	// Load glyphs
-	uint32_t glyphAddr = Esd_LoadResource(&fontInfo->GlyphResource, NULL);
+	glyphAddr = Esd_LoadResource(&fontInfo->GlyphResource, NULL);
 	if (glyphAddr != GA_INVALID)
 	{
 		// Load map
+		uint32_t fontAddr;
+		bool rewriteAddr;
+
 #ifdef EVE_FLASH_AVAILABLE
 		if (fontInfo->FontResource.Type == ESD_RESOURCE_DIRECTFLASH)
 			fontInfo->FontResource.Type = ESD_RESOURCE_FLASH;
 #endif
-		uint32_t fontAddr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, fontInfo->FontResource.GpuHandle);
-		bool rewriteAddr;
+		fontAddr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, fontInfo->FontResource.GpuHandle);
 		if (fontAddr == GA_INVALID)
 		{
 			fontAddr = Esd_LoadResource(&fontInfo->FontResource, NULL);

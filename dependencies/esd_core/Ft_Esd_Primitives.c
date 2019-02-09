@@ -121,13 +121,18 @@ void Ft_Esd_Dl_Bitmap_Vertex_PALETTED8(ft_int16_t x, ft_int16_t y, ft_uint8_t ha
 
 void Ft_Esd_Render_Bitmap(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c)
 {
+	Ft_Esd_BitmapInfo *bitmapInfo;
+	ft_uint16_t cell;
+	EVE_HalContext *phost;
+	ft_uint8_t handle;
+
 	if (!bitmapCell.Info)
 		return;
 
-	Ft_Esd_BitmapInfo *bitmapInfo = bitmapCell.Info;
-	ft_uint16_t cell = bitmapCell.Cell;
-	EVE_HalContext *phost = Ft_Esd_Host;
-	ft_uint8_t handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
+	bitmapInfo = bitmapCell.Info;
+	cell = bitmapCell.Cell;
+	phost = Ft_Esd_Host;
+	handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
 
 	if (FT_ESD_BITMAPHANDLE_VALID(handle))
 	{
@@ -141,8 +146,9 @@ void Ft_Esd_Render_Bitmap(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCell bitmapCe
 #if (EVE_MODEL >= EVE_FT810)
 		if (bitmapInfo->Format == PALETTED8)
 		{
+			ft_uint32_t paletteAddr;
 			Ft_Esd_Dl_SAVE_CONTEXT();
-			ft_uint32_t paletteAddr = Ft_Esd_LoadPalette(bitmapInfo);
+			paletteAddr = Ft_Esd_LoadPalette(bitmapInfo);
 			Ft_Esd_Dl_Bitmap_Vertex_PALETTED8(x, y, handle, cell, paletteAddr);
 			if (FT_ESD_BITMAPHANDLE_VALID(additional))
 				Ft_Esd_Dl_Bitmap_Vertex_PALETTED8(x, y, additional, cell, paletteAddr);
@@ -170,13 +176,18 @@ void Ft_Esd_Render_Bitmap(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCell bitmapCe
 
 ft_void_t Ft_Esd_Render_BitmapScaled(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c, ft_int32_f16_t xscale, ft_int32_f16_t yscale, ft_int32_f16_t xoffset, ft_int32_f16_t yoffset, ft_int16_t width, ft_int16_t height)
 {
+	Ft_Esd_BitmapInfo *bitmapInfo;
+	ft_uint16_t cell;
+	EVE_HalContext *phost;
+	ft_uint8_t handle;
+
 	if (!bitmapCell.Info)
 		return;
 
-	Ft_Esd_BitmapInfo *bitmapInfo = bitmapCell.Info;
-	ft_uint16_t cell = bitmapCell.Cell;
-	EVE_HalContext *phost = Ft_Esd_Host;
-	ft_uint8_t handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
+	bitmapInfo = bitmapCell.Info;
+	cell = bitmapCell.Cell;
+	phost = Ft_Esd_Host;
+	handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
 
 	if (FT_ESD_BITMAPHANDLE_VALID(handle))
 	{
@@ -260,14 +271,19 @@ ft_void_t Ft_Esd_Render_BitmapFreeform(Ft_Esd_BitmapCell bitmapCell, ft_argb32_t
 
 ft_void_t Ft_Esd_Render_BitmapRotate_Scaled(Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c, Ft_Esd_Rect16 globalRect, ft_int32_t rotateAngle, ft_int32_f16_t xscale, ft_int32_f16_t yscale)
 {
+	Ft_Esd_BitmapInfo *bitmapInfo;
+	ft_uint16_t cell;
+	ft_uint8_t handle;
+	ft_int32_t translate_pixels;
+
 	if (!bitmapCell.Info)
 		return;
 
-	Ft_Esd_BitmapInfo *bitmapInfo = bitmapCell.Info;
-	ft_uint16_t cell = bitmapCell.Cell;
-	ft_uint8_t handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
+	bitmapInfo = bitmapCell.Info;
+	cell = bitmapCell.Cell;
+	handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
 
-	ft_int32_t translate_pixels = 2 * bitmapInfo->Width * 65536;
+	translate_pixels = 2 * bitmapInfo->Width * 65536;
 
 	if (FT_ESD_BITMAPHANDLE_VALID(handle))
 	{
@@ -305,14 +321,19 @@ ft_void_t Ft_Esd_Render_BitmapRotate_Scaled(Ft_Esd_BitmapCell bitmapCell, ft_arg
 
 ft_void_t Ft_Esd_Render_BitmapRotate(Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c, Ft_Esd_Rect16 globalRect, ft_int32_t rotateAngle)
 {
+	Ft_Esd_BitmapInfo *bitmapInfo;
+	ft_uint16_t cell;
+	ft_uint8_t handle;
+	ft_int32_t translate_pixels;
+
 	if (!bitmapCell.Info)
 		return;
 
-	Ft_Esd_BitmapInfo *bitmapInfo = bitmapCell.Info;
-	ft_uint16_t cell = bitmapCell.Cell;
-	ft_uint8_t handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
+	bitmapInfo = bitmapCell.Info;
+	cell = bitmapCell.Cell;
+	handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
 
-	ft_int32_t translate_pixels = 2 * bitmapInfo->Width * 65536;
+	translate_pixels = 2 * bitmapInfo->Width * 65536;
 
 	if (FT_ESD_BITMAPHANDLE_VALID(handle))
 	{
@@ -338,21 +359,25 @@ ft_void_t Ft_Esd_Render_BitmapRotate(Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c
 		Ft_Esd_Dl_VERTEX_FORMAT(4);
 #endif
 		Ft_Esd_Dl_CELL_Paged(handle, cell);
-		for (int dx = (x - radius); dx < (x + radius); dx += TITLE_SIZE)
+		scope
 		{
-			for (int dy = (y - radius); dy < (y + radius); dy += TITLE_SIZE)
+			int dx, dy;
+			for (dx = (x - radius); dx < (x + radius); dx += TITLE_SIZE)
 			{
-				//eve_printf_debug("draw tile %d\n",tilenumber ++);
-				tilenumber++;
-				Ft_Gpu_CoCmd_LoadIdentity(Ft_Esd_Host);
-				Ft_Gpu_CoCmd_Translate(Ft_Esd_Host, (x - dx) << 16, (y - dy) << 16);
+				for (dy = (y - radius); dy < (y + radius); dy += TITLE_SIZE)
+				{
+					//eve_printf_debug("draw tile %d\n",tilenumber ++);
+					tilenumber++;
+					Ft_Gpu_CoCmd_LoadIdentity(Ft_Esd_Host);
+					Ft_Gpu_CoCmd_Translate(Ft_Esd_Host, (x - dx) << 16, (y - dy) << 16);
 
-				Ft_Gpu_CoCmd_Rotate(Ft_Esd_Host, rotateAngle);
-				Ft_Gpu_CoCmd_Translate(Ft_Esd_Host, -x_center << 16, -y_center << 16);
-				//Ft_Gpu_CoCmd_Translate(Ft_Esd_Host, -x_center, -y_center);
+					Ft_Gpu_CoCmd_Rotate(Ft_Esd_Host, rotateAngle);
+					Ft_Gpu_CoCmd_Translate(Ft_Esd_Host, -x_center << 16, -y_center << 16);
+					//Ft_Gpu_CoCmd_Translate(Ft_Esd_Host, -x_center, -y_center);
 
-				Ft_Gpu_CoCmd_SetMatrix(Ft_Esd_Host);
-				Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(dx * 16, dy * 16));
+					Ft_Gpu_CoCmd_SetMatrix(Ft_Esd_Host);
+					Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(dx * 16, dy * 16));
+				}
 			}
 		}
 		//eve_printf_debug("draw tile %d\n",tilenumber);
@@ -372,24 +397,28 @@ Ft_Esd_Size16 Ft_Esd_Primitive_GetScaledSize(Ft_Esd_Size16 boundary, Ft_Esd_Size
 		// There are two real options: scale original to boundary width or scale original to boundary height
 		ft_int32_f16_t boundaryRatio = (((ft_int32_f16_t)boundary.Width) << 16) / ((ft_int32_f16_t)boundary.Height);
 		ft_int32_f16_t originalRatio = (((ft_int32_f16_t)original.Width) << 16) / ((ft_int32_f16_t)original.Height);
+		ft_bool_t originalWider;
+		ft_bool_t wantFit;
+		Ft_Esd_Size16 res;
 		if (boundaryRatio == originalRatio)
 			return boundary;
-		ft_bool_t originalWider = originalRatio > boundaryRatio;
-		ft_bool_t wantFit = scaling == ESD_SCALING_FIT;
-		Ft_Esd_Size16 res;
+		originalWider = originalRatio > boundaryRatio;
+		wantFit = scaling == ESD_SCALING_FIT;
 		if (originalWider ^ wantFit) // (boundary higher && want fill) || (original higher && want fit)
 		    //                          (original wider && want fill)  || (boundary wider && want fit)
 		{
 			// Scale to height
+			ft_int32_f16_t scale;
 			res.Height = boundary.Height;
-			ft_int32_f16_t scale = (((ft_int32_f16_t)boundary.Height) << 16) / ((ft_int32_f16_t)original.Height);
+			scale = (((ft_int32_f16_t)boundary.Height) << 16) / ((ft_int32_f16_t)original.Height);
 			res.Width = (((ft_int32_f16_t)original.Width) * scale) >> 16;
 		}
 		else
 		{
 			// Scale to width
+			ft_int32_f16_t scale;
 			res.Width = boundary.Width;
-			ft_int32_f16_t scale = (((ft_int32_f16_t)boundary.Width) << 16) / ((ft_int32_f16_t)original.Width);
+			scale = (((ft_int32_f16_t)boundary.Width) << 16) / ((ft_int32_f16_t)original.Width);
 			res.Height = (((ft_int32_f16_t)original.Height) * scale) >> 16;
 		}
 		return res;
@@ -405,8 +434,11 @@ Ft_Esd_Size16 Ft_Esd_Primitive_GetScaledSize(Ft_Esd_Size16 boundary, Ft_Esd_Size
 Ft_Esd_Rect16 Ft_Esd_Primitive_GetAlignedRect(Ft_Esd_Size16 boundary, Ft_Esd_Size16 size, ft_uint8_t align)
 {
 	Ft_Esd_Rect16 res;
+	ft_uint8_t halign;
+	ft_uint8_t valign;
+
 	res.Size = size;
-	ft_uint8_t halign = ESD_ALIGN_HORIZONTAL(align);
+	halign = ESD_ALIGN_HORIZONTAL(align);
 	switch (halign)
 	{
 	case ESD_ALIGN_LEFTX:
@@ -423,7 +455,7 @@ Ft_Esd_Rect16 Ft_Esd_Primitive_GetAlignedRect(Ft_Esd_Size16 boundary, Ft_Esd_Siz
 		res.Width = boundary.Width;
 		break;
 	}
-	ft_uint8_t valign = ESD_ALIGN_VERTICAL(align);
+	valign = ESD_ALIGN_VERTICAL(align);
 	switch (valign)
 	{
 	case ESD_ALIGN_TOPY:

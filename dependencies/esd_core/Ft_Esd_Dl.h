@@ -202,9 +202,12 @@ inline static ft_void_t Ft_Esd_Dl_Alpha_Func(ft_uint8_t func, ft_uint8_t ref)
 ESD_FUNCTION(Ft_Esd_Dl_SAVE_CONTEXT, Type = ft_void_t, Category = EveRenderFunctions, Inline)
 inline static ft_void_t Ft_Esd_Dl_SAVE_CONTEXT()
 {
+#if ESD_DL_OPTIMIZE
+	ft_uint8_t nextState;
+#endif
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, SAVE_CONTEXT());
 #if ESD_DL_OPTIMIZE
-	ft_uint8_t nextState = Ft_Esd_GpuState_I + 1;
+	nextState = Ft_Esd_GpuState_I + 1;
 	if (nextState < ESD_DL_STATE_STACK_SIZE)
 	{
 		Ft_Esd_GpuState[nextState] = Ft_Esd_GpuState[Ft_Esd_GpuState_I];

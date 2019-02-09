@@ -44,24 +44,29 @@ ft_bool_t Ft_Esd_Rect16_IsInsideVertical(Ft_Esd_Rect16 subrect, Ft_Esd_Rect16 re
 
 Ft_Esd_Rect16 Ft_Esd_Rect16_Crop(Ft_Esd_Rect16 rect, Ft_Esd_Rect16 crop)
 {
-	ft_int16_t x1diff = (crop.X - rect.X); // old x1 - new x1
+	ft_int16_t x1diff;
+	ft_int16_t y1diff;
+	ft_int16_t x2diff;
+	ft_int16_t y2diff;
+
+	x1diff = (crop.X - rect.X); // old x1 - new x1
 	if (x1diff > 0) // old x1 > new x1
 	{
 		rect.Width -= x1diff;
 		rect.X = crop.X;
 	}
-	ft_int16_t y1diff = (crop.Y - rect.Y); // old y1 - new y1
+	y1diff = (crop.Y - rect.Y); // old y1 - new y1
 	if (y1diff > 0) // old y1 > new y1
 	{
 		rect.Height -= y1diff;
 		rect.Y = crop.Y;
 	}
-	ft_int16_t x2diff = (crop.X + crop.Width) - (rect.X + rect.Width); // old x2 - new x2
+	x2diff = (crop.X + crop.Width) - (rect.X + rect.Width); // old x2 - new x2
 	if (x2diff < 0) // old x2 < new x2
 	{
 		rect.Width += x2diff;
 	}
-	ft_int16_t y2diff = (crop.Y + crop.Height) - (rect.Y + rect.Height); // old y2 - new y2
+	y2diff = (crop.Y + crop.Height) - (rect.Y + rect.Height); // old y2 - new y2
 	if (y2diff < 0) // old y2 < new y2
 	{
 		rect.Height += y2diff;

@@ -58,10 +58,6 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 /* Opens a new HAL context using the specified parameters */
 bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
-	phost->Parameters.MpsseChannelNo = 0;
-	phost->Parameters.PowerDownPin = 0;
-	phost->Parameters.SpiCsPin = 0;
-
 #if defined(FT_EMULATOR_MAIN)
 	phost->Emulator = Ft_GpuEmu;
 	phost->EmulatorFlash = Ft_EmuFlash;
@@ -85,6 +81,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	return !!phost->Emulator;
 }
 
+/* Close a HAL context */
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
 #if !defined(FT_EMULATOR_MAIN)
@@ -103,6 +100,7 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 	phost->Status = EVE_HalStatusClosed;
 }
 
+/* Idle. Call regularly to update frequently changing internal state */
 void EVE_HalImpl_idle(EVE_HalContext *phost)
 {
 	/* no-op */
