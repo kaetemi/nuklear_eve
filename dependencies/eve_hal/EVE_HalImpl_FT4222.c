@@ -298,8 +298,8 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 
 	if (ret)
 	{
-		phost->SpiChannel = FT_GPU_SPI_SINGLE_CHANNEL;
-		phost->Status = EVE_HalStatusOpened;
+		phost->SpiChannels = EVE_SPI_SINGLE_CHANNEL;
+		phost->Status = EVE_STATUS_OPENED;
 		++g_HalPlatform.OpenedChannels;
 	}
 
@@ -340,7 +340,7 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 {
 	FT4222_STATUS status;
 
-	if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
+	if (phost->SpiChannels == FT_GPU_SPI_SINGLE_CHANNEL)
 	{
 		ft_uint16_t sizeTransferred;
 		uint8_t hrdpkt[8] = { 0 }; // 3 byte addr + 2 or 1 byte dummy
@@ -354,16 +354,16 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 		status = FT4222_SPIMaster_SingleWrite(
 		    phost->SpiHandle,
 		    hrdpkt,
-		    3 + phost->SpiNumDummy, /* 3 address and chosen dummy bytes */
+		    3 + phost->SpiDummyBytes, /* 3 address and chosen dummy bytes */
 		    &sizeTransferred,
 		    FALSE /* continue transaction */
 		);
 
-		if ((status != FT4222_OK) || (sizeTransferred != (3 + phost->SpiNumDummy)))
+		if ((status != FT4222_OK) || (sizeTransferred != (3 + phost->SpiDummyBytes)))
 		{
 			eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", sizeTransferred, status);
-			if (sizeTransferred != (3 + phost->SpiNumDummy))
-				phost->Status = EVE_HalStatusError;
+			if (sizeTransferred != (3 + phost->SpiDummyBytes))
+				phost->Status = EVE_STATUS_ERROR;
 			return false;
 		}
 
@@ -395,7 +395,7 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 			{
 				eve_printf_debug("FT4222_SPIMaster_SingleRead failed,sizeTransferred is %d with status %d\n", sizeTransferred, status);
 				if (sizeTransferred != bytesPerRead)
-					phost->Status = EVE_HalStatusError;
+					phost->Status = EVE_STATUS_ERROR;
 				return false;
 			}
 
@@ -448,7 +448,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 		
 		if (buffer || phost->SpiWrBufIndex)
 		{
-			if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
+			if (phost->SpiChannels == FT_GPU_SPI_SINGLE_CHANNEL)
 			{
 				/* Flush now, or write oversize buffer */
 				ft_uint16_t sizeTransferred;
@@ -480,7 +480,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 				{
 					eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
 					if (sizeTransferred != 3)
-						phost->Status = EVE_HalStatusError;
+						phost->Status = EVE_STATUS_ERROR;
 					return false;
 				}
 
@@ -512,7 +512,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 					{
 						eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
 						if (sizeTransferred != bytesPerWrite)
-							phost->Status = EVE_HalStatusError;
+							phost->Status = EVE_STATUS_ERROR;
 						return false;
 					}
 
@@ -541,11 +541,11 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 	}
 }
 
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr)
 {
-	eve_assert(phost->Status == EVE_HalStatusOpened);
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
 
-	if (addr != phost->SpiRamGAddr || rw == EVE_HalTransferRead)
+	if (addr != phost->SpiRamGAddr || rw == EVE_TRANSFER_READ)
 	{
 		/* Close any write transfer that was left open, if the address changed */
 		if (phost->SpiWrBufIndex)
@@ -554,17 +554,17 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t a
 		phost->SpiRamGAddr = addr;
 	}
 
-	if (rw == EVE_HalTransferRead)
-		phost->Status = EVE_HalStatusReading;
+	if (rw == EVE_TRANSFER_READ)
+		phost->Status = EVE_STATUS_READING;
 	else
-		phost->Status = EVE_HalStatusWriting;
+		phost->Status = EVE_STATUS_WRITING;
 }
 
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
 	uint32_t addr;
 
-	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
+	eve_assert(phost->Status == EVE_STATUS_READING || phost->Status == EVE_STATUS_WRITING);
 
 	/* Transfers to FIFO are kept open */
 	addr = phost->SpiRamGAddr;
@@ -574,12 +574,12 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 			wrBuffer(phost, NULL, 0);
 	}
 
-	phost->Status = EVE_HalStatusOpened;
+	phost->Status = EVE_STATUS_OPENED;
 }
 
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 {
-	if (phost->Status == EVE_HalStatusReading)
+	if (phost->Status == EVE_STATUS_READING)
 	{
 		rdBuffer(phost, &value, 1);
 		return value;
@@ -594,7 +594,7 @@ uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 {
 	uint8_t buffer[2];
-	if (phost->Status == EVE_HalStatusReading)
+	if (phost->Status == EVE_STATUS_READING)
 	{
 		rdBuffer(phost, buffer, 2);
 		return (uint16_t)buffer[0]
@@ -612,7 +612,7 @@ uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 {
 	uint8_t buffer[4];
-	if (phost->Status == EVE_HalStatusReading)
+	if (phost->Status == EVE_STATUS_READING)
 	{
 		rdBuffer(phost, buffer, 4);
 		return (uint32_t)buffer[0]
@@ -677,7 +677,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		return 0;
 
 	uint32_t transferred = 0;
-	if (phost->Status == EVE_HalStatusWriting)
+	if (phost->Status == EVE_STATUS_WRITING)
 	{
 		uint8_t buffer[EVE_CMD_STRING_MAX + 1];
 

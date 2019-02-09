@@ -105,7 +105,7 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 {
 	ft_uint8_t writebyte = 0;
 
-	if ((numchnls > FT_GPU_SPI_QUAD_CHANNEL) || (numdummy > FT_GPU_SPI_TWODUMMY) || (numdummy < FT_GPU_SPI_ONEDUMMY))
+	if ((numchnls > FT_GPU_SPI_QUAD_CHANNEL) || (numdummy > 2) || (numdummy < 1))
 	{
 		return -1; //error
 	}

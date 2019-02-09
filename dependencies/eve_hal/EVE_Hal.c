@@ -145,7 +145,7 @@ bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 
 void EVE_Hal_close(EVE_HalContext *phost)
 {
-	if (phost->Status == EVE_HalStatusClosed)
+	if (phost->Status == EVE_STATUS_CLOSED)
 	{
 		eve_printf_debug("Attempt to close HAL context that is already closed\n");
 		return;
@@ -163,7 +163,7 @@ void EVE_Hal_idle(EVE_HalContext *phost)
 uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr)
 {
 	uint8_t value;
-	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
 	value = EVE_Hal_transfer8(phost, 0);
 	EVE_Hal_endTransfer(phost);
 	return value;
@@ -172,7 +172,7 @@ uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr)
 uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr)
 {
 	uint16_t value;
-	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
 	value = EVE_Hal_transfer16(phost, 0);
 	EVE_Hal_endTransfer(phost);
 	return value;
@@ -181,7 +181,7 @@ uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr)
 uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr)
 {
 	uint32_t value;
-	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
 	value = EVE_Hal_transfer32(phost, 0);
 	EVE_Hal_endTransfer(phost);
 	return value;
@@ -189,42 +189,42 @@ uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr)
 
 void EVE_Hal_rdBuffer(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size)
 {
-	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
 	EVE_Hal_transferBuffer(phost, result, NULL, size);
 	EVE_Hal_endTransfer(phost);
 }
 
 void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v)
 {
-	EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transfer8(phost, v);
 	EVE_Hal_endTransfer(phost);
 }
 
 void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v)
 {
-	EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transfer16(phost, v);
 	EVE_Hal_endTransfer(phost);
 }
 
 void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v)
 {
-	EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transfer32(phost, v);
 	EVE_Hal_endTransfer(phost);
 }
 
 void EVE_Hal_wrBuffer(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size)
 {
-	EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transferBuffer(phost, NULL, buffer, size);
 	EVE_Hal_endTransfer(phost);
 }
 
 void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
-	EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, addr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transferProgmem(phost, NULL, buffer, size);
 	EVE_Hal_endTransfer(phost);
 }

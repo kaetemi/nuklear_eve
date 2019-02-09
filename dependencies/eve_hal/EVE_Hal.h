@@ -40,6 +40,10 @@
 #define EVE_HAL__H
 #include "EVE_Config.h"
 
+/***********
+** MACROS **
+***********/
+
 /* Definitions used for FT800 co processor command buffer */
 #define EVE_DL_SIZE (8 * 1024) /* 8kB Display List buffer size */
 #define EVE_CMD_FIFO_SIZE ((4) * 1024) /* 4kB coprocessor Fifo size */
@@ -53,28 +57,49 @@
 
 #define EVE_CMD_FAULT(rp) (rp & 0x3)
 
-typedef enum EVE_HalMode
-{
-	EVE_HalModeUnknown = 0,
-	EVE_HalModeI2C,
-	EVE_HalModeSPI,
-} EVE_HalMode;
+/**********
+** ENUMS **
+**********/
 
-typedef enum EVE_HalStatus
+typedef enum EVE_MODE_T
 {
-	EVE_HalStatusClosed = 0,
-	EVE_HalStatusOpened,
-	EVE_HalStatusReading,
-	EVE_HalStatusWriting,
-	EVE_HalStatusError,
-} EVE_HalStatus;
+	EVE_MODE_UNKNOWN = 0,
+	EVE_MODE_I2C,
+	EVE_MODE_SPI,
+} EVE_MODE_T;
 
-typedef enum EVE_HalTransfer
+typedef enum EVE_STATUS_T
 {
-	EVE_HalTransferNone = 0,
-	EVE_HalTransferRead,
-	EVE_HalTransferWrite,
-} EVE_HalTransfer;
+	EVE_STATUS_CLOSED = 0,
+	EVE_STATUS_OPENED,
+	EVE_STATUS_READING,
+	EVE_STATUS_WRITING,
+	EVE_STATUS_ERROR,
+} EVE_STATUS_T;
+
+typedef enum EVE_TRANSFER_T
+{
+	EVE_TRANSFER_NONE = 0,
+	EVE_TRANSFER_READ,
+	EVE_TRANSFER_WRITE,
+} EVE_TRANSFER_T;
+
+typedef enum EVE_SPI_CHANNELS_T
+{
+	EVE_SPI_SINGLE_CHANNEL = 0x00,
+	EVE_SPI_DUAL_CHANNEL = 0x01,
+	EVE_SPI_QUAD_CHANNEL = 0x02,
+} EVE_SPI_CHANNELS_T;
+
+typedef enum EVE_SPI_DUMMY_BYTES_T
+{
+	EVE_SPI_ONE_DUMMY_BYTE = 0x00,
+	EVE_SPI_TWO_DUMMY_BYTES = 0x04,
+} EVE_SPI_DUMMY_BYTES_T;
+
+/************
+** STRUCTS **
+************/
 
 /* Display parameters */
 typedef struct EVE_DisplayParameters
@@ -135,7 +160,7 @@ typedef struct EVE_HalContext
 		EVE_HalParameters Parameters;
 	};
 
-	EVE_HalStatus Status;
+	EVE_STATUS_T Status;
 
 	/* uint16_t CmdFifoWp; Coprocessor fifo write pointer */
 
@@ -153,8 +178,8 @@ typedef struct EVE_HalContext
 #endif
 
 #if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM)
-	uint8_t SpiChannel; /* Variable to contain single/dual/quad channels */
-	uint8_t SpiNumDummy; /* Number of dummy bytes as 1 or 2 for SPI read */
+	EVE_SPI_CHANNELS_T SpiChannels; /* Variable to contain single/dual/quad channels */
+	uint8_t SpiDummyBytes; /* Number of dummy bytes as 1 or 2 for SPI read */
 #endif
 
 #if defined(EVE_CMD_BUFFERED)
@@ -212,7 +237,7 @@ void EVE_Hal_idle(EVE_HalContext *phost);
 ** TRANSFER **
 *************/
 
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr);
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr);
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);

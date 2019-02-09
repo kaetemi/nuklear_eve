@@ -34,7 +34,7 @@
 
 static inline void endFunc(EVE_HalContext *phost)
 {
-	if (phost->Status == EVE_HalStatusWriting)
+	if (phost->Status == EVE_STATUS_WRITING)
 	{
 		EVE_Hal_endTransfer(phost);
 #if !defined(EVE_SUPPORT_CMDB)
@@ -104,12 +104,12 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			transfer = space;
 		if (transfer)
 		{
-			if (phost->Status != EVE_HalStatusWriting)
+			if (phost->Status != EVE_STATUS_WRITING)
 			{
 #if defined(EVE_SUPPORT_CMDB)
-				EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, REG_CMDB_WRITE);
+				EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, REG_CMDB_WRITE);
 #else
-				EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, RAM_CMD + buffer->CmdWp);
+				EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + buffer->CmdWp);
 #endif
 			}
 			if (string)
@@ -221,7 +221,7 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 	if (phost->CmdSpace < 4 && !EVE_Cmd_waitSpace(phost, 4))
 		return false;
 
-	if (phost->Status != EVE_HalStatusWriting)
+	if (phost->Status != EVE_STATUS_WRITING)
 	{
 #if defined(EVE_SUPPORT_CMDB)
 		EVE_Hal_startTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);

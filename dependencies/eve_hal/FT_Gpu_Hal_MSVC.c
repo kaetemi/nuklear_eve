@@ -68,7 +68,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 
 	if (retcode)
 	{
-		if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
+		if (phost->SpiChannels == FT_GPU_SPI_SINGLE_CHANNEL)
 		{
 			ft_uint16_t sizeTransferred;
 			/* Compose the HOST MEMORY READ packet */
@@ -79,15 +79,15 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 			status = FT4222_SPIMaster_SingleWrite(
 			    phost->SpiHandle,
 			    hrdpkt,
-			    3 + phost->SpiNumDummy, /* 3 address and chosen dummy bytes */
+			    3 + phost->SpiDummyBytes, /* 3 address and chosen dummy bytes */
 			    &sizeTransferred,
 			    FALSE /* continue transaction */
 			);
-			if ((FT4222_OK != status) || (sizeTransferred != (3 + phost->SpiNumDummy)))
+			if ((FT4222_OK != status) || (sizeTransferred != (3 + phost->SpiDummyBytes)))
 			{
 				eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", sizeTransferred, status);
 				retcode = 0;
-				if (sizeTransferred != (3 + phost->SpiNumDummy))
+				if (sizeTransferred != (3 + phost->SpiDummyBytes))
 					phost->Status = FT_GPU_HAL_STATUS_ERROR;
 			}
 			else
@@ -158,7 +158,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_ui
 				    rdbufptr + read_data_index,
 				    hrdpkt,
 				    0,
-				    3 + phost->SpiNumDummy, // 3 addr + dummy bytes
+				    3 + phost->SpiDummyBytes, // 3 addr + dummy bytes
 				    bytesPerRead,
 				    &sizeTransferred);
 				if ((FT4222_OK != status) || (sizeTransferred != bytesPerRead))
@@ -214,7 +214,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 
 		temp_wrpktptr = tempptr; //global phost write buffer of size FT4222_MAX_BYTES_PER_CALL
 
-		if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
+		if (phost->SpiChannels == FT_GPU_SPI_SINGLE_CHANNEL)
 		{
 			*(temp_wrpktptr + 0) = (hwraddr >> 16) | 0x80; //MSB bits 10 for WRITE
 			*(temp_wrpktptr + 1) = (hwraddr >> 8) & 0xFF;
@@ -592,7 +592,7 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 #ifdef MPSSE_PLATFORM
 	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 #elif defined(FT4222_PLATFORM)
-	switch (phost->SpiChannel)
+	switch (phost->SpiChannels)
 	{
 	case FT_GPU_SPI_SINGLE_CHANNEL:
 		/* FYI : All HOST CMDs should only be executed in single channel mode*/
@@ -647,7 +647,7 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 #elif defined(FT4222_PLATFORM)
 
-	switch (phost->SpiChannel)
+	switch (phost->SpiChannels)
 	{
 	case FT_GPU_SPI_SINGLE_CHANNEL:
 		status = FT4222_SPIMaster_SingleWrite(
@@ -722,7 +722,7 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint
 			*(wrpktptr + 2) = (ft_uint8_t)(REG_CMDB_WRITE & 0xff);
 			memcpy((wrpktptr + 3), buffer, length);
 
-			if (phost->SpiChannel == FT_GPU_SPI_SINGLE_CHANNEL)
+			if (phost->SpiChannels == FT_GPU_SPI_SINGLE_CHANNEL)
 			{
 				status = FT4222_SPIMaster_SingleWrite(
 				    phost->SpiHandle,
@@ -920,14 +920,14 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 	FT4222_SPIMode spimode;
 #endif
 
-	if ((numchnls > FT_GPU_SPI_QUAD_CHANNEL) || (numdummy > FT_GPU_SPI_TWODUMMY) || (numdummy < FT_GPU_SPI_ONEDUMMY))
+	if ((numchnls > FT_GPU_SPI_QUAD_CHANNEL) || (numdummy > 2) || (numdummy < 1))
 	{
 		return -1; //error
 	}
 
 	//swicth EVE to multi channel SPI mode
 	writebyte = numchnls;
-	if (numdummy == FT_GPU_SPI_TWODUMMY)
+	if (numdummy == 2)
 		writebyte |= FT_SPI_TWO_DUMMY_BYTE;
 	Ft_Gpu_Hal_Wr8(phost, REG_SPI_WIDTH, writebyte);
 
@@ -946,8 +946,8 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 #endif
 
 	//FT81x swicthed to dual/quad mode, now update global HAL context
-	phost->SpiChannel = numchnls;
-	phost->SpiNumDummy = numdummy;
+	phost->SpiChannels = numchnls;
+	phost->SpiDummyBytes = numdummy;
 
 	return 0;
 }

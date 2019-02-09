@@ -49,7 +49,7 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T r
 		spidata[1] = (addr >> 8);
 		spidata[2] = addr & 0xff;
 		spi_open(SPIM, phost->Parameters.SpiCsPin);
-		spi_writen(SPIM, spidata, 3 + phost->SpiNumDummy);
+		spi_writen(SPIM, spidata, 3 + phost->SpiDummyBytes);
 		phost->Status = FT_GPU_HAL_READING;
 	}
 	else
@@ -281,7 +281,7 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 {
 	ft_uint8_t writebyte = 0;
 
-	if ((numchnls > FT_GPU_SPI_QUAD_CHANNEL) || (numdummy > FT_GPU_SPI_TWODUMMY) || (numdummy < FT_GPU_SPI_ONEDUMMY))
+	if ((numchnls > FT_GPU_SPI_QUAD_CHANNEL) || (numdummy > 2) || (numdummy < 1))
 	{
 		return -1; //error
 	}
@@ -292,8 +292,8 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 		writebyte |= FT_SPI_TWO_DUMMY_BYTE;
 	Ft_Gpu_Hal_Wr8(phost, REG_SPI_WIDTH, writebyte);
 	//FT81x swicthed to dual/quad mode, now update global HAL context
-	phost->SpiChannel = numchnls;
-	phost->SpiNumDummy = numdummy;
+	phost->SpiChannels = numchnls;
+	phost->SpiDummyBytes = numdummy;
 	return 0;
 }
 

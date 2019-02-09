@@ -105,9 +105,9 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	gpio_write(phost->Parameters.PowerDownPin, 1);
 
 	/* Initialize the context valriables */
-	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
-	phost->SpiChannel = FT_GPU_SPI_SINGLE_CHANNEL;
-	phost->Status = EVE_HalStatusOpened;
+	phost->SpiDummyBytes = 1; //by default ft800/801/810/811 goes with single dummy byte for read
+	phost->SpiChannels = FT_GPU_SPI_SINGLE_CHANNEL;
+	phost->Status = EVE_STATUS_OPENED;
 	++g_HalPlatform.OpenedChannels;
 
 	return FT_TRUE;
@@ -133,16 +133,16 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 ** TRANSFER **
 *************/
 
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr)
 {
-	eve_assert(phost->Status == EVE_HalStatusOpened);
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
 
 	/* no-op */
 }
 
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
-	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
+	eve_assert(phost->Status == EVE_STATUS_READING || phost->Status == EVE_STATUS_WRITING);
 
 	/* no-op */
 }

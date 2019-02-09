@@ -273,7 +273,7 @@ void Ft_Gpu_CoCmd_GetMatrix(EVE_HalContext *phost, int32_t *m)
 	EVE_Cmd_waitFlush(phost);
 	
 	/* Read result */
-	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, RAM_CMD + cmdAddr);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, RAM_CMD + cmdAddr);
 	for (int i = 0; i < 6; ++i)
 		m[i] = EVE_Hal_transfer32(phost, 0);
 	EVE_Hal_endTransfer(phost);

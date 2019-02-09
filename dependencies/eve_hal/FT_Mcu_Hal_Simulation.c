@@ -142,11 +142,11 @@ ft_void_t Eve_BootupConfig(EVE_HalContext *phost)
 #if (EVE_MODEL >= EVE_FT810) 
 	/* api to set quad and numbe of dummy bytes */
 #ifdef ENABLE_SPI_QUAD
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_QUAD_CHANNEL, FT_GPU_SPI_TWODUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_QUAD_CHANNEL, 2);
 #elif ENABLE_SPI_DUAL
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_DUAL_CHANNEL, FT_GPU_SPI_TWODUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_DUAL_CHANNEL, 2);
 #else
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, FT_GPU_SPI_ONEDUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, 1);
 #endif
 
 #endif

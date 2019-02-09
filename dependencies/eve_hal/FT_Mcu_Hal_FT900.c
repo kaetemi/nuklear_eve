@@ -44,7 +44,7 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 	If we are here with FT4222 in multi channel, then
 	an explicit switch to single channel is essential
 	*/
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, FT_GPU_SPI_ONEDUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, 1);
 
 	/* Set the clk to external clock. Must disable it when no external clock source on the board*/
 #if (!defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813AU_WH50C))
@@ -167,11 +167,11 @@ ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *phost)
 #ifndef FT_80X_ENABLE
 	/* api to set quad and numbe of dummy bytes */
 #ifdef ENABLE_SPI_QUAD
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_QUAD_CHANNEL, FT_GPU_SPI_TWODUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_QUAD_CHANNEL, 2);
 #elif ENABLE_SPI_DUAL
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_DUAL_CHANNEL, FT_GPU_SPI_TWODUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_DUAL_CHANNEL, 2);
 #else
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, FT_GPU_SPI_ONEDUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, 1);
 #endif
 
 #endif

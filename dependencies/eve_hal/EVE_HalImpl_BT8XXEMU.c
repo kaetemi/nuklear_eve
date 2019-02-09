@@ -82,7 +82,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	ret = !!phost->Emulator;
 	if (ret)
 	{
-		phost->Status = EVE_HalStatusOpened;
+		phost->Status = EVE_STATUS_OPENED;
 		++g_HalPlatform.OpenedChannels;
 	}
 	return ret;
@@ -104,7 +104,7 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 	phost->EmulatorFlash = NULL;
 #endif
 
-	phost->Status = EVE_HalStatusClosed;
+	phost->Status = EVE_STATUS_CLOSED;
 	--g_HalPlatform.OpenedChannels;
 }
 
@@ -118,18 +118,18 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 ** TRANSFER **
 *************/
 
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr)
 {
-	eve_assert(phost->Status == EVE_HalStatusOpened);
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
 
-	if (rw == EVE_HalTransferRead)
+	if (rw == EVE_TRANSFER_READ)
 	{
 		BT8XXEMU_chipSelect(phost->Emulator, 1);
 		BT8XXEMU_transfer(phost->Emulator, (addr >> 16) & 0xFF);
 		BT8XXEMU_transfer(phost->Emulator, (addr >> 8) & 0xFF);
 		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
 		BT8XXEMU_transfer(phost->Emulator, 0); // Dummy Read Byte
-		phost->Status = EVE_HalStatusReading;
+		phost->Status = EVE_STATUS_READING;
 	}
 	else
 	{
@@ -137,16 +137,16 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t a
 		BT8XXEMU_transfer(phost->Emulator, ((addr >> 16) & 0xFF) | 0x80);
 		BT8XXEMU_transfer(phost->Emulator, (addr >> 8) & 0xFF);
 		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
-		phost->Status = EVE_HalStatusWriting;
+		phost->Status = EVE_STATUS_WRITING;
 	}
 }
 
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
-	eve_assert(phost->Status == EVE_HalStatusReading || phost->Status == EVE_HalStatusWriting);
+	eve_assert(phost->Status == EVE_STATUS_READING || phost->Status == EVE_STATUS_WRITING);
 
 	BT8XXEMU_chipSelect(phost->Emulator, 0);
-	phost->Status = EVE_HalStatusOpened;
+	phost->Status = EVE_STATUS_OPENED;
 }
 
 static inline uint8_t transfer8(EVE_HalContext *phost, uint8_t value)
@@ -218,7 +218,7 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
 	uint32_t transferred = 0;
-	if (phost->Status == EVE_HalStatusWriting)
+	if (phost->Status == EVE_STATUS_WRITING)
 	{
 		while (transferred < size)
 		{

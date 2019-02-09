@@ -68,7 +68,7 @@ void EVE_HalImpl_idle(EVE_HalContext *phost);
 ** TRANSFER **
 *************/
 
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr);
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr);
 void EVE_Hal_endTransfer(EVE_HalContext *phost);
 
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
