@@ -73,15 +73,7 @@ ft_void_t Ft_Gpu_CoCmd_Text(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, f
 			eve_printf_debug("Invalid font handle specified: %i\n", (int)font);
 		return;
 	}
-	/*
-	uint32_t cmd[3] = {
-		CMD_TEXT,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)options << 16) | (font & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-	Eve_CoCmd_SendStr(phost, s);
-	*/
+
 	EVE_Cmd_beginFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_TEXT);
 	EVE_Cmd_wr16(phost, x);
@@ -91,6 +83,7 @@ ft_void_t Ft_Gpu_CoCmd_Text(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, f
 	uint16_t transfered = EVE_Cmd_wrString(phost, s, EVE_CMD_STRING_MAX);
 	EVE_Cmd_endFunc(phost);
 	// eve_printf_debug(" -- strlen: %i, transfered: %i\n", (int)strlen(s), (int)transfered);
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -104,16 +97,7 @@ ft_void_t Ft_Gpu_CoCmd_Text_S(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 			eve_printf_debug("Invalid font handle specified: %i\n", (int)font);
 		return;
 	}
-	/*
-	uint32_t cmd[3] = {
-		CMD_TEXT,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)options << 16) | (font & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-	uint16_t transfered = Eve_CoCmd_SendStr_S(phost, s, length + 1);
-	eve_printf_debug("length: %i, transfered: %i\n", (int)length, (int)transfered);
-	*/
+
 	EVE_Cmd_beginFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_TEXT);
 	EVE_Cmd_wr16(phost, x);
@@ -123,6 +107,7 @@ ft_void_t Ft_Gpu_CoCmd_Text_S(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 	uint16_t transfered = EVE_Cmd_wrString(phost, s, length);
 	EVE_Cmd_endFunc(phost);
 	// eve_printf_debug(" -- strlen: %i, length: %i, transfered: %i\n", (int)strlen(s), (int)length, (int)transfered);
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif

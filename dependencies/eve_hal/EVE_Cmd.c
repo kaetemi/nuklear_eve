@@ -113,7 +113,7 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 					size = (transfered + transfer);
 				}
 			}
-			if (progmem)
+			else if (progmem)
 			{
 				EVE_Hal_transferProgmem(phost, NULL, (eve_progmem_const uint8_t *)(uintptr_t)(&((uint8_t *)buffer)[transfered]), transfer);
 			}
@@ -127,7 +127,7 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 				EVE_Hal_endTransfer(phost);
 			}
 #if defined(EVE_SUPPORT_CMDB)
-			eve_assert(phost->CmdSpace > transfer);
+			eve_assert(phost->CmdSpace >= transfer);
 			phost->CmdSpace -= transfer;
 #else
 			phost->CmdWp += transfer;
@@ -226,6 +226,7 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 		EVE_Hal_endTransfer(phost);
 	}
 #if defined(EVE_SUPPORT_CMDB)
+	eve_assert(phost->CmdSpace >= 4);
 	phost->CmdSpace -= 4;
 #else
 	phost->CmdWp += 4;
