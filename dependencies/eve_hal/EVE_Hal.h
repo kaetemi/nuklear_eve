@@ -106,7 +106,11 @@ typedef struct EVE_HalParameters
 		uint16_t SpiClockrateKHz; //< In kHz
 		uint16_t I2CClockrateKHz; //< In kHz
 	};
+
+#ifdef MPSSE_PLATFORM
 	uint8_t MpsseChannelNo; //< MPSSE channel number
+#endif
+
 	uint8_t PowerDownPin; //< FT8XX power down pin number
 } EVE_HalParameters;
 
@@ -133,7 +137,7 @@ typedef struct EVE_HalContext
 	uint8_t *SpiWriBufPtr;
 #endif
 
-#ifdef FT900_PLATFORM
+#if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM)
 	uint8_t SpiChannel; /* Variable to contain single/dual/quad channels */
 	uint8_t SpiNumDummy; /* Number of dummy bytes as 1 or 2 for SPI read */
 #endif

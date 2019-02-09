@@ -37,216 +37,7 @@
 #if defined(FT4222_PLATFORM)
 ft_bool_t FT4222Drv_Open(EVE_HalContext *phost)
 {
-	FT_STATUS status;
-	//ulong_t numdevs;
-	ft_uint32_t numdevs;
-	ft_uint32_t index;
-	FT_HANDLE fthandle;
-	FT4222_Version pversion;
-	FT4222_ClockRate ftclk = 0;
-	ft_uint16_t max_size = 0;
-	FT4222_ClockRate selclk = 0;
-	FT4222_SPIClock seldiv = 0;
-	/* GPIO0         , GPIO1      , GPIO2       , GPIO3         } */
-	GPIO_Dir gpio_dir[4] = { GPIO_OUTPUT, GPIO_INPUT, GPIO_INPUT, GPIO_INPUT };
-
-	ft_bool_t ret = FT_TRUE;
-
-	phost->SpiHandle = phost->GpioHandle = NULL;
-
-	status = FT_CreateDeviceInfoList(&numdevs);
-	if (FT_OK != status)
-	{
-		eve_printf_debug("FT_CreateDeviceInfoList failed");
-		ret = FT_FALSE;
-	}
-
-	status = FT_ListDevices(&numdevs, NULL, FT_LIST_NUMBER_ONLY);
-	if (FT_OK != status)
-	{
-		eve_printf_debug("FT_ListDevices failed");
-		ret = FT_FALSE;
-	}
-
-	if (ret)
-	{
-		for (index = 0; (index < numdevs) && ret; index++)
-		{
-			FT_DEVICE_LIST_INFO_NODE devInfo;
-			memset(&devInfo, 0, sizeof(devInfo));
-
-			status = FT_GetDeviceInfoDetail(index,
-			    &devInfo.Flags, &devInfo.Type, &devInfo.ID, &devInfo.LocId,
-			    devInfo.SerialNumber, devInfo.Description, &devInfo.ftHandle);
-			if (FT_OK == status)
-			{
-				eve_printf_debug("Dev %d:\n", index);
-				eve_printf_debug(" Flags= 0x%x, (%s) (%s)\n", devInfo.Flags,
-				    ((devInfo.Flags & 0x01) ? "DEVICE_OPEN" : "DEVICE_CLOSED"), ((devInfo.Flags & 0x02) ? "High-speed USB" : "Full-speed USB"));
-				eve_printf_debug(" Type= 0x%x\n", devInfo.Type);
-				eve_printf_debug(" ID= 0x%x\n", devInfo.ID);
-				eve_printf_debug(" LocId= 0x%x\n", devInfo.LocId);
-				eve_printf_debug(" SerialNumber= %s\n", devInfo.SerialNumber);
-				eve_printf_debug(" Description= %s\n", devInfo.Description);
-				eve_printf_debug(" ftHandle= %p\n", devInfo.ftHandle);
-			}
-			else
-				ret = FT_FALSE;
-
-			if (ret && !(devInfo.Flags & 0x01) && ((!strcmp(devInfo.Description, "FT4222 A") && (phost->SpiHandle == NULL)) || (!strcmp(devInfo.Description, "FT4222 B") && (phost->GpioHandle == NULL))))
-			{
-				/* obtain handle for the first discovered "FT4222 A" and first "FT4222 B" */
-				status = FT_OpenEx(devInfo.Description, FT_OPEN_BY_DESCRIPTION, &fthandle);
-				if (status != FT_OK)
-				{
-					eve_printf_debug("FT_OpenEx failed %d\n", status);
-					ret = FT_FALSE;
-				}
-				else
-				{
-					if (!strcmp(devInfo.Description, "FT4222 A"))
-					{
-						//is SPI
-						phost->SpiHandle = fthandle; //SPI communication handle
-						eve_printf_debug("[%d]th of total connected devices is FT4222 A (SPI) : phost->hal_hanlde = %p\n", index + 1, phost->SpiHandle);
-					}
-					else if (!strcmp(devInfo.Description, "FT4222 B"))
-					{
-						//is GPIO
-						phost->GpioHandle = fthandle; //GPIO communication handle
-						eve_printf_debug("[%d]th of total connected devices is FT4222 B (GPIO) : phost->hal_hanlde = %p\n", index + 1, phost->SpiHandle);
-					}
-					else
-					{
-						eve_printf_debug("Error in FT4222 configuration\n");
-					}
-				}
-			}
-			else
-			{
-				if (
-				    (!strcmp(devInfo.Description, "FT4222 A") && phost->SpiHandle != NULL) || (!strcmp(devInfo.Description, "FT4222 B") && phost->GpioHandle != NULL))
-					eve_printf_debug("[%d]th of total connected devices is not the first %s detected. Hence skipping.\n", index + 1, devInfo.Description);
-				else if (devInfo.Flags & 0x01)
-					eve_printf_debug("[%d]th of total connected devices is already open in another context. Hence skipping.\n", index + 1);
-				else
-					eve_printf_debug("[%d]th of total connected devices is not FT4222 but is %s. Hence skipping.\n", index + 1, devInfo.Description);
-				continue;
-			}
-		}
-	}
-
-	if (ret)
-	{
-		status = FT4222_GetVersion(phost->SpiHandle, &pversion);
-		if (status != FT4222_OK)
-			eve_printf_debug("FT4222_GetVersion failed\n");
-		else
-			eve_printf_debug("SPI:chipversion = 0x%x\t dllversion = 0x%x\n", pversion.chipVersion, pversion.dllVersion);
-	}
-
-	if (ret)
-	{
-		//Set default Read timeout 5s and Write timeout 5sec
-		status = FT_SetTimeouts(phost->SpiHandle, FT4222_ReadTimeout, FT4222_WriteTimeout);
-		if (FT_OK != status)
-		{
-			eve_printf_debug("FT_SetTimeouts failed!\n");
-			ret = FT_FALSE;
-		}
-	}
-
-	if (ret)
-	{
-		// no latency to usb
-		status = FT_SetLatencyTimer(phost->SpiHandle, FT4222_LatencyTime);
-		if (FT_OK != status)
-		{
-			eve_printf_debug("FT_SetLatencyTimerfailed!\n");
-			ret = FT_FALSE;
-		}
-	}
-
-	if (ret)
-	{
-		if (!Ft_Gpu_Hal_FT4222_ComputeCLK(phost, &selclk, &seldiv))
-		{
-			eve_printf_debug("Requested clock %d KHz is not supported in FT4222\n", phost->Parameters.SpiClockrateKHz);
-			ret = FT_FALSE;
-		}
-	}
-
-	if (ret)
-	{
-		status = FT4222_SetClock(phost->SpiHandle, selclk);
-		if (FT_OK != status)
-		{
-			eve_printf_debug("FT4222_SetClock failed!\n");
-			ret = FT_FALSE;
-		}
-
-		status = FT4222_GetClock(phost->SpiHandle, &ftclk);
-
-		if (FT_OK != status)
-			eve_printf_debug("FT4222_SetClock failed\n");
-		else
-			eve_printf_debug("FT4222 clk = %d\n", ftclk);
-	}
-
-	if (ret)
-	{
-		/* Interface 1 is SPI master */
-		status = FT4222_SPIMaster_Init(
-		    phost->SpiHandle,
-		    SPI_IO_SINGLE,
-		    seldiv,
-		    CLK_IDLE_LOW, //,CLK_IDLE_HIGH
-		    CLK_LEADING, // CLK_LEADING CLK_TRAILING
-		    phost->Parameters.SpiCsPin); /* slave selection output pins */
-		if (FT_OK != status)
-		{
-			eve_printf_debug("Init FT4222 as SPI master device failed!\n");
-			ret = FT_FALSE;
-		}
-		else
-			phost->SpiChannel = FT_GPU_SPI_SINGLE_CHANNEL; //SPI_IO_SINGLE;
-
-		status = FT4222_SPI_SetDrivingStrength(phost->SpiHandle, DS_4MA, DS_4MA, DS_4MA);
-		if (FT4222_OK != status)
-			eve_printf_debug("FT4222_SPI_SetDrivingStrength failed!\n");
-
-		Ft_Gpu_Hal_Sleep(20);
-
-		status = FT4222_SetSuspendOut(phost->GpioHandle, FT_FALSE);
-		if (FT_OK != status)
-		{
-			eve_printf_debug("Disable suspend out function on GPIO2 failed!\n");
-			ret = FT_FALSE;
-		}
-
-		status = FT4222_SetWakeUpInterrupt(phost->GpioHandle, FT_FALSE);
-		if (FT_OK != status)
-		{
-			eve_printf_debug("Disable wakeup/interrupt feature on GPIO3 failed!\n");
-			ret = FT_FALSE;
-		}
-		/* Interface 2 is GPIO */
-		status = FT4222_GPIO_Init(phost->GpioHandle, gpio_dir);
-		if (FT_OK != status)
-		{
-			eve_printf_debug("Init FT4222 as GPIO interface failed!\n");
-			ret = FT_FALSE;
-		}
-	}
-
-	/* dedicated write buffer used for SPI write. Max size is 2^uint16 */
-	if ((phost->SpiWriBufPtr = malloc(FT4222_DYNAMIC_ALLOCATE_SIZE)) == NULL)
-	{
-		eve_printf_debug("malloc error\n");
-		ret = FT_FALSE;
-	}
-
-	return ret;
+	
 }
 #endif
 /*==========================================================================
@@ -590,27 +381,18 @@ ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(EVE_HalContext *phost, FT4222_ClockRate *
 #endif //FT4222_PLATFORM
 
 /* API to initialize the SPI interface */
+#ifdef MPSSE_PLATFORM
 ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 {
-	halinit->total_channel_num = 1;
-#ifdef MPSSE_PLATFORM
 	/* Initialize the libmpsse */
 	Init_libMPSSE();
 	SPI_GetNumChannels(&halinit->total_channel_num);
-#endif
 
 	if (halinit->total_channel_num > 0)
 	{
 		FT_DEVICE_LIST_INFO_NODE devList;
-#ifdef FT4222_PLATFORM
-		FT_STATUS status;
-		ft_uint32_t numdevs;
-#endif
-
 		memset(&devList, 0, sizeof(devList));
-#ifdef MPSSE_PLATFORM
 		SPI_GetChannelInfo(0, &devList);
-#endif
 
 		status = FT_CreateDeviceInfoList(&numdevs);
 		if (FT_OK == status)
@@ -641,27 +423,25 @@ ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 	}
 	return FT_TRUE;
 }
+#endif
 
+#ifdef MPSSE_PLATFORM
 ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
 {
 }
+#endif
 
+#ifdef MPSSE_PLATFORM
 ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 {
-#if defined(MSVC_PLATFORM)
-#ifdef MPSSE_PLATFORM
 	FT_STATUS status;
 	ChannelConfig channelConf; //channel configuration
-#endif
-#endif
-
 	phost->Parameters.MpsseChannelNo = 0;
+
 	phost->Parameters.PowerDownPin = FT800_PD_N;
 	phost->Parameters.SpiCsPin = FT800_SEL_PIN;
 	phost->Parameters.SpiClockrateKHz = 12000; //in KHz
 
-#if defined(MSVC_PLATFORM)
-#ifdef MPSSE_PLATFORM
 	/* configure the spi settings */
 	channelConf.ClockRate = phost->Parameters.SpiClockrateKHz * 1000;
 	channelConf.LatencyTimer = 2;
@@ -683,49 +463,31 @@ ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 	}
 
 	eve_printf_debug("\nhandle=0x%x status=0x%x\n", phost->hal_handle, status);
-#endif
-#ifdef FT4222_PLATFORM
-	FT4222Drv_Open(phost);
-#endif
-#endif
+
 	/* Initialize the context valriables */
 	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
 	phost->SpiChannel = 0;
 	phost->Status = FT_GPU_HAL_OPENED;
 	return FT_TRUE;
 }
+#endif
+
+#ifdef MPSSE_PLATFORM
 ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
 {
-#ifdef FT4222_PLATFORM
-	FT4222_STATUS status;
-#endif
-
 	phost->Status = FT_GPU_HAL_CLOSED;
-#ifdef MPSSE_PLATFORM
 	/* Close the channel*/
 	SPI_CloseChannel(phost->hal_handle);
-#elif defined(FT4222_PLATFORM)
-	if (FT4222_OK != (status = FT4222_UnInitialize(phost->SpiHandle)))
-		eve_printf_debug("FT4222_UnInitialize failed %d\n", status);
-
-	if (FT4222_OK != (status = FT4222_UnInitialize(phost->GpioHandle)))
-		eve_printf_debug("FT4222_UnInitialize failed %d\n", status);
-
-	if (FT_OK != (status = FT_Close(phost->SpiHandle)))
-		eve_printf_debug("CLOSE failed %d\n", status);
-
-	if (FT_OK != (status = FT_Close(phost->GpioHandle)))
-		eve_printf_debug("CLOSE failed %d\n", status);
-#endif
 }
+#endif
 
+#ifdef MPSSE_PLATFORM
 ft_void_t Ft_Gpu_Hal_DeInit()
 {
-#ifdef MPSSE_PLATFORM
 	//Cleanup the MPSSE Lib
 	Cleanup_libMPSSE();
-#endif
 }
+#endif
 
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
 ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)

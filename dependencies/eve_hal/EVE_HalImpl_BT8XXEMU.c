@@ -67,7 +67,6 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	phost->EmulatorFlash = Ft_EmuFlash;
 #else
 	BT8XXEMU_EmulatorParameters params;
-
 	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, Ft_Emulator_Mode());
 
 	params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
@@ -79,7 +78,9 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 #endif
 
 	/* Initialize the context variables */
-	phost->Status = EVE_HalStatusOpened;
+	phost->Status = !!phost->Emulator 
+		? EVE_HalStatusOpened 
+		: EVE_HalStatusClosed;
 
 	return !!phost->Emulator;
 }
@@ -99,7 +100,7 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 	phost->EmulatorFlash = NULL;
 #endif
 
-	phost->Status = FT_GPU_HAL_CLOSED;
+	phost->Status = EVE_HalStatusClosed;
 }
 
 void EVE_HalImpl_idle(EVE_HalContext *phost)
