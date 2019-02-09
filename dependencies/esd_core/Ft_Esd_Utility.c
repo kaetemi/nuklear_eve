@@ -129,7 +129,7 @@ void Esd_BeginLogo()
 	Ft_Gpu_CoCmd_Logo(Ft_Esd_Host);
 	Ft_Gpu_CoCmd_EndFrame(Ft_Esd_Host);
 	Ft_Gpu_Hal_WaitLogo_Finish(Ft_Esd_Host);
-	ft_delay(3000);
+	EVE_sleep(3000);
 }
 
 void Esd_EndLogo()

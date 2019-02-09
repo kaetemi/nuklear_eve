@@ -36,56 +36,12 @@
 *
 */
 
-#ifndef EVE_HAL_IMPL__H
-#define EVE_HAL_IMPL__H
+#ifndef EVE_UTIL__H
+#define EVE_UTIL__H
 #include "EVE_Hal.h"
 
-extern EVE_HalPlatform g_HalPlatform;
+bool EVE_Util_bootupConfig(EVE_HalContext *phost);
 
-/*********
-** INIT **
-*********/
-
-/* Initialize HAL platform */
-void EVE_HalImpl_initialize();
-
-/* Release HAL platform */
-void EVE_HalImpl_release();
-
-/* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters);
-
-/* Opens a new HAL context using the specified parameters */
-bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters);
-
-/* Close a HAL context */
-void EVE_HalImpl_close(EVE_HalContext *phost);
-
-/* Idle. Call regularly to update frequently changing internal state */
-void EVE_HalImpl_idle(EVE_HalContext *phost);
-
-/*************
-** TRANSFER **
-*************/
-
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr);
-void EVE_Hal_endTransfer(EVE_HalContext *phost);
-
-uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
-uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
-uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
-
-/*********
-** MISC **
-*********/
-
-void EVE_Millis_initialize();
-void EVE_Millis_release();
-uint32_t EVE_millis();
-
-bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost);
-bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost);
-
-#endif /* #ifndef EVE_HAL_IMPL__H */
+#endif /* #ifndef EVE_HAL__H */
 
 /* end of file */

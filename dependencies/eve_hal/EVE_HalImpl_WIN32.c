@@ -55,6 +55,19 @@ uint32_t EVE_millis()
 	return GetTickCount() - s_Millis_Start;
 }
 
+#if defined(ESD_SIMULATION)
+int Ft_Sleep__ESD(int ms);
+#endif
+
+void EVE_sleep(uint32_t ms)
+{
+#if defined(ESD_SIMULATION)
+	Ft_Sleep__ESD(ms);
+#else
+	Sleep(ms);
+#endif
+}
+
 #endif
 
 /* end of file */

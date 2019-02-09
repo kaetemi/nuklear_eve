@@ -32,7 +32,6 @@
 #ifndef _FT_DATATYPES_FT900_H_
 #define _FT_DATATYPES_FT900_H_
 
-#define ft_delay(x) Ft_Gpu_Hal_Sleep(x)
 #define ft_random(x) (rand() % x)
 
 #define FT_PROGMEM __flash__ const

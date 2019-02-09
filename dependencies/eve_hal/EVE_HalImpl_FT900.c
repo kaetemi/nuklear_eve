@@ -291,6 +291,59 @@ ft_void_t ticker()
 	timer_enable_interrupt(FT900_FT_MILLIS_TIMER);
 }
 
+void EVE_sleep(uint32_t ms)
+{
+	delayms(ms);
+}
+
+/*********
+** MISC **
+*********/
+
+bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost)
+{
+	/* Reconfigure the SPI */
+	// Initialize SPIM HW
+	sys_enable(sys_device_spi_master);
+	gpio_function(27, pad_spim_sck); /* GPIO27 to SPIM_CLK */
+	gpio_function(28, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_function(29, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
+	gpio_function(30, pad_spim_miso); /* GPIO30 to SPIM_MISO */
+
+	gpio_write(28, 1);
+	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
+
+	return true;
+}
+
+bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost)
+{
+	/* Change clock frequency to 25mhz */
+	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
+
+#if (defined(ENABLE_SPI_QUAD))
+	/* Initialize IO2 and IO3 pad/pin for dual and quad settings */
+	gpio_function(31, pad_spim_io2);
+	gpio_function(32, pad_spim_io3);
+	gpio_write(31, 1);
+	gpio_write(32, 1);
+#endif
+	/* Enable FIFO of QSPI */
+	spi_option(SPIM, spi_option_fifo_size, 64);
+	spi_option(SPIM, spi_option_fifo, 1);
+	spi_option(SPIM, spi_option_fifo_receive_trigger, 1);
+
+#ifdef ENABLE_SPI_QUAD
+	spi_option(SPIM, spi_option_bus_width, 4);
+#elif ENABLE_SPI_DUAL
+	spi_option(SPIM, spi_option_bus_width, 2);
+#else
+	spi_option(SPIM, spi_option_bus_width, 1);
+#endif
+
+	return true;
+}
+
 #endif /* #if defined(FT900_PLATFORM) */
 
 /* end of file */

@@ -39,7 +39,6 @@
 #define ft_strcpy_P strcpy
 #define ft_strlen_P strlen
 
-#define ft_delay(x) Ft_Gpu_Hal_Sleep(x)
 #define ft_random(x) (rand() % (x))
 
 // #define ft_pgm_read_byte_near(x) (*(x))

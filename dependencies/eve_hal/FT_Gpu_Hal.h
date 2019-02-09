@@ -238,7 +238,9 @@ typedef enum
 #define FT_SPI_ONE_DUMMY_BYTE EVE_SPI_ONE_DUMMY_BYTE
 #define FT_SPI_TWO_DUMMY_BYTE EVE_SPI_TWO_DUMMY_BYTES
 
-ft_void_t Ft_Gpu_Hal_Sleep(ft_uint32_t ms);
+#define ft_delay EVE_sleep
+#define Ft_Gpu_Hal_Sleep EVE_sleep
+
 ft_void_t Ft_Gpu_ClockSelect(EVE_HalContext *phost, FT_GPU_PLL_SOURCE_T pllsource);
 ft_void_t Ft_Gpu_PLL_FreqSelect(EVE_HalContext *phost, FT_GPU_PLL_FREQ_T freq);
 ft_void_t Ft_Gpu_PowerModeSwitch(EVE_HalContext *phost, FT_GPU_POWER_MODE_T pwrmode);
@@ -269,7 +271,6 @@ ft_void_t Ft_Gpu_81X_ResetRemoval(EVE_HalContext *phost);
 
 ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost);
 ft_int32_t Ft_Gpu_ClockTrimming(EVE_HalContext *phost, ft_uint32_t lowFreq);
-ft_void_t Ft_Gpu_DownloadJ1Firmware(EVE_HalContext *phost);
 
 #define ft_millis_init EVE_Millis_initialize
 #define ft_millis_exit EVE_Millis_release

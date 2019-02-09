@@ -4,7 +4,7 @@
 
 extern const ft_uint8_t FT_DLCODE_BOOTUP[12];
 
-ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host);
+#define Eve_BootupConfig EVE_Util_bootupConfig
 
 ft_void_t Ft_Mcu_Init();
 

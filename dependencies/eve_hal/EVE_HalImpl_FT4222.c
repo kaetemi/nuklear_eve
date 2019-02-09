@@ -272,7 +272,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 			eve_printf_debug("FT4222_SPI_SetDrivingStrength failed!\n");
 		}
 
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 
 		status = FT4222_SetSuspendOut(phost->GpioHandle, FT_FALSE);
 		if (status != FT4222_OK)
@@ -704,6 +704,22 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		eve_debug_break();
 	}
 	return transferred;
+}
+
+/*********
+** MISC **
+*********/
+
+bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost)
+{
+	/* no-op */
+	return true;
+}
+
+bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost)
+{
+	/* no-op */
+	return true;
 }
 
 #endif /* #if defined(FT4222_PLATFORM) */

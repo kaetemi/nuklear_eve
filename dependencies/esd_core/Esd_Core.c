@@ -53,7 +53,8 @@ Ft_Esd_GpuAlloc *Ft_Esd_GAlloc = NULL; // Pointer to current s_GAlloc
 void Esd_CheckTypeSizes();
 #endif
 // FT_Mcu_Hal.c
-ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host);
+// ft_void_t Eve_BootupConfig(Ft_Gpu_Hal_Context_t *s_Host);
+#define Eve_BootupConfig EVE_Util_bootupConfig
 ft_void_t Ft_Mcu_Init();
 
 extern void Ft_Hal_LoadSDCard();
@@ -69,7 +70,6 @@ extern void Ft_Hal_LoadSDCard();
 #endif
 #else
 int Ft_Main__Running__ESD();
-int Ft_Sleep__ESD(int ms);
 #endif
 
 void Esd_ResetGpuState();

@@ -247,7 +247,7 @@ ESD_PARAMETER(range, Type = ft_uint16_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Scrollbar(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t size, ft_uint16_t range);
 
 // Not exposed directly to logic editor
-ft_void_t Ft_Gpu_CoCmd_GetMatrix(EVE_HalContext *phost, ft_int32_t a, ft_int32_t b, ft_int32_t c, ft_int32_t d, ft_int32_t e, ft_int32_t f);
+void Ft_Gpu_CoCmd_GetMatrix(EVE_HalContext *phost, int32_t *m);
 
 // Not exposed directly to logic editor
 ft_void_t Ft_Gpu_CoCmd_Sketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format);

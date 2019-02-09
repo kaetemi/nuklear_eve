@@ -232,16 +232,16 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 	if (up)
 	{
 		gpio_write(phost->Parameters.PowerDownPin, 0);
-		ft_delay(20);
+		EVE_sleep(20);
 		gpio_write(phost->Parameters.PowerDownPin, 1);
-		ft_delay(20);
+		EVE_sleep(20);
 	}
 	else
 	{
 		gpio_write(phost->Parameters.PowerDownPin, 1);
-		ft_delay(20);
+		EVE_sleep(20);
 		gpio_write(phost->Parameters.PowerDownPin, 0);
-		ft_delay(20);
+		EVE_sleep(20);
 	}
 }
 
@@ -270,11 +270,6 @@ ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *
 	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
 	spi_readn(SPIM, buffer, length);
 	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_Sleep(ft_uint32_t ms)
-{
-	delayms(ms);
 }
 
 ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T numchnls, FT_GPU_SPI_NUMDUMMYBYTES numdummy)
@@ -336,7 +331,7 @@ ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
 	);
 
 	//usleep(15625);
-	//ft_delay(15625);
+	//EVE_sleep(15625);
 
 	t1 = Ft_Gpu_Hal_Rd32(phost, REG_CLOCK); /* t1 read */
 	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
@@ -348,34 +343,10 @@ ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(EVE_HalContext *phost)
 	gpio_function(GOODIXGPIO, pad_gpio33);
 	gpio_dir(GOODIXGPIO, pad_dir_output);
 	gpio_write(GOODIXGPIO, 0);
-	ft_delay(1);
+	EVE_sleep(1);
 	Ft_Gpu_Hal_Wr8(phost, REG_CPURESET, 0);
-	ft_delay(100);
+	EVE_sleep(100);
 	gpio_dir(GOODIXGPIO, pad_dir_input);
 #endif
-}
-
-ft_void_t Ft_DisplayPanel_Init()
-{
-#ifdef ENABLE_ILI9488_HVGA_PORTRAIT
-	ILI9488_Bootup();
-	eve_printf_debug("after ILI9488 bootup\n");
-#endif
-
-#ifdef ENABLE_KD2401_HVGA_PORTRAIT
-	KD2401_Bootup();
-	eve_printf_debug("after KD2401 bootup\n");
-#endif
-
-	/* Reconfigure the SPI */
-	// Initialize SPIM HW
-	sys_enable(sys_device_spi_master);
-	gpio_function(27, pad_spim_sck); /* GPIO27 to SPIM_CLK */
-	gpio_function(28, pad_spim_ss0); /* GPIO28 as CS */
-	gpio_function(29, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
-	gpio_function(30, pad_spim_miso); /* GPIO30 to SPIM_MISO */
-
-	gpio_write(28, 1);
-	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
 }
 #endif

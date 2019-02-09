@@ -597,11 +597,11 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 		//FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (0 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 
 		//FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x88);//PDN set to 1
 		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (1 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 #endif
 
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
@@ -609,18 +609,18 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 
 		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 0)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 
 		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 1)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 #endif
 #endif /*MSVC_PLATFORM*/
 #if defined(FT900_PLATFORM) && !defined(ESD_SIMULATION)
 		gpio_write(phost->Parameters.PowerDownPin, 0);
-		ft_delay(20);
+		EVE_sleep(20);
 		gpio_write(phost->Parameters.PowerDownPin, 1);
-		ft_delay(20);
+		EVE_sleep(20);
 #endif
 	}
 	else
@@ -629,30 +629,30 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 #ifdef MPSSE_PLATFORM
 		//FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x88);//PDN set to 1
 		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (1 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 
 		//FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (0 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 #endif
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)
 		FT4222_STATUS status = FT4222_OTHER_ERROR;
 
 		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 1)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 
 		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 0)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
-		Ft_Gpu_Hal_Sleep(20);
+		EVE_sleep(20);
 #endif
 #endif
 #if defined(FT900_PLATFORM) && !defined(ESD_SIMULATION)
 		gpio_write(phost->Parameters.PowerDownPin, 1);
-		ft_delay(20);
+		EVE_sleep(20);
 		gpio_write(phost->Parameters.PowerDownPin, 0);
-		ft_delay(20);
+		EVE_sleep(20);
 #endif
 	}
 }
@@ -721,15 +721,6 @@ ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
 ft_void_t Ft_DisplayPanel_Init()
 {
 
-#ifdef ENABLE_ILI9488_HVGA_PORTRAIT
-	ILI9488_Bootup();
-	eve_printf_debug("after ILI9488 bootup\n");
-#endif
-
-#ifdef ENABLE_KD2401_HVGA_PORTRAIT
-	KD2401_Bootup();
-	eve_printf_debug("after KD2401 bootup\n");
-#endif
 }
 
 #endif

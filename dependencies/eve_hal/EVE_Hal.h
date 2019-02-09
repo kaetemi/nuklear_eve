@@ -180,8 +180,10 @@ typedef struct EVE_HalContext
 	uint32_t SpiRamGAddr; /* Current RAM_G address of ongoing SPI transaction, if continous is not supported */
 #endif
 
+#if !defined(FT900_PLATFORM)
 	EVE_SPI_CHANNELS_T SpiChannels; /* Variable to contain single/dual/quad channels */
 	uint8_t SpiDummyBytes; /* Number of dummy bytes as 1 or 2 for SPI read */
+#endif
 
 #if defined(EVE_CMD_BUFFERED)
 	/* Buffer all cmd writes */
@@ -267,6 +269,7 @@ void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const u
 *********/
 
 uint32_t EVE_millis();
+void EVE_sleep(uint32_t ms);
 
 #endif /* #ifndef EVE_HAL__H */
 

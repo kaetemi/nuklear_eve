@@ -372,6 +372,22 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	return transferred;
 }
 
+/*********
+** MISC **
+*********/
+
+bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost)
+{
+	/* no-op */
+	return true;
+}
+
+bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost)
+{
+	/* no-op */
+	return true;
+}
+
 #endif /* #if defined(MPSSE_PLATFORM) */
 
 /* end of file */

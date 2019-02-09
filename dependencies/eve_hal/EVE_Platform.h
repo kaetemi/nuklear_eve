@@ -42,6 +42,7 @@ Main file to include the EVE HAL.
 #include "EVE_Hal.h"
 #include "EVE_Cmd.h"
 #include "EVE_Gpu.h"
+#include "EVE_Util.h"
 
 #endif /* #ifndef EVE_PLATFORM__H */
 

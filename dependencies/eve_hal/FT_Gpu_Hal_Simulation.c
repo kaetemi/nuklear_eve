@@ -92,15 +92,6 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 #endif
 }
 
-ft_void_t Ft_Gpu_Hal_Sleep(ft_uint32_t ms)
-{
-#if defined(ESD_SIMULATION)
-	Ft_Sleep__ESD(ms);
-#else
-	Sleep(ms);
-#endif
-}
-
 ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T numchnls, FT_GPU_SPI_NUMDUMMYBYTES numdummy)
 {
 	ft_uint8_t writebyte = 0;
