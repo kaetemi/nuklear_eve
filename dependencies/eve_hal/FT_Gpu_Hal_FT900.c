@@ -37,7 +37,7 @@
 /* API to initialize the SPI interface */
 ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 {
-	halinit->total_channel_num = 1;
+	halinit->TotalChannels = 1;
 	// Initialize SPIM HW
 	sys_enable(sys_device_spi_master);
 

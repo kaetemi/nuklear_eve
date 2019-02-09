@@ -275,7 +275,7 @@ void Esd_Render(Esd_Context *ec)
 	{
 		// Spinner used for switching longer loading pages with bitmaps etc
 		Ft_Esd_Dl_COLOR_RGB(~(ec->ClearColor));
-		Ft_Esd_CoCmd_Spinner(Esd_Update, parameters->Display.Width / 2, parameters->Display.Height / 2, 0, 0);
+		Ft_Esd_CoCmd_Spinner(Esd_Update, Ft_Esd_Host->Parameters.Display.Width / 2, Ft_Esd_Host->Parameters.Display.Height / 2, 0, 0);
 		ec->SpinnerPopup = FT_FALSE;
 		ec->SpinnerPopped = FT_TRUE;
 	}

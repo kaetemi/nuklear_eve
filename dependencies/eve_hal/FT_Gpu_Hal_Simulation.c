@@ -40,69 +40,6 @@
 void Ft_MainReady__ESD(BT8XXEMU_Emulator *emulator);
 #endif
 
-/* API to initialize the SPI interface */
-ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
-{
-	halinit->total_channel_num = 1;
-	return FT_TRUE;
-}
-
-ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
-{
-	// no-op
-}
-
-ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
-{
-	phost->Parameters.MpsseChannelNo = 0;
-	phost->Parameters.PowerDownPin = 0;
-	phost->Parameters.SpiCsPin = 0;
-
-#if defined(FT_EMULATOR_MAIN)
-	phost->Emulator = Ft_GpuEmu;
-	phost->EmulatorFlash = Ft_EmuFlash;
-#else
-	BT8XXEMU_EmulatorParameters params;
-
-	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, Ft_Emulator_Mode());
-
-	params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
-	BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
-#endif
-
-#if defined(ESD_SIMULATION)
-	Ft_MainReady__ESD(phost->Emulator);
-#endif
-
-	/* Initialize the context valriables */
-	phost->Status = FT_GPU_HAL_OPENED;
-
-	return !!phost->Emulator;
-}
-
-ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
-{
-#if !defined(FT_EMULATOR_MAIN)
-	if (phost->Emulator)
-	{
-		BT8XXEMU_stop(phost->Emulator);
-		BT8XXEMU_destroy(phost->Emulator);
-	}
-	phost->Emulator = NULL;
-	phost->EmulatorFlash = NULL;
-#else
-	phost->Emulator = NULL;
-	phost->EmulatorFlash = NULL;
-#endif
-
-	phost->Status = FT_GPU_HAL_CLOSED;
-}
-
-ft_void_t Ft_Gpu_Hal_DeInit()
-{
-	// no-op
-}
-
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
 ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {

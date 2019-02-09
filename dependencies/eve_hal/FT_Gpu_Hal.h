@@ -49,11 +49,11 @@
 #define FT_GPU_SPI_MODE EVE_HalModeSPI
 
 #define FT_GPU_HAL_STATUS_E EVE_HalStatus
-#define FT_GPU_HAL_STATUS_ERROR EVE_HalStatusUnknown
+#define FT_GPU_HAL_CLOSED EVE_HalStatusClosed
 #define FT_GPU_HAL_OPENED EVE_HalStatusOpened
 #define FT_GPU_HAL_READING EVE_HalStatusReading
 #define FT_GPU_HAL_WRITING EVE_HalStatusWriting
-#define FT_GPU_HAL_CLOSED EVE_HalStatusClosed
+#define FT_GPU_HAL_STATUS_ERROR EVE_HalStatusError
 
 #define FT_GPU_TRANSFERDIR_T EVE_HalTransfer
 #define FT_GPU_READ EVE_HalTransferRead
@@ -64,7 +64,7 @@
 
 typedef struct
 {
-	ft_uint32_t total_channel_num; //< Total number channels for libmpsse
+	ft_uint32_t TotalChannels; //< Total number channels for libmpsse
 } Ft_Gpu_HalInit_t;
 
 #define Ft_Gpu_Hal_Context_t EVE_HalContext
@@ -72,9 +72,24 @@ typedef struct
 /*******************************************************************************/
 /*******************************************************************************/
 /* The basic APIs Level 1 */
-ft_bool_t Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit);
-ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost);
-ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost);
+static inline bool Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
+{
+	EVE_HalPlatform *platform = EVE_Hal_initialize();
+	halinit->TotalChannels = platform->TotalChannels;
+	return !!platform;
+}
+
+static inline bool Ft_Gpu_Hal_Open(EVE_HalContext *phost)
+{
+	EVE_HalParameters parameters;
+	EVE_Hal_defaults(&parameters);
+	return EVE_Hal_open(phost, &parameters);
+}
+
+#define Ft_Gpu_Hal_Close EVE_Hal_close
+#define Ft_Gpu_Hal_DeInit EVE_Hal_release
+
+#define Ft_Gpu_Hal_ESD_Idle EVE_Hal_idle
 
 /* The APIs for reading/writing transfer continuously only with small buffer system */
 ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr);
@@ -82,10 +97,6 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value);
 ft_uint16_t Ft_Gpu_Hal_Transfer16(EVE_HalContext *phost, ft_uint16_t value);
 ft_uint32_t Ft_Gpu_Hal_Transfer32(EVE_HalContext *phost, ft_uint32_t value);
 ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost);
-
-/* Close and de-init APIs */
-ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost);
-ft_void_t Ft_Gpu_Hal_DeInit();
 
 /* Helper function APIs Read */
 ft_uint8_t Ft_Gpu_Hal_Rd8(EVE_HalContext *phost, ft_uint32_t addr);

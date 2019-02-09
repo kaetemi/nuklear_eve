@@ -30,8 +30,25 @@
 */
 
 #include "EVE_Hal.h"
+#include "EVE_Platform.h"
+
+#include "EVE_HalImpl.h"
 
 #include <string.h>
+
+EVE_HalPlatform *EVE_Hal_initialize()
+{
+	eve_assert_ex(g_HalPlatform.TotalChannels == 0, "HAL platform already initialized\n");
+	EVE_HalImpl_initialize();
+	return &g_HalPlatform;
+}
+
+void EVE_Hal_release()
+{
+	eve_assert_ex(g_HalPlatform.OpenedContexts == 0, "HAL context still open\n");
+	EVE_HalImpl_release();
+	memset(&g_HalPlatform, 0, sizeof(EVE_HalPlatform));
+}
 
 void EVE_Hal_defaults(EVE_HalParameters *parameters)
 {
@@ -115,6 +132,32 @@ void EVE_Hal_defaults(EVE_HalParameters *parameters)
 	parameters->Display.CSpread = 1;
 	parameters->Display.Dither = 1;
 #endif
+
+	EVE_HalImpl_defaults(parameters);
+}
+
+bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
+{
+	memset(phost, 0, sizeof(EVE_HalContext));
+	memcpy(&phost->Parameters, parameters, sizeof(EVE_HalParameters));
+	return EVE_HalImpl_open(phost, parameters);
+}
+
+void EVE_Hal_close(EVE_HalContext *phost)
+{
+	if (phost->Status == EVE_HalStatusClosed)
+	{
+		eve_printf_debug("Attempt to close HAL context that is already closed\n");
+		return;
+	}
+
+	EVE_HalImpl_close(phost);
+	memset(phost, 0, sizeof(EVE_HalContext));
+}
+
+void EVE_Hal_idle(EVE_HalContext *phost)
+{
+	EVE_HalImpl_idle(phost);
 }
 
 /* end of file */

@@ -52,11 +52,11 @@ typedef enum EVE_HalMode
 
 typedef enum EVE_HalStatus
 {
-	EVE_HalStatusUnknown = 0,
+	EVE_HalStatusClosed = 0,
 	EVE_HalStatusOpened,
 	EVE_HalStatusReading,
 	EVE_HalStatusWriting,
-	EVE_HalStatusClosed,
+	EVE_HalStatusError,
 } EVE_HalStatus;
 
 typedef enum EVE_HalTransfer
@@ -144,8 +144,30 @@ typedef struct EVE_HalContext
 
 } EVE_HalContext;
 
+typedef struct EVE_HalInit
+{
+	uint32_t TotalChannels;
+	uint32_t OpenedContexts;
+
+} EVE_HalPlatform;
+
+/* Initialize HAL platform */
+EVE_HalPlatform *EVE_Hal_initialize();
+
+/* Release HAL platform */
+void EVE_Hal_release();
+
 /* Get the default configuration parameters */
 void EVE_Hal_defaults(EVE_HalParameters *parameters);
+
+/* Opens a new HAL context using the specified parameters */
+bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters);
+
+/* Close a HAL context */
+void EVE_Hal_close(EVE_HalContext *phost);
+
+/* Idle. Call regularly to update frequently changing internal state */
+void EVE_Hal_idle(EVE_HalContext *phost);
 
 #endif /* #ifndef EVE_HAL__H */
 
