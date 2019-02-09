@@ -445,7 +445,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 			if (size < sizeof(phost->SpiWrBuf))
 				return wrBuffer(phost, buffer, size);
 		}
-		
+
 		if (buffer || phost->SpiWrBufIndex)
 		{
 			if (phost->SpiChannels == FT_GPU_SPI_SINGLE_CHANNEL)
@@ -469,11 +469,11 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 				hrdpkt[2] = addr & 0xff;
 
 				status = FT4222_SPIMaster_SingleWrite(
-					phost->SpiHandle,
-					hrdpkt,
-					3, // 3 address bytes
-					&sizeTransferred,
-					FALSE /* continue transaction */
+				    phost->SpiHandle,
+				    hrdpkt,
+				    3, // 3 address bytes
+				    &sizeTransferred,
+				    FALSE /* continue transaction */
 				);
 
 				if ((status != FT4222_OK) || (sizeTransferred != 3))
@@ -502,11 +502,11 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 					}
 
 					status = FT4222_SPIMaster_SingleWrite(
-						phost->SpiHandle,
-						(uint8_t *)buffer,
-						bytesPerWrite,
-						&sizeTransferred,
-						isEndTransaction);
+					    phost->SpiHandle,
+					    (uint8_t *)buffer,
+					    bytesPerWrite,
+					    &sizeTransferred,
+					    isEndTransaction);
 
 					if ((status != FT4222_OK) || ((ft_uint16_t)sizeTransferred != bytesPerWrite))
 					{
