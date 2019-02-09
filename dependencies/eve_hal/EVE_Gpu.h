@@ -1249,45 +1249,45 @@ ESD_END()
 
 #endif
 
-#define FT_GPU_NUMCHAR_PERFONT (128)
-#define FT_GPU_FONT_TABLE_SIZE (148)
+#define EVE_GPU_NUMCHAR_PERFONT (128)
+#define EVE_GPU_FONT_TABLE_SIZE (148)
 
 /* FT81x and FT80x font table structure */
 /* Font table address in ROM can be found by reading the address from 0xFFFFC location. */
 /* 16 font tables are present at the address read from location 0xFFFFC */
-typedef struct FT_Gpu_Fonts
+typedef struct EVE_Gpu_Fonts
 {
 	/* All the values are in bytes */
 	/* Width of each character font from 0 to 127 */
-	ft_uint8_t FontWidth[FT_GPU_NUMCHAR_PERFONT];
+	uint8_t FontWidth[EVE_GPU_NUMCHAR_PERFONT];
 	/* Bitmap format of font wrt bitmap formats supported by FT800 - L1, L4, L8 */
-	ft_uint32_t FontBitmapFormat;
+	uint32_t FontBitmapFormat;
 	/* Font line stride in FT800 ROM */
-	ft_uint32_t FontLineStride;
+	uint32_t FontLineStride;
 	/* Font width in pixels */
-	ft_uint32_t FontWidthInPixels;
+	uint32_t FontWidthInPixels;
 	/* Font height in pixels */
-	ft_uint32_t FontHeightInPixels;
+	uint32_t FontHeightInPixels;
 	/* Pointer to font graphics raw data */
-	ft_uint32_t PointerToFontGraphicsData;
-} FT_Gpu_Fonts_t;
+	uint32_t PointerToFontGraphicsData;
+} EVE_Gpu_Fonts;
 
-#if (EVE_MODEL >= EVE_BT815)
+#if defined(EVE_SUPPORT_UNICODE)
 
 /* BT815 inclusion - extended font table for unicode support */
 typedef struct Ft_Gpu_FontsExt_t
 {
-	ft_uint32_t Signature;
-	ft_uint32_t Size;
-	ft_uint32_t Format;
-	ft_uint32_t Swizzle;
-	ft_uint32_t LayoutWidth;
-	ft_uint32_t LayoutHeight;
-	ft_uint32_t PixelWidth;
-	ft_uint32_t PixelHeight;
-	ft_uint32_t StartOfGraphicData;
-	ft_uint32_t OffsetGlyphData;
-	// ft_uint32_t OffsetWidthData; // to be OffsetWidthData = Starting adress + StartOfGraphicData * 4.
+	uint32_t Signature;
+	uint32_t Size;
+	uint32_t Format;
+	uint32_t Swizzle;
+	uint32_t LayoutWidth;
+	uint32_t LayoutHeight;
+	uint32_t PixelWidth;
+	uint32_t PixelHeight;
+	uint32_t StartOfGraphicData;
+	uint32_t OffsetGlyphData;
+	// uint32_t OffsetWidthData; // to be OffsetWidthData = Starting adress + StartOfGraphicData * 4.
 } Ft_Gpu_FontsExt_t;
 
 #endif

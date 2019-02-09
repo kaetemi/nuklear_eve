@@ -58,7 +58,7 @@ void EVE_Cmd_endFunc(EVE_HalContext *phost);
 
 bool EVE_Cmd_wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size);
 bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size);
-uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t size);
+uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength);
 
 bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value);
 bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value);

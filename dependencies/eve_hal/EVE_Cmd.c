@@ -167,10 +167,10 @@ bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer,
 	return wrBuffer(phost, (void *)(uintptr_t)buffer, size, true, false) == size;
 }
 
-uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t size)
+uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength)
 {
 	eve_assert(phost->CmdBufferIndex == 0);
-	uint32_t transfered = wrBuffer(phost, str, size + 1, false, true);
+	uint32_t transfered = wrBuffer(phost, str, maxLength + 1, false, true);
 	return transfered;
 }
 
