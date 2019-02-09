@@ -42,6 +42,10 @@
 
 extern EVE_HalPlatform g_HalPlatform;
 
+/*********
+** INIT **
+*********/
+
 /* Initialize HAL platform */
 void EVE_HalImpl_initialize();
 
@@ -59,6 +63,16 @@ void EVE_HalImpl_close(EVE_HalContext *phost);
 
 /* Idle. Call regularly to update frequently changing internal state */
 void EVE_HalImpl_idle(EVE_HalContext *phost);
+
+/*************
+** TRANSFER **
+*************/
+
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr);
+uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
+uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
+uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
+void EVE_Hal_endTransfer(EVE_HalContext *phost);
 
 #endif /* #ifndef EVE_HAL_IMPL__H */
 

@@ -160,4 +160,52 @@ void EVE_Hal_idle(EVE_HalContext *phost)
 	EVE_HalImpl_idle(phost);
 }
 
+uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr)
+{
+	uint8_t value;
+	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, addr);
+	value = EVE_Hal_transfer8(phost, 0);
+	EVE_Hal_endTransfer(phost);
+	return value;
+}
+
+uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr)
+{
+	uint16_t value;
+	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, addr);
+	value = EVE_Hal_transfer16(phost, 0);
+	EVE_Hal_endTransfer(phost);
+	return value;
+}
+
+uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr)
+{
+	uint32_t value;
+	EVE_Hal_startTransfer(phost, EVE_HalTransferRead, addr);
+	value = EVE_Hal_transfer32(phost, 0);
+	EVE_Hal_endTransfer(phost);
+	return value;
+}
+
+void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v)
+{
+	EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, addr);
+	EVE_Hal_transfer8(phost, v);
+	EVE_Hal_endTransfer(phost);
+}
+
+void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v)
+{
+	EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, addr);
+	EVE_Hal_transfer16(phost, v);
+	EVE_Hal_endTransfer(phost);
+}
+
+void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v)
+{
+	EVE_Hal_startTransfer(phost, EVE_HalTransferWrite, addr);
+	EVE_Hal_transfer32(phost, v);
+	EVE_Hal_endTransfer(phost);
+}
+
 /* end of file */

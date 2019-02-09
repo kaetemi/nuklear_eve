@@ -141,7 +141,7 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(EVE_HalContext *phost, ft_uint32_t bytes)
 	ft_uint16_t rp, wp;
 #endif
 
-	if (bytes > FT_CMD_FIFO_SIZE)
+	if (bytes > EVE_CMD_FIFO_SIZE)
 	{
 		eve_printf_debug("Requested free space exceeds CoCmd FIFO\n");
 		return FT_FALSE;
@@ -156,7 +156,7 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(EVE_HalContext *phost, ft_uint32_t bytes)
 	Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
 	space = (wp - rp - 4) & FIFO_SIZE_MASK;
 #else
-	space = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & FT_CMD_FIFO_MASK;
+	space = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
 #endif
 	while (space < bytes)
 	{
@@ -188,7 +188,7 @@ ft_bool_t Ft_Gpu_Hal_WaitCmdFreespace(EVE_HalContext *phost, ft_uint32_t bytes)
 		Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
 		space = (wp - rp - 4) & FIFO_SIZE_MASK;
 #else
-		space = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & FT_CMD_FIFO_MASK;
+		space = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
 #endif
 	}
 
@@ -424,38 +424,5 @@ ft_void_t Ft_Gpu_81X_ResetRemoval(EVE_HalContext *phost)
 	Ft_Gpu_HostCommand_Ext3(phost, FT_GPU_81X_RESET_REMOVAL);
 }
 #endif
-
-ft_uint16_t Ft_Gpu_Hal_Transfer16(EVE_HalContext *phost, ft_uint16_t value)
-{
-	ft_uint16_t retVal = 0;
-
-	if (phost->Status == FT_GPU_HAL_WRITING)
-	{
-		Ft_Gpu_Hal_Transfer8(phost, value & 0xFF); //LSB first
-		Ft_Gpu_Hal_Transfer8(phost, (value >> 8) & 0xFF);
-	}
-	else
-	{
-		retVal = Ft_Gpu_Hal_Transfer8(phost, 0);
-		retVal |= (ft_uint16_t)Ft_Gpu_Hal_Transfer8(phost, 0) << 8;
-	}
-
-	return retVal;
-}
-ft_uint32_t Ft_Gpu_Hal_Transfer32(EVE_HalContext *phost, ft_uint32_t value)
-{
-	ft_uint32_t retVal = 0;
-	if (phost->Status == FT_GPU_HAL_WRITING)
-	{
-		Ft_Gpu_Hal_Transfer16(phost, value & 0xFFFF); //LSB first
-		Ft_Gpu_Hal_Transfer16(phost, (value >> 16) & 0xFFFF);
-	}
-	else
-	{
-		retVal = Ft_Gpu_Hal_Transfer16(phost, 0);
-		retVal |= (ft_uint32_t)Ft_Gpu_Hal_Transfer16(phost, 0) << 16;
-	}
-	return retVal;
-}
 
 #endif

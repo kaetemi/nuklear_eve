@@ -40,90 +40,6 @@
 void Ft_MainReady__ESD(BT8XXEMU_Emulator *emulator);
 #endif
 
-/*The APIs for reading/writing transfer continuously only with small buffer system*/
-ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
-{
-#if (EVE_MODEL >= EVE_FT810)
-	eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
-#endif
-	eve_assert(!(phost->CmdFrame && addr >= RAM_CMD && addr < (RAM_CMD + FT_CMD_FIFO_SIZE)));
-	if (FT_GPU_READ == rw)
-	{
-		BT8XXEMU_chipSelect(phost->Emulator, 1);
-		BT8XXEMU_transfer(phost->Emulator, (addr >> 16) & 0xFF);
-		BT8XXEMU_transfer(phost->Emulator, (addr >> 8) & 0xFF);
-		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
-		BT8XXEMU_transfer(phost->Emulator, 0); //Dummy Read Byte
-		phost->Status = FT_GPU_HAL_READING;
-	}
-	else
-	{
-		BT8XXEMU_chipSelect(phost->Emulator, 1);
-		BT8XXEMU_transfer(phost->Emulator, ((addr >> 16) & 0xFF) | 0x80);
-		BT8XXEMU_transfer(phost->Emulator, (addr >> 8) & 0xFF);
-		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
-		phost->Status = FT_GPU_HAL_WRITING;
-	}
-}
-
-ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
-{
-	return BT8XXEMU_transfer(phost->Emulator, value);
-}
-
-ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost)
-{
-	BT8XXEMU_chipSelect(phost->Emulator, 0);
-	phost->Status = FT_GPU_HAL_OPENED;
-}
-
-ft_uint8_t Ft_Gpu_Hal_Rd8(EVE_HalContext *phost, ft_uint32_t addr)
-{
-	ft_uint8_t value;
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	value = Ft_Gpu_Hal_Transfer8(phost, 0);
-	Ft_Gpu_Hal_EndTransfer(phost);
-	return value;
-}
-
-ft_uint16_t Ft_Gpu_Hal_Rd16(EVE_HalContext *phost, ft_uint32_t addr)
-{
-	ft_uint16_t value;
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	value = Ft_Gpu_Hal_Transfer16(phost, 0);
-	Ft_Gpu_Hal_EndTransfer(phost);
-	return value;
-}
-ft_uint32_t Ft_Gpu_Hal_Rd32(EVE_HalContext *phost, ft_uint32_t addr)
-{
-	ft_uint32_t value;
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	value = Ft_Gpu_Hal_Transfer32(phost, 0);
-	Ft_Gpu_Hal_EndTransfer(phost);
-	return value;
-}
-
-ft_void_t Ft_Gpu_Hal_Wr8(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t v)
-{
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	Ft_Gpu_Hal_Transfer8(phost, v);
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_Wr16(EVE_HalContext *phost, ft_uint32_t addr, ft_uint16_t v)
-{
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	Ft_Gpu_Hal_Transfer16(phost, v);
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_Wr32(EVE_HalContext *phost, ft_uint32_t addr, ft_uint32_t v)
-{
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	Ft_Gpu_Hal_Transfer32(phost, v);
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
 ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 {
 	;
@@ -148,7 +64,7 @@ ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint
 		ft_uint16_t rp = Ft_Gpu_Hal_Rd16(phost, REG_CMD_READ);
 		availablefreesize = (wp - rp - 4) & FIFO_SIZE_MASK;
 #else
-		availablefreesize = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & FIFO_SIZE_MASK;
+		availablefreesize = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
 #endif
 		if (FT_COCMD_FAULT(availablefreesize))
 			return FT_FALSE; // Co processor fault

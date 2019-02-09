@@ -91,22 +91,18 @@ static inline bool Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 
 #define Ft_Gpu_Hal_ESD_Idle EVE_Hal_idle
 
-/* The APIs for reading/writing transfer continuously only with small buffer system */
-ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr);
-ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value);
-ft_uint16_t Ft_Gpu_Hal_Transfer16(EVE_HalContext *phost, ft_uint16_t value);
-ft_uint32_t Ft_Gpu_Hal_Transfer32(EVE_HalContext *phost, ft_uint32_t value);
-ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost);
+#define Ft_Gpu_Hal_StartTransfer EVE_Hal_startTransfer
+#define Ft_Gpu_Hal_Transfer8 EVE_Hal_transfer8
+#define Ft_Gpu_Hal_Transfer16 EVE_Hal_transfer16
+#define Ft_Gpu_Hal_Transfer32 EVE_Hal_transfer32
+#define Ft_Gpu_Hal_EndTransfer EVE_Hal_endTransfer
 
-/* Helper function APIs Read */
-ft_uint8_t Ft_Gpu_Hal_Rd8(EVE_HalContext *phost, ft_uint32_t addr);
-ft_uint16_t Ft_Gpu_Hal_Rd16(EVE_HalContext *phost, ft_uint32_t addr);
-ft_uint32_t Ft_Gpu_Hal_Rd32(EVE_HalContext *phost, ft_uint32_t addr);
-
-/* Helper function APIs Write */
-ft_void_t Ft_Gpu_Hal_Wr8(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t v);
-ft_void_t Ft_Gpu_Hal_Wr16(EVE_HalContext *phost, ft_uint32_t addr, ft_uint16_t v);
-ft_void_t Ft_Gpu_Hal_Wr32(EVE_HalContext *phost, ft_uint32_t addr, ft_uint32_t v);
+#define Ft_Gpu_Hal_Rd8 EVE_Hal_rd8
+#define Ft_Gpu_Hal_Rd16 EVE_Hal_rd16
+#define Ft_Gpu_Hal_Rd32 EVE_Hal_rd32
+#define Ft_Gpu_Hal_Wr8 EVE_Hal_wr8
+#define Ft_Gpu_Hal_Wr16 EVE_Hal_wr16
+#define Ft_Gpu_Hal_Wr32 EVE_Hal_wr32
 
 /*******************************************************************************/
 /*******************************************************************************/

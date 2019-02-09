@@ -40,10 +40,11 @@
 #endif
 
 /* Definitions used for FT800 co processor command buffer */
-#define FT_DL_SIZE (8 * 1024L) // 8kB Display List buffer size
-#define FT_CMD_FIFO_SIZE (4 * 1024L) // 4kB coprocessor Fifo size
-#define FT_CMD_FIFO_MASK (FT_CMD_FIFO_SIZE - 1)
-#define FT_CMD_SIZE (4) // 4 byte per coprocessor command of EVE
+#define EVE_DL_SIZE (8 * 1024L) // 8kB Display List buffer size
+#define EVE_CMD_SIZE (4) // 4 byte per coprocessor command of EVE
+#define EVE_CMD_FIFO_SIZE (EVE_CMD_SIZE * 1024L) // 4kB coprocessor Fifo size
+#define EVE_CMD_FIFO_MASK (EVE_CMD_FIFO_SIZE - 1)
+#define EVE_CMD_FIFO_ALIGNMENT_MASK (EVE_CMD_FIFO_SIZE - (EVE_CMD_SIZE - 1))
 
 #ifdef EVE_SCREEN_CAPACITIVE
 #define CTOUCH_MODE_COMPATIBILITY (1)

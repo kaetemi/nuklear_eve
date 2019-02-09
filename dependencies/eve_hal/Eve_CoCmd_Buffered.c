@@ -32,7 +32,7 @@
 #include "FT_Platform.h"
 #if defined(FT_GPU_COCMD_BUFFERED)
 
-#define FT_BUFFER_CAPACITY (FT_CMD_FIFO_SIZE >> 1)
+#define FT_BUFFER_CAPACITY (EVE_CMD_FIFO_SIZE >> 1)
 #define FT_BUFFER_MASK (FT_BUFFER_CAPACITY - 1)
 
 static ft_uint8_t s_CmdBuffer[FT_BUFFER_CAPACITY];
@@ -43,7 +43,7 @@ ft_void_t Eve_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_
 	ft_uint16_t len;
 	eve_assert(phost->CmdFrame);
 
-	len = (sizeof(cmd[0]) * nb) & FT_CMD_FIFO_MASK;
+	len = (sizeof(cmd[0]) * nb) & EVE_CMD_FIFO_MASK;
 	if ((s_CmdBufferIndex + len) > FT_BUFFER_CAPACITY)
 	{
 		Eve_CoCmd_EndFrame(phost);

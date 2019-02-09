@@ -40,9 +40,6 @@
 #define EVE_HAL__H
 #include "EVE_Config.h"
 
-#define EVE_FIFO_SIZE_MASK (0xFFF) // FIFO valid range from 0 to 4095
-#define EVE_FIFO_BYTE_ALIGNMENT_MASK (0xFFC)
-
 typedef enum EVE_HalMode
 {
 	EVE_HalModeUnknown = 0,
@@ -158,6 +155,10 @@ typedef struct EVE_HalPlatform
 
 } EVE_HalPlatform;
 
+/*********
+** INIT **
+*********/
+
 /* Initialize HAL platform */
 EVE_HalPlatform *EVE_Hal_initialize();
 
@@ -175,6 +176,28 @@ void EVE_Hal_close(EVE_HalContext *phost);
 
 /* Idle. Call regularly to update frequently changing internal state */
 void EVE_Hal_idle(EVE_HalContext *phost);
+
+/*************
+** TRANSFER **
+*************/
+
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr);
+uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
+uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
+uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
+void EVE_Hal_endTransfer(EVE_HalContext *phost);
+
+/*********************
+** TRANSFER HELPERS **
+*********************/
+
+uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr);
+uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr);
+uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr);
+
+void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v);
+void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v);
+void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v);
 
 #endif /* #ifndef EVE_HAL__H */
 

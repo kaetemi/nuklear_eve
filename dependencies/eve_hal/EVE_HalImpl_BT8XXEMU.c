@@ -110,6 +110,57 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 	/* no-op */
 }
 
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_HalTransfer rw, uint32_t addr)
+{
+	if (rw == EVE_HalTransferRead)
+	{
+		BT8XXEMU_chipSelect(phost->Emulator, 1);
+		BT8XXEMU_transfer(phost->Emulator, (addr >> 16) & 0xFF);
+		BT8XXEMU_transfer(phost->Emulator, (addr >> 8) & 0xFF);
+		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
+		BT8XXEMU_transfer(phost->Emulator, 0); // Dummy Read Byte
+		phost->Status = EVE_HalStatusReading;
+	}
+	else
+	{
+		BT8XXEMU_chipSelect(phost->Emulator, 1);
+		BT8XXEMU_transfer(phost->Emulator, ((addr >> 16) & 0xFF) | 0x80);
+		BT8XXEMU_transfer(phost->Emulator, (addr >> 8) & 0xFF);
+		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
+		phost->Status = EVE_HalStatusWriting;
+	}
+}
+
+uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
+{
+	return BT8XXEMU_transfer(phost->Emulator, value);
+}
+
+uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
+{
+	uint16_t retVal = 0;
+	retVal = BT8XXEMU_transfer(phost->Emulator, value & 0xFF);
+	retVal |= (ft_uint16_t)BT8XXEMU_transfer(phost->Emulator, (value >> 8) & 0xFF) << 8;
+	return retVal;
+}
+
+uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
+{
+	uint32_t retVal = 0;
+	retVal = BT8XXEMU_transfer(phost->Emulator, value & 0xFF);
+	retVal |= (ft_uint32_t)BT8XXEMU_transfer(phost->Emulator, (value >> 8) & 0xFF) << 8;
+	retVal |= (ft_uint32_t)BT8XXEMU_transfer(phost->Emulator, (value >> 16) & 0xFF) << 16;
+	retVal |= (ft_uint32_t)BT8XXEMU_transfer(phost->Emulator, value >> 24) << 24;
+	return retVal;
+}
+
+void EVE_Hal_endTransfer(EVE_HalContext *phost)
+{
+	BT8XXEMU_chipSelect(phost->Emulator, 0);
+	phost->Status = FT_GPU_HAL_OPENED;
+}
+
+
 #endif /* #if defined(BT8XXEMU_PLATFORM) */
 
 /* end of file */
