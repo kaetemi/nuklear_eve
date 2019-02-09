@@ -205,6 +205,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	for (transferred = 0; transferred < size;)
 	{
 		char c = str[index + (transferred++)];
+		// putchar(c ? c : '_');
 		transfer8(phost, c);
 		if (!c)
 			break;
@@ -212,6 +213,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	while (transferred & padMask)
 	{
 		++transferred;
+		// putchar('_');
 		transfer8(phost, 0);
 	}
 	return transferred;

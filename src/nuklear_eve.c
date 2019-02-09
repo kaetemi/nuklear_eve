@@ -458,6 +458,7 @@ nk_eve_draw_text(EVE_HalContext *phost, short x, short y, unsigned short w, unsi
     Esd_Dl_COLOR_RGB((((cfg.r) & 255UL) << 16) | (((cfg.g) & 255UL) << 8) | ((cfg.b) & 255UL));
     Esd_Dl_COLOR_A(cfg.a);
     Ft_Gpu_CoCmd_Text_S(phost, x, y, font->rom_handle, 0, text, len);
+    // Ft_Gpu_CoCmd_Text(phost, x, y, font->rom_handle, 0, text);
 }
 
 static void
