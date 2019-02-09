@@ -150,7 +150,7 @@
 #include <assert.h>
 
 /* Data types */
-#include "FT_DataTypes.h"
+#include "FT_DataTypes_FT900.h"
 
 /* FT900 libraries */
 #include "ft900_uart_simple.h"

@@ -54,9 +54,9 @@ ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
 
 ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 {
-	phost->hal_config.channel_no = 0;
-	phost->hal_config.pdn_pin_no = 0;
-	phost->hal_config.spi_cs_pin_no = 0;
+	phost->HalConfig.channel_no = 0;
+	phost->HalConfig.pdn_pin_no = 0;
+	phost->HalConfig.spi_cs_pin_no = 0;
 
 #if defined(FT_EMULATOR_MAIN)
 	phost->Emulator = Ft_GpuEmu;
@@ -77,7 +77,7 @@ ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 	/* Initialize the context valriables */
 	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
 	phost->SpiChannel = 0;
-	phost->status = FT_GPU_HAL_OPENED;
+	phost->Status = FT_GPU_HAL_OPENED;
 
 	return !!phost->Emulator;
 }
@@ -97,7 +97,7 @@ ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
 	phost->EmulatorFlash = NULL;
 #endif
 
-	phost->status = FT_GPU_HAL_CLOSED;
+	phost->Status = FT_GPU_HAL_CLOSED;
 }
 
 ft_void_t Ft_Gpu_Hal_DeInit()
@@ -119,7 +119,7 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T r
 		BT8XXEMU_transfer(phost->Emulator, (addr >> 8) & 0xFF);
 		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
 		BT8XXEMU_transfer(phost->Emulator, 0); //Dummy Read Byte
-		phost->status = FT_GPU_HAL_READING;
+		phost->Status = FT_GPU_HAL_READING;
 	}
 	else
 	{
@@ -127,7 +127,7 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T r
 		BT8XXEMU_transfer(phost->Emulator, ((addr >> 16) & 0xFF) | 0x80);
 		BT8XXEMU_transfer(phost->Emulator, (addr >> 8) & 0xFF);
 		BT8XXEMU_transfer(phost->Emulator, addr & 0xFF);
-		phost->status = FT_GPU_HAL_WRITING;
+		phost->Status = FT_GPU_HAL_WRITING;
 	}
 }
 
@@ -139,7 +139,7 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost)
 {
 	BT8XXEMU_chipSelect(phost->Emulator, 0);
-	phost->status = FT_GPU_HAL_OPENED;
+	phost->Status = FT_GPU_HAL_OPENED;
 }
 
 ft_uint8_t Ft_Gpu_Hal_Rd8(EVE_HalContext *phost, ft_uint32_t addr)

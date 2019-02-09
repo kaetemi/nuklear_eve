@@ -32,7 +32,6 @@
 #ifndef FT_GPU_H
 #define FT_GPU_H
 
-#include "FT_DataTypes.h"
 #include "FT_Platform.h"
 
 #ifndef ESD_ENUM

@@ -59,6 +59,13 @@ typedef enum
 	EVE_HAL_STATUS_CLOSED,
 } EVE_HalStatus;
 
+typedef enum
+{
+	EVE_HAL_TRANSFER_NONE = 0,
+	EVE_HAL_TRANSFER_READ,
+	EVE_HAL_TRANSFER_WRITE,
+} EVE_HalTransfer;
+
 #endif /* #ifndef EVE_HAL__H */
 
 /* end of file */

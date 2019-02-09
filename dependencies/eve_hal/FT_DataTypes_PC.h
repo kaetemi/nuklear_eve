@@ -32,6 +32,10 @@
 #ifndef FT_DATATYPES_PC_H
 #define FT_DATATYPES_PC_H
 
+#if defined(BT8XXEMU_PLATFORM)
+#include "bt8xxemu_inttypes.h"
+#endif
+
 #if defined(PC_PLATFORM)
 
 #define ft_strcpy_P strcpy
@@ -51,7 +55,12 @@
 // #define ft_pgm_read_byte_near(x) (*(x))
 // #define ft_pgm_read_byte(x) (*(x))
 
+typedef FT_PROGMEM ft_char8_t ft_prog_char8_t;
+typedef FT_PROGMEM ft_uchar8_t ft_prog_uchar8_t;
+typedef FT_PROGMEM ft_uint16_t ft_prog_uint16_t;
+
 #endif
+
 #endif /* FT_DATATYPES_PC_H */
 
 /* end of file */

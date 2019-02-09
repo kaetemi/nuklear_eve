@@ -29,54 +29,22 @@
 * has no liability in relation to those amendments.
 */
 
-#include "FT_Platform.h"
+#ifndef EVE_TYPES__H
+#define EVE_TYPES__H
 
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+
+/* Compatibility for legacy MSVC versions */
+#include "EVE_IntTypes_MSVC12.h"
+
+#else
+
+/* Include C99 headers */
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
-#if defined(BT8XXEMU_PLATFORM)
-#include "bt8xxemu_inttypes.h"
 #endif
 
-#define FT_FALSE false
-#define FT_TRUE true
-
-typedef char ft_char8_t;
-typedef signed char ft_schar8_t;
-typedef unsigned char ft_uchar8_t;
-
-typedef int8_t ft_int8_t;
-typedef uint8_t ft_uint8_t;
-typedef int16_t ft_int16_t;
-typedef uint16_t ft_uint16_t;
-typedef uint32_t ft_uint32_t;
-typedef int32_t ft_int32_t;
-typedef void ft_void_t;
-typedef int64_t ft_int64_t;
-typedef uint64_t ft_uint64_t;
-typedef float ft_float_t;
-typedef double ft_double_t;
-typedef _Bool ft_bool_t;
-typedef size_t ft_size_t;
-
-/// Include Platform specific data types
-#if defined(PC_PLATFORM)
-#include <FT_DataTypes_PC.h>
-#elif defined(FT900_PLATFORM)
-#include <FT_DataTypes_FT900.h>
-#endif
-
-typedef volatile ft_uint8_t ft_vuint8_t;
-typedef volatile ft_uint16_t ft_vuint16;
-typedef volatile ft_uint32_t ft_vuint32;
-
-typedef volatile ft_int8_t ft_vint8;
-typedef volatile ft_int16_t ft_vint16;
-typedef volatile ft_int32_t ft_vint32;
-
-typedef FT_PROGMEM ft_char8_t ft_prog_char8_t;
-typedef FT_PROGMEM ft_uchar8_t ft_prog_uchar8_t;
-typedef FT_PROGMEM ft_uint16_t ft_prog_uint16_t;
+#endif /* #ifndef EVE_HAL__H */
 
 /* end of file */

@@ -84,28 +84,28 @@ ft_void_t Ft_Gpu_Hal_ESD_Idle(EVE_HalContext *phost)
 
 ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 {
-	phost->hal_config.channel_no = 0;
-	phost->hal_config.pdn_pin_no = FT800_PD_N;
-	phost->hal_config.spi_cs_pin_no = FT800_SEL_PIN;
-	gpio_function(phost->hal_config.spi_cs_pin_no, pad_spim_ss0); /* GPIO28 as CS */
-	gpio_write(phost->hal_config.spi_cs_pin_no, 1);
+	phost->HalConfig.channel_no = 0;
+	phost->HalConfig.pdn_pin_no = FT800_PD_N;
+	phost->HalConfig.spi_cs_pin_no = FT800_SEL_PIN;
+	gpio_function(phost->HalConfig.spi_cs_pin_no, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_write(phost->HalConfig.spi_cs_pin_no, 1);
 
-	gpio_function(phost->hal_config.pdn_pin_no, pad_gpio43);
-	gpio_dir(phost->hal_config.pdn_pin_no, pad_dir_output);
+	gpio_function(phost->HalConfig.pdn_pin_no, pad_gpio43);
+	gpio_dir(phost->HalConfig.pdn_pin_no, pad_dir_output);
 
-	gpio_write(phost->hal_config.pdn_pin_no, 1);
+	gpio_write(phost->HalConfig.pdn_pin_no, 1);
 
 	/* Initialize the context valriables */
 	phost->SpiNumDummy = 1; //by default ft800/801/810/811 goes with single dummy byte for read
 	phost->SpiChannel = 0;
-	phost->status = FT_GPU_HAL_OPENED;
+	phost->Status = FT_GPU_HAL_OPENED;
 
 	return FT_TRUE;
 }
 
 ft_void_t Ft_Gpu_Hal_Close(EVE_HalContext *phost)
 {
-	phost->status = FT_GPU_HAL_CLOSED;
+	phost->Status = FT_GPU_HAL_CLOSED;
 	//spi_close(SPIM,0);
 }
 
@@ -118,9 +118,9 @@ ft_void_t Ft_Gpu_Hal_DeInit()
 ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {
 	eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
-	if (phost->status != FT_GPU_HAL_OPENED)
+	if (phost->Status != FT_GPU_HAL_OPENED)
 	{
-		eve_printf_debug("Cannot start transfer on current host status %i\n", (int)phost->status);
+		eve_printf_debug("Cannot start transfer on current host status %i\n", (int)phost->Status);
 	}
 	if (FT_GPU_READ == rw)
 	{
@@ -128,9 +128,9 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T r
 		spidata[0] = (addr >> 16);
 		spidata[1] = (addr >> 8);
 		spidata[2] = addr & 0xff;
-		spi_open(SPIM, phost->hal_config.spi_cs_pin_no);
+		spi_open(SPIM, phost->HalConfig.spi_cs_pin_no);
 		spi_writen(SPIM, spidata, 3 + phost->SpiNumDummy);
-		phost->status = FT_GPU_HAL_READING;
+		phost->Status = FT_GPU_HAL_READING;
 	}
 	else
 	{
@@ -139,16 +139,16 @@ ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T r
 		spidata[1] = (addr >> 8);
 		spidata[2] = addr;
 
-		spi_open(SPIM, phost->hal_config.spi_cs_pin_no);
+		spi_open(SPIM, phost->HalConfig.spi_cs_pin_no);
 		spi_writen(SPIM, spidata, 3);
 
-		phost->status = FT_GPU_HAL_WRITING;
+		phost->Status = FT_GPU_HAL_WRITING;
 	}
 }
 
 ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 {
-	if (phost->status == FT_GPU_HAL_WRITING)
+	if (phost->Status == FT_GPU_HAL_WRITING)
 	{
 		spi_write(SPIM, value);
 		return 0;
@@ -162,8 +162,8 @@ ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
 
 ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost)
 {
-	spi_close(SPIM, phost->hal_config.spi_cs_pin_no);
-	phost->status = FT_GPU_HAL_OPENED;
+	spi_close(SPIM, phost->HalConfig.spi_cs_pin_no);
+	phost->Status = FT_GPU_HAL_OPENED;
 }
 
 ft_uint8_t Ft_Gpu_Hal_Rd8(EVE_HalContext *phost, ft_uint32_t addr)
@@ -231,9 +231,9 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 	hcmd[2] = 0;
 	hcmd[3] = 0;
 
-	spi_open(SPIM, phost->hal_config.spi_cs_pin_no);
+	spi_open(SPIM, phost->HalConfig.spi_cs_pin_no);
 	spi_writen(SPIM, hcmd, 3);
-	spi_close(SPIM, phost->hal_config.spi_cs_pin_no);
+	spi_close(SPIM, phost->HalConfig.spi_cs_pin_no);
 }
 //This API sends a 3byte command to the phost
 ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
@@ -243,9 +243,9 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 	hcmd[1] = (cmd >> 8) & 0xff;
 	hcmd[2] = (cmd >> 16) & 0xff;
 	hcmd[3] = 0;
-	spi_open(SPIM, phost->hal_config.spi_cs_pin_no);
+	spi_open(SPIM, phost->HalConfig.spi_cs_pin_no);
 	spi_writen(SPIM, hcmd, 3);
-	spi_close(SPIM, phost->hal_config.spi_cs_pin_no);
+	spi_close(SPIM, phost->HalConfig.spi_cs_pin_no);
 }
 
 ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint32_t count)
@@ -311,16 +311,16 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 {
 	if (up)
 	{
-		gpio_write(phost->hal_config.pdn_pin_no, 0);
+		gpio_write(phost->HalConfig.pdn_pin_no, 0);
 		ft_delay(20);
-		gpio_write(phost->hal_config.pdn_pin_no, 1);
+		gpio_write(phost->HalConfig.pdn_pin_no, 1);
 		ft_delay(20);
 	}
 	else
 	{
-		gpio_write(phost->hal_config.pdn_pin_no, 1);
+		gpio_write(phost->HalConfig.pdn_pin_no, 1);
 		ft_delay(20);
-		gpio_write(phost->hal_config.pdn_pin_no, 0);
+		gpio_write(phost->HalConfig.pdn_pin_no, 0);
 		ft_delay(20);
 	}
 }

@@ -44,12 +44,12 @@ void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga)
 	ga->NbAllocEntries = 1;
 }
 
-void Ft_Esd_GpuAlloc_InsertFree(Ft_Esd_GpuAlloc *ga, ft_uint32_t atidx, ft_uint32_t size)
+void Ft_Esd_GpuAlloc_InsertFree(Ft_Esd_GpuAlloc *ga, uint32_t atidx, uint32_t size)
 {
 	eve_assert(ga->NbAllocEntries >= 1);
 
 	// First move entries one step forward
-	for (ft_uint32_t idx = (ga->NbAllocEntries - 1); idx >= atidx; --idx)
+	for (uint32_t idx = (ga->NbAllocEntries - 1); idx >= atidx; --idx)
 	{
 		int id = ga->AllocEntries[idx].Id;
 		if (id < MAX_NUM_ALLOCATIONS)
@@ -68,7 +68,7 @@ void Ft_Esd_GpuAlloc_InsertFree(Ft_Esd_GpuAlloc *ga, ft_uint32_t atidx, ft_uint3
 	++ga->NbAllocEntries;
 }
 
-Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, ft_uint32_t size, ft_uint16_t flags)
+Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, uint32_t size, uint16_t flags)
 {
 	if (ga->NbAllocEntries >= MAX_NUM_ALLOCATIONS)
 	{
@@ -79,7 +79,7 @@ Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, ft_uint32_t size, ft
 	size = (size + 3UL) & ~3UL;
 
 	// Scan through the AllocEntries, find the first open allocation that is large enough
-	for (ft_uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
+	for (uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
 		// Check if allocation entry is unallocated and large enough
 		if (ga->AllocEntries[idx].Id == MAX_NUM_ALLOCATIONS
@@ -91,7 +91,7 @@ Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, ft_uint32_t size, ft
 				if (ga->AllocRefs[id].Idx == MAX_NUM_ALLOCATIONS)
 				{
 					// Allocate this block
-					ft_uint32_t remaining = ga->AllocEntries[idx].Length - size;
+					uint32_t remaining = ga->AllocEntries[idx].Length - size;
 					ga->AllocEntries[idx].Length = size;
 					ga->AllocEntries[idx].Id = id;
 					flags |= GA_USED_FLAG;
@@ -145,14 +145,14 @@ ReturnInvalidHandle:
 	};
 }
 
-ft_uint32_t Ft_Esd_GpuAlloc_Get(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle)
+uint32_t Ft_Esd_GpuAlloc_Get(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle)
 {
 	if (handle.Id < MAX_NUM_ALLOCATIONS)
 	{
 		if (ga->AllocRefs[handle.Id].Seq == handle.Seq)
 		{
-			ft_uint16_t id = handle.Id;
-			ft_uint16_t idx = ga->AllocRefs[id].Idx;
+			uint16_t id = handle.Id;
+			uint16_t idx = ga->AllocRefs[id].Idx;
 			ga->AllocEntries[idx].Flags |= GA_USED_FLAG;
 			return ga->AllocEntries[idx].Address;
 		}
@@ -161,7 +161,7 @@ ft_uint32_t Ft_Esd_GpuAlloc_Get(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle)
 	return ~0;
 }
 
-void Ft_Esd_GpuAlloc_CollapseFree(Ft_Esd_GpuAlloc *ga, ft_uint32_t idxat)
+void Ft_Esd_GpuAlloc_CollapseFree(Ft_Esd_GpuAlloc *ga, uint32_t idxat)
 {
 	int shift = 0;
 	if (idxat + 1 < ga->NbAllocEntries && ga->AllocEntries[idxat + 1].Id == MAX_NUM_ALLOCATIONS)
@@ -181,7 +181,7 @@ void Ft_Esd_GpuAlloc_CollapseFree(Ft_Esd_GpuAlloc *ga, ft_uint32_t idxat)
 	{
 		// Collapse indices
 		ga->NbAllocEntries -= shift;
-		for (ft_uint32_t idx = idxat + 1; idx < ga->NbAllocEntries; ++idx)
+		for (uint32_t idx = idxat + 1; idx < ga->NbAllocEntries; ++idx)
 		{
 			ga->AllocEntries[idx] = ga->AllocEntries[idx + shift];
 			int id = ga->AllocEntries[idx].Id;
@@ -231,7 +231,7 @@ void Ft_Esd_GpuAlloc_Free(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle)
 
 void Ft_Esd_GpuAlloc_Update(Ft_Esd_GpuAlloc *ga)
 {
-	for (ft_uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
+	for (uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
 		// Check if allocation entry is allocated
 		if (ga->AllocEntries[idx].Id < MAX_NUM_ALLOCATIONS)
@@ -256,23 +256,23 @@ void Ft_Esd_GpuAlloc_Update(Ft_Esd_GpuAlloc *ga)
 }
 
 // Get total used GPU RAM
-ft_uint32_t Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GpuAlloc *ga)
+uint32_t Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GpuAlloc *ga)
 {
-	ft_uint32_t total = 0;
-	for (ft_uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
+	uint32_t total = 0;
+	for (uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
 		// Check if allocation entry is allocated
 		if (ga->AllocEntries[idx].Id < MAX_NUM_ALLOCATIONS)
 		{
 			// Add the size of the allocated block to the total
-			total += (ft_uint32_t)ga->AllocEntries[idx].Length;
+			total += (uint32_t)ga->AllocEntries[idx].Length;
 		}
 	}
 	return total;
 }
 
 // Get total GPU RAM
-ft_uint32_t Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GpuAlloc *ga)
+uint32_t Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GpuAlloc *ga)
 {
 	return RAM_G_SIZE;
 }
@@ -281,7 +281,7 @@ ft_uint32_t Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GpuAlloc *ga)
 void Ft_Esd_GpuAlloc_Print(Ft_Esd_GpuAlloc *ga)
 {
 	eve_printf_debug("GpuAlloc:\n");
-	for (ft_uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
+	for (uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
 		eve_printf_debug("%i: id: %i, addr: %i, len: %i, flags: %i\n",
 		    idx,

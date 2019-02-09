@@ -55,6 +55,10 @@
 #define FT_GPU_HAL_WRITING EVE_HAL_STATUS_WRITING
 #define FT_GPU_HAL_CLOSED EVE_HAL_STATUS_CLOSED
 
+#define FT_GPU_TRANSFERDIR_T EVE_HalTransfer
+#define FT_GPU_READ EVE_HAL_TRANSFER_READ
+#define FT_GPU_WRITE EVE_HAL_TRANSFER_WRITE
+
 typedef struct
 {
 	union
@@ -75,12 +79,6 @@ typedef struct
 {
 	ft_uint32_t total_channel_num; //< Total number channels for libmpsse
 } Ft_Gpu_HalInit_t;
-
-typedef enum
-{
-	FT_GPU_READ = 0,
-	FT_GPU_WRITE,
-} FT_GPU_TRANSFERDIR_T;
 
 typedef ft_bool_t (*Ft_Gpu_Hal_Callback_t)(void *phost);
 

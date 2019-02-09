@@ -151,7 +151,7 @@
 #endif
 
 /* HAL inclusions */
-#include "FT_DataTypes.h"
+#include "FT_DataTypes_PC.h"
 #include "FT_Gpu_Hal.h"
 #include "FT_Gpu.h"
 #include "Eve_CoCmd.h"

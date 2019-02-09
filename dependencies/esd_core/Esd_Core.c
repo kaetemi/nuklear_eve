@@ -66,7 +66,7 @@ extern void Ft_Hal_LoadSDCard();
 // as exported by the single Application logic document included
 #ifndef ESD_SIMULATION
 #ifdef BT8XXEMU_PLATFORM
-#define Ft_Main__Running__ESD() BT8XXEMU_isRunning(Ft_Esd_Host->emu)
+#define Ft_Main__Running__ESD() BT8XXEMU_isRunning(Ft_Esd_Host->Emulator)
 #else
 #define Ft_Main__Running__ESD() (1)
 #endif

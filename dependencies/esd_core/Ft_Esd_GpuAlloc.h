@@ -22,7 +22,7 @@ Either allocation option does not guarantee that memory will remain persistently
 #ifndef FT_ESD_GPUALLOC_H
 #define FT_ESD_GPUALLOC_H
 
-#include "FT_DataTypes.h"
+#include "EVE_IntTypes.h"
 
 #define MAX_NUM_ALLOCATIONS 64UL
 
@@ -43,27 +43,27 @@ Either allocation option does not guarantee that memory will remain persistently
 typedef struct
 {
 	/// Id in the allocation reference table
-	ft_uint32_t Id : 8;
+	uint32_t Id : 8;
 	/// Sequence number used to invalidate handles
-	ft_uint32_t Seq : 24;
+	uint32_t Seq : 24;
 
 } Ft_Esd_GpuHandle;
 
 // Internal information about a gpu memory allocation handle
 typedef struct
 {
-	ft_uint32_t Idx : 8;
-	ft_uint32_t Seq : 24;
+	uint32_t Idx : 8;
+	uint32_t Seq : 24;
 
 } Ft_Esd_GpuAllocRef;
 
 // Internal gpu allocation entry
 typedef struct
 {
-	ft_uint32_t Address;
-	ft_uint32_t Length;
-	ft_uint16_t Id;
-	ft_uint16_t Flags;
+	uint32_t Address;
+	uint32_t Length;
+	uint16_t Id;
+	uint16_t Flags;
 
 } Ft_Esd_GpuAllocEntry;
 
@@ -74,7 +74,7 @@ typedef struct
 	/// Allocation map,
 	Ft_Esd_GpuAllocEntry AllocEntries[MAX_NUM_ALLOCATIONS];
 	/// Number of valid alloc entries
-	ft_uint32_t NbAllocEntries;
+	uint32_t NbAllocEntries;
 
 } Ft_Esd_GpuAlloc;
 
@@ -85,19 +85,19 @@ void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga);
 void Ft_Esd_GpuAlloc_Update(Ft_Esd_GpuAlloc *ga);
 
 // Allocate a gpu ram block
-Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, ft_uint32_t size, ft_uint16_t flags);
+Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, uint32_t size, uint16_t flags);
 
 // Free a gpu ram block
 void Ft_Esd_GpuAlloc_Free(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle);
 
 // Get ram address from handle. Returns ~0 when invalid.
-ft_uint32_t Ft_Esd_GpuAlloc_Get(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle);
+uint32_t Ft_Esd_GpuAlloc_Get(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle);
 
 // Get total used GPU RAM
-ft_uint32_t Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GpuAlloc *ga);
+uint32_t Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GpuAlloc *ga);
 
 // Get total GPU RAM
-ft_uint32_t Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GpuAlloc *ga);
+uint32_t Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GpuAlloc *ga);
 
 #ifndef NDEBUG
 void Ft_Esd_GpuAlloc_Print(Ft_Esd_GpuAlloc *ga);

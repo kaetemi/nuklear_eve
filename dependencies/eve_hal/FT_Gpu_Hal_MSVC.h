@@ -40,7 +40,6 @@
 #include "FT_Gpu_Hal.h"
 
 #if defined(MSVC_PLATFORM)
-#include "FT_DataTypes.h"
 
 #ifdef FT4222_PLATFORM
 #include "LibFT4222.h"

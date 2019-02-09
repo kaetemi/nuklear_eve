@@ -548,7 +548,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 *                               20000KHz
 *                               25000KHz
 *                               30000KHz
-*                            Global variable phost->hal_config.spi_clockrate_khz is
+*                            Global variable phost->HalConfig.spi_clockrate_khz is
 *                            updated accodingly
 * Return Value             : bool_t
 *                               TRUE : Supported by FT4222
@@ -558,7 +558,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 ****************************************************************************/
 ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *sysdivisor)
 {
-	//phost->hal_config.spi_clockrate_khz is the user requested SPI communication clock
+	//phost->HalConfig.spi_clockrate_khz is the user requested SPI communication clock
 
 	if (phost->HalConfig.spi_clockrate_khz <= 5000)
 	{ //set to 5000 KHz
@@ -659,22 +659,22 @@ ft_bool_t Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 	ChannelConfig channelConf; //channel configuration
 
 	/* configure the spi settings */
-	channelConf.ClockRate = phost->hal_config.spi_clockrate_khz * 1000;
+	channelConf.ClockRate = phost->HalConfig.spi_clockrate_khz * 1000;
 	channelConf.LatencyTimer = 2;
 	channelConf.configOptions = SPI_CONFIG_OPTION_MODE0 | SPI_CONFIG_OPTION_CS_DBUS3 | SPI_CONFIG_OPTION_CS_ACTIVELOW;
 	channelConf.Pin = 0x00000000; /*FinalVal-FinalDir-InitVal-InitDir (for dir 0=in, 1=out)*/
 
 	/* Open the first available channel */
-	status = SPI_OpenChannel(phost->hal_config.channel_no, (FT_HANDLE *)&phost->hal_handle);
+	status = SPI_OpenChannel(phost->HalConfig.channel_no, (FT_HANDLE *)&phost->hal_handle);
 	if (FT_OK != status)
 	{
-		eve_printf_debug("SPI open channel failed %d %d\n", phost->hal_config.channel_no, phost->hal_handle);
+		eve_printf_debug("SPI open channel failed %d %d\n", phost->HalConfig.channel_no, phost->hal_handle);
 		return FT_FALSE;
 	}
 	status = SPI_InitChannel((FT_HANDLE)phost->hal_handle, &channelConf);
 	if (FT_OK != status)
 	{
-		eve_printf_debug("SPI init channel failed %d %d\n", phost->hal_config.channel_no, phost->hal_handle);
+		eve_printf_debug("SPI init channel failed %d %d\n", phost->HalConfig.channel_no, phost->hal_handle);
 		return FT_FALSE;
 	}
 
@@ -1114,12 +1114,12 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 #ifdef MSVC_PLATFORM
 #ifdef MPSSE_PLATFORM
 		//FT_WriteGPIO(phost->hal_handle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
-		FT_WriteGPIO(phost->hal_handle, (1 << phost->hal_config.pdn_pin_no) | 0x3B, (0 << phost->hal_config.pdn_pin_no) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		FT_WriteGPIO(phost->hal_handle, (1 << phost->HalConfig.pdn_pin_no) | 0x3B, (0 << phost->HalConfig.pdn_pin_no) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 
 		Ft_Gpu_Hal_Sleep(20);
 
 		//FT_WriteGPIO(phost->hal_handle, 0xBB, 0x88);//PDN set to 1
-		FT_WriteGPIO(phost->hal_handle, (1 << phost->hal_config.pdn_pin_no) | 0x3B, (1 << phost->hal_config.pdn_pin_no) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		FT_WriteGPIO(phost->hal_handle, (1 << phost->HalConfig.pdn_pin_no) | 0x3B, (1 << phost->HalConfig.pdn_pin_no) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 		Ft_Gpu_Hal_Sleep(20);
 #endif
 
@@ -1136,9 +1136,9 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 #endif
 #endif /*MSVC_PLATFORM*/
 #if defined(FT900_PLATFORM) && !defined(ESD_SIMULATION)
-		gpio_write(phost->hal_config.pdn_pin_no, 0);
+		gpio_write(phost->HalConfig.pdn_pin_no, 0);
 		ft_delay(20);
-		gpio_write(phost->hal_config.pdn_pin_no, 1);
+		gpio_write(phost->HalConfig.pdn_pin_no, 1);
 		ft_delay(20);
 #endif
 	}
@@ -1147,11 +1147,11 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 #ifdef MSVC_PLATFORM
 #ifdef MPSSE_PLATFORM
 		//FT_WriteGPIO(phost->hal_handle, 0xBB, 0x88);//PDN set to 1
-		FT_WriteGPIO(phost->hal_handle, (1 << phost->hal_config.pdn_pin_no) | 0x3B, (1 << phost->hal_config.pdn_pin_no) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		FT_WriteGPIO(phost->hal_handle, (1 << phost->HalConfig.pdn_pin_no) | 0x3B, (1 << phost->HalConfig.pdn_pin_no) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 		Ft_Gpu_Hal_Sleep(20);
 
 		//FT_WriteGPIO(phost->hal_handle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
-		FT_WriteGPIO(phost->hal_handle, (1 << phost->hal_config.pdn_pin_no) | 0x3B, (0 << phost->hal_config.pdn_pin_no) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		FT_WriteGPIO(phost->hal_handle, (1 << phost->HalConfig.pdn_pin_no) | 0x3B, (0 << phost->HalConfig.pdn_pin_no) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
 
 		Ft_Gpu_Hal_Sleep(20);
 #endif
@@ -1168,9 +1168,9 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 #endif
 #endif
 #if defined(FT900_PLATFORM) && !defined(ESD_SIMULATION)
-		gpio_write(phost->hal_config.pdn_pin_no, 1);
+		gpio_write(phost->HalConfig.pdn_pin_no, 1);
 		ft_delay(20);
-		gpio_write(phost->hal_config.pdn_pin_no, 0);
+		gpio_write(phost->HalConfig.pdn_pin_no, 0);
 		ft_delay(20);
 #endif
 	}

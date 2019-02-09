@@ -575,6 +575,41 @@ It may also set platform, display, and flash values if none are configured.
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
+#include <stdlib.h>
+
+#define FT_FALSE false
+#define FT_TRUE true
+
+typedef char ft_char8_t;
+typedef signed char ft_schar8_t;
+typedef unsigned char ft_uchar8_t;
+
+#define ft_int8_t int8_t
+#define ft_uint8_t uint8_t
+#define ft_int16_t int16_t
+#define ft_uint16_t uint16_t
+#define ft_uint32_t uint32_t
+#define ft_int32_t int32_t
+#define ft_void_t void
+#define ft_int64_t int64_t
+#define ft_uint64_t uint64_t
+#define ft_float_t float
+#define ft_double_t double
+#define ft_bool_t bool
+#define ft_size_t size_t
+/*
+typedef volatile ft_uint8_t ft_vuint8_t;
+typedef volatile ft_uint16_t ft_vuint16;
+typedef volatile ft_uint32_t ft_vuint32;
+
+typedef volatile ft_int8_t ft_vint8;
+typedef volatile ft_int16_t ft_vint16;
+typedef volatile ft_int32_t ft_vint32;
+*/
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
 /*
 
 Ultimately, the platform selection must set one of the following internal platform flags.
