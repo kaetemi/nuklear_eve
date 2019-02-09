@@ -44,7 +44,7 @@ EVE_HalPlatform g_HalPlatform;
 /* Initialize HAL platform */
 void EVE_HalImpl_initialize()
 {
-	g_HalPlatform.TotalChannels = 1;
+	g_HalPlatform.TotalDevices = 1;
 }
 
 /* Release HAL platform */
@@ -83,7 +83,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	if (ret)
 	{
 		phost->Status = EVE_STATUS_OPENED;
-		++g_HalPlatform.OpenedChannels;
+		++g_HalPlatform.OpenedDevices;
 	}
 	return ret;
 }
@@ -105,7 +105,7 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 #endif
 
 	phost->Status = EVE_STATUS_CLOSED;
-	--g_HalPlatform.OpenedChannels;
+	--g_HalPlatform.OpenedDevices;
 }
 
 /* Idle. Call regularly to update frequently changing internal state */

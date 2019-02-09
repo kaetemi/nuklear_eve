@@ -52,7 +52,7 @@ void EVE_HalImpl_initialize()
 	if (FT_OK == status)
 	{
 		eve_printf_debug("Number of D2xx devices connected = %d\n", numdevs);
-		g_HalPlatform.TotalChannels = numdevs;
+		g_HalPlatform.TotalDevices = numdevs;
 
 		FT_GetDeviceInfoDetail(0, &devList.Flags, &devList.Type, &devList.ID,
 		    &devList.LocId,
@@ -300,7 +300,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	{
 		phost->SpiChannels = EVE_SPI_SINGLE_CHANNEL;
 		phost->Status = EVE_STATUS_OPENED;
-		++g_HalPlatform.OpenedChannels;
+		++g_HalPlatform.OpenedDevices;
 	}
 
 	return ret;
@@ -311,7 +311,7 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 {
 	FT4222_STATUS status;
 	phost->Status = FT_GPU_HAL_CLOSED;
-	--g_HalPlatform.OpenedChannels;
+	--g_HalPlatform.OpenedDevices;
 
 	if ((status = FT4222_UnInitialize(phost->SpiHandle)) != FT4222_OK)
 		eve_printf_debug("FT4222_UnInitialize failed %d\n", status);

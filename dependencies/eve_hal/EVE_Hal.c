@@ -38,14 +38,14 @@
 
 EVE_HalPlatform *EVE_Hal_initialize()
 {
-	eve_assert_ex(g_HalPlatform.TotalChannels == 0, "HAL platform already initialized\n");
+	eve_assert_ex(g_HalPlatform.TotalDevices == 0, "HAL platform already initialized\n");
 	EVE_HalImpl_initialize();
 	return &g_HalPlatform;
 }
 
 void EVE_Hal_release()
 {
-	eve_assert_ex(g_HalPlatform.OpenedChannels == 0, "HAL context still open\n");
+	eve_assert_ex(g_HalPlatform.OpenedDevices == 0, "HAL context still open\n");
 	EVE_HalImpl_release();
 	memset(&g_HalPlatform, 0, sizeof(EVE_HalPlatform));
 }

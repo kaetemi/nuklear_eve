@@ -65,7 +65,7 @@
 
 typedef struct
 {
-	ft_uint32_t TotalChannels; //< Total number channels for libmpsse
+	ft_uint32_t TotalDevices; //< Total number channels for libmpsse
 } Ft_Gpu_HalInit_t;
 
 #define Ft_Gpu_Hal_Context_t EVE_HalContext
@@ -76,7 +76,7 @@ typedef struct
 static inline bool Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 {
 	EVE_HalPlatform *platform = EVE_Hal_initialize();
-	halinit->TotalChannels = platform->TotalChannels;
+	halinit->TotalDevices = platform->TotalDevices;
 	return !!platform;
 }
 

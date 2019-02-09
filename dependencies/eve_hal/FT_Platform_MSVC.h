@@ -74,7 +74,10 @@
 
 /* D2xx and SPI from FTDI inclusions */
 #include "ftd2xx.h"
+
+#if defined(FT4222_PLATFORM)
 #include "LibFT4222.h"
+#endif
 
 #if _DEBUG
 #if defined(_MSC_VER)

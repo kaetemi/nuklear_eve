@@ -42,11 +42,14 @@ EVE_HalPlatform g_HalPlatform;
 /* Initialize HAL platform */
 void EVE_HalImpl_initialize()
 {
+	FT_STATUS status;
+	DWORD numdevs;
+
 	/* Initialize the libmpsse */
 	Init_libMPSSE();
-	SPI_GetNumChannels(&g_HalPlatform.TotalChannels);
+	SPI_GetNumChannels(&g_HalPlatform.TotalDevices);
 
-	if (g_HalPlatform.TotalChannels > 0)
+	if (g_HalPlatform.TotalDevices > 0)
 	{
 		FT_DEVICE_LIST_INFO_NODE devList;
 		memset(&devList, 0, sizeof(devList));
@@ -56,7 +59,7 @@ void EVE_HalImpl_initialize()
 		if (FT_OK == status)
 		{
 			eve_printf_debug("Number of D2xx devices connected = %d\n", numdevs);
-			halinit->total_channel_num = numdevs;
+			g_HalPlatform.TotalDevices = numdevs;
 
 			FT_GetDeviceInfoDetail(0, &devList.Flags, &devList.Type, &devList.ID,
 				&devList.LocId,
@@ -91,10 +94,10 @@ void EVE_HalImpl_release()
 /* Get the default configuration parameters */
 void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 {
-	phost->Parameters.MpsseChannelNo = 0;
-	phost->Parameters.PowerDownPin = 7;
-	phost->Parameters.SpiCsPin = 0;
-	phost->Parameters.SpiClockrateKHz = 12000; //in KHz
+	parameters->MpsseChannelNo = 0;
+	parameters->PowerDownPin = 7;
+	parameters->SpiCsPin = 0;
+	parameters->SpiClockrateKHz = 12000; //in KHz
 }
 
 /* Opens a new HAL context using the specified parameters */
@@ -129,7 +132,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	phost->SpiDummyBytes = 1; //by default ft800/801/810/811 goes with single dummy byte for read
 	phost->SpiChannels = FT_GPU_SPI_SINGLE_CHANNEL;
 	phost->Status = EVE_STATUS_OPENED;
-	++g_HalPlatform.OpenedChannels;
+	++g_HalPlatform.OpenedDevices;
 	return FT_TRUE;
 }
 
@@ -137,7 +140,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
 	phost->Status = FT_GPU_HAL_CLOSED;
-	--g_HalPlatform.OpenedChannels;
+	--g_HalPlatform.OpenedDevices;
 	SPI_CloseChannel(phost->SpiHandle);
 }
 

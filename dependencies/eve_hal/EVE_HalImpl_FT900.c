@@ -42,7 +42,7 @@ EVE_HalPlatform g_HalPlatform;
 /* Initialize HAL platform */
 void EVE_HalImpl_initialize()
 {
-	g_HalPlatform.TotalChannels = 1;
+	g_HalPlatform.TotalDevices = 1;
 
 	// Initialize SPIM HW
 	sys_enable(sys_device_spi_master);
@@ -108,7 +108,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	phost->SpiDummyBytes = 1; //by default ft800/801/810/811 goes with single dummy byte for read
 	phost->SpiChannels = FT_GPU_SPI_SINGLE_CHANNEL;
 	phost->Status = EVE_STATUS_OPENED;
-	++g_HalPlatform.OpenedChannels;
+	++g_HalPlatform.OpenedDevices;
 
 	return FT_TRUE;
 }
@@ -117,7 +117,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
 	phost->Status = FT_GPU_HAL_CLOSED;
-	--g_HalPlatform.OpenedChannels;
+	--g_HalPlatform.OpenedDevices;
 	/* spi_close(SPIM,0); */
 }
 

@@ -48,5 +48,23 @@ ELSEIF(NUKLEAR_EVE_DEMO_PLATFORM STREQUAL "FT4222")
         ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/LibFT4222.dll)
     ENDIF()
   ENDIF()
+ELSEIF(NUKLEAR_EVE_DEMO_PLATFORM STREQUAL "MPSSE")
+  TARGET_LINK_LIBRARIES(nuklear_eve_demo
+    libMPSSE
+    ftd2xx
+  )
+  IF (WIN32)
+    IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/dependencies/mpsse_spi/lib/windows/x64/libMPSSE.dll
+        ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/libMPSSE.dll)
+    ELSE()
+      ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/dependencies/mpsse_spi/lib/windows/i386/libMPSSE.dll
+        ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/libMPSSE.dll)
+    ENDIF()
+  ENDIF()
 ENDIF()
 

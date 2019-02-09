@@ -169,18 +169,19 @@ typedef struct EVE_HalContext
 	void *EmulatorFlash; /* FT8XXEMU_Flash */
 #endif
 
-#if defined(FT4222_PLATFORM)
+#if defined(FT4222_PLATFORM) | defined(MPSSE_PLATFORM)
 	void *SpiHandle;
+#endif
+
+#if defined(FT4222_PLATFORM)
 	void *GpioHandle; /* LibFT4222 uses this member to store GPIO handle */
 	uint8_t SpiWrBuf[0xFFFF];
 	uint32_t SpiWrBufIndex;
 	uint32_t SpiRamGAddr; /* Current RAM_G address of ongoing SPI transaction, if continous is not supported */
 #endif
 
-#if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM)
 	EVE_SPI_CHANNELS_T SpiChannels; /* Variable to contain single/dual/quad channels */
 	uint8_t SpiDummyBytes; /* Number of dummy bytes as 1 or 2 for SPI read */
-#endif
 
 #if defined(EVE_CMD_BUFFERED)
 	/* Buffer all cmd writes */
@@ -206,8 +207,8 @@ typedef struct EVE_HalContext
 
 typedef struct EVE_HalPlatform
 {
-	uint32_t TotalChannels;
-	uint32_t OpenedChannels;
+	uint32_t TotalDevices;
+	uint32_t OpenedDevices;
 
 } EVE_HalPlatform;
 
