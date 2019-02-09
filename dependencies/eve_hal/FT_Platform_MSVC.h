@@ -157,16 +157,6 @@
 #include "Eve_CoCmd.h"
 #include "FT_Hal_Utils.h"
 
-#ifdef FT4222_PLATFORM
-#define FT800_SEL_PIN 1 /* GPIO is not utilized in Lib4222 as it is directly managed by firmware */
-#define FT800_PD_N GPIO_PORT0
-#endif
-
-#ifdef MPSSE_PLATFORM
-#define FT800_SEL_PIN 0
-#define FT800_PD_N 7
-#endif
-
 #endif
 
 #endif /* EVE_PLATFORM_MSVC_H */

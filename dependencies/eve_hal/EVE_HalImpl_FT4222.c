@@ -80,8 +80,8 @@ void EVE_HalImpl_release()
 /* Get the default configuration parameters */
 void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 {
-	parameters->PowerDownPin = FT800_PD_N;
-	parameters->SpiCsPin = FT800_SEL_PIN;
+	parameters->PowerDownPin = GPIO_PORT0;
+	parameters->SpiCsPin = 1;
 	parameters->SpiClockrateKHz = 12000;
 }
 

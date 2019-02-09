@@ -88,8 +88,8 @@ void EVE_HalImpl_release()
 void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 {
 	phost->Parameters.MpsseChannelNo = 0;
-	phost->Parameters.PowerDownPin = FT800_PD_N;
-	phost->Parameters.SpiCsPin = FT800_SEL_PIN;
+	phost->Parameters.PowerDownPin = 7;
+	phost->Parameters.SpiCsPin = 0;
 	phost->Parameters.SpiClockrateKHz = 12000; //in KHz
 }
 
