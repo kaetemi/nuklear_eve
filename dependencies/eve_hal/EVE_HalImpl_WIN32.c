@@ -27,62 +27,34 @@
 * distributed by that other user ("Adapted Software").  If so that user may
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
-*
-* File Description:
-*    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
-*    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
-*    I2C and SPI is selected by compiler switch "FT_I2C_MODE"  and "FT_SPI_MODE". In addition, there are
-*    some helper functions defined for FT800 coprocessor engine as well as phost commands.
-*
 */
 
-#ifndef EVE_HAL_IMPL__H
-#define EVE_HAL_IMPL__H
-#include "EVE_Hal.h"
-
-extern EVE_HalPlatform g_HalPlatform;
-
-/*********
-** INIT **
-*********/
-
-/* Initialize HAL platform */
-void EVE_HalImpl_initialize();
-
-/* Release HAL platform */
-void EVE_HalImpl_release();
-
-/* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters);
-
-/* Opens a new HAL context using the specified parameters */
-bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters);
-
-/* Close a HAL context */
-void EVE_HalImpl_close(EVE_HalContext *phost);
-
-/* Idle. Call regularly to update frequently changing internal state */
-void EVE_HalImpl_idle(EVE_HalContext *phost);
-
-/*************
-** TRANSFER **
-*************/
-
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr);
-void EVE_Hal_endTransfer(EVE_HalContext *phost);
-
-uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
-uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
-uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
+#include "EVE_HalImpl.h"
+#include "EVE_Platform.h"
+#if defined(WIN32)
 
 /*********
 ** MISC **
 *********/
 
-void EVE_Millis_initialize();
-void EVE_Millis_release();
-uint32_t EVE_millis();
+static DWORD s_Millis_Start;
 
-#endif /* #ifndef EVE_HAL_IMPL__H */
+void EVE_Millis_initialize()
+{
+	s_Millis_Start = GetTickCount();
+}
+
+void EVE_Millis_release()
+{
+	/* no-op */
+}
+
+/* global counter to loopback after ~49.71 days */
+uint32_t EVE_millis()
+{
+	return GetTickCount() - s_Millis_Start;
+}
+
+#endif
 
 /* end of file */

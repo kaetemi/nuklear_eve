@@ -114,7 +114,7 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 	writebyte = numchnls;
 
 #if EVE_MODEL >= EVE_FT810
-	if (numdummy == FT_GPU_SPI_TWODUMMY)
+	if (numdummy == 2)
 		writebyte |= FT_SPI_TWO_DUMMY_BYTE;
 	Ft_Gpu_Hal_Wr8(phost, REG_SPI_WIDTH, writebyte);
 	//FT81x swicthed to dual/quad mode, now update global HAL context
@@ -136,24 +136,6 @@ ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
 
 	t1 = Ft_Gpu_Hal_Rd32(phost, REG_CLOCK); /* t1 read */
 	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
-}
-
-static DWORD s_Millis_Start;
-
-ft_void_t ft_millis_init()
-{
-	s_Millis_Start = GetTickCount();
-}
-
-/* global counter to loopback after ~49.71 days */
-ft_uint32_t ft_millis()
-{
-	return GetTickCount() - s_Millis_Start;
-}
-
-ft_void_t ft_millis_exit()
-{
-	// no-op
 }
 
 #endif

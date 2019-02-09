@@ -262,6 +262,12 @@ void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v);
 void EVE_Hal_wrBuffer(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size);
 void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size);
 
+/*********
+** MISC **
+*********/
+
+uint32_t EVE_millis();
+
 #endif /* #ifndef EVE_HAL__H */
 
 /* end of file */

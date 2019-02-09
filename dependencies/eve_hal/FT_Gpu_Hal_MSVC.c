@@ -732,24 +732,6 @@ ft_void_t Ft_DisplayPanel_Init()
 #endif
 }
 
-static DWORD s_Millis_Start;
-
-ft_void_t ft_millis_init()
-{
-	s_Millis_Start = GetTickCount();
-}
-
-/* global counter to loopback after ~49.71 days */
-ft_uint32_t ft_millis()
-{
-	return GetTickCount() - s_Millis_Start;
-}
-
-ft_void_t ft_millis_exit()
-{
-	// no-op
-}
-
 #endif
 
 /* end of file */

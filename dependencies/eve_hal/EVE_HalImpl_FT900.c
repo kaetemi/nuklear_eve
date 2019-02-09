@@ -33,6 +33,8 @@
 #include "EVE_Platform.h"
 #if defined(FT900_PLATFORM)
 
+ft_void_t ticker();
+
 /*********
 ** INIT **
 *********/
@@ -233,6 +235,60 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		transfer8(phost, 0);
 	}
 	return transferred;
+}
+
+/*********
+** MISC **
+*********/
+
+/* Globals for interrupt implementation */
+static ft_uint32_t s_TotalMilliseconds = 0;
+
+ft_void_t EVE_Millis_initialize()
+{
+	s_TotalMilliseconds = 0;
+#if (defined(EVE_MODULE_PANL))
+	panl_timer_register_ms_callback(ticker);
+#else
+
+	sys_enable(sys_device_timer_wdt);
+	timer_prescaler(FT900_TIMER_PRESCALE_VALUE);
+	timer_init(FT900_FT_MILLIS_TIMER, FT900_TIMER_OVERFLOW_VALUE, timer_direction_up, timer_prescaler_select_on, timer_mode_continuous);
+
+	interrupt_attach(interrupt_timers, 17, ticker);
+	/* enabling the interrupts for timer */
+	timer_enable_interrupt(FT900_FT_MILLIS_TIMER);
+
+	timer_start(FT900_FT_MILLIS_TIMER);
+#endif
+}
+
+ft_void_t EVE_Millis_release()
+{
+	timer_stop(FT900_FT_MILLIS_TIMER);
+	timer_disable_interrupt(FT900_FT_MILLIS_TIMER);
+}
+
+/* Need to ensure that below api is called at least once in 6.5 seconds duration for FT900 platform as this module doesnt use timer for context update */
+/* global counter to loopback after ~49.71 days */
+ft_uint32_t EVE_millis()
+{
+#if (defined(EVE_MODULE_PANL))
+	return panl_timer_get_time();
+#else
+	/* Interrupt implementation */
+	return (s_TotalMilliseconds);
+#endif
+}
+
+ft_void_t ticker()
+{
+	s_TotalMilliseconds += 1;
+
+	timer_disable_interrupt(FT900_FT_MILLIS_TIMER);
+	/* Clear the interrupt and increment the counter */
+	timer_is_interrupted(FT900_FT_MILLIS_TIMER);
+	timer_enable_interrupt(FT900_FT_MILLIS_TIMER);
 }
 
 #endif /* #if defined(FT900_PLATFORM) */

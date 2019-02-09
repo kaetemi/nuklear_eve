@@ -34,6 +34,7 @@
 
 #include "FT_Mcu_Hal.h"
 #include "EVE_Gpu.h"
+#include "EVE_HalImpl.h"
 
 ft_void_t Eve_BootupConfig(EVE_HalContext *phost)
 {
@@ -46,7 +47,7 @@ ft_void_t Eve_BootupConfig(EVE_HalContext *phost)
 	an explicit switch to single channel is essential
 	*/
 #if (EVE_MODEL >= EVE_FT810)  
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, FT_GPU_SPI_ONEDUMMY);
+	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, 1);
 #endif
 
 	/* Set the clk to external clock. Must disable it when no external clock source on the board*/
@@ -161,7 +162,7 @@ static ft_void_t init_sdhost()
 ft_void_t  Ft_Mcu_Init()
 {
 	init_sdhost();
-	ft_millis_init();
+	EVE_Millis_initialize();
 }
 
 #endif

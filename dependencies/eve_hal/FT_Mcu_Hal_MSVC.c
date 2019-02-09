@@ -197,7 +197,7 @@ static ft_void_t init_sdhost()
 ft_void_t Ft_Mcu_Init()
 {
 	init_sdhost();
-	ft_millis_init();
+	EVE_Millis_initialize();
 }
 
 #endif

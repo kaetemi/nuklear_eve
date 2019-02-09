@@ -39,49 +39,6 @@
 /* api to return the time in ms. 0 after reset */
 
 /* Globals for polling implementation */
-ft_uint32_t ft_millis_curr = 0, ft_millis_prev = 0;
-
-/* Helper api for dec to ascii */
-ft_int32_t Ft_Gpu_Hal_Dec2Ascii(ft_char8_t *pSrc, ft_int32_t value)
-{
-	size_t length;
-	ft_char8_t *pdst, charval;
-	ft_int32_t currVal = value, tmpval, i;
-	ft_char8_t tmparray[16], idx = 0;
-
-	length = strlen(pSrc);
-	pdst = pSrc + length;
-
-	if (0 == value)
-	{
-		*pdst++ = '0';
-		*pdst++ = '\0';
-		return 0;
-	}
-
-	if (currVal < 0)
-	{
-		*pdst++ = '-';
-		currVal = -currVal;
-	}
-	/* insert the value */
-	while (currVal > 0)
-	{
-		tmpval = currVal;
-		currVal /= 10;
-		tmpval = tmpval - currVal * 10;
-		charval = '0' + tmpval;
-		tmparray[idx++] = charval;
-	}
-
-	for (i = 0; i < idx; i++)
-	{
-		*pdst++ = tmparray[idx - i - 1];
-	}
-	*pdst++ = '\0';
-
-	return 0;
-}
 
 ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(EVE_HalContext *phost)
 {
@@ -101,7 +58,7 @@ ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(EVE_HalContext *phost)
 			eve_debug_break();
 			return FT_FALSE;
 		}
-	} while ((rp != wp) || (rp != 0));
+	} while ((wp != 0) || (rp != 0));
 	return FT_TRUE;
 }
 
@@ -232,40 +189,6 @@ ft_void_t Ft_Gpu_DownloadJ1Firmware(EVE_HalContext *phost)
 	// bug fix pen up section
 	eve_assert_do(Ft_Gpu_Hal_WrCmdBuf_ProgMem(phost, c_TouchDataU8, TOUCH_DATA_LEN));
 	eve_assert_do(Ft_Gpu_Hal_WaitCmdFifoEmpty(phost));
-}
-
-ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, const ft_char8_t *str, int length)
-{
-	int i = 0;
-	for (; i < length; ++i)
-	{
-		Ft_Gpu_Hal_Transfer8(phost, str[i]);
-	}
-	Ft_Gpu_Hal_Transfer8(phost, 0);
-	++i;
-	while ((i++ & 0x3))
-	{
-		Ft_Gpu_Hal_Transfer8(phost, 0);
-	}
-	return i - 1;
-}
-
-ft_int16_t Ft_Gpu_Hal_TransferString(EVE_HalContext *phost, const ft_char8_t *str)
-{
-	int i = 0;
-	ft_char8_t c;
-	while (c = str[i])
-	{
-		Ft_Gpu_Hal_Transfer8(phost, c);
-		++i;
-	}
-	Ft_Gpu_Hal_Transfer8(phost, 0);
-	++i;
-	while ((i++ & 0x3))
-	{
-		Ft_Gpu_Hal_Transfer8(phost, 0);
-	}
-	return i - 1;
 }
 
 #if (EVE_MODEL >= EVE_FT810)
