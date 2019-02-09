@@ -33,6 +33,12 @@
 #include "EVE_Platform.h"
 #if defined(FT4222_PLATFORM)
 
+#define FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH 65535
+#define FT4222_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH 65535
+
+#define FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH 65535
+#define FT4222_MAX_WR_BYTES_PER_CALL_IN_MULTI_CH 65532 //3 bytes for FT81x memory address to which data to be written
+
 EVE_HalPlatform g_HalPlatform;
 
 /* Initialize HAL platform */
@@ -636,6 +642,9 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 
 void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size)
 {
+	if (!size)
+		return;
+
 	if (result && buffer)
 	{
 		/* not implemented */
@@ -653,6 +662,9 @@ void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_
 
 void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
+	if (!size)
+		return;
+
 	if (result && buffer)
 	{
 		/* not implemented */
@@ -670,6 +682,9 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
+	if (!size)
+		return 0;
+
 	uint32_t transferred = 0;
 	if (phost->Status == EVE_HalStatusWriting)
 	{
@@ -686,6 +701,9 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		{
 			buffer[transferred++] = 0;
 		}
+
+		if (!transferred)
+			return 0;
 
 		wrBuffer(phost, buffer, transferred);
 	}

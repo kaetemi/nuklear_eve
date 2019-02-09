@@ -50,6 +50,8 @@
 #endif
 
 #if defined(FT4222_PLATFORM)
+
+/*
 #define FT4222_DYNAMIC_ALLOCATE_SIZE 65535 //Temporary context buffer used only for Ft4222 write. Size limited because of uint16 bytestowrite parameter
 
 #define FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH 65535
@@ -57,6 +59,7 @@
 
 #define FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH 65535
 #define FT4222_MAX_WR_BYTES_PER_CALL_IN_MULTI_CH 65532 //3 bytes for FT81x memory address to which data to be written
+*/
 
 #define FT4222_ReadTimeout 5000
 #define FT4222_WriteTimeout 5000

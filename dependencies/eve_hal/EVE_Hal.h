@@ -147,7 +147,7 @@ typedef struct EVE_HalContext
 #if defined(FT4222_PLATFORM)
 	void *SpiHandle;
 	void *GpioHandle; /* LibFT4222 uses this member to store GPIO handle */
-	uint8_t SpiWrBuf[64 * 1024];
+	uint8_t SpiWrBuf[0xFFFF];
 	uint32_t SpiWrBufIndex;
 	uint32_t SpiRamGAddr; /* Current RAM_G address of ongoing SPI transaction, if continous is not supported */
 #endif
