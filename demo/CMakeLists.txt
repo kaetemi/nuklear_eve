@@ -5,6 +5,7 @@ SOURCE_GROUP("" FILES ${SRCS} ${HDRS})
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal")
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal/Hdr")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/esd_core")
 
 ADD_EXECUTABLE(nuklear_eve_demo
