@@ -45,7 +45,6 @@
 ********************/
 
 #define EVE_CMD_STRING_MAX 511
-#define EVE_CMD_ASSERT_FLUSH
 
 uint16_t EVE_Cmd_rp(EVE_HalContext *phost);
 uint16_t EVE_Cmd_wp(EVE_HalContext *phost);
@@ -73,40 +72,6 @@ bool EVE_Cmd_waitFlush(EVE_HalContext *phost);
 
 /* Wait for the command buffer to have at least the requested amount of free space. Returns FT_FALSE in case a co processor fault occured */
 bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size);
-
-/************
-** UTILITY **
-************/
-
-#if defined(EVE_CMD_ASSERT_FLUSH)
-#define eve_cmd_assert_flush(phost) eve_assert(EVE_Cmd_waitFlush(phost))
-#else
-#define eve_cmd_assert_flush(phost) \
-	do                   \
-	{                    \
-	} while (false)
-#endif
-
-#if defined(PLATFORM_FT900) || (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-// #define EVE_CMD_PLATFORM_LE
-#endif
-
-/* When using EVE_Cmd_wrBuffer and EVE_Cmd_wrProgmem, commands must be in the correct endianness. */
-/* EVE_Cmd_wr16 and EVE_Cmd_wr32 already apply the correct endianness. */
-/* Convert to little endian. */
-static inline uint32_t EVE_Cmd_le32(uint32_t value)
-{
-#if defined(EVE_CMD_PLATFORM_LE)
-	return value;
-#else
-	uint8_t res[4];
-	res[0] = value & 0xFF;
-	res[1] = (value >> 8) & 0xFF;
-	res[2] = (value >> 16) & 0xFF;
-	res[3] = value >> 24;
-	return *(uint32_t *)res;
-#endif
-}
 
 #endif /* #ifndef EVE_HAL__H */
 
