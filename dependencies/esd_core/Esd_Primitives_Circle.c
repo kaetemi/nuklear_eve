@@ -10,7 +10,9 @@ ft_void_t Esd_Render_Circle_Stroke(ft_int32_f4_t x, ft_int32_f4_t y, ft_int32_f4
 	// Use local rendering context, bypass ESD display list functions.
 	Esd_Dl_BEGIN(POINTS);
 	Esd_Dl_COLOR_ARGB(color);
+#if (EVE_MODEL >= EVE_FT810)
 	Esd_Dl_VERTEX_FORMAT(4);
+#endif
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, SAVE_CONTEXT());
 
 	// Inner alpha quantity

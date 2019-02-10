@@ -195,9 +195,8 @@ typedef struct EVE_HalContext
 	uint8_t CmdBufferIndex;
 #endif
 
-#if defined(EVE_SUPPORT_CMDB)
 	uint16_t CmdSpace; /* Free space */
-#else
+#if !defined(EVE_SUPPORT_CMDB)
 	uint16_t CmdWp; /* Write pointer */
 #endif
 

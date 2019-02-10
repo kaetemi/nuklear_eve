@@ -38,7 +38,7 @@ static inline void endFunc(EVE_HalContext *phost)
 	{
 		EVE_Hal_endTransfer(phost);
 #if !defined(EVE_SUPPORT_CMDB)
-		EVE_Hal_wr16(phost, REG_CMD_WRITE, buffer->CmdWp);
+		EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
 #endif
 	}
 }
@@ -66,10 +66,9 @@ uint16_t EVE_Cmd_wp(EVE_HalContext *phost)
 
 uint16_t EVE_Cmd_space(EVE_HalContext *phost)
 {
-#if defined(EVE_SUPPORT_CMDB)
 	uint16_t space;
-#else
-	ft_uint16_t wp, rp;
+#if !defined(EVE_SUPPORT_CMDB)
+	uint16_t wp, rp;
 #endif
 	endFunc(phost);
 #if defined(EVE_SUPPORT_CMDB)
@@ -77,12 +76,13 @@ uint16_t EVE_Cmd_space(EVE_HalContext *phost)
 	if (EVE_CMD_FAULT(space))
 		phost->CmdFault = true;
 	phost->CmdSpace = space;
-	eve_assert(phost->CmdSpace == space);
 	return space;
 #else
 	wp = EVE_Cmd_wp(phost);
 	rp = EVE_Cmd_rp(phost);
-	return (wp - rp - 4) & EVE_CMD_FIFO_MASK;
+	space = (rp - wp - 4) & EVE_CMD_FIFO_MASK;
+	phost->CmdSpace = space;
+	return space;
 #endif
 }
 
@@ -109,7 +109,7 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 #if defined(EVE_SUPPORT_CMDB)
 				EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, REG_CMDB_WRITE);
 #else
-				EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + buffer->CmdWp);
+				EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + phost->CmdWp);
 #endif
 			}
 			if (string)
@@ -134,15 +134,14 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			{
 				EVE_Hal_endTransfer(phost);
 			}
-#if defined(EVE_SUPPORT_CMDB)
 			eve_assert(phost->CmdSpace >= transfer);
 			phost->CmdSpace -= transfer;
-#else
+#if !defined(EVE_SUPPORT_CMDB)
 			phost->CmdWp += transfer;
 			phost->CmdWp &= EVE_CMD_FIFO_MASK;
 			if (!phost->CmdFunc) /* Defer write pointer */
 			{
-				EVE_Hal_wr16(phost, REG_CMD_WRITE, buffer->CmdWp);
+				EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
 			}
 #endif
 		}
@@ -226,7 +225,7 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 #if defined(EVE_SUPPORT_CMDB)
 		EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, REG_CMDB_WRITE);
 #else
-		EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + buffer->CmdWp);
+		EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + phost->CmdWp);
 #endif
 	}
 	EVE_Hal_transfer32(phost, value);
@@ -234,15 +233,14 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 	{
 		EVE_Hal_endTransfer(phost);
 	}
-#if defined(EVE_SUPPORT_CMDB)
 	eve_assert(phost->CmdSpace >= 4);
 	phost->CmdSpace -= 4;
-#else
+#if !defined(EVE_SUPPORT_CMDB)
 	phost->CmdWp += 4;
 	phost->CmdWp &= EVE_CMD_FIFO_MASK;
 	if (!phost->CmdFunc) /* Defer write pointer */
 	{
-		Ft_Gpu_Hal_Wr16(phost, REG_CMD_WRITE, buffer->CmdWp);
+		EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
 	}
 #endif
 
@@ -252,17 +250,19 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 /* Move the write pointer forward by the specified number of bytes. Returns the previous write pointer */
 uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
 {
-	uint16_t wp;
+	uint16_t wp, prevWp;
 
 	if (!EVE_Cmd_waitSpace(phost, bytes))
 		return -1;
 
-	wp = EVE_Cmd_wp(phost);
+	prevWp = EVE_Cmd_wp(phost);
+	wp = (prevWp + bytes) & EVE_CMD_FIFO_MASK;
 #if !defined(EVE_SUPPORT_CMDB)
-	EVE_Hal_wr16(phost, REG_CMD_WRITE, wp + bytes);
+	phost->CmdWp = wp;
 #endif
+	EVE_Hal_wr16(phost, REG_CMD_WRITE, wp);
 
-	return wp;
+	return prevWp;
 }
 
 bool EVE_Cmd_waitFlush(EVE_HalContext *phost)

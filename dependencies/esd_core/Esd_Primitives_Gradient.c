@@ -89,7 +89,7 @@ ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft
 	Ft_Gpu_CoCmd_Scale(Ft_Esd_Host, width << 16, height << 16);
 	Ft_Gpu_CoCmd_SetMatrix(Ft_Esd_Host);
 #else
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_MODEL >= EVE_BT815)
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_A_EXT(1, 0x8000 / width));
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_E_EXT(1, 0x8000 / height));
 #else
