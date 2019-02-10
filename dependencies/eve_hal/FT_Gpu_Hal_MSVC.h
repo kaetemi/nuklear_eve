@@ -51,34 +51,13 @@
 
 #if defined(FT4222_PLATFORM)
 
-/*
-#define FT4222_DYNAMIC_ALLOCATE_SIZE 65535 //Temporary context buffer used only for Ft4222 write. Size limited because of uint16 bytestowrite parameter
-
-#define FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH 65535
-#define FT4222_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH 65535
-
-#define FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH 65535
-#define FT4222_MAX_WR_BYTES_PER_CALL_IN_MULTI_CH 65532 //3 bytes for FT81x memory address to which data to be written
-*/
-
-#define FT4222_ReadTimeout 5000
-#define FT4222_WriteTimeout 5000
-
-#define FT4222_LatencyTime 2
-
 #elif defined(MPSSE_PLATFORM)
-#define LIBMPSSE_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH 65535
-#define LIBMPSSE_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH 65535
-
-#define LIBMPSSE_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH 65535
-#define LIBMPSSE_MAX_WR_BYTES_PER_CALL_IN_MULTI_CH 65532 //3 bytes for FT81x memory address to which data to be written
 
 #endif
 
 #if defined(FT4222_PLATFORM)
 //extern struct Ft_Gpu_Hal_Context_t;
 //ft_bool_t	  FT4222Drv_Open(EVE_HalContext *phost);
-ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *divisor);
 ft_uint8_t Ft_Gpu_Hal_FT4222_Rd(EVE_HalContext *phost, ft_uint32_t hrdcmd, ft_uint8_t *rdbufptr, ft_uint32_t exprdbytes);
 ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, const ft_uint8_t *wrbufptr, ft_uint32_t bytestowr);
 #endif

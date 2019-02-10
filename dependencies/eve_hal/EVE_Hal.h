@@ -101,23 +101,20 @@ typedef struct EVE_HalParameters
 
 	Eve_DisplayParameters Display;
 
-#if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
-	union
-	{
-		uint8_t SpiCsPin; /* SPI chip select number of FT8XX chip */
-		uint8_t I2CAddr; /* I2C address of FT8XX chip */
-	};
-	union
-	{
-		uint16_t SpiClockrateKHz; /* In kHz */
-		uint16_t I2CClockrateKHz; /* In kHz */
-	};
+#if defined(MPSSE_PLATFORM)
+	uint8_t MpsseChannelNo; /* MPSSE channel number */
+#endif
 
+#if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM)
+	uint8_t SpiCsPin; /* SPI chip select number of FT8XX chip */
+#endif
+
+#if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
 	uint8_t PowerDownPin; /* FT8XX power down pin number */
 #endif
 
-#if defined(MPSSE_PLATFORM)
-	uint8_t MpsseChannelNo; /* MPSSE channel number */
+#if defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
+	uint16_t SpiClockrateKHz; /* In kHz */
 #endif
 
 } EVE_HalParameters;
@@ -143,6 +140,12 @@ typedef struct EVE_HalContext
 	void *SpiHandle;
 #endif
 
+#if defined(FT4222_PLATFORM) | defined(MPSSE_PLATFORM)
+	/* Currently configured SPI clock rate. In kHz.
+	May be different from requested the clock rate in parameters */
+	uint16_t SpiClockrateKHz;
+#endif
+
 #if defined(FT4222_PLATFORM)
 	void *GpioHandle; /* LibFT4222 uses this member to store GPIO handle */
 	uint8_t SpiWrBuf[0xFFFF];
@@ -155,15 +158,9 @@ typedef struct EVE_HalContext
 	uint8_t SpiDummyBytes; /* Number of dummy bytes as 1 or 2 for SPI read */
 #endif
 
-#if defined(EVE_CMD_BUFFERED)
-	/* Buffer all cmd writes */
-	uint8_t CmdBuffer[EVE_CMD_BUFFER_CAPACITY];
-	uint16_t CmdBufferIndex;
-#else
 	/* Buffer cmd smaller than a full cmd command */
 	uint8_t CmdBuffer[4];
 	uint8_t CmdBufferIndex;
-#endif
 
 	uint16_t CmdSpace; /* Free space */
 #if !defined(EVE_SUPPORT_CMDB)

@@ -35,7 +35,7 @@
 
 #include "FT_Gpu_Hal.h"
 
-const eve_progmem_const uint8_t c_DlCodeBootup[12] = {
+static eve_progmem_const uint8_t c_DlCodeBootup[12] = {
 	0, 0, 0, 2, // GPU instruction CLEAR_COLOR_RGB
 	7, 0, 0, 38, // GPU instruction CLEAR
 	0, 0, 0, 0, //G PU instruction DISPLAY

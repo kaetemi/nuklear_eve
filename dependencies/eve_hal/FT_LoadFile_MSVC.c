@@ -106,7 +106,6 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 
 ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format)
 {
-	bool cmdFrame;
 	FILE *afile;
 	uint32_t ftsize = 0;
 	uint8_t pbuff[8192];

@@ -312,73 +312,7 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 }
 #endif
 
-/***************************************************************************
-* Interface Description    : Function to compute FT4222 sys clock and divisor
-*                            to obtain user requested SPI communication clock
-*                            Available FT4222_ClockRate (FT4222 system clock):
-*                               SYS_CLK_60,
-*                               SYS_CLK_24,
-*                               SYS_CLK_48,
-*                               SYS_CLK_80
-*                            Divisors available (FT4222_SPIClock):
-*                               CLK_NONE,
-*                               CLK_DIV_2,
-*                               CLK_DIV_4,
-*                               CLK_DIV_8,
-*                               CLK_DIV_16,
-*                               CLK_DIV_32,
-*                               CLK_DIV_64,
-*                               CLK_DIV_128,
-*                               CLK_DIV_256,
-*                               CLK_DIV_512
-* Implementation           : Good performance is observed with divisors other than CLK_DIV_2
-*                            and CLK_DIV_4 from test report by firmware developers.
-*                            Hence supporting the following clocks for SPI communication
-*                               5000KHz
-*                               10000KHz
-*                               15000KHz
-*                               20000KHz
-*                               25000KHz
-*                               30000KHz
-*                            Global variable phost->Parameters.SpiClockrateKHz is
-*                            updated accodingly
-* Return Value             : bool_t
-*                               TRUE : Supported by FT4222
-*                               FALSE : Not supported by FT4222
-*
-* Author                   :
-****************************************************************************/
-ft_bool_t Ft_Gpu_Hal_FT4222_ComputeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *sysdivisor)
-{
-	//phost->Parameters.SpiClockrateKHz is the user requested SPI communication clock
 
-	if (phost->Parameters.SpiClockrateKHz <= 5000)
-	{ //set to 5000 KHz
-		*sysclk = SYS_CLK_80;
-		*sysdivisor = CLK_DIV_16;
-	}
-	else if (phost->Parameters.SpiClockrateKHz > 5000 && phost->Parameters.SpiClockrateKHz <= 10000)
-	{
-		//set to 10000 KHz
-		*sysclk = SYS_CLK_80;
-		*sysdivisor = CLK_DIV_8;
-	}
-	else if (phost->Parameters.SpiClockrateKHz > 10000 && phost->Parameters.SpiClockrateKHz <= 15000)
-	{
-		//set to 15000 KHz
-		*sysclk = SYS_CLK_60;
-		*sysdivisor = CLK_DIV_4;
-	}
-	else
-	{
-		//set to 20000 KHz : Maximum throughput is obeserved with this clock combination
-		*sysclk = SYS_CLK_80;
-		*sysdivisor = CLK_DIV_4;
-	}
-	eve_printf_debug("User Selected SPI clk : %d KHz\n", phost->Parameters.SpiClockrateKHz);
-	eve_printf_debug("Configured clk :  Ft4222 sys clk enum = %d , divisor enum = %d\n", *sysclk, *sysdivisor);
-	return (FT_TRUE);
-}
 #endif //FT4222_PLATFORM
 
 ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)

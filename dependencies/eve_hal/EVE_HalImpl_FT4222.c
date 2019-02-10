@@ -39,6 +39,11 @@
 #define FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH 65535
 #define FT4222_MAX_WR_BYTES_PER_CALL_IN_MULTI_CH 65532 //3 bytes for FT81x memory address to which data to be written
 
+#define FT4222_ReadTimeout 5000
+#define FT4222_WriteTimeout 5000
+
+#define FT4222_LatencyTime 2
+
 EVE_HalPlatform g_HalPlatform;
 
 /* Initialize HAL platform */
@@ -89,6 +94,79 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 	parameters->PowerDownPin = GPIO_PORT0;
 	parameters->SpiCsPin = 1;
 	parameters->SpiClockrateKHz = 12000;
+}
+
+/***************************************************************************
+* Interface Description    : Function to compute FT4222 sys clock and divisor
+*                            to obtain user requested SPI communication clock
+*                            Available FT4222_ClockRate (FT4222 system clock):
+*                               SYS_CLK_60,
+*                               SYS_CLK_24,
+*                               SYS_CLK_48,
+*                               SYS_CLK_80
+*                            Divisors available (FT4222_SPIClock):
+*                               CLK_NONE,
+*                               CLK_DIV_2,
+*                               CLK_DIV_4,
+*                               CLK_DIV_8,
+*                               CLK_DIV_16,
+*                               CLK_DIV_32,
+*                               CLK_DIV_64,
+*                               CLK_DIV_128,
+*                               CLK_DIV_256,
+*                               CLK_DIV_512
+* Implementation           : Good performance is observed with divisors other than CLK_DIV_2
+*                            and CLK_DIV_4 from test report by firmware developers.
+*                            Hence supporting the following clocks for SPI communication
+*                               5000KHz
+*                               10000KHz
+*                               15000KHz
+*                               20000KHz
+*                               25000KHz
+*                               30000KHz
+*                            Global variable phost->Parameters.SpiClockrateKHz is
+*                            updated accodingly
+* Return Value             : bool_t
+*                               TRUE : Supported by FT4222
+*                               FALSE : Not supported by FT4222
+*
+* Author                   :
+****************************************************************************/
+bool computeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *sysdivisor)
+{
+	/* phost->Parameters.SpiClockrateKHz is the user requested SPI communication clock */
+
+	if (phost->Parameters.SpiClockrateKHz <= 5000)
+	{ 
+		/* set to 5000 KHz */
+		*sysclk = SYS_CLK_80;
+		*sysdivisor = CLK_DIV_16;
+		phost->SpiClockrateKHz = 5000;
+	}
+	else if (phost->Parameters.SpiClockrateKHz > 5000 && phost->Parameters.SpiClockrateKHz <= 10000)
+	{
+		/* set to 10000 KHz */
+		*sysclk = SYS_CLK_80;
+		*sysdivisor = CLK_DIV_8;
+		phost->SpiClockrateKHz = 10000;
+	}
+	else if (phost->Parameters.SpiClockrateKHz > 10000 && phost->Parameters.SpiClockrateKHz <= 15000)
+	{
+		/* set to 15000 KHz */
+		*sysclk = SYS_CLK_60;
+		*sysdivisor = CLK_DIV_4;
+		phost->SpiClockrateKHz = 15000;
+	}
+	else
+	{
+		/* set to 20000 KHz : Maximum throughput is obeserved with this clock combination */
+		*sysclk = SYS_CLK_80;
+		*sysdivisor = CLK_DIV_4;
+		phost->SpiClockrateKHz = 20000;
+	}
+	eve_printf_debug("User Selected SPI clk : %d KHz\n", phost->Parameters.SpiClockrateKHz);
+	eve_printf_debug("Configured clk :  Ft4222 sys clk enum = %d , divisor enum = %d\n", *sysclk, *sysdivisor);
+	return true;
 }
 
 /* Opens a new HAL context using the specified parameters */
@@ -226,7 +304,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 
 	if (ret)
 	{
-		if (!Ft_Gpu_Hal_FT4222_ComputeCLK(phost, &selclk, &seldiv))
+		if (!computeCLK(phost, &selclk, &seldiv))
 		{
 			eve_printf_debug("Requested clock %d KHz is not supported in FT4222\n", phost->Parameters.SpiClockrateKHz);
 			ret = false;

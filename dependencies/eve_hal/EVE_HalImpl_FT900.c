@@ -102,7 +102,6 @@ void EVE_HalImpl_release()
 /* Get the default configuration parameters */
 void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 {
-	parameters->MpsseChannelNo = 0;
 	parameters->PowerDownPin = FT800_PD_N;
 	parameters->SpiCsPin = FT800_SEL_PIN;
 }

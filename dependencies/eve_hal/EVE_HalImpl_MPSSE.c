@@ -33,6 +33,12 @@
 #include "EVE_Platform.h"
 #if defined(MPSSE_PLATFORM)
 
+#define LIBMPSSE_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH 65535
+#define LIBMPSSE_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH 65535
+
+#define LIBMPSSE_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH 65535
+#define LIBMPSSE_MAX_WR_BYTES_PER_CALL_IN_MULTI_CH 65532 //3 bytes for FT81x memory address to which data to be written
+
 /*********
 ** INIT **
 *********/
@@ -96,7 +102,6 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 {
 	parameters->MpsseChannelNo = 0;
 	parameters->PowerDownPin = 7;
-	parameters->SpiCsPin = 0;
 	parameters->SpiClockrateKHz = 12000; //in KHz
 }
 
@@ -108,6 +113,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 
 	/* configure the spi settings */
 	channelConf.ClockRate = phost->Parameters.SpiClockrateKHz * 1000;
+	phost->SpiClockrateKHz = phost->Parameters.SpiClockrateKHz;
 	channelConf.LatencyTimer = 2;
 	channelConf.configOptions = SPI_CONFIG_OPTION_MODE0 | SPI_CONFIG_OPTION_CS_DBUS3 | SPI_CONFIG_OPTION_CS_ACTIVELOW;
 	channelConf.Pin = 0x00000000; /* FinalVal-FinalDir-InitVal-InitDir (for dir 0=in, 1=out) */
