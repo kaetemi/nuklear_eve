@@ -49,22 +49,21 @@ Main file to include the EVE HAL.
 #include "FT_ILI9488.h"
 #include "FT_KD2401.h"
 
+#define eve_noop() \
+	do             \
+	{              \
+	} while (false)
+
 #if _DEBUG
 #if defined(_MSC_VER)
 #define eve_debug_break() __debugbreak()
 #elif defined(__GCC__)
 #define eve_debug_break() __builtin_trap()
 #else
-#define eve_debug_break() \
-	do                    \
-	{                     \
-	} while (false)
+#define eve_debug_break() eve_noop()
 #endif
 #else
-#define eve_debug_break() \
-	do                    \
-	{                     \
-	} while (false)
+#define eve_debug_break() eve_noop()
 #endif
 
 #ifndef eve_printf
@@ -106,27 +105,15 @@ Main file to include the EVE HAL.
 		eve_printf("EVE Trace: %s (in file '%s' on line '%i')\n", (str) ? (str) : "<NULL>", sf ? sf : "<NULL>", __LINE__); \
 	} while (false)
 #else
-#define eve_printf_debug(fmt, ...) \
-	do                             \
-	{                              \
-	} while (false)
-#define eve_assert(cond) \
-	do                   \
-	{                    \
-	} while (false)
-#define eve_assert_ex(cond, ex) \
-	do                          \
-	{                           \
-	} while (false)
+#define eve_printf_debug(fmt, ...) eve_noop()
+#define eve_assert(cond) eve_noop()
+#define eve_assert_ex(cond, ex) eve_noop()
 #define eve_assert_do(cond)           \
 	do                                \
 	{                                 \
 		ft_bool_t r__assert = (cond); \
 	} while (false)
-#define eve_trace(cond) \
-	do                  \
-	{                   \
-	} while (false)
+#define eve_trace(cond) eve_noop()
 #endif
 
 #ifndef max
