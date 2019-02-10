@@ -36,8 +36,8 @@
 *
 */
 
-#ifndef FT_GPU_HAL_H
-#define FT_GPU_HAL_H
+#ifndef FT_GPU_HAL__H
+#define FT_GPU_HAL__H
 
 #include "EVE_Hal.h"
 #include "EVE_Cmd.h"
@@ -134,7 +134,7 @@ static inline bool Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 #define Ft_Gpu_Hal_Wr16 EVE_Hal_wr16
 #define Ft_Gpu_Hal_Wr32 EVE_Hal_wr32
 
-#define Ft_Gpu_Hal_WrMem EVE_Hal_wrBuffer
+#define Ft_Gpu_Hal_WrMem EVE_Hal_wrMem
 #define Ft_Gpu_Hal_WrMem_ProgMem EVE_Hal_wrProgmem
 
 static inline ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
@@ -148,7 +148,7 @@ static inline ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr
 #define Ft_Gpu_Hal_WrCmd32 EVE_Cmd_wr32
 
 /// Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FT_FALSE in case a co processor fault occured
-#define Ft_Gpu_Hal_WrCmdBuf EVE_Cmd_wrBuffer
+#define Ft_Gpu_Hal_WrCmdBuf EVE_Cmd_wrMem
 #define Ft_Gpu_Hal_WrCmdBuf_ProgMem EVE_Cmd_wrProgmem
 
 /// Wait for the command buffer to fully empty. Returns FT_FALSE in case a co processor fault occured
@@ -169,7 +169,7 @@ static inline ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t 
 #define Ft_Gpu_CoCmd_SendCmd EVE_Cmd_wr32
 inline static ft_void_t Ft_Gpu_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
 {
-	EVE_Cmd_wrBuffer(phost, (uint8_t *)cmd, (uint32_t)nb * 4);
+	EVE_Cmd_wrMem(phost, (uint8_t *)cmd, (uint32_t)nb * 4);
 }
 #define Ft_Gpu_CoCmd_SendStr(phost, str) EVE_Cmd_wrString(phost, str, EVE_CMD_STRING_MAX)
 #define Ft_Gpu_CoCmd_SendStr_S EVE_Cmd_wrString
@@ -330,8 +330,9 @@ ft_int32_t Ft_Gpu_ClockTrimming(EVE_HalContext *phost, ft_uint32_t lowFreq);
 ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(EVE_HalContext *phost);
 #endif
 
+#define Ft_Hal_LoadSDCard() EVE_Util_loadSdCard(NULL)
 #define Eve_BootupConfig EVE_Util_bootupConfig
 
 ft_void_t Ft_DisplayPanel_Init();
 
-#endif /* FT_GPU_HAL_H */
+#endif /* FT_GPU_HAL__H */

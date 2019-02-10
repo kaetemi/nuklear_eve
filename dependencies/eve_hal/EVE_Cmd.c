@@ -162,7 +162,7 @@ void EVE_Cmd_endFunc(EVE_HalContext *phost)
 	phost->CmdFunc = false;
 }
 
-bool EVE_Cmd_wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
+bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
 {
 	eve_assert(phost->CmdBufferIndex == 0);
 	return wrBuffer(phost, buffer, size, false, false) == size;
@@ -191,7 +191,7 @@ bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value)
 	if (phost->CmdBufferIndex == 4)
 	{
 		phost->CmdBufferIndex = 0;
-		return EVE_Cmd_wrBuffer(phost, phost->CmdBuffer, 4);
+		return EVE_Cmd_wrMem(phost, phost->CmdBuffer, 4);
 	}
 
 	return true;
@@ -207,7 +207,7 @@ bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value)
 	if (phost->CmdBufferIndex == 4)
 	{
 		phost->CmdBufferIndex = 0;
-		return EVE_Cmd_wrBuffer(phost, phost->CmdBuffer, 4);
+		return EVE_Cmd_wrMem(phost, phost->CmdBuffer, 4);
 	}
 
 	return true;
@@ -273,7 +273,7 @@ static void displayError(EVE_HalContext *phost, char *err)
 
 	/* Abuse back of RAM_G to store error */
 	/* May invalidate user data... */
-	EVE_Hal_wrBuffer(phost, addr, err, 128);
+	EVE_Hal_wrMem(phost, addr, err, 128);
 
 	/* Generate bluescreen */
 	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR_COLOR_RGB(0x00, 0x20, 0x40));

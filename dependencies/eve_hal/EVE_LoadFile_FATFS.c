@@ -29,16 +29,17 @@
 * has no liability in relation to those amendments.
 */
 
-#include "FT_Platform.h"
+#include "EVE_LoadFile.h"
+#include "EVE_Platform.h"
 #if defined(FT900_PLATFORM)
 
 #if defined(EVE_ENABLE_FATFS)
 #include "ff.h"
-static ft_bool_t s_FatFSLoaded = FT_FALSE;
+static bool s_FatFSLoaded = false;
 static FATFS s_FatFS;
 #endif
 
-void Ft_Hal_LoadSDCard()
+bool EVE_Util_loadSdCard(EVE_HalContext *phost)
 {
 #if defined(EVE_ENABLE_FATFS)
 	SDHOST_STATUS status = sdhost_card_detect();
@@ -52,7 +53,7 @@ void Ft_Hal_LoadSDCard()
 		{
 			if (!s_FatFSLoaded)
 			{
-				s_FatFSLoaded = FT_TRUE;
+				s_FatFSLoaded = true;
 				eve_printf_debug("FatFS SD card mounted successfully\n");
 			}
 		}
@@ -62,21 +63,24 @@ void Ft_Hal_LoadSDCard()
 		if (s_FatFSLoaded)
 		{
 			eve_printf_debug("SD card not detected\n");
-			s_FatFSLoaded = FT_FALSE;
+			s_FatFSLoaded = false;
 		}
 	}
+	return s_FatFSLoaded;
+#else
+	return false;
 #endif
 }
 
-int Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
+bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename)
 {
 #if defined(EVE_ENABLE_FATFS)
 	FRESULT fResult;
 	FIL InfSrc;
 
-	ft_int32_t blocklen, filesize;
-	ft_uint8_t g_random_buffer[512L];
-	ft_uint32_t addr = address;
+	int32_t blocklen, filesize;
+	uint8_t g_random_buffer[512L];
+	uint32_t addr = address;
 
 	fResult = f_open(&InfSrc, filename, FA_READ | FA_OPEN_EXISTING);
 	if (fResult == FR_OK)
@@ -86,7 +90,7 @@ int Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const char *f
 		{
 			fResult = f_read(&InfSrc, g_random_buffer, 512, &blocklen); // read a chunk of src file
 			filesize -= blocklen;
-			Ft_Gpu_Hal_WrMem(phost, addr, g_random_buffer, blocklen);
+			EVE_Hal_wrMem(phost, addr, g_random_buffer, blocklen);
 			addr += blocklen;
 		}
 		f_close(&InfSrc);
@@ -103,26 +107,20 @@ int Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const char *f
 #endif
 }
 
-ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
+bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename)
 {
 #if defined(EVE_ENABLE_FATFS)
-	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 8))
-		return FT_FALSE; // Space for CMD_INFLATE
-
-	ft_bool_t cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-
 	FRESULT fResult;
 	FIL InfSrc;
 
-	ft_int32_t blocklen, filesize;
-	ft_uint8_t g_random_buffer[512L];
+	int32_t blocklen, filesize;
+	uint8_t g_random_buffer[512L];
 
 	fResult = f_open(&InfSrc, filename, FA_READ | FA_OPEN_EXISTING);
 	if (fResult == FR_OK)
 	{
-		Ft_Gpu_Hal_WrCmd32(phost, CMD_INFLATE);
-		Ft_Gpu_Hal_WrCmd32(phost, address);
+		EVE_Cmd_wr32(phost, CMD_INFLATE);
+		EVE_Cmd_wr32(phost, address);
 		filesize = f_size(&InfSrc);
 		while (filesize > 0)
 		{
@@ -130,19 +128,16 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 			filesize -= blocklen;
 			blocklen += 3;
 			blocklen -= blocklen % 4;
-			if (!Ft_Gpu_Hal_WrCmdBuf(phost, (char *)g_random_buffer, blocklen))
+			if (!EVE_Cmd_wrMem(phost, (char *)g_random_buffer, blocklen))
 				break;
 		}
 		f_close(&InfSrc);
-
-		phost->CmdFrame = cmdFrame;
-		return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
+		return EVE_Cmd_waitFlush(phost);
 	}
 	else
 	{
 		eve_printf_debug("Unable to open file: \"%s\"\n", filename);
-		phost->CmdFrame = cmdFrame;
-		return FT_FALSE;
+		return false;
 	}
 #else
 	eve_printf_debug("No filesystem support, cannot open: \"%s\"\n", filename);
@@ -150,27 +145,21 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 #endif
 }
 
-ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format)
+bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, uint32_t *format)
 {
 #if defined(EVE_ENABLE_FATFS)
-	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 12))
-		return FT_FALSE; // Space for CMD_LOADIMAGE
-
-	ft_bool_t cmdFrame = phost->CmdFrame;
-	phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-
 	FRESULT fResult;
 	FIL InfSrc;
 
-	ft_int32_t blocklen, filesize;
-	ft_uint8_t g_random_buffer[512L];
+	int32_t blocklen, filesize;
+	uint8_t g_random_buffer[512L];
 
 	fResult = f_open(&InfSrc, filename, FA_READ | FA_OPEN_EXISTING);
 	if (fResult == FR_OK)
 	{
-		Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
-		Ft_Gpu_Hal_WrCmd32(phost, address);
-		Ft_Gpu_Hal_WrCmd32(phost, OPT_NODL);
+		EVE_Cmd_wr32(phost, CMD_LOADIMAGE);
+		EVE_Cmd_wr32(phost, address);
+		EVE_Cmd_wr32(phost, OPT_NODL);
 		filesize = f_size(&InfSrc);
 		while (filesize > 0)
 		{
@@ -178,25 +167,23 @@ ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const
 			filesize -= blocklen;
 			blocklen += 3;
 			blocklen -= blocklen % 4;
-			if (!Ft_Gpu_Hal_WrCmdBuf(phost, (char *)g_random_buffer, blocklen))
+			if (!EVE_Cmd_wrMem(phost, (char *)g_random_buffer, blocklen))
 				break;
 		}
 		f_close(&InfSrc);
 
-		phost->CmdFrame = cmdFrame;
-		if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-			return FT_FALSE;
+		if (!EVE_Cmd_waitFlush(phost))
+			return false;
 
 		if (format)
-			*format = Ft_Gpu_Hal_Rd32(phost, 0x3097e8);
+			*format = EVE_Hal_rd32(phost, 0x3097e8);
 
-		return FT_TRUE;
+		return true;
 	}
 	else
 	{
 		eve_printf_debug("Unable to open file: \"%s\"\n", filename);
-		phost->CmdFrame = cmdFrame;
-		return FT_FALSE;
+		return false;
 	}
 #else
 	eve_printf_debug("No filesystem support, cannot open: \"%s\"\n", filename);

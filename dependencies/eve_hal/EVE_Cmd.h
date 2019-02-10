@@ -71,7 +71,7 @@ void EVE_Cmd_endFunc(EVE_HalContext *phost);
 /* Write a buffer to the command buffer. 
 Waits if there is not enough space in the command buffer. 
 Returns FT_FALSE in case a co processor fault occured */
-bool EVE_Cmd_wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size);
+bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size);
 
 /* Write a progmem buffer to the command buffer. 
 Waits if there is not enough space in the command buffer. 

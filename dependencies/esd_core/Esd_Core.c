@@ -56,7 +56,6 @@ void Esd_CheckTypeSizes();
 // ft_void_t Eve_BootupConfig(EVE_HalContext *s_Host);
 #define Eve_BootupConfig EVE_Util_bootupConfig
 
-extern void Ft_Hal_LoadSDCard();
 // extern void Ft_Esd_Widget_ProcessFree(); // TODO: Bind from widgets
 
 // When not in the simulation, use the Ft_Main__Start etc symbols
@@ -181,7 +180,7 @@ void Esd_Start(Esd_Context *ec)
 	// Ft_Esd_Timer_CancelGlobal(); // TODO
 
 	// Initialize storage
-	Ft_Hal_LoadSDCard();
+	EVE_Util_loadSdCard(&ec->HalContext);
 #if defined(EVE_FLASH_AVAILABLE)
 	Esd_AttachFlashFast();
 #endif

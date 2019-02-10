@@ -227,7 +227,7 @@ void EVE_Hal_rdBuffer(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uin
 void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v);
 void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v);
 void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v);
-void EVE_Hal_wrBuffer(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size);
+void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size);
 void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size);
 
 /*********

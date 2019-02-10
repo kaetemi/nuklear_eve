@@ -29,28 +29,31 @@
 * has no liability in relation to those amendments.
 */
 
-#include "FT_Platform.h"
-#if defined(MSVC_PLATFORM)
+#include "EVE_LoadFile.h"
+#include "EVE_Platform.h"
+#if !defined(FT900_PLATFORM)
 
 #include <stdio.h>
 
-void Ft_Hal_LoadSDCard()
+bool EVE_Util_loadSdCard(EVE_HalContext *phost)
 {
+	/* no-op */
+	return true;
 }
 
-ft_bool_t Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
+bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename)
 {
 	FILE *afile;
-	ft_uint32_t ftsize = 0;
-	ft_uint8_t pbuff[8192];
-	ft_uint16_t blocklen;
-	ft_uint32_t addr = address;
+	uint32_t ftsize = 0;
+	uint8_t pbuff[8192];
+	uint16_t blocklen;
+	uint32_t addr = address;
 
 	afile = fopen(filename, "rb");
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
-		return FT_FALSE;
+		return false;
 	}
 	fseek(afile, 0, SEEK_END);
 	ftsize = ftell(afile);
@@ -60,32 +63,32 @@ ft_bool_t Ft_Hal_LoadRawFile(EVE_HalContext *phost, ft_uint32_t address, const c
 		blocklen = ftsize > 8192 ? 8192 : ftsize;
 		fread(pbuff, 1, blocklen, afile);
 		ftsize -= blocklen;
-		Ft_Gpu_Hal_WrMem(phost, addr, pbuff, blocklen);
+		EVE_Hal_wrMem(phost, addr, pbuff, blocklen);
 		addr += blocklen;
 	}
 	fclose(afile);
 
-	return FT_TRUE;
+	return true;
 }
 
-ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename)
+bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename)
 {
 	FILE *afile;
 	uint32_t ftsize = 0;
 	uint8_t pbuff[8192];
 	uint16_t blocklen;
 
-	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 8))
-		return FT_FALSE; // Space for CMD_INFLATE
+	if (!EVE_Cmd_waitSpace(phost, 8))
+		return false; // Space for CMD_INFLATE
 
 	afile = fopen(filename, "rb"); // read Binary (rb)
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
-		return FT_FALSE;
+		return false;
 	}
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_INFLATE);
-	Ft_Gpu_Hal_WrCmd32(phost, address);
+	EVE_Cmd_wr32(phost, CMD_INFLATE);
+	EVE_Cmd_wr32(phost, address);
 	fseek(afile, 0, SEEK_END);
 	ftsize = ftell(afile);
 	fseek(afile, 0, SEEK_SET);
@@ -95,24 +98,21 @@ ft_bool_t Ft_Hal_LoadInflateFile(EVE_HalContext *phost, ft_uint32_t address, con
 		fread(pbuff, 1, blocklen, afile); /* copy the data into pbuff and then transfter it to command buffer */
 		ftsize -= blocklen;
 
-		if (!Ft_Gpu_Hal_WrCmdBuf(phost, (char *)pbuff, blocklen)) /* copy data continuously into command memory */
+		if (!EVE_Cmd_wrMem(phost, (char *)pbuff, blocklen)) /* copy data continuously into command memory */
 			break;
 	}
 
 	fclose(afile); /* close the opened compressed file */
 
-	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
+	return EVE_Cmd_waitFlush(phost);
 }
 
-ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const char *filename, ft_uint32_t *format)
+bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, uint32_t *format)
 {
 	FILE *afile;
 	uint32_t ftsize = 0;
 	uint8_t pbuff[8192];
 	uint16_t blocklen;
-
-	if (!Ft_Gpu_Hal_WaitCmdFreespace(phost, 12))
-		return FT_FALSE; // Space for CMD_LOADIMAGE
 
 	afile = fopen(filename, "rb"); // read Binary (rb)
 	if (afile == NULL)
@@ -120,9 +120,9 @@ ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const
 		eve_printf_debug("Unable to open: %s\n", filename);
 		return 0;
 	}
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
-	Ft_Gpu_Hal_WrCmd32(phost, address);
-	Ft_Gpu_Hal_WrCmd32(phost, OPT_NODL);
+	EVE_Cmd_wr32(phost, CMD_LOADIMAGE);
+	EVE_Cmd_wr32(phost, address);
+	EVE_Cmd_wr32(phost, OPT_NODL);
 	// TODO: Let it write into the scratch display list handle,
 	//  and read it out and write into the bitmapInfo the proper
 	//  values to use. Replace compressed bool with uint8 enum to
@@ -138,19 +138,19 @@ ft_bool_t Ft_Hal_LoadImageFile(EVE_HalContext *phost, ft_uint32_t address, const
 		blocklen += 3;
 		blocklen -= blocklen % 4;
 
-		if (!Ft_Gpu_Hal_WrCmdBuf(phost, (char *)pbuff, blocklen))
+		if (!EVE_Cmd_wrMem(phost, (char *)pbuff, blocklen))
 			break;
 	}
 
 	fclose(afile); /* close the opened jpg file */
 
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-		return FT_FALSE;
+	if (!EVE_Cmd_waitFlush(phost))
+		return false;
 
 	if (format)
-		*format = Ft_Gpu_Hal_Rd32(phost, 0x3097e8);
+		*format = EVE_Hal_rd32(phost, 0x3097e8);
 
-	return FT_TRUE;
+	return true;
 }
 
 #endif

@@ -219,7 +219,7 @@ void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v)
 	EVE_Hal_endTransfer(phost);
 }
 
-void EVE_Hal_wrBuffer(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size)
+void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transferBuffer(phost, NULL, buffer, size);

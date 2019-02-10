@@ -145,7 +145,7 @@ ft_bool_t Ft_Gpu_CoCmd_AnimStart(EVE_HalContext *phost, int32_t ch, uint32_t aop
 			aoptr,
 			loop,
 		};
-		EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+		EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 		return EVE_Cmd_waitFlush(phost);
 	}
 }
@@ -156,7 +156,7 @@ void Ft_Gpu_CoCmd_AnimStop(EVE_HalContext *phost, int32_t ch)
 		CMD_ANIMSTOP,
 		ch,
 	};
-	EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
 void Ft_Gpu_CoCmd_AnimXY(EVE_HalContext *phost, int32_t ch, int16_t x, int16_t y)
@@ -166,7 +166,7 @@ void Ft_Gpu_CoCmd_AnimXY(EVE_HalContext *phost, int32_t ch, int16_t x, int16_t y
 		ch,
 		(((ft_uint32_t)y << 16) | (x & 0xffff)),
 	};
-	EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
 void Ft_Gpu_CoCmd_AnimDraw(EVE_HalContext *phost, int32_t ch)
@@ -175,7 +175,7 @@ void Ft_Gpu_CoCmd_AnimDraw(EVE_HalContext *phost, int32_t ch)
 		CMD_ANIMDRAW,
 		ch,
 	};
-	EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 
 void Ft_Gpu_CoCmd_AnimFrame(EVE_HalContext *phost, int16_t x, int16_t y, uint32_t aoptr, uint32_t frame)
@@ -186,7 +186,7 @@ void Ft_Gpu_CoCmd_AnimFrame(EVE_HalContext *phost, int16_t x, int16_t y, uint32_
 		aoptr,
 		frame,
 	};
-	EVE_Cmd_wrBuffer(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
 }
 #endif
 

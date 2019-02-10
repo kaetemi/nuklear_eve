@@ -63,6 +63,7 @@ Main file to include the EVE HAL in your applications.
 #include "EVE_ILI9488.h"
 #endif
 #include "EVE_Util.h"
+#include "EVE_LoadFile.h"
 
 #define eve_noop() \
 	do             \
