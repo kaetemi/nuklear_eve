@@ -39,28 +39,6 @@
 
 /* Globals for polling implementation */
 
-ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(EVE_HalContext *phost)
-{
-	ft_int16_t rp, wp;
-	do
-	{
-		Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
-		if (FT_COCMD_FAULT(rp))
-		{
-			// Co processor fault
-			phost->CmdFault = FT_TRUE;
-#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
-			char err[128];
-			Ft_Gpu_Hal_RdMem(phost, RAM_ERR_REPORT, err, 128);
-			eve_printf_debug("%s\n", err);
-#endif
-			eve_debug_break();
-			return FT_FALSE;
-		}
-	} while ((wp != 0) || (rp != 0));
-	return FT_TRUE;
-}
-
 ft_void_t Ft_Gpu_ClockSelect(EVE_HalContext *phost, FT_GPU_PLL_SOURCE_T pllsource)
 {
 	Ft_Gpu_HostCommand(phost, pllsource);

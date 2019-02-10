@@ -39,6 +39,8 @@
 EVE_HalPlatform *EVE_Hal_initialize()
 {
 	eve_assert_ex(g_HalPlatform.TotalDevices == 0, "HAL platform already initialized\n");
+	EVE_Mcu_initialize();
+	EVE_Millis_initialize();
 	EVE_HalImpl_initialize();
 	return &g_HalPlatform;
 }
@@ -47,6 +49,8 @@ void EVE_Hal_release()
 {
 	eve_assert_ex(g_HalPlatform.OpenedDevices == 0, "HAL context still open\n");
 	EVE_HalImpl_release();
+	EVE_Millis_release();
+	EVE_Mcu_release();
 	memset(&g_HalPlatform, 0, sizeof(EVE_HalPlatform));
 }
 

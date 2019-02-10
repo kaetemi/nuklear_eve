@@ -36,10 +36,16 @@
 #include "FT_MCU_Hal.h"
 #include "FT_Gpu_Hal.h"
 
+const eve_progmem_const uint8_t c_DlCodeBootup[12] = {
+	0, 0, 0, 2, // GPU instruction CLEAR_COLOR_RGB
+	7, 0, 0, 38, // GPU instruction CLEAR
+	0, 0, 0, 0, //G PU instruction DISPLAY
+};
+
 #if !defined(BT8XXEMU_PLATFORM) /* TODO: Can the emulator handle this? */
 #if (EVE_MODEL == EVE_FT811) || (EVE_MODEL == EVE_FT813)
 #define TOUCH_DATA_LEN 1172
-static ft_prog_uchar8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
+static eve_progmem_const uint8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
 	26, 255, 255, 255, 32, 32, 48, 0, 4, 0, 0, 0, 2, 0, 0, 0, 34,
 	255, 255, 255, 0, 176, 48, 0, 120, 218, 237, 84, 255, 107, 92,
 	69, 16, 159, 125, 155, 107, 141, 201, 121, 247, 106, 130, 9,
@@ -130,9 +136,9 @@ static ft_prog_uchar8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
 /* Download new touch firmware for FT811 and FT813 chip */
 ft_void_t uploadTouchFirmware(EVE_HalContext *phost)
 {
-	// bug fix pen up section
-	eve_assert_do(Ft_Gpu_Hal_WrCmdBuf_ProgMem(phost, c_TouchDataU8, TOUCH_DATA_LEN));
-	eve_assert_do(Ft_Gpu_Hal_WaitCmdFifoEmpty(phost));
+	/* bug fix pen up section */
+	eve_assert_do(EVE_Cmd_wrProgmem(phost, c_TouchDataU8, TOUCH_DATA_LEN));
+	eve_assert_do(EVE_Cmd_waitFlush(phost));
 }
 #endif
 #endif
@@ -248,7 +254,7 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	EVE_Hal_wr8(phost, REG_GPIO, 0xff);
 #endif
 
-	EVE_Hal_wrBuffer(phost, RAM_DL, (ft_uint8_t *)FT_DLCODE_BOOTUP, sizeof(FT_DLCODE_BOOTUP));
+	EVE_Hal_wrProgmem(phost, RAM_DL, (ft_uint8_t *)c_DlCodeBootup, sizeof(c_DlCodeBootup));
 	EVE_Hal_wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
 
 	EVE_Hal_wr8(phost, REG_PCLK, parameters->Display.PCLK); /* after this display is visible on the LCD */

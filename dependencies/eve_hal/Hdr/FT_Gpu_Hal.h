@@ -288,14 +288,9 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up);
 #define FT_SPI_TWO_DUMMY_BYTE EVE_SPI_TWO_DUMMY_BYTES
 
 #define ft_delay EVE_sleep
-#define Ft_Gpu_Hal_Sleep EVE_sleep
 
-ft_void_t Ft_Gpu_ClockSelect(EVE_HalContext *phost, FT_GPU_PLL_SOURCE_T pllsource);
-ft_void_t Ft_Gpu_PLL_FreqSelect(EVE_HalContext *phost, FT_GPU_PLL_FREQ_T freq);
-ft_void_t Ft_Gpu_PowerModeSwitch(EVE_HalContext *phost, FT_GPU_POWER_MODE_T pwrmode);
-ft_void_t Ft_Gpu_CoreReset(EVE_HalContext *phost);
+#define Ft_Gpu_Hal_WaitLogo_Finish EVE_Cmd_waitLogo
 
-ft_bool_t Ft_Gpu_Hal_WaitLogo_Finish(EVE_HalContext *phost);
 inline static ft_int16_t Ft_Gpu_Hal_TransferString(EVE_HalContext *phost, const ft_char8_t *str)
 {
 	return EVE_Hal_transferString(phost, str, 0, EVE_CMD_STRING_MAX, 0) - 1;
@@ -305,6 +300,12 @@ inline static ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, cons
 {
 	return EVE_Hal_transferString(phost, str, 0, length, 0) - 1;
 }
+#define Ft_Gpu_Hal_Sleep EVE_sleep
+
+ft_void_t Ft_Gpu_ClockSelect(EVE_HalContext *phost, FT_GPU_PLL_SOURCE_T pllsource);
+ft_void_t Ft_Gpu_PLL_FreqSelect(EVE_HalContext *phost, FT_GPU_PLL_FREQ_T freq);
+ft_void_t Ft_Gpu_PowerModeSwitch(EVE_HalContext *phost, FT_GPU_POWER_MODE_T pwrmode);
+ft_void_t Ft_Gpu_CoreReset(EVE_HalContext *phost);
 
 ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd);
 ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd);
@@ -321,8 +322,8 @@ ft_void_t Ft_Gpu_81X_ResetRemoval(EVE_HalContext *phost);
 ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost);
 ft_int32_t Ft_Gpu_ClockTrimming(EVE_HalContext *phost, ft_uint32_t lowFreq);
 
-#define ft_millis_init EVE_Millis_initialize
-#define ft_millis_exit EVE_Millis_release
+// #define ft_millis_init EVE_Millis_initialize
+// #define ft_millis_exit EVE_Millis_release
 #define ft_millis EVE_millis
 
 #if defined(PANL70) || defined(PANL70PLUS)
@@ -334,6 +335,8 @@ ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(EVE_HalContext *phost);
 #include <FT_Gpu_Hal_MSVC.h>
 #elif defined(FT900_PLATFORM)
 #endif
+
+#define Eve_BootupConfig EVE_Util_bootupConfig
 
 ft_void_t Ft_DisplayPanel_Init();
 

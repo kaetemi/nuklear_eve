@@ -37,6 +37,20 @@
 ** MISC **
 *********/
 
+void EVE_Mcu_initialize()
+{
+	/* no-op */
+}
+
+void EVE_Mcu_release()
+{
+	/* no-op */
+}
+
+/*********
+** MISC **
+*********/
+
 static DWORD s_Millis_Start;
 
 void EVE_Millis_initialize()

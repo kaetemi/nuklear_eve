@@ -35,6 +35,18 @@
 
 ft_void_t ticker();
 
+#if defined(EVE_MODULE_PANL)
+/* TODO: Pass these as parameters in HAL initialization, instead of here. */
+
+uint8_t ucHeap[PANL_HEAP_SIZE];
+
+/* uart_write((ft900_uart_regs_t*) p, (uint8_t) c); */
+void tfp_putc(void *p, char c); /* Placeholder for user code */
+void bacnet_notification_acked(uint8_t id); /* Placeholder for user code */
+ft_bool_t bacnet_msg_received(uint8_t src, const uint8_t *indata, const size_t inlen, uint8_t *outdata, size_t *outlen); /* Placeholder for user code */
+void bacnet_unconf_msg_received(uint8_t src, const uint8_t *indata, const size_t inlen); /* Placeholder for user code */
+#endif /* #if defined(EVE_MODULE_PANL) */
+
 /*********
 ** INIT **
 *********/
@@ -235,6 +247,128 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		transfer8(phost, 0);
 	}
 	return transferred;
+}
+
+/*********
+** MISC **
+*********/
+
+static ft_void_t initSdHost()
+{
+	sys_enable(sys_device_sd_card);
+	sdhost_init();
+
+#define GPIO_SD_CLK (19)
+#define GPIO_SD_CMD (20)
+#define GPIO_SD_DAT3 (21)
+#define GPIO_SD_DAT2 (22)
+#define GPIO_SD_DAT1 (23)
+#define GPIO_SD_DAT0 (24)
+#define GPIO_SD_CD (25)
+#define GPIO_SD_WP (26)
+
+	gpio_function(GPIO_SD_CLK, pad_sd_clk);
+	gpio_pull(GPIO_SD_CLK, pad_pull_none); // pad_pull_none
+	gpio_function(GPIO_SD_CMD, pad_sd_cmd);
+	gpio_pull(GPIO_SD_CMD, pad_pull_pullup);
+	gpio_function(GPIO_SD_DAT3, pad_sd_data3);
+	gpio_pull(GPIO_SD_DAT3, pad_pull_pullup);
+	gpio_function(GPIO_SD_DAT2, pad_sd_data2);
+	gpio_pull(GPIO_SD_DAT2, pad_pull_pullup);
+	gpio_function(GPIO_SD_DAT1, pad_sd_data1);
+	gpio_pull(GPIO_SD_DAT1, pad_pull_pullup);
+	gpio_function(GPIO_SD_DAT0, pad_sd_data0);
+	gpio_pull(GPIO_SD_DAT0, pad_pull_pullup);
+	gpio_function(GPIO_SD_CD, pad_sd_cd);
+	gpio_pull(GPIO_SD_CD, pad_pull_pullup);
+	gpio_function(GPIO_SD_WP, pad_sd_wp);
+	gpio_pull(GPIO_SD_WP, pad_pull_pullup);
+}
+
+void EVE_Mcu_initialize()
+{
+#if (defined(EVE_MODULE_PANL))
+#ifndef EVDEMO
+	init_printf(UART0, tfp_putc);
+#endif
+	panl_board_cfg bcfg;
+#if defined(PANL35)
+	panl_board_cfg_set_defaults(PANL35_GENERIC_V2, &bcfg);
+#elif defined(PANL70) || defined(PANL70PLUS)
+	panl_board_cfg_set_defaults(PANL70_PLUS_V2, &bcfg);
+#endif
+
+	panl_result res = panl_init(&bcfg);
+	panl_bacnet_cfg_s cfg = { .msg_rxed_cb = bacnet_msg_received, .notif_ack_cb = bacnet_notification_acked, .unconf_msg_rxed_cb = bacnet_unconf_msg_received, .mac = 13, .config = config_default };
+	if (!panl_bacnet_init(&cfg))
+	{
+		eve_printf_debug("Error init bacnet!\n");
+	}
+
+	panl_led_init();
+
+	uint8_t panlID = 0;
+	res = panl_get_panl_id(&panlID);
+
+	eve_printf_debug("\r\nPanL ID :  %04x\r\n", panlID);
+#endif
+
+	interrupt_enable_globally();
+
+#ifndef EVDEMO
+	sys_enable(sys_device_uart0);
+	gpio_function(48, pad_uart0_txd); /* UART0 TXD */
+	gpio_function(49, pad_uart0_rxd); /* UART0 RXD */
+	uart_open(UART0, /* Device */
+		1, /* Prescaler = 1 */
+		UART_DIVIDER_115200_BAUD, /* Divider = 1302 */
+		uart_data_bits_8, /* No. Data Bits */
+		uart_parity_none, /* Parity */
+		uart_stop_bits_1); /* No. Stop Bits */
+#endif
+
+#if (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
+						   /* asign all the respective pins to gpio and set them to default values */
+	gpio_function(34, pad_gpio34);
+	gpio_dir(34, pad_dir_output);
+	gpio_write(34, 1);
+
+	gpio_function(27, pad_gpio27);
+	gpio_dir(27, pad_dir_output);
+	gpio_write(27, 1);
+
+	gpio_function(29, pad_gpio29);
+	gpio_dir(29, pad_dir_output);
+	gpio_write(29, 1);
+
+	gpio_function(33, pad_gpio33);
+	gpio_dir(33, pad_dir_output);
+	gpio_write(33, 1);
+
+	gpio_function(30, pad_gpio30);
+	gpio_dir(30, pad_dir_output);
+	gpio_write(30, 1);
+
+	gpio_function(28, pad_gpio28);
+	gpio_dir(28, pad_dir_output);
+	gpio_write(28, 1);
+
+	gpio_function(43, pad_gpio43);
+	gpio_dir(43, pad_dir_output);
+	gpio_write(43, 1);
+	gpio_write(34, 1);
+	gpio_write(28, 1);
+	gpio_write(43, 1);
+	gpio_write(33, 1);
+	gpio_write(33, 1);
+#endif
+
+	initSdHost();
+}
+
+void EVE_Mcu_release()
+{
+	/* no-op */
 }
 
 /*********

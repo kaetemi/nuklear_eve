@@ -79,6 +79,9 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
 ** MISC **
 *********/
 
+void EVE_Mcu_initialize();
+void EVE_Mcu_release();
+
 void EVE_Millis_initialize();
 void EVE_Millis_release();
 uint32_t EVE_millis();

@@ -73,6 +73,11 @@ bool EVE_Cmd_waitFlush(EVE_HalContext *phost);
 /* Wait for the command buffer to have at least the requested amount of free space. Returns FT_FALSE in case a co processor fault occured */
 bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size);
 
+/* Wait for logo to finish displaying. (Waits for both rp and wp to go to 0) */
+bool EVE_Cmd_waitLogo(EVE_HalContext *phost);
+
+/* TODO: EVE_Cmd_cpuReset(EVE_HalContext *phost) */
+
 #endif /* #ifndef EVE_HAL__H */
 
 /* end of file */
