@@ -55,7 +55,6 @@ void Esd_CheckTypeSizes();
 // FT_Mcu_Hal.c
 // ft_void_t Eve_BootupConfig(EVE_HalContext *s_Host);
 #define Eve_BootupConfig EVE_Util_bootupConfig
-ft_void_t Ft_Mcu_Init();
 
 extern void Ft_Hal_LoadSDCard();
 // extern void Ft_Esd_Widget_ProcessFree(); // TODO: Bind from widgets
@@ -115,8 +114,6 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 #if _DEBUG
 	Esd_CheckTypeSizes();
 #endif
-
-	Ft_Mcu_Init();
 
 	Ft_Gpu_HalInit_t halInit;
 	Ft_Gpu_Hal_Init(&halInit);

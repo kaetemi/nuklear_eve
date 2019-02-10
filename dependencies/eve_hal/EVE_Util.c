@@ -33,7 +33,6 @@
 #include "EVE_Platform.h"
 #include "EVE_HalImpl.h"
 
-#include "FT_MCU_Hal.h"
 #include "FT_Gpu_Hal.h"
 
 const eve_progmem_const uint8_t c_DlCodeBootup[12] = {
