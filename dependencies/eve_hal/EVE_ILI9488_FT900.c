@@ -33,13 +33,14 @@
 *
 */
 
-#include "FT_Platform.h"
-#if defined(FT900_PLATFORM) && defined(ENABLE_ILI9488_HVGA_PORTRAIT)
+#include "EVE_Platform.h"
+#if defined(FT900_PLATFORM) \
+    && (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
 
 //only write command
-ft_int16_t ILI9488_SPI_WriteCmd(ft_uint8_t cmd, ft_uint8_t data)
+int16_t ILI9488_SPI_WriteCmd(uint8_t cmd, uint8_t data)
 {
-	ft_uint8_t i;
+	uint8_t i;
 	/* bit banging mechanism */
 	ILI9488_DCX_LOW;
 
@@ -90,9 +91,9 @@ ft_int16_t ILI9488_SPI_WriteCmd(ft_uint8_t cmd, ft_uint8_t data)
 }
 
 //write N number of bytes
-ft_int16_t ILI9488_SPI_WriteCmdN(ft_uint8_t cmd, ft_uint8_t bytecount, ft_uint8_t *pbuff)
+int16_t ILI9488_SPI_WriteCmdN(uint8_t cmd, uint8_t bytecount, uint8_t *pbuff)
 {
-	ft_uint8_t i, j, transbit;
+	uint8_t i, j, transbit;
 	/* bit banging mechanism */
 	ILI9488_DCX_LOW;
 
@@ -144,9 +145,9 @@ ft_int16_t ILI9488_SPI_WriteCmdN(ft_uint8_t cmd, ft_uint8_t bytecount, ft_uint8_
 }
 
 //read/write data with cs being toggled
-ft_uint8_t ILI9488_SPI_Read(ft_uint8_t cmd)
+uint8_t ILI9488_SPI_Read(uint8_t cmd)
 {
-	ft_uint8_t i, readbyte = 0;
+	uint8_t i, readbyte = 0;
 	/* bit banging mechanism */
 	ILI9488_DCX_LOW;
 	ILI9488_CS_LOW;
@@ -194,9 +195,9 @@ ft_uint8_t ILI9488_SPI_Read(ft_uint8_t cmd)
 	return readbyte;
 }
 
-ft_uint8_t ILI9488_SPI_ReadN(ft_uint8_t cmd, ft_uint8_t numbytes, ft_uint8_t *pbuffer)
+uint8_t ILI9488_SPI_ReadN(uint8_t cmd, uint8_t numbytes, uint8_t *pbuffer)
 {
-	ft_uint8_t i, readbyte = 0, j;
+	uint8_t i, readbyte = 0, j;
 	/* bit banging mechanism */
 	ILI9488_DCX_LOW;
 	ILI9488_CS_LOW;
@@ -251,10 +252,10 @@ ft_uint8_t ILI9488_SPI_ReadN(ft_uint8_t cmd, ft_uint8_t numbytes, ft_uint8_t *pb
 }
 
 //read 24 bits
-ft_uint32_t ILI9488_SPI_ReadRDDID(ft_uint8_t cmd)
+uint32_t ILI9488_SPI_ReadRDDID(uint8_t cmd)
 {
-	ft_uint8_t i;
-	ft_uint32_t readword = 0;
+	uint8_t i;
+	uint32_t readword = 0;
 	/* bit banging mechanism */
 	ILI9488_DCX_LOW;
 	ILI9488_CS_LOW;
@@ -302,10 +303,10 @@ ft_uint32_t ILI9488_SPI_ReadRDDID(ft_uint8_t cmd)
 	return readword;
 }
 //read 32 bits
-ft_uint32_t ILI9488_SPI_ReadRDDST(ft_uint8_t cmd)
+uint32_t ILI9488_SPI_ReadRDDST(uint8_t cmd)
 {
-	ft_uint8_t i;
-	ft_uint32_t readword = 0;
+	uint8_t i;
+	uint32_t readword = 0;
 	/* bit banging mechanism */
 	ILI9488_DCX_LOW;
 	ILI9488_CS_LOW;
@@ -354,7 +355,7 @@ ft_uint32_t ILI9488_SPI_ReadRDDST(ft_uint8_t cmd)
 	return readword;
 }
 
-ft_void_t ILI9488_Bootup()
+void EVE_ILI9488_bootup()
 {
 	/* ILI9488 driver - configure pins for bit bang */
 	gpio_function(27, pad_gpio27);
@@ -392,7 +393,7 @@ ft_void_t ILI9488_Bootup()
 	{
 
 		/* Temp buffer to construct the parameters */
-		ft_uint8_t arraytemp[16];
+		uint8_t arraytemp[16];
 
 		ILI9488_SPI_WriteCmd(ILI9488_CMD_SOFTWARE_RESET, 0);
 		usleep(120);

@@ -30,24 +30,27 @@
 */
 
 /*
-Main file to include the EVE HAL.
+
+Main file to include the EVE HAL in your applications.
+
 */
 
 #ifndef EVE_PLATFORM__H
 #define EVE_PLATFORM__H
 
+/* Include all public headers. */
 #include "EVE_Config.h"
 #include "EVE_Platform_WIN32.h"
 #include "EVE_Platform_BT8XXEMU.h"
 #include "EVE_Platform_FT4222.h"
 #include "EVE_Platform_MPSSE.h"
 #include "EVE_Platform_FT900.h"
+#include "EVE_GpuTypes.h"
 #include "EVE_Hal.h"
 #include "EVE_Cmd.h"
-#include "EVE_Gpu.h"
+#include "EVE_GpuDefs.h"
+#include "EVE_ILI9488.h"
 #include "EVE_Util.h"
-#include "FT_ILI9488.h"
-#include "FT_KD2401.h"
 
 #define eve_noop() \
 	do             \

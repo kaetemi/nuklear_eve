@@ -32,8 +32,6 @@
 #include "FT_Platform.h"
 #if defined(BT8XXEMU_PLATFORM)
 
-#include "EVE_Gpu.h"
-
 #include <stdio.h>
 
 void Ft_Hal_LoadSDCard()

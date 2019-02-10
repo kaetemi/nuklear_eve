@@ -33,7 +33,6 @@
 
 #include "FT_Platform.h"
 #include "FT_Gpu_Hal.h"
-#include "EVE_Gpu.h"
 
 /* Helper api for millis */
 /* api to return the time in ms. 0 after reset */

@@ -203,7 +203,7 @@ Validate the configured options.
 */
 
 #if defined(ME810A_HV35R) || defined(ME812A_WH50R) || defined(ME813A_WV7C) || defined(ME813AU_WH50C) \
-    || defined(EVE_MODULE_PANL)                                                                       \
+    || defined(EVE_MODULE_PANL)                                                                      \
     || defined(EVE_GRAPHICS_VM810C) || defined(EVE_GRAPHICS_VM816C)                                  \
     || defined(EVE_GRAPHICS_FT800) || defined(EVE_GRAPHICS_FT801)                                    \
     || defined(EVE_GRAPHICS_FT810) || defined(EVE_GRAPHICS_FT811)                                    \
@@ -213,7 +213,8 @@ Validate the configured options.
 #endif
 
 #if defined(EVE_DISPLAY_QVGA) || defined(EVE_DISPLAY_WVGA) \
-    || defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT) || EVE_DISPLAY_KD2401_HVGA_PORTRAIT
+    || defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT)          \
+    || defined(EVE_DISPLAY_KD2401_HVGA_PORTRAIT)
 #define EVE_DISPLAY_AVAILABLE
 #endif
 
@@ -632,17 +633,6 @@ These may only be set by one of the platform target definitions, and should not 
 
 #define EVE_PLATFORM__STR(x) #x
 #define EVE_PLATFORM_STR(x) EVE_PLATFORM__STR(x)
-
-/* Clear invalid definitions */
-#if defined(BT8XXEMU_PLATFORM)
-#ifdef ENABLE_ILI9488_HVGA_PORTRAIT
-#undef ENABLE_ILI9488_HVGA_PORTRAIT
-#endif
-
-#ifdef ENABLE_KD2401_HVGA_PORTRAIT
-#undef ENABLE_KD2401_HVGA_PORTRAIT
-#endif
-#endif
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////

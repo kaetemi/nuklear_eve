@@ -38,7 +38,7 @@
 
 #ifndef EVE_HAL__H
 #define EVE_HAL__H
-#include "EVE_Config.h"
+#include "EVE_GpuTypes.h"
 
 /***********
 ** MACROS **

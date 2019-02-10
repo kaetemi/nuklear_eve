@@ -28,10 +28,10 @@
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
 */
-#ifndef FT_KD2401_H
-#define FT_KD2401_H
+#ifndef EVE_ILI9488_H
+#define EVE_ILI9488_H
 
-#ifdef ENABLE_KD2401_HVGA_PORTRAIT
+#if defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT)
 
 /* Macros for ILI driver */
 
@@ -41,8 +41,8 @@
 #define ILI9488_CLK_HIGH (gpio_write(27, 1))
 #define ILI9488_MOSI_LOW (gpio_write(29, 0))
 #define ILI9488_MOSI_HIGH (gpio_write(29, 1))
-#define ILI9488_DCX_LOW (gpio_write(41, 0))
-#define ILI9488_DCX_HIGH (gpio_write(41, 1))
+#define ILI9488_DCX_LOW (gpio_write(34, 0))
+#define ILI9488_DCX_HIGH (gpio_write(34, 1))
 
 #define ILI9488_MISO_LOWHIGH (gpio_read(30))
 
@@ -107,8 +107,10 @@ ft_uint8_t ILI9488_SPI_Read(ft_uint8_t cmd);
 ft_uint8_t ILI9488_SPI_ReadN(ft_uint8_t cmd, ft_uint8_t numbytes, ft_uint8_t *pbuffer);
 ft_uint32_t ILI9488_SPI_ReadRDDID(ft_uint8_t cmd);
 ft_uint32_t ILI9488_SPI_ReadRDDST(ft_uint8_t cmd);
-ft_void_t KD2401_Bootup();
+ft_void_t EVE_ILI9488_bootup();
 
 #endif /* ENABLE_ILI9488_HVGA_PORTRAIT */
 
-#endif /*FT_ILI9488_H*/
+#endif /* EVE_ILI9488_H */
+
+/* end of file */

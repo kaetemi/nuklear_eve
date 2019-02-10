@@ -33,7 +33,6 @@
 #if defined(BT8XXEMU_PLATFORM)
 
 #include "FT_Gpu_Hal.h"
-#include "EVE_Gpu.h"
 
 #include "EVE_EmulatorMain.h"
 #if defined(ESD_SIMULATION)

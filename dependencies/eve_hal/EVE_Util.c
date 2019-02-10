@@ -263,14 +263,9 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	EVE_sleep(120);
 #endif
 
-#ifdef ENABLE_ILI9488_HVGA_PORTRAIT
-	ILI9488_Bootup();
+#if defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT)
+	EVE_ILI9488_bootup();
 	eve_printf_debug("after ILI9488 bootup\n");
-#endif
-
-#ifdef ENABLE_KD2401_HVGA_PORTRAIT
-	KD2401_Bootup();
-	eve_printf_debug("after KD2401 bootup\n");
 #endif
 
 	EVE_UtilImpl_prepareSpiMaster(phost);

@@ -30,7 +30,6 @@
 */
 
 #include "FT_Platform.h"
-#include "EVE_Gpu.h"
 
 ft_void_t Ft_Gpu_CoCmd_ColdStart(EVE_HalContext *phost)
 {

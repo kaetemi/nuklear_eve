@@ -29,17 +29,53 @@
 * has no liability in relation to those amendments.
 */
 
-#include "FT_Platform.h"
-#if defined(BT8XXEMU_PLATFORM)
+#ifndef EVE_GPU_TYPES__H
+#define EVE_GPU_TYPES__H
+#include "EVE_Config.h"
 
-#include "FT_Mcu_Hal.h"
-#include "EVE_HalImpl.h"
+#define EVE_GPU_NUMCHAR_PERFONT (128)
+#define EVE_GPU_FONT_TABLE_SIZE (148)
 
-ft_void_t Ft_Mcu_Init()
+/* FT81x and FT80x font table structure */
+/* Font table address in ROM can be found by reading the address from 0xFFFFC location. */
+/* 16 font tables are present at the address read from location 0xFFFFC */
+typedef struct EVE_Gpu_Fonts
 {
-	EVE_Millis_initialize();
-}
+	/* All the values are in bytes */
+	/* Width of each character font from 0 to 127 */
+	uint8_t FontWidth[EVE_GPU_NUMCHAR_PERFONT];
+	/* Bitmap format of font wrt bitmap formats supported by FT800 - L1, L4, L8 */
+	uint32_t FontBitmapFormat;
+	/* Font line stride in FT800 ROM */
+	uint32_t FontLineStride;
+	/* Font width in pixels */
+	uint32_t FontWidthInPixels;
+	/* Font height in pixels */
+	uint32_t FontHeightInPixels;
+	/* Pointer to font graphics raw data */
+	uint32_t PointerToFontGraphicsData;
+} EVE_Gpu_Fonts;
+
+#if defined(EVE_SUPPORT_UNICODE)
+
+/* BT815 inclusion - extended font table for unicode support */
+typedef struct EVE_Gpu_FontsExt
+{
+	uint32_t Signature;
+	uint32_t Size;
+	uint32_t Format;
+	uint32_t Swizzle;
+	uint32_t LayoutWidth;
+	uint32_t LayoutHeight;
+	uint32_t PixelWidth;
+	uint32_t PixelHeight;
+	uint32_t StartOfGraphicData;
+	uint32_t OffsetGlyphData;
+	// uint32_t OffsetWidthData; // to be OffsetWidthData = Starting adress + StartOfGraphicData * 4.
+} EVE_Gpu_FontsExt;
 
 #endif
+
+#endif /* #ifndef EVE_GPU_TYPES__H */
 
 /* end of file */
