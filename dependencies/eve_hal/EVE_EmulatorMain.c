@@ -38,8 +38,8 @@
 BT8XXEMU_Emulator *EVE_GpuEmu = NULL;
 BT8XXEMU_Flash *EVE_EmuFlash = NULL;
 
-ft_int32_t s_ArgC;
-ft_char8_t **s_ArgV;
+int s_ArgC;
+char **s_ArgV;
 
 #if defined(ESD_SIMULATION)
 
@@ -71,14 +71,14 @@ static void flashLog(BT8XXEMU_Flash *sender, void *context, BT8XXEMU_LogType typ
 
 #endif
 
-void EVE_emuMain(ft_int32_t argc, ft_char8_t *argv[]);
+void EVE_emuMain(int argc, char *argv[]);
 
 void emulatorMain(BT8XXEMU_Emulator *sender, void *context)
 {
 	EVE_emuMain(s_ArgC, s_ArgV);
 }
 
-ft_int32_t main(ft_int32_t argc, ft_char8_t *argv[])
+int main(int argc, char *argv[])
 {
 	s_ArgC = argc;
 	s_ArgV = argv;

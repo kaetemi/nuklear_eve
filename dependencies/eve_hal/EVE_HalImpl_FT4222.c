@@ -46,7 +46,7 @@ void EVE_HalImpl_initialize()
 {
 	FT_DEVICE_LIST_INFO_NODE devList;
 	FT_STATUS status;
-	ft_uint32_t numdevs;
+	uint32_t numdevs;
 
 	status = FT_CreateDeviceInfoList(&numdevs);
 	if (FT_OK == status)
@@ -96,18 +96,18 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
 	FT_STATUS status;
 	//ulong_t numdevs;
-	ft_uint32_t numdevs;
-	ft_uint32_t index;
+	uint32_t numdevs;
+	uint32_t index;
 	FT_HANDLE fthandle;
 	FT4222_Version pversion;
 	FT4222_ClockRate ftclk = 0;
-	ft_uint16_t max_size = 0;
+	uint16_t max_size = 0;
 	FT4222_ClockRate selclk = 0;
 	FT4222_SPIClock seldiv = 0;
 	/* GPIO0         , GPIO1      , GPIO2       , GPIO3         } */
 	GPIO_Dir gpio_dir[4] = { GPIO_OUTPUT, GPIO_INPUT, GPIO_INPUT, GPIO_INPUT };
 
-	ft_bool_t ret = FT_TRUE;
+	bool ret = true;
 
 	phost->SpiHandle = phost->GpioHandle = NULL;
 
@@ -115,14 +115,14 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	if (status != FT_OK)
 	{
 		eve_printf_debug("FT_CreateDeviceInfoList failed");
-		ret = FT_FALSE;
+		ret = false;
 	}
 
 	status = FT_ListDevices(&numdevs, NULL, FT_LIST_NUMBER_ONLY);
 	if (status != FT_OK)
 	{
 		eve_printf_debug("FT_ListDevices failed");
-		ret = FT_FALSE;
+		ret = false;
 	}
 
 	if (ret)
@@ -148,7 +148,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 				eve_printf_debug(" ftHandle= %p\n", devInfo.ftHandle);
 			}
 			else
-				ret = FT_FALSE;
+				ret = false;
 
 			if (ret && !(devInfo.Flags & 0x01) && ((!strcmp(devInfo.Description, "FT4222 A") && (phost->SpiHandle == NULL)) || (!strcmp(devInfo.Description, "FT4222 B") && (phost->GpioHandle == NULL))))
 			{
@@ -157,7 +157,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 				if (status != FT_OK)
 				{
 					eve_printf_debug("FT_OpenEx failed %d\n", status);
-					ret = FT_FALSE;
+					ret = false;
 				}
 				else
 				{
@@ -209,7 +209,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		if (status != FT_OK)
 		{
 			eve_printf_debug("FT_SetTimeouts failed!\n");
-			ret = FT_FALSE;
+			ret = false;
 		}
 	}
 
@@ -220,7 +220,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		if (status != FT_OK)
 		{
 			eve_printf_debug("FT_SetLatencyTimerfailed!\n");
-			ret = FT_FALSE;
+			ret = false;
 		}
 	}
 
@@ -229,7 +229,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		if (!Ft_Gpu_Hal_FT4222_ComputeCLK(phost, &selclk, &seldiv))
 		{
 			eve_printf_debug("Requested clock %d KHz is not supported in FT4222\n", phost->Parameters.SpiClockrateKHz);
-			ret = FT_FALSE;
+			ret = false;
 		}
 	}
 
@@ -239,7 +239,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		if (status != FT4222_OK)
 		{
 			eve_printf_debug("FT4222_SetClock failed!\n");
-			ret = FT_FALSE;
+			ret = false;
 		}
 
 		status = FT4222_GetClock(phost->SpiHandle, &ftclk);
@@ -263,7 +263,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Init FT4222 as SPI master device failed!\n");
-			ret = FT_FALSE;
+			ret = false;
 		}
 
 		status = FT4222_SPI_SetDrivingStrength(phost->SpiHandle, DS_4MA, DS_4MA, DS_4MA);
@@ -274,25 +274,25 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 
 		EVE_sleep(20);
 
-		status = FT4222_SetSuspendOut(phost->GpioHandle, FT_FALSE);
+		status = FT4222_SetSuspendOut(phost->GpioHandle, false);
 		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Disable suspend out function on GPIO2 failed!\n");
-			ret = FT_FALSE;
+			ret = false;
 		}
 
-		status = FT4222_SetWakeUpInterrupt(phost->GpioHandle, FT_FALSE);
+		status = FT4222_SetWakeUpInterrupt(phost->GpioHandle, false);
 		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Disable wakeup/interrupt feature on GPIO3 failed!\n");
-			ret = FT_FALSE;
+			ret = false;
 		}
 		/* Interface 2 is GPIO */
 		status = FT4222_GPIO_Init(phost->GpioHandle, gpio_dir);
 		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Init FT4222 as GPIO interface failed!\n");
-			ret = FT_FALSE;
+			ret = false;
 		}
 	}
 
@@ -310,7 +310,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
 	FT4222_STATUS status;
-	phost->Status = FT_GPU_HAL_CLOSED;
+	phost->Status = EVE_STATUS_CLOSED;
 	--g_HalPlatform.OpenedDevices;
 
 	if ((status = FT4222_UnInitialize(phost->SpiHandle)) != FT4222_OK)
@@ -340,9 +340,9 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 {
 	FT4222_STATUS status;
 
-	if (phost->SpiChannels == FT_GPU_SPI_SINGLE_CHANNEL)
+	if (phost->SpiChannels == EVE_SPI_SINGLE_CHANNEL)
 	{
-		ft_uint16_t sizeTransferred;
+		uint16_t sizeTransferred;
 		uint8_t hrdpkt[8] = { 0 }; // 3 byte addr + 2 or 1 byte dummy
 		uint32_t addr = phost->SpiRamGAddr;
 
@@ -448,10 +448,10 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 
 		if (buffer || phost->SpiWrBufIndex)
 		{
-			if (phost->SpiChannels == FT_GPU_SPI_SINGLE_CHANNEL)
+			if (phost->SpiChannels == EVE_SPI_SINGLE_CHANNEL)
 			{
 				/* Flush now, or write oversize buffer */
-				ft_uint16_t sizeTransferred;
+				uint16_t sizeTransferred;
 				uint8_t hrdpkt[8];
 				uint32_t addr = phost->SpiRamGAddr;
 
@@ -508,7 +508,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 					    &sizeTransferred,
 					    isEndTransaction);
 
-					if ((status != FT4222_OK) || ((ft_uint16_t)sizeTransferred != bytesPerWrite))
+					if ((status != FT4222_OK) || (sizeTransferred != bytesPerWrite))
 					{
 						eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
 						if (sizeTransferred != bytesPerWrite)

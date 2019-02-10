@@ -80,7 +80,7 @@ void EVE_HalImpl_initialize()
 		eve_printf_debug(" LocId=0x%x\n", devList.LocId);
 		eve_printf_debug(" SerialNumber=%s\n", devList.SerialNumber);
 		eve_printf_debug(" Description=%s\n", devList.Description);
-		eve_printf_debug(" ftHandle=0x%x\n", devList.ftHandle); /*is 0 unless open*/
+		eve_printf_debug(" ftHandle=0x%p\n", devList.ftHandle); /*is 0 unless open*/
 	}
 }
 
@@ -116,30 +116,30 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	status = SPI_OpenChannel(phost->Parameters.MpsseChannelNo, (FT_HANDLE *)&phost->SpiHandle);
 	if (FT_OK != status)
 	{
-		eve_printf_debug("SPI open channel failed %d %d\n", phost->Parameters.MpsseChannelNo, phost->SpiHandle);
-		return FT_FALSE;
+		eve_printf_debug("SPI open channel failed %d %p\n", phost->Parameters.MpsseChannelNo, phost->SpiHandle);
+		return false;
 	}
 	status = SPI_InitChannel((FT_HANDLE)phost->SpiHandle, &channelConf);
 	if (FT_OK != status)
 	{
-		eve_printf_debug("SPI init channel failed %d %d\n", phost->Parameters.MpsseChannelNo, phost->SpiHandle);
-		return FT_FALSE;
+		eve_printf_debug("SPI init channel failed %d %p\n", phost->Parameters.MpsseChannelNo, phost->SpiHandle);
+		return false;
 	}
 
-	eve_printf_debug("\nhandle=0x%x status=0x%x\n", phost->SpiHandle, status);
+	eve_printf_debug("\nhandle=0x%p status=0x%x\n", phost->SpiHandle, status);
 
 	/* Initialize the context variables */
 	phost->SpiDummyBytes = 1; // by default ft800/801/810/811 goes with single dummy byte for read
-	phost->SpiChannels = FT_GPU_SPI_SINGLE_CHANNEL;
+	phost->SpiChannels = EVE_SPI_SINGLE_CHANNEL;
 	phost->Status = EVE_STATUS_OPENED;
 	++g_HalPlatform.OpenedDevices;
-	return FT_TRUE;
+	return true;
 }
 
 /* Close a HAL context */
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
-	phost->Status = FT_GPU_HAL_CLOSED;
+	phost->Status = EVE_STATUS_CLOSED;
 	--g_HalPlatform.OpenedDevices;
 	SPI_CloseChannel(phost->SpiHandle);
 }
@@ -206,7 +206,7 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 
 static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
 {
-	ft_uint32_t sizeTransferred = 0;
+	uint32_t sizeTransferred = 0;
 
 	FT_STATUS status = SPI_Read(phost->SpiHandle, buffer, size, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 
@@ -220,9 +220,9 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 }
 static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
 {
-	ft_uint32_t sizeTransferred = 0;
+	uint32_t sizeTransferred = 0;
 
-	FT_STATUS status = SPI_Write(phost->SpiHandle, buffer, size, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
+	FT_STATUS status = SPI_Write(phost->SpiHandle, (uint8 *)buffer, size, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
 
 	if (status != FT_OK || sizeTransferred != size)
 	{
@@ -235,8 +235,8 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 
 static inline uint8_t transfer8(EVE_HalContext *phost, uint8_t value)
 {
-	ft_uint32_t sizeTransferred = 0;
-	if (phost->Status == FT_GPU_HAL_WRITING)
+	uint32_t sizeTransferred = 0;
+	if (phost->Status == EVE_STATUS_WRITING)
 	{
 		wrBuffer(phost, &value, sizeof(value));
 	}

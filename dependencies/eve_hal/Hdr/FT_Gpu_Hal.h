@@ -42,6 +42,35 @@
 #include "EVE_Hal.h"
 #include "EVE_Cmd.h"
 
+#include <stdlib.h>
+
+#define FT_FALSE false
+#define FT_TRUE true
+
+typedef char ft_char8_t;
+typedef signed char ft_schar8_t;
+typedef unsigned char ft_uchar8_t;
+
+#define ft_int8_t int8_t
+#define ft_uint8_t uint8_t
+#define ft_int16_t int16_t
+#define ft_uint16_t uint16_t
+#define ft_uint32_t uint32_t
+#define ft_int32_t int32_t
+#define ft_void_t void
+#define ft_int64_t int64_t
+#define ft_uint64_t uint64_t
+#define ft_float_t float
+#define ft_double_t double
+#define ft_bool_t bool
+#define ft_size_t size_t
+
+#define FT_PROGMEM eve_progmem
+#define FT_PROGMEM_CONST eve_progmem_const
+#define ft_prog_char8_t eve_prog_int8_t
+#define ft_prog_uchar8_t eve_prog_uint8_t
+#define ft_prog_uint16_t eve_prog_uint16_t
+
 #define FIFO_SIZE_MASK EVE_FIFO_SIZE_MASK
 #define FIFO_BYTE_ALIGNMENT_MASK EVE_FIFO_BYTE_ALIGNMENT_MASK
 

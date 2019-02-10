@@ -163,7 +163,7 @@ uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 {
 	uint16_t retVal = 0;
 	retVal = transfer8(phost, value & 0xFF);
-	retVal |= (ft_uint16_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
+	retVal |= (uint16_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
 	return retVal;
 }
 
@@ -171,9 +171,9 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 {
 	uint32_t retVal = 0;
 	retVal = transfer8(phost, value & 0xFF);
-	retVal |= (ft_uint32_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
-	retVal |= (ft_uint32_t)transfer8(phost, (value >> 16) & 0xFF) << 16;
-	retVal |= (ft_uint32_t)transfer8(phost, value >> 24) << 24;
+	retVal |= (uint32_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
+	retVal |= (uint32_t)transfer8(phost, (value >> 16) & 0xFF) << 16;
+	retVal |= (uint32_t)transfer8(phost, value >> 24) << 24;
 	return retVal;
 }
 

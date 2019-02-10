@@ -34,6 +34,7 @@
 
 #include "FT_MCU_Hal.h"
 #include "FT_Gpu_Hal.h"
+#include "EVE_HalImpl.h"
 
 ft_void_t Ft_Mcu_Init()
 {
