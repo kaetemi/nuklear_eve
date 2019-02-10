@@ -265,6 +265,34 @@ uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
 	return prevWp;
 }
 
+#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
+static void displayError(EVE_HalContext *phost, char *err)
+{
+	uint32_t addr = RAM_G + RAM_G_SIZE - 128;
+	uint32_t dl = 0;
+
+	/* Abuse back of RAM_G to store error */
+	/* May invalidate user data... */
+	EVE_Hal_wrBuffer(phost, addr, err, 128);
+
+	/* Generate bluescreen */
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR_COLOR_RGB(0x00, 0x20, 0x40));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR(1, 1, 1));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_HANDLE(15)); /* Scratch handle will reset anyway after reset */
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SOURCE(addr));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SIZE_H(0, 0));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SIZE(NEAREST, BORDER, BORDER, 256, 32));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_LAYOUT_H(0, 0));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_LAYOUT(TEXT8X8, 32, 32));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BEGIN(BITMAPS));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), VERTEX2II(32, 32, 15, 0));
+	/* EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SOURCE(RAM_ERR_REPORT)); */
+	/* EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), VERTEX2II(32, 96, 15, 0)); */
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), DISPLAY());
+	EVE_Hal_wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
+}
+#endif
+
 static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 {
 	if (EVE_CMD_FAULT(rpOrSpace))
@@ -276,6 +304,7 @@ static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 		char err[128];
 		EVE_Hal_rdBuffer(phost, err, RAM_ERR_REPORT, 128);
 		eve_printf_debug("%s\n", err);
+		displayError(phost, err);
 #endif
 		eve_debug_break();
 		return false;
