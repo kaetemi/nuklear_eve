@@ -155,17 +155,17 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	an explicit switch to single channel is essential
 	*/
 #if (EVE_MODEL >= EVE_FT810)
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, 1);
+	Ft_Gpu_Hal_SetSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 #endif
 
 	/* Set the clk to external clock. Must disable it when no external clock source on the board*/
 #if (!defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813AU_WH50C))
-	Ft_Gpu_HostCommand(phost, FT_GPU_EXTERNAL_OSC);
+	Ft_Gpu_HostCommand(phost, EVE_EXTERNAL_OSC);
 	EVE_sleep(10);
 #endif
 
 	/* Access address 0 to wake up the FT800 */
-	Ft_Gpu_HostCommand(phost, FT_GPU_ACTIVE_M);
+	Ft_Gpu_HostCommand(phost, EVE_ACTIVE_M);
 	EVE_sleep(300);
 
 	/* Read Register ID to check if EVE is ready. */
@@ -278,11 +278,11 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 #if (EVE_MODEL >= EVE_FT810)
 	/* api to set quad and numbe of dummy bytes */
 #ifdef ENABLE_SPI_QUAD
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_QUAD_CHANNEL, 2);
+	Ft_Gpu_Hal_SetSPI(phost, EVE_SPI_QUAD_CHANNEL, 2);
 #elif ENABLE_SPI_DUAL
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_DUAL_CHANNEL, 2);
+	Ft_Gpu_Hal_SetSPI(phost, EVE_SPI_DUAL_CHANNEL, 2);
 #else
-	Ft_Gpu_Hal_SetSPI(phost, FT_GPU_SPI_SINGLE_CHANNEL, 1);
+	Ft_Gpu_Hal_SetSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 #endif
 #endif
 
