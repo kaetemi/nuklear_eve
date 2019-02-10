@@ -137,7 +137,7 @@ bool computeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock
 	/* phost->Parameters.SpiClockrateKHz is the user requested SPI communication clock */
 
 	if (phost->Parameters.SpiClockrateKHz <= 5000)
-	{ 
+	{
 		/* set to 5000 KHz */
 		*sysclk = SYS_CLK_80;
 		*sysdivisor = CLK_DIV_16;

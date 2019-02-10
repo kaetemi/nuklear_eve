@@ -179,38 +179,40 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 
 void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size)
 {
+	uint32_t i;
 	if (result && buffer)
 	{
-		for (uint32_t i = 0; i < size; ++i)
+		for (i = 0; i < size; ++i)
 			result[i] = transfer8(phost, buffer[i]);
 	}
 	else if (result)
 	{
-		for (uint32_t i = 0; i < size; ++i)
+		for (i = 0; i < size; ++i)
 			result[i] = transfer8(phost, 0);
 	}
 	else if (buffer)
 	{
-		for (uint32_t i = 0; i < size; ++i)
+		for (i = 0; i < size; ++i)
 			transfer8(phost, buffer[i]);
 	}
 }
 
 void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
+	uint32_t i;
 	if (result && buffer)
 	{
-		for (uint32_t i = 0; i < size; ++i)
+		for (i = 0; i < size; ++i)
 			result[i] = transfer8(phost, buffer[i]);
 	}
 	else if (result)
 	{
-		for (uint32_t i = 0; i < size; ++i)
+		for (i = 0; i < size; ++i)
 			result[i] = transfer8(phost, 0);
 	}
 	else if (buffer)
 	{
-		for (uint32_t i = 0; i < size; ++i)
+		for (i = 0; i < size; ++i)
 			transfer8(phost, buffer[i]);
 	}
 }

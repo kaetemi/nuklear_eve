@@ -80,11 +80,18 @@ void emulatorMain(BT8XXEMU_Emulator *sender, void *context)
 
 int main(int argc, char *argv[])
 {
+#if defined(EVE_FLASH_AVAILABLE)
+	BT8XXEMU_FlashParameters flashParams;
+	BT8XXEMU_Flash *flash;
+#endif
+
+	BT8XXEMU_EmulatorParameters params;
+
 	s_ArgC = argc;
 	s_ArgV = argv;
 
 #if defined(EVE_FLASH_AVAILABLE)
-	BT8XXEMU_FlashParameters flashParams;
+	flashParams;
 	BT8XXEMU_Flash_defaults(BT8XXEMU_VERSION_API, &flashParams);
 #if defined(ESD_SIMULATION)
 	flashParams.Log = flashLog;
@@ -106,28 +113,26 @@ int main(int argc, char *argv[])
 	// flashParams.Persistent = true; // For test purpose
 #endif
 #if defined(ESD_SIMULATION)
-#	if defined(EVE_FLASH_MX25L)
+#if defined(EVE_FLASH_MX25L)
 	wcscpy(flashParams.DeviceType, L"mx25lemu");
-#		if defined(ESD_SIMULATION)
-#			if defined(EVE_FLASH_SIZE) && (EVE_FLASH_SIZE >= 32)
+#if defined(ESD_SIMULATION)
+#if defined(EVE_FLASH_SIZE) && (EVE_FLASH_SIZE >= 32)
 	Esd_SetFlashFirmware__ESD(L"mx25l.blob");
-#			else
+#else
 	Esd_SetFlashFirmware__ESD(L"unified.blob");
-#			endif
-#		endif
-#	else
+#endif
+#endif
+#else
 	// Fallback emulation
 	wcscpy(flashParams.DeviceType, L"mx25lemu");
 	Esd_SetFlashFirmware__ESD(L"unified.blob");
-#	endif
+#endif
 #endif
 	// The flash image will be loaded as a memory mapped file.
-	// Both the flash emulation and ESD are mapping the same file independently, 
+	// Both the flash emulation and ESD are mapping the same file independently,
 	// so there are no memory conflicts, and the mapping is mostly persistent.
-	BT8XXEMU_Flash *flash = BT8XXEMU_Flash_create(BT8XXEMU_VERSION_API, &flashParams);
+	flash = BT8XXEMU_Flash_create(BT8XXEMU_VERSION_API, &flashParams);
 #endif
-
-	BT8XXEMU_EmulatorParameters params;
 
 	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, (BT8XXEMU_EmulatorMode)EVE_MODEL);
 

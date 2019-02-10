@@ -49,8 +49,10 @@ Esd_RomFontInfo Esd_RomFonts[ESD_ROMFONT_NB] = {
 
 void Esd_InitRomFontHeight()
 {
+	int i;
 	ft_uint32_t ft = Ft_Gpu_Hal_Rd32(Ft_Esd_Host, ROMFONT_TABLEADDRESS);
-	for (int i = 0; i < ESD_ROMFONT_NB; ++i)
+
+	for (i = 0; i < ESD_ROMFONT_NB; ++i)
 	{
 		ft_uint32_t addr = ft + (FT_GPU_FONT_TABLE_SIZE * i) + (ft_uint32_t)(uintptr_t)(&(((FT_Gpu_Fonts_t *)(void *)0)->FontHeightInPixels));
 		Esd_RomFonts[i].FontHeight = Ft_Gpu_Hal_Rd16(Ft_Esd_Host, addr);

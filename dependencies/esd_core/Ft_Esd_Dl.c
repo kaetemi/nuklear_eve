@@ -73,24 +73,29 @@ Ft_Esd_Rect16 Ft_Esd_Dl_Scissor_Set(Ft_Esd_Rect16 rect)
 
 void Ft_Esd_Dl_Scissor_Adjust(Ft_Esd_Rect16 rect, Ft_Esd_Rect16 state)
 {
-	ft_int16_t x1diff = (state.X - rect.X); // old x1 - new x1
+	ft_int16_t x1diff;
+	ft_int16_t y1diff;
+	ft_int16_t x2diff;
+	ft_int16_t y2diff;
+
+	x1diff = (state.X - rect.X); // old x1 - new x1
 	if (x1diff > 0) // old x1 > new x1
 	{
 		rect.Width -= x1diff;
 		rect.X = state.X;
 	}
-	ft_int16_t y1diff = (state.Y - rect.Y); // old y1 - new y1
+	y1diff = (state.Y - rect.Y); // old y1 - new y1
 	if (y1diff > 0) // old y1 > new y1
 	{
 		rect.Height -= y1diff;
 		rect.Y = state.Y;
 	}
-	ft_int16_t x2diff = (state.X + state.Width) - (rect.X + rect.Width); // old x2 - new x2
+	x2diff = (state.X + state.Width) - (rect.X + rect.Width); // old x2 - new x2
 	if (x2diff < 0) // old x2 < new x2
 	{
 		rect.Width += x2diff;
 	}
-	ft_int16_t y2diff = (state.Y + state.Height) - (rect.Y + rect.Height); // old y2 - new y2
+	y2diff = (state.Y + state.Height) - (rect.Y + rect.Height); // old y2 - new y2
 	if (y2diff < 0) // old y2 < new y2
 	{
 		rect.Height += y2diff;
@@ -131,9 +136,10 @@ void FT_Esd_Render_Rect_Grad(ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_
 	if (color1 == color2)
 	{
 		// Not a gradient
+		Ft_Esd_Rect16 scissor;
 		// Ft_Gpu_CoCmd_StartFunc(Ft_Esd_Host, FT_CMD_SIZE * 4);
 		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SAVE_CONTEXT());
-		Ft_Esd_Rect16 scissor = Ft_Esd_Rect16_Crop(rect, Ft_Esd_Dl_Scissor_Get());
+		scissor = Ft_Esd_Rect16_Crop(rect, Ft_Esd_Dl_Scissor_Get());
 		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_XY(scissor.X, scissor.Y));
 		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_SIZE(scissor.Width, scissor.Height));
 		Ft_Esd_Dl_COLOR_ARGB(color1);
@@ -143,18 +149,21 @@ void FT_Esd_Render_Rect_Grad(ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_
 		return;
 	}
 
-	double radius = direction * M_PI / 180.0f;
-	double sine = sin(radius), cosine = cos(radius);
-	ft_int16_t x0 = x + (w >> 1);
-	ft_int16_t y0 = y + (h >> 1);
-	ft_int16_t l = (ft_int16_t)(sqrt(w * w + h * h) * 0.8); // use 80% to apply gradient effect
-	ft_int16_t half = l >> 1;
-	ft_int16_t dy = (ft_int16_t)(half * sine);
-	ft_int16_t dx = (ft_int16_t)(half * cosine);
+	scope
+	{
+		double radius = direction * M_PI / 180.0f;
+		double sine = sin(radius), cosine = cos(radius);
+		ft_int16_t x0 = x + (w >> 1);
+		ft_int16_t y0 = y + (h >> 1);
+		ft_int16_t l = (ft_int16_t)(sqrt(w * w + h * h) * 0.8); // use 80% to apply gradient effect
+		ft_int16_t half = l >> 1;
+		ft_int16_t dy = (ft_int16_t)(half * sine);
+		ft_int16_t dx = (ft_int16_t)(half * cosine);
 
-	Ft_Esd_Rect16 s = Ft_Esd_Dl_Scissor_Set(rect);
-	Ft_Gpu_CoCmd_Gradient(Ft_Esd_Host, x0 - dx, y0 - dy, color1, x0 + dx, y0 + dy, color2);
-	Ft_Esd_Dl_Scissor_Reset(s);
+		Ft_Esd_Rect16 s = Ft_Esd_Dl_Scissor_Set(rect);
+		Ft_Gpu_CoCmd_Gradient(Ft_Esd_Host, x0 - dx, y0 - dy, color1, x0 + dx, y0 + dy, color2);
+		Ft_Esd_Dl_Scissor_Reset(s);
+	}
 }
 
 // Deprecated

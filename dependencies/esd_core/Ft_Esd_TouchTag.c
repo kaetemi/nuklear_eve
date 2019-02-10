@@ -45,6 +45,8 @@ void Ft_Esd_TouchTag__Initializer(Ft_Esd_TouchTag *context)
 
 void Ft_Esd_TouchTag_Start(Ft_Esd_TouchTag *context)
 {
+	int i;
+
 #ifdef ESD_SIMULATION
 	if (s_LastTagFrame > Esd_CurrentContext->Frame && (s_LastTagFrame != ~0))
 	{
@@ -69,7 +71,7 @@ void Ft_Esd_TouchTag_Start(Ft_Esd_TouchTag *context)
 	}
 
 	// Allocate tag
-	for (int i = 1; i < 255; ++i)
+	for (i = 1; i < 255; ++i)
 	{
 		if (!s_TagHandlers[i])
 		{
@@ -84,12 +86,14 @@ void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
 {
 	if (s_LastTagFrame != Esd_CurrentContext->Frame)
 	{
+		ft_uint32_t regTouchXY;
+		ft_uint8_t regTouchTag;
+
 		// Global tag update
 		s_LastTagFrame = Esd_CurrentContext->Frame;
 
 		// Read registers
-		ft_uint32_t regTouchXY = Ft_Gpu_Hal_Rd32(Ft_Esd_Host, REG_TOUCH_TAG_XY);
-		ft_uint8_t regTouchTag;
+		regTouchXY = Ft_Gpu_Hal_Rd32(Ft_Esd_Host, REG_TOUCH_TAG_XY);
 		if (regTouchXY & 0x80008000)
 		{
 			// No touch
@@ -99,6 +103,7 @@ void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
 		}
 		else
 		{
+			Ft_Esd_TouchPos_t prevPos;
 			regTouchTag = Ft_Gpu_Hal_Rd8(Ft_Esd_Host, REG_TOUCH_TAG);
 			if (!regTouchTag)
 			{
@@ -111,7 +116,7 @@ void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
 			{
 				regTouchTag = 255;
 			}
-			Ft_Esd_TouchPos_t prevPos = s_TouchPos;
+			prevPos = s_TouchPos;
 			s_TouchPos.XY = regTouchXY;
 			if (s_GpuRegTouchTag)
 			{

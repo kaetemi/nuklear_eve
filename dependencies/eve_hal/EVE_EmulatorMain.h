@@ -35,11 +35,12 @@
 #include "EVE_Config.h"
 #if defined(BT8XXEMU_PLATFORM)
 
+#include "EVE_Platform_WIN32.h"
+#include "bt8xxemu.h"
+
 // FIXME (2018 OCT 13): Currently the ESD simulation requires the main function override mechanism
 #if (1) // defined(ESD_SIMULATION)
 #define EVE_EMULATOR_MAIN (1)
-
-#include "bt8xxemu.h"
 
 // Override main function with wrapper for initializing the emulator
 #define main EVE_emuMain

@@ -35,6 +35,7 @@
 #include "EVE_Config.h"
 #if defined(MPSSE_PLATFORM)
 
+#include "EVE_Platform_WIN32.h"
 #include "ftd2xx.h"
 #include "libMPSSE_spi.h"
 

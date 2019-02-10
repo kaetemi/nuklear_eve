@@ -297,11 +297,13 @@ static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 {
 	if (EVE_CMD_FAULT(rpOrSpace))
 	{
+#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
+		char err[128];
+#endif
 		/* Co processor fault */
 		phost->CmdWaiting = false;
 		eve_printf_debug("Co processor fault while waiting for CoCmd FIFO\n");
 #if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
-		char err[128];
 		EVE_Hal_rdBuffer(phost, err, RAM_ERR_REPORT, 128);
 		eve_printf_debug("%s\n", err);
 		displayError(phost, err);
@@ -331,7 +333,8 @@ bool EVE_Cmd_waitFlush(EVE_HalContext *phost)
 	while ((rp = EVE_Cmd_rp(phost)) != (wp = EVE_Cmd_wp(phost)))
 	{
 		// eve_printf_debug("Waiting for CoCmd FIFO... rp: %i, wp: %i\n", (int)rp, (int)wp);
-		handleWait(phost, rp);
+		if (!handleWait(phost, rp))
+			return false;
 	}
 
 	/* Command buffer empty */
@@ -358,7 +361,8 @@ bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size)
 
 	while (space < size)
 	{
-		handleWait(phost, space);
+		if (!handleWait(phost, space))
+			return false;
 		space = EVE_Cmd_space(phost);
 	}
 
@@ -374,7 +378,8 @@ bool EVE_Cmd_waitLogo(EVE_HalContext *phost)
 	{
 		rp = EVE_Cmd_rp(phost);
 		wp = EVE_Cmd_wp(phost);
-		handleWait(phost, rp);
+		if (!handleWait(phost, rp))
+			return false;
 
 	} while ((wp != 0) || (rp != 0));
 	return true;

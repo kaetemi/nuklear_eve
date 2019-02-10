@@ -35,7 +35,7 @@
 #include "EVE_Config.h"
 #if defined(BT8XXEMU_PLATFORM)
 
-#include <string.h>
+#include "EVE_Platform_WIN32.h"
 #include "bt8xxemu.h"
 #include "EVE_EmulatorMain.h"
 

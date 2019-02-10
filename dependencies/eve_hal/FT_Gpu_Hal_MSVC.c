@@ -320,7 +320,6 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 }
 #endif
 
-
 #endif //FT4222_PLATFORM
 
 ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
@@ -657,7 +656,6 @@ ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
 
 ft_void_t Ft_DisplayPanel_Init()
 {
-
 }
 
 #endif

@@ -97,12 +97,11 @@ nk_eve_color_rgba(EVE_HalContext *phost, struct nk_color col)
 static void
 nk_eve_scissor(EVE_HalContext *phost, float x, float y, float w, float h)
 {
-    Ft_Esd_Rect16 rect = {
-        .X = (int)x,
-        .Y = (int)y,
-        .Width = (int)(w + 1),
-        .Height = (int)(h + 1),
-    };
+    Ft_Esd_Rect16 rect;
+    rect.X = (int)x;
+    rect.Y = (int)y;
+    rect.Width = (int)(w + 1);
+    rect.Height = (int)(h + 1);
     Esd_Dl_Scissor_Adjust(rect, eve.scissor);
 }
 
@@ -187,21 +186,25 @@ nk_eve_fill_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
 {
     if (r < 1)
         r = 1;
-    ft_int32_t radius = (int)r << 4;
-    ft_int32_t width = radius + 8;
-    ft_int32_t x0 = x + r;
-    ft_int32_t y0 = y + r;
-    ft_int32_t x1 = x + w - 1 - r;
-    ft_int32_t y1 = y + h - 1 - r;
-    nk_eve_color_rgba(phost, col);
-    Esd_Dl_LINE_WIDTH(width);
-    Esd_Dl_BEGIN(RECTS);
+
+    scope
+    {
+        ft_int32_t radius = (int)r << 4;
+        ft_int32_t width = radius + 8;
+        ft_int32_t x0 = x + r;
+        ft_int32_t y0 = y + r;
+        ft_int32_t x1 = x + w - 1 - r;
+        ft_int32_t y1 = y + h - 1 - r;
+        nk_eve_color_rgba(phost, col);
+        Esd_Dl_LINE_WIDTH(width);
+        Esd_Dl_BEGIN(RECTS);
 #if (EVE_MODEL >= EVE_FT810)
-    Esd_Dl_VERTEX_FORMAT(0);
+        Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    nk_eve_vertex(x0, y0);
-    nk_eve_vertex(x1, y1);
-    Esd_Dl_END();
+        nk_eve_vertex(x0, y0);
+        nk_eve_vertex(x1, y1);
+        Esd_Dl_END();
+    }
 }
 
 static void
@@ -209,12 +212,11 @@ nk_eve_rect_multi_color(EVE_HalContext *phost, short x, short y, unsigned short 
     unsigned short h, struct nk_color left, struct nk_color top,
     struct nk_color right, struct nk_color bottom)
 {
-    Ft_Esd_Rect16 rect = {
-        .X = x,
-        .Y = y,
-        .Width = w,
-        .Height = h,
-    };
+    Ft_Esd_Rect16 rect;
+    rect.X = x;
+    rect.Y = y;
+    rect.Width = w;
+    rect.Height = h;
     Esd_Render_MultiGradient(rect,
         ESD_COMPOSE_ARGB8888(left.r, left.g, left.b, left.a),
         ESD_COMPOSE_ARGB8888(top.r, top.g, top.b, top.a),
@@ -226,6 +228,8 @@ static void
 nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int count, struct nk_color col)
 {
     short xmin = 4095, xmax = 0, ymin = 4095, ymax = 0;
+    Ft_Esd_Rect16 boundary, scissor;
+    int i;
 
     if (!count)
         return;
@@ -234,7 +238,7 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     nk_eve_color_rgba(phost, col);
 
     /* Find boundaries */
-    for (int i = 0; i < count; ++i)
+    for (i = 0; i < count; ++i)
     {
         if (pnts[i].x < xmin)
             xmin = pnts[i].x;
@@ -247,13 +251,11 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     }
 
     /* Clear stencil */
-    Ft_Esd_Rect16 boundary = {
-        .X = xmin,
-        .Y = ymin,
-        .Width = xmax - xmin,
-        .Height = ymax - ymin,
-    };
-    Ft_Esd_Rect16 scissor = Esd_Dl_Scissor_Set(boundary);
+    boundary.X = xmin;
+    boundary.Y = ymin;
+    boundary.Width = xmax - xmin;
+    boundary.Height = ymax - ymin;
+    scissor = Esd_Dl_Scissor_Set(boundary);
 
     /* Prepare state */
 #if (EVE_MODEL >= EVE_FT810)
@@ -267,7 +269,7 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     Eve_CoCmd_SendCmd(phost, STENCIL_OP(KEEP, INVERT));
     Eve_CoCmd_SendCmd(phost, STENCIL_FUNC(ALWAYS, 255, 255));
     Esd_Dl_BEGIN(EDGE_STRIP_B);
-    for (int i = 0; i < count; ++i)
+    for (i = 0; i < count; ++i)
     {
         nk_eve_vertex(pnts[i].x, pnts[i].y);
     }
@@ -320,6 +322,8 @@ static void
 nk_eve_stroke_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int count,
     unsigned short line_thickness, struct nk_color col)
 {
+    int i;
+
     if (!count)
         return;
 
@@ -329,7 +333,7 @@ nk_eve_stroke_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int co
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    for (int i = 0; i < count; ++i)
+    for (i = 0; i < count; ++i)
     {
         nk_eve_vertex(pnts[i].x, pnts[i].y);
     }
@@ -343,6 +347,7 @@ nk_eve_stroke_polyline(EVE_HalContext *phost, const struct nk_vec2i *pnts,
     int count, unsigned short line_thickness, struct nk_color col)
 {
     // TODO: This is just the same as nk_eve_stroke_polygon?
+    int i;
 
     if (!count)
         return;
@@ -353,7 +358,7 @@ nk_eve_stroke_polyline(EVE_HalContext *phost, const struct nk_vec2i *pnts,
 #if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
 #endif
-    for (int i = 0; i < count; ++i)
+    for (i = 0; i < count; ++i)
     {
         nk_eve_vertex(pnts[i].x, pnts[i].y);
     }
@@ -418,7 +423,6 @@ nk_eve_stroke_curve(EVE_HalContext *phost,
 {
     unsigned int i_step;
     float t_step;
-    struct nk_vec2i last = p1;
 
     if (num_segments < 1)
         num_segments = 1;
@@ -442,7 +446,7 @@ nk_eve_stroke_curve(EVE_HalContext *phost,
         float w4 = t * t * t;
         float x = w1 * p1.x + w2 * p2.x + w3 * p3.x + w4 * p4.x;
         float y = w1 * p1.y + w2 * p2.y + w3 * p3.y + w4 * p4.y;
-        Esd_Dl_VERTEX2F(x * 16.f, y * 16.f);
+        Esd_Dl_VERTEX2F((uint16_t)(x * 16.f), (uint16_t)(y * 16.f));
     }
     Esd_Dl_VERTEX2F(p4.x << 4, p4.y << 4);
     Esd_Dl_END();
@@ -486,11 +490,14 @@ static void
 nk_eve_cb_update(void *context)
 {
     nk_input_begin(&eve.ctx);
-    ft_bool_t touching = !!Ft_Esd_TouchTag_CurrentTag(NULL);
-    ft_int16_t touchX = Ft_Esd_TouchTag_TouchX(NULL);
-    ft_int16_t touchY = Ft_Esd_TouchTag_TouchY(NULL);
-    nk_input_motion(&eve.ctx, touchX, touchY);
-    nk_input_button(&eve.ctx, NK_BUTTON_LEFT, touchX, touchY, touching);
+    scope
+    {
+        ft_bool_t touching = !!Ft_Esd_TouchTag_CurrentTag(NULL);
+        ft_int16_t touchX = Ft_Esd_TouchTag_TouchX(NULL);
+        ft_int16_t touchY = Ft_Esd_TouchTag_TouchY(NULL);
+        nk_input_motion(&eve.ctx, touchX, touchY);
+        nk_input_button(&eve.ctx, NK_BUTTON_LEFT, touchX, touchY, touching);
+    }
     nk_input_end(&eve.ctx);
 }
 
@@ -543,12 +550,15 @@ nk_eve_cb_render(void *context)
                     short outer_y1 = r->y + r->h + half_thickness;
                     nk_eve_fill_rect(phost, outer_x0, outer_y0, outer_x1 - outer_x0, outer_y1 - outer_y0,
                         r->rounding, rs->color);
-                    short inner_x0 = outer_x0 + rs->line_thickness;
-                    short inner_y0 = outer_y0 + rs->line_thickness;
-                    short inner_x1 = outer_x1 - rs->line_thickness;
-                    short inner_y1 = outer_y1 - rs->line_thickness;
-                    nk_eve_fill_rect(phost, inner_x0, inner_y0, inner_x1 - inner_x0, inner_y1 - inner_y0,
-                        r->rounding, r->color);
+                    scope
+                    {
+                        short inner_x0 = outer_x0 + rs->line_thickness;
+                        short inner_y0 = outer_y0 + rs->line_thickness;
+                        short inner_x1 = outer_x1 - rs->line_thickness;
+                        short inner_y1 = outer_y1 - rs->line_thickness;
+                        nk_eve_fill_rect(phost, inner_x0, inner_y0, inner_x1 - inner_x0, inner_y1 - inner_y0,
+                            r->rounding, r->color);
+                    }
                     cmd = next;
                     break;
                 }
@@ -652,13 +662,14 @@ nk_eve_cb_end(void *context)
 NK_API struct nk_context *
 nk_eve_init(nk_evefont *evefont)
 {
+    Esd_Parameters ep;
     struct nk_user_font *font = &evefont->nk;
+
     font->userdata = nk_handle_ptr(evefont);
     font->height = 20; /* ... TODO ... */
     font->width = nk_evefont_get_text_width;
 
     nk_init_default(&eve.ctx, font);
-    Esd_Parameters ep;
     Esd_Defaults(&ep);
     ep.Start = nk_eve_cb_start;
     ep.Update = nk_eve_cb_update;

@@ -39,6 +39,8 @@ static ft_bool_t Ft_Esd_LoadFromFlash(ft_uint32_t *imageFormat, ft_bool_t deflat
 
 ft_uint32_t Ft_Esd_LoadBitmap(Ft_Esd_BitmapInfo *bitmapInfo)
 {
+	ft_uint32_t addr;
+
 	if (!bitmapInfo)
 	{
 #ifdef ESD_BITMAPINFO_DEBUG
@@ -69,7 +71,7 @@ ft_uint32_t Ft_Esd_LoadBitmap(Ft_Esd_BitmapInfo *bitmapInfo)
 
 	// Get address of specified handle
 	// eve_printf_debug("%i: %i\n", bitmapInfo->GpuHandle.Id, bitmapInfo->GpuHandle.Seq);
-	ft_uint32_t addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, bitmapInfo->GpuHandle);
+	addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, bitmapInfo->GpuHandle);
 	if (addr == GA_INVALID)
 	{
 		if (bitmapInfo->Flash ? (bitmapInfo->FlashAddress == FA_INVALID) : !bitmapInfo->File)
@@ -86,11 +88,12 @@ ft_uint32_t Ft_Esd_LoadBitmap(Ft_Esd_BitmapInfo *bitmapInfo)
 		addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, bitmapInfo->GpuHandle);
 		if (addr != GA_INVALID)
 		{
+			ft_bool_t coLoad = bitmapInfo->CoLoad || bitmapInfo->Format == JPEG || bitmapInfo->Format == PNG;
+			bitmapInfo->CoLoad = coLoad;
+
 #ifdef ESD_BITMAPINFO_DEBUG
 			eve_printf_debug("Allocated space for bitmap\n");
 #endif
-			ft_bool_t coLoad = bitmapInfo->CoLoad || bitmapInfo->Format == JPEG || bitmapInfo->Format == PNG;
-			bitmapInfo->CoLoad = coLoad;
 
 			// Allocation space OK
 			if (
@@ -154,6 +157,8 @@ ft_uint32_t Ft_Esd_LoadBitmap(Ft_Esd_BitmapInfo *bitmapInfo)
 
 ft_uint32_t Ft_Esd_LoadPalette(Ft_Esd_BitmapInfo *bitmapInfo)
 {
+	ft_uint32_t addr;
+
 	if (!bitmapInfo)
 	{
 #ifdef ESD_BITMAPINFO_DEBUG
@@ -175,9 +180,11 @@ ft_uint32_t Ft_Esd_LoadPalette(Ft_Esd_BitmapInfo *bitmapInfo)
 #if (EVE_MODEL >= EVE_FT810)
 
 	// Get palette address of specified handle
-	ft_uint32_t addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, bitmapInfo->PaletteGpuHandle);
+	addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, bitmapInfo->PaletteGpuHandle);
 	if (addr == GA_INVALID)
 	{
+		ft_uint32_t size;
+
 		if (bitmapInfo->Flash ? (bitmapInfo->PaletteFlashAddress == FA_INVALID) : (!bitmapInfo->PaletteFile))
 		{
 #ifdef ESD_BITMAPINFO_DEBUG
@@ -186,7 +193,6 @@ ft_uint32_t Ft_Esd_LoadPalette(Ft_Esd_BitmapInfo *bitmapInfo)
 			return GA_INVALID;
 		}
 
-		ft_uint32_t size;
 		switch (bitmapInfo->Format)
 		{
 		case PALETTED8:

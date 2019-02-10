@@ -290,8 +290,9 @@ uint32_t Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GpuAlloc *ga)
 #ifndef NDEBUG
 void Ft_Esd_GpuAlloc_Print(Ft_Esd_GpuAlloc *ga)
 {
+	uint32_t idx;
 	eve_printf_debug("GpuAlloc:\n");
-	for (uint32_t idx = 0; idx < ga->NbAllocEntries; ++idx)
+	for (idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
 		eve_printf_debug("%i: id: %i, addr: %i, len: %i, flags: %i\n",
 		    idx,

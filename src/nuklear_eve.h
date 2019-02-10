@@ -9,7 +9,9 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 
 #include "Esd_Core.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1900)
 #define NK_INCLUDE_FIXED_TYPES
+#endif
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_DEFAULT_ALLOCATOR

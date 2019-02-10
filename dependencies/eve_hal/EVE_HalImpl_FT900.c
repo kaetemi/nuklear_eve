@@ -319,15 +319,15 @@ void EVE_Mcu_initialize()
 	gpio_function(48, pad_uart0_txd); /* UART0 TXD */
 	gpio_function(49, pad_uart0_rxd); /* UART0 RXD */
 	uart_open(UART0, /* Device */
-		1, /* Prescaler = 1 */
-		UART_DIVIDER_115200_BAUD, /* Divider = 1302 */
-		uart_data_bits_8, /* No. Data Bits */
-		uart_parity_none, /* Parity */
-		uart_stop_bits_1); /* No. Stop Bits */
+	    1, /* Prescaler = 1 */
+	    UART_DIVIDER_115200_BAUD, /* Divider = 1302 */
+	    uart_data_bits_8, /* No. Data Bits */
+	    uart_parity_none, /* Parity */
+	    uart_stop_bits_1); /* No. Stop Bits */
 #endif
 
 #if (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
-						   /* asign all the respective pins to gpio and set them to default values */
+	/* asign all the respective pins to gpio and set them to default values */
 	gpio_function(34, pad_gpio34);
 	gpio_dir(34, pad_dir_output);
 	gpio_write(34, 1);

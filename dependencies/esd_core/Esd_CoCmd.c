@@ -266,15 +266,18 @@ ft_void_t Ft_Gpu_CoCmd_Interrupt(EVE_HalContext *phost, ft_uint32_t ms)
 
 void Ft_Gpu_CoCmd_GetMatrix(EVE_HalContext *phost, int32_t *m)
 {
+	uint16_t resAddr;
+	int i;
+
 	EVE_Cmd_beginFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_GETMATRIX);
-	uint16_t cmdAddr = EVE_Cmd_moveWp(phost, 6 * 4);
+	resAddr = EVE_Cmd_moveWp(phost, 6 * 4);
 	EVE_Cmd_endFunc(phost);
-	EVE_Cmd_waitFlush(phost);
 	
 	/* Read result */
-	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, RAM_CMD + cmdAddr);
-	for (int i = 0; i < 6; ++i)
+	EVE_Cmd_waitFlush(phost);
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, RAM_CMD + resAddr);
+	for (i = 0; i < 6; ++i)
 		m[i] = EVE_Hal_transfer32(phost, 0);
 	EVE_Hal_endTransfer(phost);
 }
