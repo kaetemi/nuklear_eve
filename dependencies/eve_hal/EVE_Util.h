@@ -42,6 +42,8 @@
 
 bool EVE_Util_bootupConfig(EVE_HalContext *phost);
 
+/* TODO: EVE_Util_resetCoprocessor(EVE_HalContext *phost) */
+
 #endif /* #ifndef EVE_HAL__H */
 
 /* end of file */

@@ -330,12 +330,6 @@ ft_int32_t Ft_Gpu_ClockTrimming(EVE_HalContext *phost, ft_uint32_t lowFreq);
 ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(EVE_HalContext *phost);
 #endif
 
-#if defined(BT8XXEMU_PLATFORM) || defined(ESD_SIMULATION)
-#elif defined(MSVC_PLATFORM)
-#include <FT_Gpu_Hal_MSVC.h>
-#elif defined(FT900_PLATFORM)
-#endif
-
 #define Eve_BootupConfig EVE_Util_bootupConfig
 
 ft_void_t Ft_DisplayPanel_Init();

@@ -32,7 +32,15 @@
 #include "FT_Platform.h"
 #if defined(MSVC_PLATFORM)
 
-#include "FT_Gpu_Hal_MSVC.h"
+#include "FT_Gpu_Hal.h"
+
+#ifdef FT4222_PLATFORM
+#include "LibFT4222.h"
+#endif
+
+#ifdef MPSSE_PLATFORM
+#include "libMPSSE_spi.h"
+#endif
 
 #if defined(FT4222_PLATFORM)
 #endif

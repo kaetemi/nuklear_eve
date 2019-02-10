@@ -118,8 +118,6 @@ bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size);
 (Waits for both the read and write pointer to go to 0) */
 bool EVE_Cmd_waitLogo(EVE_HalContext *phost);
 
-/* TODO: EVE_Cmd_cpuReset(EVE_HalContext *phost) */
-
 #endif /* #ifndef EVE_HAL__H */
 
 /* end of file */
