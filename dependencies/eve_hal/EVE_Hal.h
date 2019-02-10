@@ -40,23 +40,6 @@
 #define EVE_HAL__H
 #include "EVE_GpuTypes.h"
 
-/***********
-** MACROS **
-***********/
-
-/* Definitions used for FT800 co processor command buffer */
-#define EVE_DL_SIZE (8 * 1024) /* 8kB Display List buffer size */
-#define EVE_CMD_FIFO_SIZE ((4) * 1024) /* 4kB coprocessor Fifo size */
-#define EVE_CMD_FIFO_MASK (EVE_CMD_FIFO_SIZE - 1)
-#define EVE_CMD_FIFO_ALIGNMENT_MASK (EVE_CMD_FIFO_SIZE - ((4) - 1))
-
-#if defined(EVE_CMD_BUFFERED)
-#define EVE_CMD_BUFFER_CAPACITY (EVE_CMD_FIFO_SIZE >> 1)
-#define EVE_CMD_BUFFER_MASK (EVE_CMD_BUFFER_CAPACITY - 1)
-#endif
-
-#define EVE_CMD_FAULT(rp) (rp & 0x3)
-
 /**********
 ** ENUMS **
 **********/
@@ -83,19 +66,6 @@ typedef enum EVE_TRANSFER_T
 	EVE_TRANSFER_READ,
 	EVE_TRANSFER_WRITE,
 } EVE_TRANSFER_T;
-
-typedef enum EVE_SPI_CHANNELS_T
-{
-	EVE_SPI_SINGLE_CHANNEL = 0x00,
-	EVE_SPI_DUAL_CHANNEL = 0x01,
-	EVE_SPI_QUAD_CHANNEL = 0x02,
-} EVE_SPI_CHANNELS_T;
-
-typedef enum EVE_SPI_DUMMY_BYTES_T
-{
-	EVE_SPI_ONE_DUMMY_BYTE = 0x00,
-	EVE_SPI_TWO_DUMMY_BYTES = 0x04,
-} EVE_SPI_DUMMY_BYTES_T;
 
 /************
 ** STRUCTS **

@@ -30,8 +30,12 @@
 */
 
 /*
-This headers is separated and included last 
+
+Defines EVE hardware values.
+
+This header is separated and included last 
 due to conflicts with other libraries.
+
 */
 
 #ifndef EVE_GPU_DEFS__H

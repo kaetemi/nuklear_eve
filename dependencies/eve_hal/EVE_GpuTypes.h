@@ -33,8 +33,113 @@
 #define EVE_GPU_TYPES__H
 #include "EVE_Config.h"
 
+/***********
+** MACROS **
+***********/
+
+/* Definitions used for FT800 co processor command buffer */
+#define EVE_DL_SIZE (8 * 1024) /* 8kB Display List buffer size */
+#define EVE_CMD_FIFO_SIZE ((4) * 1024) /* 4kB coprocessor Fifo size */
+#define EVE_CMD_FIFO_MASK (EVE_CMD_FIFO_SIZE - 1)
+#define EVE_CMD_FIFO_ALIGNMENT_MASK (EVE_CMD_FIFO_SIZE - ((4) - 1))
+
+#define EVE_CMD_FAULT(rp) (rp & 0x3)
+
 #define EVE_GPU_NUMCHAR_PERFONT (128)
 #define EVE_GPU_FONT_TABLE_SIZE (148)
+
+/* SPI channel options */
+typedef enum EVE_SPI_CHANNELS_T
+{
+	EVE_SPI_SINGLE_CHANNEL = 0x00,
+	EVE_SPI_DUAL_CHANNEL = 0x01,
+	EVE_SPI_QUAD_CHANNEL = 0x02,
+} EVE_SPI_CHANNELS_T;
+
+typedef enum EVE_SPI_DUMMY_BYTES_T
+{
+	EVE_SPI_ONE_DUMMY_BYTE = 0x00,
+	EVE_SPI_TWO_DUMMY_BYTES = 0x04,
+} EVE_SPI_DUMMY_BYTES_T;
+
+/* APIs for Host Commands */
+typedef enum EVE_PLL_SOURCE_T
+{
+	EVE_INTERNAL_OSC = 0x48, // default
+	EVE_EXTERNAL_OSC = 0x44,
+} EVE_PLL_SOURCE_T;
+
+typedef enum EVE_PLL_FREQ_T
+{
+	EVE_PLL_48M = 0x62, // default
+	EVE_PLL_36M = 0x61,
+	EVE_PLL_24M = 0x64,
+} EVE_PLL_FREQ_T;
+
+typedef enum EVE_POWER_MODE_T
+{
+	EVE_ACTIVE_M = 0x00,
+	EVE_STANDBY_M = 0x41, // default
+	EVE_SLEEP_M = 0x42,
+	EVE_POWERDOWN_M = 0x50,
+} EVE_POWER_MODE_T;
+
+#if (EVE_MODEL >= EVE_FT810)
+typedef enum EVE_81X_PLL_FREQ_T
+{
+	EVE_SYSCLK_DEFAULT = 0x00, // default 60mhz
+	EVE_SYSCLK_72M = 0x06,
+	EVE_SYSCLK_60M = 0x05,
+	EVE_SYSCLK_48M = 0x04,
+	EVE_SYSCLK_36M = 0x03,
+	EVE_SYSCLK_24M = 0x02,
+} EVE_81X_PLL_FREQ_T;
+
+typedef enum EVE_81X_ROM_AND_ADC_T
+{
+	EVE_MAIN_ROM = 0x80, // main graphicas ROM used
+	EVE_RCOSATAN_ROM = 0x40, // line slope table used for
+	EVE_SAMPLE_ROM = 0x20, // JA samples
+	EVE_JABOOT_ROM = 0x10, // JA microcode
+	EVE_J1BOOT_ROM = 0x08, // J1 microcode
+	EVE_ADC = 0x01,
+	EVE_POWER_ON_ROM_AND_ADC = 0x00, // specify this element to power on all ROMs and ADCs
+} EVE_81X_ROM_AND_ADC_T;
+
+typedef enum EVE_81X_GPIO_DRIVE_STRENGTH_T
+{
+	EVE_5MA = 0x00, //default current
+	EVE_10MA = 0x01,
+	EVE_15MA = 0x02,
+	EVE_20MA = 0x03,
+} EVE_81X_GPIO_DRIVE_STRENGTH_T;
+
+typedef enum EVE_81X_GPIO_GROUP_T
+{
+	EVE_GPIO0 = 0x00,
+	EVE_GPIO1 = 0x04,
+	EVE_GPIO2 = 0x08,
+	EVE_GPIO3 = 0x0C,
+	EVE_GPIO4 = 0x10,
+	EVE_DISP = 0x20,
+	EVE_DE = 0x24,
+	EVE_VSYNC_HSYNC = 0x28,
+	EVE_PCLK = 0x2C,
+	EVE_BACKLIGHT = 0x30,
+	EVE_R_G_B = 0x34,
+	EVE_AUDIO_L = 0x38,
+	EVE_INT_N = 0x3C,
+	EVE_TOUCHWAKE = 0x40,
+	EVE_SCL = 0x44,
+	EVE_SDA = 0x48,
+	EVE_SPI_MISO_MOSI_IO2_IO3 = 0x4C,
+} EVE_81X_GPIO_GROUP_T;
+
+#define EVE_81X_RESET_ACTIVE 0x000268
+#define EVE_81X_RESET_REMOVAL 0x002068
+#endif
+
+#define EVE_CORE_RESET (0x68)
 
 /* FT81x and FT80x font table structure */
 /* Font table address in ROM can be found by reading the address from 0xFFFFC location. */
