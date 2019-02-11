@@ -223,22 +223,39 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
+	if (!size)
+	{
+		EVE_Hal_transfer32(phost, 0);
+		return 4;
+	}
+
+	eve_assert(size <= EVE_CMD_STRING_MAX);
+#if 1
+	// BT8XXEMU
 	uint32_t transferred = 0;
 	if (phost->Status == EVE_STATUS_WRITING)
 	{
-		while (transferred < size)
+		for (;;)
 		{
 			char c = str[index + (transferred++)];
-			// putchar(c ? c : '_');
 			transfer8(phost, c);
+			// putchar(c ? c : '_');
 			if (!c)
+			{
 				break;
+			}
+			if (transferred >= size)
+			{
+				++transferred;
+				transfer8(phost, 0);
+				// putchar('_');
+			}
 		}
 		while (transferred & padMask)
 		{
 			++transferred;
-			// putchar('_');
 			transfer8(phost, 0);
+			// putchar('_');
 		}
 	}
 	else
@@ -247,6 +264,68 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		eve_debug_break();
 	}
 	return transferred;
+#elif 1
+	// FT4222
+	uint32_t transferred = 0;
+	if (phost->Status == EVE_STATUS_WRITING)
+	{
+		uint8_t buffer[EVE_CMD_STRING_MAX + 1];
+
+		for (;;)
+		{
+			char c = str[index + (transferred)];
+			buffer[transferred++] = c;
+			// putchar(c ? c : '_');
+			if (!c)
+			{
+				break;
+			}
+			if (transferred >= size)
+			{
+				buffer[transferred++] = 0;
+				// putchar('_');
+			}
+		}
+		while (transferred & padMask)
+		{
+			buffer[transferred++] = 0;
+			// putchar('_');
+		}
+
+		eve_assert(transferred);
+
+		EVE_Hal_transferBuffer(phost, NULL, buffer, transferred);
+	}
+	else
+	{
+		/* not implemented */
+		eve_debug_break();
+	}
+	return transferred;
+#else
+	// FT900
+	uint32_t transferred = 0;
+	if (phost->Status == EVE_STATUS_WRITING)
+	{
+		transferred += (uint32_t)strnlen(str, size) + 1;
+		eve_assert(str[transferred - 1] == '\0');
+		EVE_Hal_transferBuffer(phost, NULL, str, transferred);
+		if (transferred & padMask)
+		{
+			uint32_t pad = 4 - (transferred & padMask);
+			uint8_t padding[4] = { 0 };
+			EVE_Hal_transferBuffer(phost, NULL, padding, pad);
+			transferred += pad;
+			eve_assert(!(transferred & 0x3));
+		}
+	}
+	else
+	{
+		/* not implemented */
+		eve_debug_break();
+	}
+	return transferred;
+#endif
 }
 
 /************

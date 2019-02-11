@@ -752,27 +752,39 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
 	if (!size)
-		return 0;
+	{
+		EVE_Hal_transfer32(phost, 0);
+		return 4;
+	}
 
+	eve_assert(size <= EVE_CMD_STRING_MAX);
 	uint32_t transferred = 0;
 	if (phost->Status == EVE_STATUS_WRITING)
 	{
 		uint8_t buffer[EVE_CMD_STRING_MAX + 1];
 
-		while (transferred < size)
+		for (;;)
 		{
 			char c = str[index + (transferred)];
 			buffer[transferred++] = c;
+			// putchar(c ? c : '_');
 			if (!c)
+			{
 				break;
+			}
+			if (transferred >= size)
+			{
+				buffer[transferred++] = 0;
+				// putchar('_');
+			}
 		}
 		while (transferred & padMask)
 		{
 			buffer[transferred++] = 0;
+			// putchar('_');
 		}
 
-		if (!transferred)
-			return 0;
+		eve_assert(transferred);
 
 		wrBuffer(phost, buffer, transferred);
 	}
@@ -807,11 +819,11 @@ void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 	case EVE_SPI_SINGLE_CHANNEL:
 		/* FYI : All HOST CMDs should only be executed in single channel mode*/
 		status = FT4222_SPIMaster_SingleWrite(
-			phost->SpiHandle,
-			transferArray,
-			sizeof(transferArray),
-			&sizeTransferred,
-			true);
+		    phost->SpiHandle,
+		    transferArray,
+		    sizeof(transferArray),
+		    &sizeTransferred,
+		    true);
 		if (FT4222_OK != status)
 			eve_printf_debug("SPI write failed = %d\n", status);
 		break;
@@ -819,13 +831,13 @@ void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 	case EVE_SPI_QUAD_CHANNEL:
 		/* only reset command among phost commands can be executed in multi channel mode*/
 		status = FT4222_SPIMaster_MultiReadWrite(
-			phost->SpiHandle,
-			&dummyRead,
-			transferArray,
-			0,
-			sizeof(transferArray),
-			0,
-			&sizeOfRead);
+		    phost->SpiHandle,
+		    &dummyRead,
+		    transferArray,
+		    0,
+		    sizeof(transferArray),
+		    0,
+		    &sizeOfRead);
 		if (FT4222_OK != status)
 			eve_printf_debug("SPI write failed = %d\n", status);
 		break;
@@ -851,11 +863,11 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 	{
 	case EVE_SPI_SINGLE_CHANNEL:
 		status = FT4222_SPIMaster_SingleWrite(
-			phost->SpiHandle,
-			transferArray,
-			sizeof(transferArray),
-			&sizeTransferred,
-			true);
+		    phost->SpiHandle,
+		    transferArray,
+		    sizeof(transferArray),
+		    &sizeTransferred,
+		    true);
 		if (FT4222_OK != status)
 			eve_printf_debug("SPI write failed = %d\n", status);
 		break;
@@ -864,13 +876,13 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 		/* FYI : Mostly all HOST CMDs can be executed in single channel mode
 		* except system reset cmd */
 		status = FT4222_SPIMaster_MultiReadWrite(
-			phost->SpiHandle,
-			&dummyRead,
-			transferArray,
-			0,
-			sizeof(transferArray),
-			0,
-			&sizeOfRead);
+		    phost->SpiHandle,
+		    &dummyRead,
+		    transferArray,
+		    0,
+		    sizeof(transferArray),
+		    0,
+		    &sizeOfRead);
 		if (FT4222_OK != status)
 			eve_printf_debug("SPI write failed = %d\n", status);
 		break;

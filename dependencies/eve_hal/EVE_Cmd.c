@@ -115,12 +115,15 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			}
 			if (string)
 			{
+				eve_assert(transfered == 0);
+				eve_assert(transfer == size); /* Cannot split string transfers */
 				uint32_t t = EVE_Hal_transferString(phost, (const char *)buffer, transfered, transfer, 0x3);
 				if (t != transfer) /* End of string */
 				{
 					transfer = t;
 					size = (transfered + transfer);
 				}
+				eve_assert((transfered + transfer) == size);
 			}
 			else if (progmem)
 			{

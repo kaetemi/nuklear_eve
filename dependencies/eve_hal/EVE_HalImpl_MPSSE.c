@@ -341,32 +341,39 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
 	if (!size)
-		return 0;
+	{
+		EVE_Hal_transfer32(phost, 0);
+		return 4;
+	}
 
+	eve_assert(size <= EVE_CMD_STRING_MAX);
 	uint32_t transferred = 0;
 	if (phost->Status == EVE_STATUS_WRITING)
 	{
 		uint8_t buffer[EVE_CMD_STRING_MAX + 1];
 
-		while (transferred < size)
+		for (;;)
 		{
-			char c = str[index + (transferred++)];
+			char c = str[index + (transferred)];
+			buffer[transferred++] = c;
 			// putchar(c ? c : '_');
 			if (!c)
+			{
 				break;
+			}
+			if (transferred >= size)
+			{
+				buffer[transferred++] = 0;
+				// putchar('_');
+			}
 		}
-
-		wrBuffer(phost, &str[index], transferred);
-
 		while (transferred & padMask)
 		{
-			++transferred;
+			buffer[transferred++] = 0;
 			// putchar('_');
-			transfer8(phost, 0);
 		}
 
-		if (!transferred)
-			return 0;
+		eve_assert(transferred);
 
 		wrBuffer(phost, buffer, transferred);
 	}

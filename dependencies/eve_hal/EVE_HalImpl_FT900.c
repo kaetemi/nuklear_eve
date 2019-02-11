@@ -218,7 +218,7 @@ uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 	{
 		rdBuffer(phost, buffer, 2);
 		return (uint16_t)buffer[0]
-			| (uint16_t)buffer[1] << 8;
+		    | (uint16_t)buffer[1] << 8;
 	}
 	else
 	{
@@ -236,9 +236,9 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 	{
 		rdBuffer(phost, buffer, 4);
 		return (uint32_t)buffer[0]
-			| (uint32_t)buffer[1] << 8
-			| (uint32_t)buffer[2] << 16
-			| (uint32_t)buffer[3] << 24;
+		    | (uint32_t)buffer[1] << 8
+		    | (uint32_t)buffer[2] << 16
+		    | (uint32_t)buffer[3] << 24;
 	}
 	else
 	{
@@ -302,20 +302,32 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
-	uint32_t transferred;
-	for (transferred = 0; transferred < size;)
+	if (!size)
 	{
-		char c = str[index + (transferred++)];
-		// putchar(c ? c : '_');
-		transfer8(phost, c);
-		if (!c)
-			break;
+		EVE_Hal_transfer32(phost, 0);
+		return 4;
 	}
-	while (transferred & padMask)
+
+	eve_assert(size <= EVE_CMD_STRING_MAX);
+	uint32_t transferred = 0;
+	if (phost->Status == EVE_STATUS_WRITING)
 	{
-		++transferred;
-		// putchar('_');
-		transfer8(phost, 0);
+		transferred += (uint32_t)strnlen(str, size) + 1;
+		eve_assert(str[transferred - 1] == '\0');
+		wrBuffer(phost, str, transferred);
+		if (transferred & padMask)
+		{
+			uint32_t pad = 4 - (transferred & padMask);
+			uint8_t padding[4] = { 0 };
+			wrBuffer(phost, padding, pad);
+			transferred += pad;
+			eve_assert(!(transferred & 0x3));
+		}
+	}
+	else
+	{
+		/* not implemented */
+		eve_debug_break();
 	}
 	return transferred;
 }
@@ -397,26 +409,26 @@ uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
 
 	__asm__(
-		"   move.l  $r0,%0"
-		"\n\t"
-		"   mul.l   $r0,$r0,100"
-		"\n\t"
-		"1:"
-		"\n\t"
-		"   sub.l   $r0,$r0,3"
-		"\n\t" /* Subtract the loop time = 4 cycles */
-		"   cmp.l   $r0,0"
-		"\n\t" /* Check that the counter is equal to 0 */
-		"   jmpc    gt, 1b"
-		"\n\t"
-		/* Outputs */
-		:
-	/* Inputs */
-	: "r"(r)
-		/* Using */
-		: "$r0"
+	    "   move.l  $r0,%0"
+	    "\n\t"
+	    "   mul.l   $r0,$r0,100"
+	    "\n\t"
+	    "1:"
+	    "\n\t"
+	    "   sub.l   $r0,$r0,3"
+	    "\n\t" /* Subtract the loop time = 4 cycles */
+	    "   cmp.l   $r0,0"
+	    "\n\t" /* Check that the counter is equal to 0 */
+	    "   jmpc    gt, 1b"
+	    "\n\t"
+	    /* Outputs */
+	    :
+	    /* Inputs */
+	    : "r"(r)
+	    /* Using */
+	    : "$r0"
 
-		);
+	);
 
 	//usleep(15625);
 	//EVE_sleep(15625);
