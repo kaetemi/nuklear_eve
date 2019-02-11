@@ -321,13 +321,13 @@ ft_void_t Ft_Gpu_CoCmd_Button(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 
 ft_void_t Ft_Gpu_CoCmd_Keys(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
 {
-	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 4 + strlen(s) + 1);
+	EVE_Cmd_startFunc(phost);
 	Gpu_Copro_SendCmd(phost, CMD_KEYS);
 	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
 	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
 	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (font & 0xffff)));
 	Gpu_CoCmd_SendStr(phost, s);
-	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 4 + strlen(s) + 1));
+	EVE_Cmd_endFunc(phost);
 
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
