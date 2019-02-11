@@ -32,8 +32,6 @@
 #include "FT_Platform.h"
 #if defined(FT900_PLATFORM)
 
-#include "FT_Gpu_Hal_FT900.h"
-
 /*The APIs for reading/writing transfer continuously only with small buffer system*/
 ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
 {

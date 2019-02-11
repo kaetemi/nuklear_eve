@@ -241,6 +241,18 @@ void LogError__ESD(const char *str);
 #define inline __inline
 #endif
 
+/* compatibility */
+
+#ifdef FT_DispWidth
+#undef FT_DispWidth
+#endif
+#ifdef FT_DispHeight
+#undef FT_DispHeight
+#endif
+
+#define FT_DispWidth ESD_DispWidth
+#define FT_DispHeight ESD_DispHeight
+
 #endif /* #ifndef FT_ESD_H */
 
 /* end of file */

@@ -33,7 +33,7 @@
 #include "EVE_Platform.h"
 #if defined(FT900_PLATFORM)
 
-ft_void_t ticker();
+void ticker();
 
 #if defined(EVE_MODULE_PANL)
 /* TODO: Pass these as parameters in HAL initialization, instead of here. */
@@ -43,7 +43,7 @@ uint8_t ucHeap[PANL_HEAP_SIZE];
 /* uart_write((ft900_uart_regs_t*) p, (uint8_t) c); */
 void tfp_putc(void *p, char c); /* Placeholder for user code */
 void bacnet_notification_acked(uint8_t id); /* Placeholder for user code */
-ft_bool_t bacnet_msg_received(uint8_t src, const uint8_t *indata, const size_t inlen, uint8_t *outdata, size_t *outlen); /* Placeholder for user code */
+bool bacnet_msg_received(uint8_t src, const uint8_t *indata, const size_t inlen, uint8_t *outdata, size_t *outlen); /* Placeholder for user code */
 void bacnet_unconf_msg_received(uint8_t src, const uint8_t *indata, const size_t inlen); /* Placeholder for user code */
 #endif /* #if defined(EVE_MODULE_PANL) */
 
@@ -119,17 +119,17 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 
 	/* Initialize the context valriables */
 	phost->SpiDummyBytes = 1; //by default ft800/801/810/811 goes with single dummy byte for read
-	phost->SpiChannels = FT_GPU_SPI_SINGLE_CHANNEL;
+	phost->SpiChannels = EVE_SPI_SINGLE_CHANNEL;
 	phost->Status = EVE_STATUS_OPENED;
 	++g_HalPlatform.OpenedDevices;
 
-	return FT_TRUE;
+	return true;
 }
 
 /* Close a HAL context */
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
-	phost->Status = FT_GPU_HAL_CLOSED;
+	phost->Status = EVE_STATUS_CLOSED;
 	--g_HalPlatform.OpenedDevices;
 	/* spi_close(SPIM,0); */
 }
@@ -174,7 +174,7 @@ uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 {
 	uint16_t retVal = 0;
 	retVal = transfer8(phost, value & 0xFF);
-	retVal |= (ft_uint16_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
+	retVal |= (uint16_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
 	return retVal;
 }
 
@@ -182,9 +182,9 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 {
 	uint32_t retVal = 0;
 	retVal = transfer8(phost, value & 0xFF);
-	retVal |= (ft_uint32_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
-	retVal |= (ft_uint32_t)transfer8(phost, (value >> 16) & 0xFF) << 16;
-	retVal |= (ft_uint32_t)transfer8(phost, value >> 24) << 24;
+	retVal |= (uint32_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
+	retVal |= (uint32_t)transfer8(phost, (value >> 16) & 0xFF) << 16;
+	retVal |= (uint32_t)transfer8(phost, value >> 24) << 24;
 	return retVal;
 }
 
@@ -252,7 +252,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 ** MISC **
 *********/
 
-static ft_void_t initSdHost()
+static void initSdHost()
 {
 	sys_enable(sys_device_sd_card);
 	sdhost_init();
@@ -375,9 +375,9 @@ void EVE_Mcu_release()
 *********/
 
 /* Globals for interrupt implementation */
-static ft_uint32_t s_TotalMilliseconds = 0;
+static uint32_t s_TotalMilliseconds = 0;
 
-ft_void_t EVE_Millis_initialize()
+void EVE_Millis_initialize()
 {
 	s_TotalMilliseconds = 0;
 #if (defined(EVE_MODULE_PANL))
@@ -396,7 +396,7 @@ ft_void_t EVE_Millis_initialize()
 #endif
 }
 
-ft_void_t EVE_Millis_release()
+void EVE_Millis_release()
 {
 	timer_stop(FT900_FT_MILLIS_TIMER);
 	timer_disable_interrupt(FT900_FT_MILLIS_TIMER);
@@ -404,7 +404,7 @@ ft_void_t EVE_Millis_release()
 
 /* Need to ensure that below api is called at least once in 6.5 seconds duration for FT900 platform as this module doesnt use timer for context update */
 /* global counter to loopback after ~49.71 days */
-ft_uint32_t EVE_millis()
+uint32_t EVE_millis()
 {
 #if (defined(EVE_MODULE_PANL))
 	return panl_timer_get_time();
@@ -414,7 +414,7 @@ ft_uint32_t EVE_millis()
 #endif
 }
 
-ft_void_t ticker()
+void ticker()
 {
 	s_TotalMilliseconds += 1;
 

@@ -301,7 +301,7 @@ due to conflicts with other libraries.
 #define ONE 1UL
 #define ONE_MINUS_DST_ALPHA 5UL
 #define ONE_MINUS_SRC_ALPHA 4UL
-ESD_ENUM(Ft_CoPro_Opt, Type = ft_uint16_t, Flags)
+ESD_ENUM(Ft_CoPro_Opt, Type = ft_uint16_t, Include = "EVE_Platform.h", Flags)
 #define OPT_CENTER 1536UL
 #define OPT_CENTERX 512UL
 #define OPT_CENTERY 1024UL

@@ -39,8 +39,8 @@
 #ifndef FT_GPU_HAL__H
 #define FT_GPU_HAL__H
 
-#include "EVE_Hal.h"
-#include "EVE_Cmd.h"
+#include "../EVE_Hal.h"
+#include "../EVE_Cmd.h"
 
 #include <stdlib.h>
 
@@ -157,11 +157,14 @@ static inline ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr
 /// Wait for the command buffer to have at least the requested amount of free space
 #define Ft_Gpu_Hal_WaitCmdFreespace EVE_Cmd_waitSpace
 
+/*
+// Use the provided wait functions!
 static inline ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t *rp, ft_uint16_t *wp)
 {
 	*rp = EVE_Cmd_rp(phost);
 	*wp = EVE_Cmd_wp(phost);
 }
+*/
 
 /*******************************************************************************/
 /*******************************************************************************/

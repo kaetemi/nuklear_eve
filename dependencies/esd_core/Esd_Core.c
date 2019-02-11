@@ -44,6 +44,7 @@
 Esd_Context *Esd_CurrentContext = NULL;
 EVE_HalContext *Ft_Esd_Host = NULL; // Pointer to current s_Host
 Ft_Esd_GpuAlloc *Ft_Esd_GAlloc = NULL; // Pointer to current s_GAlloc
+ft_int16_t ESD_DispWidth, ESD_DispHeight;
 
 //
 // External definitions
@@ -55,8 +56,6 @@ void Esd_CheckTypeSizes();
 // FT_Mcu_Hal.c
 // ft_void_t Eve_BootupConfig(EVE_HalContext *s_Host);
 #define Eve_BootupConfig EVE_Util_bootupConfig
-
-// extern void Ft_Esd_Widget_ProcessFree(); // TODO: Bind from widgets
 
 // When not in the simulation, use the Ft_Main__Start etc symbols
 // as exported by the single Application logic document included
@@ -72,6 +71,8 @@ int Ft_Main__Running__ESD();
 
 void Esd_ResetGpuState();
 void Esd_ResetCoState(); // TODO: Call after coprocessor reset procedure
+
+// extern void Ft_Esd_Widget_ProcessFree(); // TODO: Bind from widgets
 
 // extern void Ft_Esd_Timer_CancelGlobal(); // TODO: Bind from widgets
 // extern void Ft_Esd_Timer_UpdateGlobal(); // TODO: Bind from widgets
@@ -91,6 +92,24 @@ void Esd_SetCurrent(Esd_Context *ec)
 void Esd_Defaults(Esd_Parameters *ep)
 {
 	memset(ep, 0, sizeof(Esd_Parameters));
+}
+
+bool cbCmdWait(struct EVE_HalContext *phost)
+{
+	Esd_Context *ec = (Esd_Context *)phost->UserContext;
+
+	/* Loop an idle task instead of doing nothing */
+	if (ec->Idle)
+		ec->Idle(ec->UserContext);
+	/* EVE_Hal_idle(&ec->HalContext); */ /* Already called by EVE HAL */
+	ec->SwapIdled = true;
+
+#if defined(BT8XXEMU_PLATFORM)
+	/* TODO: This may be handled by HAL idle function instead */
+	return BT8XXEMU_isRunning(phost->Emulator);
+#else
+	return true;
+#endif
 }
 
 void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
@@ -117,8 +136,17 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 	Ft_Gpu_HalInit_t halInit;
 	Ft_Gpu_Hal_Init(&halInit);
 
-	Ft_Gpu_Hal_Open(&ec->HalContext);
-	Eve_BootupConfig(&ec->HalContext);
+	EVE_HalParameters parameters;
+	EVE_Hal_defaults(&parameters);
+	parameters.UserContext = ec;
+	parameters.CbCmdWait = cbCmdWait;
+	EVE_Hal_open(&ec->HalContext, &parameters); /* TODO: Handle result */
+	eve_assert(ec->HalContext.UserContext == ec);
+
+	EVE_Util_bootupConfig(&ec->HalContext);
+
+	ESD_DispWidth = ec->HalContext.Parameters.Display.Width;
+	ESD_DispHeight = ec->HalContext.Parameters.Display.Height;
 
 #ifndef ESD_SIMULATION
 	// TODO: Store calibration somewhere!
@@ -176,7 +204,7 @@ void Esd_Start(Esd_Context *ec)
 	// Initialize framework
 	Esd_ResetGpuState();
 	ec->Frame = 0;
-	ec->Millis = ft_millis();
+	ec->Millis = EVE_millis();
 	// Ft_Esd_Timer_CancelGlobal(); // TODO
 
 	// Initialize storage
@@ -218,7 +246,7 @@ void Esd_Update(Esd_Context *ec)
 	{
 		if (ec->Idle)
 			ec->Idle(ec->UserContext);
-		Ft_Gpu_Hal_ESD_Idle(phost);
+		EVE_Hal_idle(phost);
 	}
 
 	// Update GUI state before render
@@ -299,30 +327,7 @@ void Esd_WaitSwap(Esd_Context *ec)
 	EVE_HalContext *phost = &ec->HalContext;
 
 	ec->SwapIdled = FT_FALSE;
-	ft_uint16_t rp, wp;
-	Ft_Gpu_Hal_RdCmdRpWp(&ec->HalContext, &rp, &wp);
-	while (rp != wp)
-	{
-		// Reset if coprocessor fault
-		if (FT_COCMD_FAULT(rp))
-		{
-			eve_printf_debug("TODO: Reset coprocessor on fault\n");
-#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
-			char err[128];
-			Ft_Gpu_Hal_RdMem(phost, RAM_ERR_REPORT, err, 128);
-			eve_printf_debug("%s\n", err);
-#endif
-			break;
-		}
-
-		// Loop an idle task instead of doing nothing
-		if (ec->Idle)
-			ec->Idle(ec->UserContext);
-		Ft_Gpu_Hal_ESD_Idle(&ec->HalContext);
-		ec->SwapIdled = FT_TRUE;
-
-		Ft_Gpu_Hal_RdCmdRpWp(phost, &rp, &wp);
-	}
+	EVE_Cmd_waitFlush(&ec->HalContext);
 }
 
 void Esd_Stop(Esd_Context *ec)

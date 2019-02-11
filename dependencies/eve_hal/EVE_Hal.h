@@ -91,7 +91,8 @@ typedef struct EVE_DisplayParameters
 	bool Dither;
 } Eve_DisplayParameters;
 
-typedef int (*EVE_Callback)(void *phost);
+typedef struct EVE_HalContext EVE_HalContext;
+typedef bool (*EVE_Callback)(EVE_HalContext *phost);
 
 /* Hal parameters */
 typedef struct EVE_HalParameters
@@ -153,10 +154,8 @@ typedef struct EVE_HalContext
 	uint32_t SpiRamGAddr; /* Current RAM_G address of ongoing SPI transaction, if continous is not supported */
 #endif
 
-#if !defined(FT900_PLATFORM)
 	EVE_SPI_CHANNELS_T SpiChannels; /* Variable to contain single/dual/quad channels */
 	uint8_t SpiDummyBytes; /* Number of dummy bytes as 1 or 2 for SPI read */
-#endif
 
 	/* Buffer cmd smaller than a full cmd command */
 	uint8_t CmdBuffer[4];
@@ -199,7 +198,8 @@ bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters);
 /* Close a HAL context */
 void EVE_Hal_close(EVE_HalContext *phost);
 
-/* Idle. Call regularly to update frequently changing internal state */
+/* Idle. Call regularly to update frequently changing internal state.
+This is also called while waiting for cmd, in addition to the user idle callback */
 void EVE_Hal_idle(EVE_HalContext *phost);
 
 /*************

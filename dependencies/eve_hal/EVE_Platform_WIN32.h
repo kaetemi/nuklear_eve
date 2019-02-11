@@ -54,7 +54,13 @@
 #endif
 
 /* C library inclusions */
+#ifdef POINTS
+#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error WINPOINTS: Invalid include order, " \
+                                                      "this header must be included before EVE_GpuDefs.h")
+#endif
+#define POINTS WINPOINTS
 #include <Windows.h>
+#undef POINTS
 
 #include <stdio.h>
 #include <stdlib.h>

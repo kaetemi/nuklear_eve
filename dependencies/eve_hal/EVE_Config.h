@@ -631,8 +631,8 @@ These may only be set by one of the platform target definitions, and should not 
 
 #endif
 
-#define EVE_PLATFORM__STR(x) #x
-#define EVE_PLATFORM_STR(x) EVE_PLATFORM__STR(x)
+#define EVE_CONFIG__STR(x) #x
+#define EVE_CONFIG_STR(x) EVE_CONFIG__STR(x)
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -640,15 +640,15 @@ These may only be set by one of the platform target definitions, and should not 
 
 /// Configuration sanity checks
 #if !defined(EVE_MODEL)
-#pragma message(__FILE__ "(" EVE_PLATFORM_STR(__LINE__) "): error EVE_MODEL: " \
+#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_MODEL: " \
                                                         "No EVE device model has been selected")
 #endif
 #if !defined(EVE_DISPLAY_AVAILABLE)
-#pragma message(__FILE__ "(" EVE_PLATFORM_STR(__LINE__) "): error EVE_DISPLAY_AVAILABLE: " \
+#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_DISPLAY_AVAILABLE: " \
                                                         "No display model has been selected")
 #endif
 #if !defined(EVE_SUPPORT_FLASH) && defined(EVE_FLASH_AVAILABLE)
-#pragma message(__FILE__ "(" EVE_PLATFORM_STR(__LINE__) "): warning EVE_FLASH_AVAILABLE: " \
+#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning EVE_FLASH_AVAILABLE: " \
                                                         "Cannot enable flash on EVE model which doesn't support flash")
 #undef EVE_FLASH_AVAILABLE
 #endif
@@ -657,11 +657,11 @@ These may only be set by one of the platform target definitions, and should not 
     + (defined(MPSSE_PLATFORM) ? 1 : 0)     \
     + (defined(BT8XXEMU_PLATFORM) ? 1 : 0)) \
     > 1
-#pragma message(__FILE__ "(" EVE_PLATFORM_STR(__LINE__) "): warning PLATFORM: " \
+#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
                                                         "More than one platform has been selected")
 #endif
 #if (!defined(FT900_PLATFORM) && !defined(FT4222_PLATFORM) && !defined(MPSSE_PLATFORM) && !defined(BT8XXEMU_PLATFORM))
-#pragma message(__FILE__ "(" EVE_PLATFORM_STR(__LINE__) "): warning PLATFORM: " \
+#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
                                                         "No platform was selected")
 #endif
 

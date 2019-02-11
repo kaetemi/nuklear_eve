@@ -100,6 +100,7 @@ Main file to include the EVE HAL in your applications.
 			const char *str = #cond;                                                                                               \
 			const char *sf = __FILE__;                                                                                             \
 			eve_printf("EVE Assert Failed: %s (in file '%s' on line '%i')\n", str ? str : "<NULL>", sf ? sf : "<NULL>", __LINE__); \
+			eve_debug_break();                                                                                                     \
 		}                                                                                                                          \
 	} while (false)
 #define eve_assert_ex(cond, ex)                                                                                                                             \
