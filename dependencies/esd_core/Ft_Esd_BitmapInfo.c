@@ -2,7 +2,7 @@
 #include "FT_LoadFile.h"
 #include "Ft_Esd_BitmapInfo.h"
 #include "Ft_Esd_GpuAlloc.h"
-#include "Esd_CoCmd.h"
+#include "Ft_Esd_CoCmd.h"
 
 #ifndef NDEBUG
 #define ESD_BITMAPINFO_DEBUG

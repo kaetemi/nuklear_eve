@@ -42,6 +42,10 @@
 
 #include <stdlib.h>
 
+#ifdef BT81X_ENABLE
+#define FT81X_ENABLE
+#endif
+
 #define PROGMEM eve_progmem
 #define PROGMEM_CONST eve_progmem_const
 
@@ -50,6 +54,29 @@
 #define CMD_SIZE 4
 
 #define char8_t uint8_t
+#define bool_t bool
+#define uchar8_t uint8_t
+
+#ifndef FALSE
+#define FALSE false
+#endif
+#ifndef TRUE
+#define TRUE true
+#endif
+
+#ifndef FT800_PD_N
+#define FT800_PD_N 0
+#endif
+#ifndef FT800_SEL_PIN
+#define FT800_SEL_PIN 0
+#endif
+
+typedef eve_progmem uint16_t prog_uint16_t;
+typedef eve_progmem uchar8_t prog_uchar8_t;
+
+extern int16_t ESD_DispWidth, ESD_DispHeight;
+#define DispWidth ESD_DispWidth
+#define DispHeight ESD_DispHeight
 
 #define GPU_HAL_MODE_E EVE_MODE_T
 #define GPU_I2C_MODE EVE_MODE_I2C
@@ -69,12 +96,47 @@
 #define Gpu_Hal_Callback_t EVE_Callback
 #define Gpu_Hal_Config_t EVE_HalParameters
 
+#define EVE_FIFO_SIZE_MASK EVE_CMD_FIFO_MASK
+#define EVE_FIFO_BYTE_ALIGNMENT_MASK EVE_CMD_FIFO_ALIGNMENT_MASK
+
 typedef struct
 {
-	ft_uint32_t TotalDevices; //< Total number channels for libmpsse
+	ft_uint32_t TotalChannelNum; //< Total number channels for libmpsse
 } Gpu_HalInit_t;
 
 #define Gpu_Hal_Context_t EVE_HalContext
+#define hal_config Parameters
+#define spi_clockrate_khz SpiClockrateKHz
+#define pdn_pin_no PowerDownPin
+#define spi_cs_pin_no SpiCsPin
+#define cmd_fifo_wp CmdWp
+
+#ifdef MPSSE_PLATFORM
+#define channel_no MpsseChannelNo
+#else
+#define channel_no SpiCsPin
+#endif
+
+#define MSVC_PLATFORM_SPI_LIBFT4222 1
+#define MSVC_PLATFORM_SPI_LIBMPSSE 2
+
+#define BootupConfig EVE_Util_bootupConfig
+
+typedef struct Fifo_t{
+	uint32_t fifo_buff;     //fifo buffer address
+	int32_t fifo_len;       //fifo length
+	int32_t fifo_wp;        //fifo write pointer - maintained by host
+	int32_t fifo_rp;        //fifo read point - maintained by device
+							/* FT800 series specific registers */
+	uint32_t HW_Read_Reg;    //hardware fifo read register
+	uint32_t HW_Write_Reg;    //hardware fifo write register
+}Fifo_t;
+
+/* Type of file to load from SDCard or Windows file system */
+#define LOADIMAGE 1  //loadimage command takes destination address and options before the actual bitmap data
+#define INFLATE 2    //inflate command takes destination address before the actual bitmap
+#define LOAD 3       //load bitmaps directly
+#define INFLATE2 4
 
 /*******************************************************************************/
 /*******************************************************************************/
@@ -82,7 +144,7 @@ typedef struct
 static inline bool Gpu_Hal_Init(Gpu_HalInit_t *halinit)
 {
 	EVE_HalPlatform *platform = EVE_Hal_initialize();
-	halinit->TotalDevices = platform->TotalDevices;
+	halinit->TotalChannelNum = platform->TotalDevices;
 	return !!platform;
 }
 
@@ -130,6 +192,7 @@ static inline ft_void_t Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, f
 
 /// Wait for the command buffer to fully empty. Returns FALSE in case a co processor fault occured
 #define Gpu_Hal_WaitCmdFifoEmpty EVE_Cmd_waitFlush
+#define Gpu_Hal_WaitCmdfifo_empty EVE_Cmd_waitFlush
 
 /// Wait for the command buffer to have at least the requested amount of free space
 #define Gpu_Hal_WaitCmdFreespace EVE_Cmd_waitSpace
@@ -290,5 +353,78 @@ inline static ft_int16_t Gpu_Hal_TransferString_S(EVE_HalContext *phost, const f
 #endif
 
 #define Hal_LoadSDCard() EVE_Util_loadSdCard(NULL)
+
+#define Gpu_ClearScreen EVE_Util_clearScreen
+
+#define Gpu_CoCmd_SetBitmap Ft_Gpu_CoCmd_SetBitmap
+#define Gpu_CoCmd_SetScratch Ft_Gpu_CoCmd_SetScratch
+#define Gpu_CoCmd_RomFont Ft_Gpu_CoCmd_RomFont
+// #define Gpu_CoCmd_Text Ft_Gpu_CoCmd_Text
+#define Gpu_CoCmd_Number Ft_Gpu_CoCmd_Number
+#define Gpu_CoCmd_LoadIdentity Ft_Gpu_CoCmd_LoadIdentity
+// #define Gpu_CoCmd_Toggle Ft_Gpu_CoCmd_Toggle
+#define Gpu_CoCmd_Gauge Ft_Gpu_CoCmd_Gauge
+// #define Gpu_CoCmd_FillWidth Ft_Gpu_CoCmd_FillWidth
+#define Gpu_CoCmd_RegRead Ft_Gpu_CoCmd_RegRead
+#define Gpu_CoCmd_VideoStart Ft_Gpu_CoCmd_VideoStart
+#define Gpu_CoCmd_GetProps Ft_Gpu_CoCmd_GetProps
+#define Gpu_CoCmd_Memcpy Ft_Gpu_CoCmd_MemCpy
+#define Gpu_CoCmd_Spinner Ft_Gpu_CoCmd_Spinner
+#define Gpu_CoCmd_BgColor Ft_Gpu_CoCmd_BgColor
+#define Gpu_CoCmd_Swap Ft_Gpu_CoCmd_Swap
+#define Gpu_CoCmd_Inflate Ft_Gpu_CoCmd_Inflate
+#define Gpu_CoCmd_Translate Ft_Gpu_CoCmd_Translate
+#define Gpu_CoCmd_Stop Ft_Gpu_CoCmd_Stop
+#define Gpu_CoCmd_SetBase Ft_Gpu_CoCmd_SetBase
+#define Gpu_CoCmd_Slider Ft_Gpu_CoCmd_Slider
+#define Gpu_CoCmd_Nop Ft_Gpu_CoCmd_Nop
+#define Gpu_CoCmd_VideoFrame Ft_Gpu_CoCmd_VideoFrame
+#define Gpu_CoCmd_Interrupt Ft_Gpu_CoCmd_Interrupt
+#define Gpu_CoCmd_FgColor Ft_Gpu_CoCmd_FgColor
+#define Gpu_CoCmd_Rotate Ft_Gpu_CoCmd_Rotate
+// #define Gpu_CoCmd_Button Ft_Gpu_CoCmd_Button
+#define Gpu_CoCmd_MemWrite Ft_Gpu_CoCmd_MemWrite
+#define Gpu_CoCmd_Scrollbar Ft_Gpu_CoCmd_Scrollbar
+#define Gpu_CoCmd_GetMatrix Ft_Gpu_CoCmd_GetMatrix
+#define Gpu_CoCmd_Sketch Ft_Gpu_CoCmd_Sketch
+#define Gpu_CoCmd_CSketch Ft_Gpu_CoCmd_CSketch
+#define Gpu_CoCmd_PlayVideo Ft_Gpu_CoCmd_PlayVideo
+#define Gpu_CoCmd_MemSet Ft_Gpu_CoCmd_MemSet
+#define Gpu_CoCmd_Calibrate Ft_Gpu_CoCmd_Calibrate
+#define Gpu_CoCmd_SetFont Ft_Gpu_CoCmd_SetFont
+#define Gpu_CoCmd_Bitmap_Transform Ft_Gpu_CoCmd_Bitmap_Transform
+#define Gpu_CoCmd_GradColor Ft_Gpu_CoCmd_GradColor
+#define Gpu_CoCmd_Append Ft_Gpu_CoCmd_Append
+#define Gpu_CoCmd_MemZero Ft_Gpu_CoCmd_MemZero
+#define Gpu_CoCmd_Scale Ft_Gpu_CoCmd_Scale
+#define Gpu_CoCmd_Clock Ft_Gpu_CoCmd_Clock
+#define Gpu_CoCmd_Gradient Ft_Gpu_CoCmd_Gradient
+#define Gpu_CoCmd_SetMatrix Ft_Gpu_CoCmd_SetMatrix
+#define Gpu_CoCmd_Track Ft_Gpu_CoCmd_Track
+#define Gpu_CoCmd_Int_RAMShared Ft_Gpu_CoCmd_Int_RAMShared
+#define Gpu_CoCmd_Int_SWLoadImage Ft_Gpu_CoCmd_Int_SWLoadImage
+#define Gpu_CoCmd_GetPtr Ft_Gpu_CoCmd_GetPtr
+#define Gpu_CoCmd_Progress Ft_Gpu_CoCmd_Progress
+#define Gpu_CoCmd_ColdStart Ft_Gpu_CoCmd_ColdStart
+#define Gpu_CoCmd_MediaFifo Ft_Gpu_CoCmd_MediaFifo
+#define Gpu_CoCmd_Keys Ft_Gpu_CoCmd_Keys
+#define Gpu_CoCmd_Dial Ft_Gpu_CoCmd_Dial
+#define Gpu_CoCmd_Snapshot2 Ft_Gpu_CoCmd_Snapshot2
+#define Gpu_CoCmd_LoadImage Ft_Gpu_CoCmd_LoadImage
+#define Gpu_CoCmd_SetFont2 Ft_Gpu_CoCmd_SetFont2
+#define Gpu_CoCmd_SetRotate Ft_Gpu_CoCmd_SetRotate
+#define Gpu_CoCmd_Dlstart Ft_Gpu_CoCmd_DlStart
+#define Gpu_CoCmd_Snapshot Ft_Gpu_CoCmd_Snapshot
+#define Gpu_CoCmd_ScreenSaver Ft_Gpu_CoCmd_ScreenSaver
+#define Gpu_CoCmd_MemCrc Ft_Gpu_CoCmd_MemCrc
+#define Gpu_CoCmd_Logo Ft_Gpu_CoCmd_Logo
+#define Gpu_CoCmd_Inflate2 Ft_Gpu_CoCmd_Inflate2
+#define Gpu_CoCmd_RotateAround Ft_Gpu_CoCmd_RotateAround
+#define Gpu_CoCmd_Sync Ft_Gpu_CoCmd_Sync
+
+#define Gpu_CoCmd_AnimStop Ft_Gpu_CoCmd_AnimStop
+#define Gpu_CoCmd_AnimXY Ft_Gpu_CoCmd_AnimXY
+#define Gpu_CoCmd_AnimDraw Ft_Gpu_CoCmd_AnimDraw
+#define Gpu_CoCmd_AnimFrame Ft_Gpu_CoCmd_AnimFrame
 
 #endif /* GPU_HAL__H */

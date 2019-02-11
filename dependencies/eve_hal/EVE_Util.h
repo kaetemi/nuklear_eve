@@ -40,6 +40,7 @@
 #include "EVE_Hal.h"
 
 bool EVE_Util_bootupConfig(EVE_HalContext *phost);
+void EVE_Util_clearScreen(EVE_HalContext *phost);
 
 /* TODO: EVE_Util_resetCoprocessor(EVE_HalContext *phost) */
 

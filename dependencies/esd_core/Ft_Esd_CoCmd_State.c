@@ -29,7 +29,7 @@
 * has no liability in relation to those amendments.
 */
 
-#include "Esd_CoCmd.h"
+#include "Ft_Esd_CoCmd.h"
 #include "Gpu_Hal.h"
 
 ft_void_t Ft_Gpu_CoCmd_ColdStart(EVE_HalContext *phost)

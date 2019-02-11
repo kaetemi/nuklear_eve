@@ -7,7 +7,7 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 #include "Ft_Esd_ResourceInfo.h"
 #include "FT_LoadFile.h"
 
-#include "Esd_CoCmd.h"
+#include "Ft_Esd_CoCmd.h"
 #ifndef NDEBUG
 #define ESD_RESOURCEINFO_DEBUG
 #endif

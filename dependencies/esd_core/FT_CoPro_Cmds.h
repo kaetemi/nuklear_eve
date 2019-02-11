@@ -33,7 +33,7 @@
 #define FT_COPRO_CMDS_H
 
 #include "FT_Gpu_Hal.h"
-#include "Esd_CoCmd.h"
+#include "Ft_Esd_CoCmd.h"
 
 #endif /* FT_COPRO_CMDS_H */
 

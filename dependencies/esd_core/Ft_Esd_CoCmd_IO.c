@@ -29,7 +29,7 @@
 * has no liability in relation to those amendments.
 */
 
-#include "Esd_CoCmd.h"
+#include "Ft_Esd_CoCmd.h"
 #include "Gpu_Hal.h"
 
 ft_void_t Ft_Gpu_CoCmd_MemCpy(EVE_HalContext *phost, ft_uint32_t dest, ft_uint32_t src, ft_uint32_t num)
@@ -70,8 +70,9 @@ ft_void_t Ft_Gpu_CoCmd_MemWrite(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint3
 	EVE_Cmd_endFunc(phost);
 }
 
-bool ESD_Cmd_memCrc(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num, ft_uint32_t *result)
+bool ESD_Cmd_memCrc(ft_uint32_t ptr, ft_uint32_t num, ft_uint32_t *result)
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
 	uint16_t resAddr;
 
 	EVE_Cmd_startFunc(phost);

@@ -258,7 +258,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #if defined(ME810A_HV35R)
 
-#define FT_810_ENABLE
+#define FT810_ENABLE
 #define ENABLE_SPI_QUAD
 #define RESISTANCE_THRESHOLD (1800)
 
@@ -270,7 +270,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(ME812A_WH50R)
 
-#define FT_812_ENABLE
+#define FT812_ENABLE
 #define ENABLE_SPI_QUAD
 #define RESISTANCE_THRESHOLD (1800)
 
@@ -281,7 +281,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(ME813A_WV7C)
 
-#define FT_813_ENABLE
+#define FT813_ENABLE
 #define ENABLE_SPI_QUAD
 
 #ifndef EVE_DISPLAY_AVAILABLE
@@ -291,7 +291,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(ME813AU_WH50C)
 
-#define FT_813_ENABLE
+#define FT813_ENABLE
 #define ENABLE_SPI_QUAD
 
 #ifndef EVE_DISPLAY_AVAILABLE
@@ -306,7 +306,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_VM816C)
 
-#define BT_816_ENABLE
+#define BT816_ENABLE
 // #define ENABLE_SPI_QUAD
 #define RESISTANCE_THRESHOLD (1800)
 
@@ -327,7 +327,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_VM810C)
 
-#define FT_810_ENABLE
+#define FT810_ENABLE
 // #define ENABLE_SPI_QUAD
 #define RESISTANCE_THRESHOLD (1800)
 
@@ -343,7 +343,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(PANL35)
 
-#define FT_811_ENABLE
+#define FT811_ENABLE
 #define ENABLE_SPI_QUAD
 
 #ifndef EVE_DISPLAY_AVAILABLE
@@ -364,7 +364,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(PANL70)
 
-#define FT_811_ENABLE
+#define FT811_ENABLE
 #define ENABLE_SPI_QUAD
 
 #ifndef EVE_DISPLAY_AVAILABLE
@@ -384,7 +384,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(PANL70PLUS)
 
-#define FT_811_ENABLE
+#define FT811_ENABLE
 #define ENABLE_SPI_QUAD
 
 #ifndef EVE_DISPLAY_AVAILABLE
@@ -404,7 +404,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_FT800)
 
-#define FT_801_ENABLE
+#define FT801_ENABLE
 // #define ENABLE_SPI_QUAD
 #define RESISTANCE_THRESHOLD (1800)
 
@@ -415,7 +415,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_FT801)
 
-#define FT_801_ENABLE
+#define FT801_ENABLE
 
 #ifndef EVE_DISPLAY_AVAILABLE
 #define EVE_DISPLAY_AVAILABLE
@@ -424,7 +424,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_FT811)
 
-#define FT_811_ENABLE
+#define FT811_ENABLE
 // #define ENABLE_SPI_QUAD
 
 #ifndef EVE_DISPLAY_AVAILABLE
@@ -434,7 +434,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_BT815)
 
-#define BT_815_ENABLE
+#define BT815_ENABLE
 // #define ENABLE_SPI_QUAD
 
 #ifndef EVE_DISPLAY_AVAILABLE
@@ -449,7 +449,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_BT816)
 
-#define BT_816_ENABLE
+#define BT816_ENABLE
 // #define ENABLE_SPI_QUAD
 #define RESISTANCE_THRESHOLD (1800)
 
@@ -466,38 +466,54 @@ It may also set platform, display, and flash values if none are configured.
 #endif
 
 /// Re-Mapping FT800 Series to FT80X
-#if defined(FT_800_ENABLE) || defined(FT_801_ENABLE)
-#define FT_80X_ENABLE
+#if defined(FT800_ENABLE) || defined(FT801_ENABLE)
+#define FT80X_ENABLE
 #endif
 
 /// Re-Mapping FT810 Series to FT81X
-#if defined(FT_810_ENABLE) || defined(FT_811_ENABLE) || defined(FT_812_ENABLE) || defined(FT_813_ENABLE)
-#define FT_81X_ENABLE
+#if defined(FT810_ENABLE) || defined(FT811_ENABLE) || defined(FT812_ENABLE) || defined(FT813_ENABLE)
+#define FT81X_ENABLE
 #endif
 
 /// Re-Mapping BT810 Series to BT81X
-#if defined(BT_815_ENABLE) || defined(BT_816_ENABLE)
-#define BT_81X_ENABLE
+#if defined(BT815_ENABLE) || defined(BT816_ENABLE)
+#define BT81X_ENABLE
 #endif
 
 /// Model numbered macro for versioning convenience.
 /// Matches the BT8XXEMU_EmulatorMode enum values.
-#if defined(FT_800_ENABLE)
+#if defined(FT800_ENABLE)
 #define EVE_MODEL EVE_FT800
-#elif defined(FT_801_ENABLE)
+#define FT_800_ENABLE
+#elif defined(FT801_ENABLE)
 #define EVE_MODEL EVE_FT801
-#elif defined(FT_810_ENABLE)
+#define FT_801_ENABLE
+#elif defined(FT810_ENABLE)
 #define EVE_MODEL EVE_FT810
-#elif defined(FT_811_ENABLE)
+#define FT_810_ENABLE
+#elif defined(FT811_ENABLE)
 #define EVE_MODEL EVE_FT811
-#elif defined(FT_812_ENABLE)
+#define FT_811_ENABLE
+#elif defined(FT812_ENABLE)
 #define EVE_MODEL EVE_FT812
-#elif defined(FT_813_ENABLE)
+#define FT_812_ENABLE
+#elif defined(FT813_ENABLE)
 #define EVE_MODEL EVE_FT813
-#elif defined(BT_815_ENABLE)
+#define FT_813_ENABLE
+#elif defined(BT815_ENABLE)
 #define EVE_MODEL EVE_BT815
-#elif defined(BT_816_ENABLE)
+#define BT_815_ENABLE
+#elif defined(BT816_ENABLE)
 #define EVE_MODEL EVE_BT816
+#define BT_816_ENABLE
+#endif
+
+#if defined(FT80X_ENABLE)
+#define FT_80X_ENABLE
+#elif defined(FT81X_ENABLE)
+#define FT_81X_ENABLE
+#elif defined(BT81X_ENABLE)
+#define BT_81X_ENABLE
 #endif
 
 /// Feature support.
