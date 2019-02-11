@@ -753,6 +753,8 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 {
 	if (!size)
 	{
+		/* TODO: Support different padding options */
+		eve_assert(padMask == 0x3);
 		EVE_Hal_transfer32(phost, 0);
 		return 4;
 	}
