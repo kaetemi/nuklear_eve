@@ -62,7 +62,7 @@ uint16_t EVE_Cmd_space(EVE_HalContext *phost);
 /* Begin writing a function, keeps the transfer open.
 While a command transaction is ongoing,
 HAL functions outside of EVE_Cmd_* must not be used. */
-void EVE_Cmd_beginFunc(EVE_HalContext *phost);
+void EVE_Cmd_startFunc(EVE_HalContext *phost);
 
 /* End writing a function, closes the transfer */
 void EVE_Cmd_endFunc(EVE_HalContext *phost);

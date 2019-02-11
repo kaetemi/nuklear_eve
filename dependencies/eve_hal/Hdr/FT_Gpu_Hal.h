@@ -38,8 +38,7 @@
 #ifndef FT_GPU_HAL__H
 #define FT_GPU_HAL__H
 
-#include "../EVE_Hal.h"
-#include "../EVE_Cmd.h"
+#include "../EVE_Platform.h"
 
 #include <stdlib.h>
 

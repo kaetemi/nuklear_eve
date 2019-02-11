@@ -29,112 +29,113 @@
 * has no liability in relation to those amendments.
 */
 
-#include "FT_Platform.h"
+#include "Gpu_Hal.h"
 
 ft_void_t Ft_Gpu_CoCmd_MemCpy(EVE_HalContext *phost, ft_uint32_t dest, ft_uint32_t src, ft_uint32_t num)
 {
-	uint32_t cmd[4] = {
-		CMD_MEMCPY,
-		dest,
-		src,
-		num,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_MEMCPY);
+	EVE_Cmd_wr32(phost, dest);
+	EVE_Cmd_wr32(phost, src);
+	EVE_Cmd_wr32(phost, num);
+	EVE_Cmd_endFunc(phost);
 }
 
 ft_void_t Ft_Gpu_CoCmd_MemSet(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t value, ft_uint32_t num)
 {
-	uint32_t cmd[4] = {
-		CMD_MEMSET,
-		ptr,
-		value,
-		num,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_MEMSET);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_wr32(phost, value);
+	EVE_Cmd_wr32(phost, num);
+	EVE_Cmd_endFunc(phost);
 }
 
 ft_void_t Ft_Gpu_CoCmd_MemZero(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num)
 {
-	uint32_t cmd[3] = {
-		CMD_MEMZERO,
-		ptr,
-		num,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_MEMZERO);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_wr32(phost, num);
+	EVE_Cmd_endFunc(phost);
 }
 
 ft_void_t Ft_Gpu_CoCmd_MemWrite(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num)
 {
-	uint32_t cmd[3] = {
-		CMD_MEMWRITE,
-		ptr,
-		num,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_MEMWRITE);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_wr32(phost, num);
+	EVE_Cmd_endFunc(phost);
 }
 
-ft_void_t Ft_Gpu_CoCmd_MemCrc(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num, ft_uint32_t result)
+bool ESD_Cmd_memCrc(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num, ft_uint32_t *result)
 {
-	uint32_t cmd[4] = {
-		CMD_MEMCRC,
-		ptr,
-		num,
-		result,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	uint16_t resAddr;
+
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_MEMCRC);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_wr32(phost, num);
+	resAddr = EVE_Cmd_moveWp(phost, 4);
+	EVE_Cmd_endFunc(phost);
+
+	/* Read result */
+	if (!EVE_Cmd_waitFlush(phost))
+		return false;
+	if (result)
+		*result = EVE_Hal_rd32(phost, RAM_CMD + resAddr);
+	return true;
 }
 
 ft_void_t Ft_Gpu_CoCmd_LoadImage(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t options)
 {
-	uint32_t cmd[3] = {
-		CMD_LOADIMAGE,
-		ptr,
-		options,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_LOADIMAGE);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_wr32(phost, options);
+	EVE_Cmd_endFunc(phost);
 }
 
 ft_void_t Ft_Gpu_CoCmd_Inflate(EVE_HalContext *phost, ft_uint32_t ptr)
 {
-	uint32_t cmd[2] = {
-		CMD_INFLATE,
-		ptr,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_INFLATE);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_endFunc(phost);
 }
 
 #if (EVE_MODEL >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_MediaFifo(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t size)
 {
-	uint32_t cmd[3] = {
-		CMD_MEDIAFIFO,
-		ptr,
-		size,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_MEDIAFIFO);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_wr32(phost, size);
+	EVE_Cmd_endFunc(phost);
 }
 #endif
 
 ft_void_t Ft_Gpu_CoCmd_Snapshot(EVE_HalContext *phost, ft_uint32_t ptr)
 {
-	uint32_t cmd[2] = {
-		CMD_SNAPSHOT,
-		ptr,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_SNAPSHOT);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_endFunc(phost);
 }
 
 #if (EVE_MODEL >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_Snapshot2(EVE_HalContext *phost, ft_uint32_t fmt, ft_uint32_t ptr, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h)
 {
-	uint32_t cmd[5] = {
-		CMD_SNAPSHOT2,
-		fmt,
-		ptr,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_SNAPSHOT2);
+	EVE_Cmd_wr32(phost, fmt);
+	EVE_Cmd_wr32(phost, ptr);
+	EVE_Cmd_wr16(phost, x);
+	EVE_Cmd_wr16(phost, y);
+	EVE_Cmd_wr16(phost, w);
+	EVE_Cmd_wr16(phost, h);
+	EVE_Cmd_endFunc(phost);
 }
 #endif
 
@@ -142,121 +143,122 @@ ft_void_t Ft_Gpu_CoCmd_Snapshot2(EVE_HalContext *phost, ft_uint32_t fmt, ft_uint
 /// Attach flash. Return new FLASH_STATUS
 ft_uint32_t Ft_Gpu_CoCmd_FlashAttach(EVE_HalContext *phost)
 {
-	uint32_t flashStatus = Ft_Gpu_Hal_Rd32(phost, REG_FLASH_STATUS);
+	uint32_t flashStatus = EVE_Hal_rd32(phost, REG_FLASH_STATUS);
 	if (flashStatus != FLASH_STATUS_DETACHED)
 		return flashStatus; // Only attach when detached
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
+	if (!EVE_Cmd_waitFlush(phost))
 		return flashStatus; // Co processor must be ready
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_FLASHATTACH);
-	Ft_Gpu_Hal_WaitCmdFifoEmpty(phost); // Wait for command completion
-	return Ft_Gpu_Hal_Rd32(phost, REG_FLASH_STATUS); // Return current status
+	EVE_Cmd_wr32(phost, CMD_FLASHATTACH);
+	EVE_Cmd_waitFlush(phost); // Wait for command completion
+	return EVE_Hal_rd32(phost, REG_FLASH_STATUS); // Return current status
 }
 
 /// Enter fast flash state. Return new FLASH_STATUS
 ft_uint32_t Ft_Gpu_CoCmd_FlashFast(EVE_HalContext *phost, ft_uint32_t *result)
 {
-	uint32_t flashStatus = Ft_Gpu_Hal_Rd32(phost, REG_FLASH_STATUS);
+	uint32_t resAddr;
+	uint32_t flashStatus = EVE_Hal_rd32(phost, REG_FLASH_STATUS);
 	if (flashStatus < FLASH_STATUS_BASIC)
 	{
-		*result = 0xE001;
+		if (result)
+			*result = 0xE001;
 		return flashStatus;
 	}
 	if (flashStatus > FLASH_STATUS_BASIC)
 	{
-		*result = 0;
+		if (result)
+			*result = 0;
 		return flashStatus;
 	} // Only enter fast mode when attached
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
+	if (!EVE_Cmd_waitFlush(phost))
 	{
-		*result = 0xE000;
+		if (result)
+			*result = 0xE000;
 		return flashStatus;
 	} // Co processor must be ready
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_FLASHFAST);
-	uint32_t resAddr = Ft_Gpu_Hal_Rd32(phost, REG_CMD_WRITE); // Get the address where the co processor will write the result
-	Ft_Gpu_Hal_WrCmd32(phost, *result); // Dummy int
-	Ft_Gpu_Hal_WaitCmdFifoEmpty(phost); // Wait for command completion
-	*result = Ft_Gpu_Hal_Rd32(phost, RAM_CMD + resAddr); // Fetch result
-	return Ft_Gpu_Hal_Rd32(phost, REG_FLASH_STATUS); // Return current status
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_FLASHFAST);
+	resAddr = EVE_Cmd_moveWp(phost, 4); // Get the address where the co processor will write the result
+	EVE_Cmd_endFunc(phost);
+	EVE_Cmd_waitFlush(phost); // Wait for command completion
+	if (result)
+		*result = EVE_Hal_rd32(phost, RAM_CMD + resAddr); // Fetch result
+	return EVE_Hal_rd32(phost, REG_FLASH_STATUS); // Return current status
 }
 
 ft_bool_t Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src, ft_uint32_t size)
 {
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-		return FT_FALSE; // Co processor must be ready
-	// ft_bool_t cmdFrame = phost->CmdFrame;
-	// phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_FLASHREAD);
-	Ft_Gpu_Hal_WrCmd32(phost, dst);
-	Ft_Gpu_Hal_WrCmd32(phost, src);
-	Ft_Gpu_Hal_WrCmd32(phost, size);
-	// phost->CmdFrame = cmdFrame;
-	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
+	if (!EVE_Cmd_waitFlush(phost))
+		return false; // Co processor must be ready
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_FLASHREAD);
+	EVE_Cmd_wr32(phost, dst);
+	EVE_Cmd_wr32(phost, src);
+	EVE_Cmd_wr32(phost, size);
+	EVE_Cmd_endFunc(phost);
+	return EVE_Cmd_waitFlush(phost);
 }
 
 ft_bool_t Ft_Gpu_CoCmd_LoadImage_Flash(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src, ft_uint32_t *format)
 {
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-		return FT_FALSE; // Co processor must be ready
-		    // ft_bool_t cmdFrame = phost->CmdFrame;
-		    // phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_FLASHSOURCE);
-	Ft_Gpu_Hal_WrCmd32(phost, src);
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
-	Ft_Gpu_Hal_WrCmd32(phost, dst);
-	Ft_Gpu_Hal_WrCmd32(phost, OPT_FLASH | OPT_NODL);
-	// phost->CmdFrame = cmdFrame;
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-		return FT_FALSE; // Image failed to load
+	if (!EVE_Cmd_waitFlush(phost))
+		return false; // Co processor must be ready
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_FLASHSOURCE);
+	EVE_Cmd_wr32(phost, src);
+	EVE_Cmd_wr32(phost, CMD_LOADIMAGE);
+	EVE_Cmd_wr32(phost, dst);
+	EVE_Cmd_wr32(phost, OPT_FLASH | OPT_NODL);
+	EVE_Cmd_endFunc(phost);
+	if (!EVE_Cmd_waitFlush(phost))
+		return false; // Image failed to load
 	if (format)
-		*format = Ft_Gpu_Hal_Rd32(phost, 0x3097e8);
-	return FT_TRUE;
+		*format = EVE_Hal_rd32(phost, 0x3097e8);
+	return true;
 }
 
 ft_bool_t Ft_Gpu_CoCmd_Inflate_Flash(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src)
 {
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-		return FT_FALSE; // Co processor must be ready
-		    // ft_bool_t cmdFrame = phost->CmdFrame;
-		    // phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_FLASHSOURCE);
-	Ft_Gpu_Hal_WrCmd32(phost, src);
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_INFLATE2);
-	Ft_Gpu_Hal_WrCmd32(phost, dst);
-	Ft_Gpu_Hal_WrCmd32(phost, OPT_FLASH);
-	// phost->CmdFrame = cmdFrame;
-	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost); // Image failed to load
+	if (!EVE_Cmd_waitFlush(phost))
+		return false; // Co processor must be ready
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_FLASHSOURCE);
+	EVE_Cmd_wr32(phost, src);
+	EVE_Cmd_wr32(phost, CMD_INFLATE2);
+	EVE_Cmd_wr32(phost, dst);
+	EVE_Cmd_wr32(phost, OPT_FLASH);
+	EVE_Cmd_endFunc(phost);
+	return EVE_Cmd_waitFlush(phost); // Image failed to load
 }
 #endif
 
 ft_bool_t Ft_Gpu_CoCmd_LoadImage_ProgMem(EVE_HalContext *phost, ft_uint32_t dst, ft_prog_uchar8_t *src, ft_uint32_t size, ft_uint32_t *format)
 {
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-		return FT_FALSE; // Co processor must be ready
-		    // ft_bool_t cmdFrame = phost->CmdFrame;
-		    // phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_LOADIMAGE);
-	Ft_Gpu_Hal_WrCmd32(phost, dst);
-	Ft_Gpu_Hal_WrCmd32(phost, OPT_NODL);
-	Ft_Gpu_Hal_WrCmdBuf_ProgMem(phost, src, (size + 3) & ~0x3UL);
-	// phost->CmdFrame = cmdFrame;
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-		return FT_FALSE; // Image failed to load
+	if (!EVE_Cmd_waitFlush(phost))
+		return false; // Co processor must be ready
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_LOADIMAGE);
+	EVE_Cmd_wr32(phost, dst);
+	EVE_Cmd_wr32(phost, OPT_NODL);
+	EVE_Cmd_wrProgmem(phost, src, (size + 3) & ~0x3UL);
+	EVE_Cmd_endFunc(phost);
+	if (!EVE_Cmd_waitFlush(phost))
+		return false; // Image failed to load
 	if (format)
-		*format = Ft_Gpu_Hal_Rd32(phost, 0x3097e8);
-	return FT_TRUE;
+		*format = EVE_Hal_rd32(phost, 0x3097e8);
+	return true;
 }
 
 ft_bool_t Ft_Gpu_CoCmd_Inflate_ProgMem(EVE_HalContext *phost, ft_uint32_t dst, ft_prog_uchar8_t *src, ft_uint32_t size)
 {
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
-		return FT_FALSE; // Co processor must be ready
-		    // ft_bool_t cmdFrame = phost->CmdFrame;
-		    // phost->CmdFrame = FT_FALSE; // Can safely bypass active frame
-	Ft_Gpu_Hal_WrCmd32(phost, CMD_INFLATE);
-	Ft_Gpu_Hal_WrCmd32(phost, dst);
-	Ft_Gpu_Hal_WrCmdBuf_ProgMem(phost, src, (size + 3) & ~0x3UL);
-	// phost->CmdFrame = cmdFrame;
-	return Ft_Gpu_Hal_WaitCmdFifoEmpty(phost); // Resource failed to load
+	if (!EVE_Cmd_waitFlush(phost))
+		return false; // Co processor must be ready
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_INFLATE);
+	EVE_Cmd_wr32(phost, dst);
+	EVE_Cmd_wrProgmem(phost, src, (size + 3) & ~0x3UL);
+	EVE_Cmd_endFunc(phost);
+	return EVE_Cmd_waitFlush(phost); // Resource failed to load
 }
 
 /* end of file */

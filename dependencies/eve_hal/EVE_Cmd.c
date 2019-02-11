@@ -137,7 +137,7 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			{
 				eve_assert((transfered + transfer) == size);
 				uint32_t pad = 4 - (transfer & 0x3);
-				uint8_t padding[4] = { 0 }; 
+				uint8_t padding[4] = { 0 };
 				EVE_Hal_transferBuffer(phost, NULL, padding, pad);
 				transfer += pad;
 				eve_assert(!(transfer & 0x3));
@@ -163,7 +163,7 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 }
 
 /* Begin writing a function, keeps the transfer open */
-void EVE_Cmd_beginFunc(EVE_HalContext *phost)
+void EVE_Cmd_startFunc(EVE_HalContext *phost)
 {
 	phost->CmdFunc = true;
 }
@@ -333,7 +333,7 @@ static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 {
 	/* Check for coprocessor fault */
 	checkWait(phost, rpOrSpace);
-	
+
 	/* Process any idling */
 	EVE_Hal_idle(phost);
 
