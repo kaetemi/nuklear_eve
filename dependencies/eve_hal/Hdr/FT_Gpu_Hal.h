@@ -139,7 +139,7 @@ static inline bool Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 
 static inline ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
 {
-	EVE_Hal_rdBuffer(phost, buffer, addr, length);
+	EVE_Hal_rdMem(phost, buffer, addr, length);
 }
 
 /*******************************************************************************/
@@ -176,14 +176,8 @@ inline static ft_void_t Ft_Gpu_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32
 }
 #define Ft_Gpu_CoCmd_SendStr(phost, str) EVE_Cmd_wrString(phost, str, EVE_CMD_STRING_MAX)
 #define Ft_Gpu_CoCmd_SendStr_S EVE_Cmd_wrString
-inline static ft_void_t Ft_Gpu_CoCmd_StartFrame(EVE_HalContext *phost)
-{
-	/* no-op */
-}
-inline static ft_void_t Ft_Gpu_CoCmd_EndFrame(EVE_HalContext *phost)
-{
-	/* no-op */
-}
+#define Ft_Gpu_CoCmd_StartFrame(phost) eve_noop()
+#define Ft_Gpu_CoCmd_EndFrame(phost) eve_noop()
 
 #define Eve_CoCmd_SendCmd Ft_Gpu_CoCmd_SendCmd
 #define Eve_CoCmd_SendCmdArr Ft_Gpu_CoCmd_SendCmdArr
@@ -275,8 +269,8 @@ inline static ft_void_t Ft_Gpu_CoCmd_EndFrame(EVE_HalContext *phost)
 #define FT_GPU_SPI_QUAD_CHANNEL EVE_SPI_QUAD_CHANNEL
 
 #define FT_GPU_SPI_NUMDUMMYBYTES uint8_t
-// #define FT_GPU_SPI_ONEDUMMY 1
-// #define FT_GPU_SPI_TWODUMMY 2
+#define FT_GPU_SPI_ONEDUMMY 1
+#define FT_GPU_SPI_TWODUMMY 2
 
 #define FT_SPI_SINGLE_CHANNEL EVE_SPI_SINGLE_CHANNEL
 #define FT_SPI_DUAL_CHANNEL EVE_SPI_DUAL_CHANNEL
@@ -306,23 +300,23 @@ inline static ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, cons
 #define Ft_Gpu_Hal_SetSPI EVE_Hal_setSPI
 #define Ft_Gpu_CurrentFrequency EVE_Hal_currentFrequency
 
-ft_void_t Ft_Gpu_ClockSelect(EVE_HalContext *phost, FT_GPU_PLL_SOURCE_T pllsource);
-ft_void_t Ft_Gpu_PLL_FreqSelect(EVE_HalContext *phost, FT_GPU_PLL_FREQ_T freq);
-ft_void_t Ft_Gpu_PowerModeSwitch(EVE_HalContext *phost, FT_GPU_POWER_MODE_T pwrmode);
-ft_void_t Ft_Gpu_CoreReset(EVE_HalContext *phost);
+#define Ft_Gpu_ClockTrimming EVE_Hal_clockTrimming
+
+#define Ft_Gpu_ClockSelect EVE_Host_clockSelect
+#define Ft_Gpu_PLL_FreqSelect EVE_Host_pllFreqSelect
+#define Ft_Gpu_PowerModeSwitch EVE_Host_powerModeSwitch
+#define Ft_Gpu_CoreReset EVE_Host_coreReset
 
 #if (EVE_MODEL >= EVE_FT810)
-ft_void_t Ft_Gpu_81X_SelectSysCLK(EVE_HalContext *phost, FT_GPU_81X_PLL_FREQ_T freq);
-ft_void_t Ft_GPU_81X_PowerOffComponents(EVE_HalContext *phost, ft_uint8_t val);
-ft_void_t Ft_GPU_81X_PadDriveStrength(EVE_HalContext *phost, FT_GPU_81X_GPIO_DRIVE_STRENGTH_T strength, FT_GPU_81X_GPIO_GROUP_T group);
-ft_void_t Ft_Gpu_81X_ResetActive(EVE_HalContext *phost);
-ft_void_t Ft_Gpu_81X_ResetRemoval(EVE_HalContext *phost);
+#define Ft_Gpu_81X_SelectSysCLK EVE_Host_selectSysClk
+#define Ft_GPU_81X_PowerOffComponents EVE_Host_powerOffComponents
+#define Ft_GPU_81X_PadDriveStrength EVE_Host_padDriveStrength
+#define Ft_Gpu_81X_ResetActive EVE_Host_resetActive
+#define Ft_Gpu_81X_ResetRemoval EVE_Host_resetRemoval
 #endif
 
-ft_int32_t Ft_Gpu_ClockTrimming(EVE_HalContext *phost, ft_uint32_t lowFreq);
-
-// #define ft_millis_init EVE_Millis_initialize
-// #define ft_millis_exit EVE_Millis_release
+#define ft_millis_init eve_noop
+#define ft_millis_exit eve_noop
 #define ft_millis EVE_millis
 
 #if defined(PANL70) || defined(PANL70PLUS)
@@ -331,7 +325,5 @@ ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(EVE_HalContext *phost);
 
 #define Ft_Hal_LoadSDCard() EVE_Util_loadSdCard(NULL)
 #define Eve_BootupConfig EVE_Util_bootupConfig
-
-ft_void_t Ft_DisplayPanel_Init();
 
 #endif /* FT_GPU_HAL__H */

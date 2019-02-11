@@ -784,6 +784,165 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	return transferred;
 }
 
+/************
+** UTILITY **
+************/
+
+void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
+{
+	FT4222_STATUS status;
+	uint8_t dummyRead;
+
+	uint8_t transferArray[3];
+
+	uint16_t sizeTransferred;
+	uint32_t sizeOfRead;
+
+	transferArray[0] = cmd;
+	transferArray[1] = 0;
+	transferArray[2] = 0;
+
+	switch (phost->SpiChannels)
+	{
+	case EVE_SPI_SINGLE_CHANNEL:
+		/* FYI : All HOST CMDs should only be executed in single channel mode*/
+		status = FT4222_SPIMaster_SingleWrite(
+			phost->SpiHandle,
+			transferArray,
+			sizeof(transferArray),
+			&sizeTransferred,
+			true);
+		if (FT4222_OK != status)
+			eve_printf_debug("SPI write failed = %d\n", status);
+		break;
+	case EVE_SPI_DUAL_CHANNEL:
+	case EVE_SPI_QUAD_CHANNEL:
+		/* only reset command among phost commands can be executed in multi channel mode*/
+		status = FT4222_SPIMaster_MultiReadWrite(
+			phost->SpiHandle,
+			&dummyRead,
+			transferArray,
+			0,
+			sizeof(transferArray),
+			0,
+			&sizeOfRead);
+		if (FT4222_OK != status)
+			eve_printf_debug("SPI write failed = %d\n", status);
+		break;
+	default:
+		eve_printf_debug("No transfer\n");
+	}
+}
+
+void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
+{
+	FT4222_STATUS status;
+	uint8_t dummyRead;
+	uint8_t transferArray[3];
+
+	uint16_t sizeTransferred;
+	uint32_t sizeOfRead;
+
+	transferArray[0] = cmd;
+	transferArray[1] = (cmd >> 8) & 0xff;
+	transferArray[2] = (cmd >> 16) & 0xff;
+
+	switch (phost->SpiChannels)
+	{
+	case EVE_SPI_SINGLE_CHANNEL:
+		status = FT4222_SPIMaster_SingleWrite(
+			phost->SpiHandle,
+			transferArray,
+			sizeof(transferArray),
+			&sizeTransferred,
+			true);
+		if (FT4222_OK != status)
+			eve_printf_debug("SPI write failed = %d\n", status);
+		break;
+	case EVE_SPI_DUAL_CHANNEL:
+	case EVE_SPI_QUAD_CHANNEL:
+		/* FYI : Mostly all HOST CMDs can be executed in single channel mode
+		* except system reset cmd */
+		status = FT4222_SPIMaster_MultiReadWrite(
+			phost->SpiHandle,
+			&dummyRead,
+			transferArray,
+			0,
+			sizeof(transferArray),
+			0,
+			&sizeOfRead);
+		if (FT4222_OK != status)
+			eve_printf_debug("SPI write failed = %d\n", status);
+		break;
+	default:
+		eve_printf_debug("No transfer\n");
+	}
+}
+
+void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
+{
+	if (up)
+	{
+		FT4222_STATUS status = FT4222_OTHER_ERROR;
+
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 0)))
+			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
+		EVE_sleep(20);
+
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 1)))
+			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
+		EVE_sleep(20);
+	}
+	else
+	{
+		FT4222_STATUS status = FT4222_OTHER_ERROR;
+
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 1)))
+			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
+		EVE_sleep(20);
+
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 0)))
+			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
+		EVE_sleep(20);
+	}
+}
+
+int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
+{
+	uint8_t writebyte = 0;
+	FT4222_STATUS ftstatus;
+	FT4222_SPIMode spimode;
+
+	if ((numchnls > EVE_SPI_QUAD_CHANNEL) || (numdummy > 2) || (numdummy < 1))
+	{
+		return -1; //error
+	}
+
+	/* switch EVE to multi channel SPI mode */
+	writebyte = numchnls;
+	if (numdummy == 2)
+		writebyte |= EVE_SPI_TWO_DUMMY_BYTES;
+	EVE_Hal_wr8(phost, REG_SPI_WIDTH, writebyte);
+
+	/* switch FT4222 to relevant multi channel SPI communication mode */
+	if (numchnls == EVE_SPI_DUAL_CHANNEL)
+		spimode = SPI_IO_DUAL;
+	else if (numchnls == EVE_SPI_QUAD_CHANNEL)
+		spimode = SPI_IO_QUAD;
+	else
+		spimode = SPI_IO_SINGLE;
+
+	ftstatus = FT4222_SPIMaster_SetLines(phost->SpiHandle, spimode);
+	if (FT4222_OK != ftstatus)
+		eve_printf_debug("FT4222_SPIMaster_SetLines failed with status %d\n", ftstatus);
+
+	/* FT81x swicthed to dual/quad mode, now update global HAL context */
+	phost->SpiChannels = numchnls;
+	phost->SpiDummyBytes = numdummy;
+
+	return 0;
+}
+
 /*********
 ** MISC **
 *********/

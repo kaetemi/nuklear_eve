@@ -33,6 +33,24 @@
 #include "EVE_Platform.h"
 #if defined(_WIN32)
 
+/************
+** UTILITY **
+************/
+
+uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
+{
+	uint32_t t0, t1;
+	uint32_t addr = REG_CLOCK;
+	int32_t r = 15625;
+
+	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
+										 /* may not be precise */
+	EVE_sleep(15625 / 1000);
+
+	t1 = EVE_Hal_rd32(phost, REG_CLOCK); /* t1 read */
+	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
+}
+
 /*********
 ** MISC **
 *********/

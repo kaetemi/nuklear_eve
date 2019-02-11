@@ -222,7 +222,7 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost);
 uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr);
 uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr);
 uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr);
-void EVE_Hal_rdBuffer(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size);
+void EVE_Hal_rdMem(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size);
 
 void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v);
 void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v);
@@ -246,6 +246,42 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up);
 int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy);
 
 uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost);
+
+int32_t EVE_Hal_clockTrimming(EVE_HalContext *phost, uint32_t lowFreq);
+
+/*********
+** HOST **
+*********/
+
+void EVE_Host_clockSelect(EVE_HalContext *phost, EVE_PLL_SOURCE_T pllsource);
+void EVE_Host_pllFreqSelect(EVE_HalContext *phost, EVE_PLL_FREQ_T freq);
+void EVE_Host_powerModeSwitch(EVE_HalContext *phost, EVE_POWER_MODE_T pwrmode);
+void EVE_Host_coreReset(EVE_HalContext *phost);
+
+#if (EVE_MODEL >= EVE_FT810)
+/* This API can only be called when PLL is stopped(SLEEP mode).
+For compatibility, set frequency to the FT_GPU_12MHZ option in the FT_GPU_SETPLLSP1_T table. */
+void EVE_Host_selectSysClk(EVE_HalContext *phost, EVE_81X_PLL_FREQ_T freq);
+
+/* Power down or up ROMs and ADCs.
+Specified one or more elements in the FT_GPU_81X_ROM_AND_ADC_T 
+table to power down, unspecified elements will be powered up.
+The application must retain the state of the ROMs and ADCs 
+as they're not readable from the device. */
+void EVE_Host_powerOffComponents(EVE_HalContext *phost, uint8_t val);
+
+/* This API sets the current strength of supported GPIO/IO group(s) */
+void EVE_Host_padDriveStrength(EVE_HalContext *phost, EVE_81X_GPIO_DRIVE_STRENGTH_T strength, EVE_81X_GPIO_GROUP_T group);
+
+/* This API will hold the system reset active, 
+EVE_Host_resetRemoval() must be called to release the system reset. */
+void EVE_Host_resetActive(EVE_HalContext *phost);
+
+/* This API will release the system reset, 
+and the system will exit reset and behave as after POR, 
+settings done through SPI commands will not be affected. */
+void EVE_Host_resetRemoval(EVE_HalContext *phost);
+#endif
 
 /*********
 ** MISC **

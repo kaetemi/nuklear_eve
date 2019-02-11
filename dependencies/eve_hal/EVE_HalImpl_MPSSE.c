@@ -378,6 +378,69 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	return transferred;
 }
 
+/************
+** UTILITY **
+************/
+
+void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
+{
+	uint8_t transferArray[3];
+	uint32_t sizeTransferred;
+
+	transferArray[0] = cmd;
+	transferArray[1] = 0;
+	transferArray[2] = 0;
+
+	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
+}
+
+void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
+{
+	uint8_t transferArray[3];
+	uint32_t sizeTransferred;
+
+	transferArray[0] = cmd;
+	transferArray[1] = (cmd >> 8) & 0xff;
+	transferArray[2] = (cmd >> 16) & 0xff;
+
+	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
+}
+
+
+/* Toggle PD_N pin of FT800 board for a power cycle */
+void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
+{
+	if (up)
+	{
+		// FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (0 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+
+		EVE_sleep(20);
+
+		// FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x88);//PDN set to 1
+		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (1 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		EVE_sleep(20);
+	}
+	else
+	{
+		// FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x88);//PDN set to 1
+		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (1 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		EVE_sleep(20);
+
+		// FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+		FT_WriteGPIO(phost->SpiHandle, (1 << phost->Parameters.PowerDownPin) | 0x3B, (0 << phost->Parameters.PowerDownPin) | 0x08); //PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
+
+		EVE_sleep(20);
+	}
+}
+
+int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
+{
+	/* no-op */
+	return -1;
+}
+
+
 /*********
 ** MISC **
 *********/

@@ -36,6 +36,10 @@
 
 #include <string.h>
 
+/*********
+** INIT **
+*********/
+
 EVE_HalPlatform *EVE_Hal_initialize()
 {
 	eve_assert_ex(g_HalPlatform.TotalDevices == 0, "HAL platform already initialized\n");
@@ -164,6 +168,10 @@ void EVE_Hal_idle(EVE_HalContext *phost)
 	EVE_HalImpl_idle(phost);
 }
 
+/*********************
+** TRANSFER HELPERS **
+*********************/
+
 uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr)
 {
 	uint8_t value;
@@ -191,7 +199,7 @@ uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr)
 	return value;
 }
 
-void EVE_Hal_rdBuffer(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size)
+void EVE_Hal_rdMem(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
 	EVE_Hal_transferBuffer(phost, result, NULL, size);
@@ -232,5 +240,86 @@ void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const u
 	EVE_Hal_transferProgmem(phost, NULL, buffer, size);
 	EVE_Hal_endTransfer(phost);
 }
+
+/************
+** UTILITY **
+************/
+
+int32_t EVE_Hal_clockTrimming(EVE_HalContext *phost, uint32_t lowFreq)
+{
+	uint32_t f;
+	uint8_t i;
+
+	/* Trim the internal clock by increase the REG_TRIM register till the measured frequency is within the acceptable range.*/
+	for (i = 0; (i < 31) && ((f = EVE_Hal_currentFrequency(phost)) < lowFreq); i++)
+	{
+		EVE_Hal_wr8(phost, REG_TRIM, i); /* increase the REG_TRIM register value automatically increases the internal clock */
+	}
+	EVE_Hal_wr32(phost, REG_FREQUENCY, f); /* Set the final frequency to be used for internal operations */
+
+	return f;
+}
+
+/*********
+** HOST **
+*********/
+
+void EVE_Host_clockSelect(EVE_HalContext *phost, EVE_PLL_SOURCE_T pllsource)
+{
+	EVE_Hal_hostCommand(phost, pllsource);
+}
+
+void EVE_Host_pllFreqSelect(EVE_HalContext *phost, EVE_PLL_FREQ_T freq)
+{
+	EVE_Hal_hostCommand(phost, freq);
+}
+
+void EVE_Host_powerModeSwitch(EVE_HalContext *phost, EVE_POWER_MODE_T pwrmode)
+{
+	EVE_Hal_hostCommand(phost, pwrmode);
+}
+
+void EVE_Host_coreReset(EVE_HalContext *phost)
+{
+	EVE_Hal_hostCommand(phost, EVE_CORE_RESET);
+}
+
+#if (EVE_MODEL >= EVE_FT810)
+void EVE_Host_selectSysClk(EVE_HalContext *phost, EVE_81X_PLL_FREQ_T freq)
+{
+	if (EVE_SYSCLK_72M == freq)
+		EVE_Hal_hostCommandExt3(phost, (uint32_t)0x61 | (0x40 << 8) | (0x06 << 8));
+	else if (EVE_SYSCLK_60M == freq)
+		EVE_Hal_hostCommandExt3(phost, (uint32_t)0x61 | (0x40 << 8) | (0x05 << 8));
+	else if (EVE_SYSCLK_48M == freq)
+		EVE_Hal_hostCommandExt3(phost, (uint32_t)0x61 | (0x40 << 8) | (0x04 << 8));
+	else if (EVE_SYSCLK_36M == freq)
+		EVE_Hal_hostCommandExt3(phost, (uint32_t)0x61 | (0x03 << 8));
+	else if (EVE_SYSCLK_24M == freq)
+		EVE_Hal_hostCommandExt3(phost, (uint32_t)0x61 | (0x02 << 8));
+	else if (EVE_SYSCLK_DEFAULT == freq) //default clock
+		EVE_Hal_hostCommandExt3(phost, 0x61);
+}
+
+void Ft_GPU_81X_PowerOffComponents(EVE_HalContext *phost, uint8_t val)
+{
+	EVE_Hal_hostCommandExt3(phost, (uint32_t)0x49 | (val << 8));
+}
+
+void Ft_GPU_81X_PadDriveStrength(EVE_HalContext *phost, EVE_81X_GPIO_DRIVE_STRENGTH_T strength, EVE_81X_GPIO_GROUP_T group)
+{
+	EVE_Hal_hostCommandExt3(phost, (uint32_t)0x70 | (group << 8) | (strength << 8));
+}
+
+void Ft_Gpu_81X_ResetActive(EVE_HalContext *phost)
+{
+	EVE_Hal_hostCommandExt3(phost, EVE_81X_RESET_ACTIVE);
+}
+
+void Ft_Gpu_81X_ResetRemoval(EVE_HalContext *phost)
+{
+	EVE_Hal_hostCommandExt3(phost, EVE_81X_RESET_REMOVAL);
+}
+#endif
 
 /* end of file */
