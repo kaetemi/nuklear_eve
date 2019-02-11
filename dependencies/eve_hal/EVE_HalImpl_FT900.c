@@ -150,19 +150,60 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 {
 	eve_assert(phost->Status == EVE_STATUS_OPENED);
 
-	/* no-op */
+	if (rw == EVE_TRANSFER_READ)
+	{
+		uint8_t spidata[4];
+		spidata[0] = (addr >> 16);
+		spidata[1] = (addr >> 8);
+		spidata[2] = addr & 0xff;
+		spi_open(SPIM, phost->Parameters.SpiCsPin);
+		spi_writen(SPIM, spidata, 3 + phost->SpiDummyBytes);
+		phost->Status = EVE_STATUS_READING;
+	}
+	else
+	{
+		uint8_t spidata[4];
+		spidata[0] = (0x80 | (addr >> 16));
+		spidata[1] = (addr >> 8);
+		spidata[2] = addr;
+
+		spi_open(SPIM, phost->Parameters.SpiCsPin);
+		spi_writen(SPIM, spidata, 3);
+
+		phost->Status = EVE_STATUS_WRITING;
+	}
 }
 
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
 	eve_assert(phost->Status == EVE_STATUS_READING || phost->Status == EVE_STATUS_WRITING);
 
-	/* no-op */
+	spi_close(SPIM, phost->Parameters.SpiCsPin);
+	phost->Status = EVE_STATUS_OPENED;
+}
+
+static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
+{
+	spi_readn(SPIM, buffer, size);
+}
+
+static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
+{
+	spi_writen(SPIM, buffer, size);
 }
 
 static inline uint8_t transfer8(EVE_HalContext *phost, uint8_t value)
 {
-	/* no-op */
+	if (phost->Status == EVE_STATUS_READING)
+	{
+		spi_read(SPIM, value);
+		return value;
+	}
+	else
+	{
+		spi_write(SPIM, value);
+		return 0;
+	}
 }
 
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
@@ -172,60 +213,91 @@ uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 {
-	uint16_t retVal = 0;
-	retVal = transfer8(phost, value & 0xFF);
-	retVal |= (uint16_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
-	return retVal;
+	uint8_t buffer[2];
+	if (phost->Status == EVE_STATUS_READING)
+	{
+		rdBuffer(phost, buffer, 2);
+		return (uint16_t)buffer[0]
+			| (uint16_t)buffer[1] << 8;
+	}
+	else
+	{
+		buffer[0] = value & 0xFF;
+		buffer[1] = value >> 8;
+		wrBuffer(phost, buffer, 2);
+		return 0;
+	}
 }
 
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 {
-	uint32_t retVal = 0;
-	retVal = transfer8(phost, value & 0xFF);
-	retVal |= (uint32_t)transfer8(phost, (value >> 8) & 0xFF) << 8;
-	retVal |= (uint32_t)transfer8(phost, (value >> 16) & 0xFF) << 16;
-	retVal |= (uint32_t)transfer8(phost, value >> 24) << 24;
-	return retVal;
+	uint8_t buffer[4];
+	if (phost->Status == EVE_STATUS_READING)
+	{
+		rdBuffer(phost, buffer, 4);
+		return (uint32_t)buffer[0]
+			| (uint32_t)buffer[1] << 8
+			| (uint32_t)buffer[2] << 16
+			| (uint32_t)buffer[3] << 24;
+	}
+	else
+	{
+		buffer[0] = value & 0xFF;
+		buffer[1] = (value >> 8) & 0xFF;
+		buffer[2] = (value >> 16) & 0xFF;
+		buffer[3] = value >> 24;
+		wrBuffer(phost, buffer, 4);
+		return 0;
+	}
 }
 
 void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size)
 {
+	if (!size)
+		return;
+
 	if (result && buffer)
 	{
-		for (uint32_t i = 0; i < size; ++i)
-			result[i] = transfer8(phost, buffer[i]);
+		/* not implemented */
+		eve_debug_break();
 	}
 	else if (result)
 	{
-		for (uint32_t i = 0; i < size; ++i)
-			result[i] = transfer8(phost, 0);
+		rdBuffer(phost, result, size);
 	}
 	else if (buffer)
 	{
-		for (uint32_t i = 0; i < size; ++i)
-			transfer8(phost, buffer[i]);
+		wrBuffer(phost, buffer, size);
 	}
 }
 
 void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
-	/*
+	if (!size)
+		return;
+
 	if (result && buffer)
 	{
-		for (uint32_t i = 0; i < size; ++i)
-			result[i] = transfer8(phost, buffer[i]);
+		/* not implemented */
+		eve_debug_break();
 	}
 	else if (result)
 	{
-		for (uint32_t i = 0; i < size; ++i)
-			result[i] = transfer8(phost, 0);
+		/* not implemented */
+		eve_debug_break();
 	}
 	else if (buffer)
 	{
-		for (uint32_t i = 0; i < size; ++i)
-			transfer8(phost, buffer[i]);
+		eve_assert(!((uintptr_t)buffer & 0x3)); // must be 32-bit aligned
+		eve_assert(!(size & 0x3)); // must be 32-bit aligned
+		eve_progmem_const uint32_t *buf32 = (eve_progmem_const uint32_t *)(void eve_progmem_const *)buffer;
+		size >>= 2;
+		while (size--)
+		{
+			uint32_t value = *(buf32++);
+			wrBuffer(phost, (uint8_t *)(&value), 4);
+		}
 	}
-	*/
 }
 
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)

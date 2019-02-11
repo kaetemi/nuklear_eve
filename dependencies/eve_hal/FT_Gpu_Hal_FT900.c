@@ -32,115 +32,6 @@
 #include "FT_Platform.h"
 #if defined(FT900_PLATFORM)
 
-/*The APIs for reading/writing transfer continuously only with small buffer system*/
-ft_void_t Ft_Gpu_Hal_StartTransfer(EVE_HalContext *phost, FT_GPU_TRANSFERDIR_T rw, ft_uint32_t addr)
-{
-	eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
-	if (phost->Status != FT_GPU_HAL_OPENED)
-	{
-		eve_printf_debug("Cannot start transfer on current host status %i\n", (int)phost->Status);
-	}
-	if (FT_GPU_READ == rw)
-	{
-		ft_uint8_t spidata[4];
-		spidata[0] = (addr >> 16);
-		spidata[1] = (addr >> 8);
-		spidata[2] = addr & 0xff;
-		spi_open(SPIM, phost->Parameters.SpiCsPin);
-		spi_writen(SPIM, spidata, 3 + phost->SpiDummyBytes);
-		phost->Status = FT_GPU_HAL_READING;
-	}
-	else
-	{
-		ft_uint8_t spidata[4];
-		spidata[0] = (0x80 | (addr >> 16));
-		spidata[1] = (addr >> 8);
-		spidata[2] = addr;
-
-		spi_open(SPIM, phost->Parameters.SpiCsPin);
-		spi_writen(SPIM, spidata, 3);
-
-		phost->Status = FT_GPU_HAL_WRITING;
-	}
-}
-
-ft_uint8_t Ft_Gpu_Hal_Transfer8(EVE_HalContext *phost, ft_uint8_t value)
-{
-	if (phost->Status == FT_GPU_HAL_WRITING)
-	{
-		spi_write(SPIM, value);
-		return 0;
-	}
-	else
-	{
-		spi_read(SPIM, value);
-		return value;
-	}
-}
-
-ft_void_t Ft_Gpu_Hal_EndTransfer(EVE_HalContext *phost)
-{
-	spi_close(SPIM, phost->Parameters.SpiCsPin);
-	phost->Status = FT_GPU_HAL_OPENED;
-}
-
-ft_uint8_t Ft_Gpu_Hal_Rd8(EVE_HalContext *phost, ft_uint32_t addr)
-{
-	ft_uint8_t value;
-
-	ft_uint8_t spiData[1];
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	spi_readn(SPIM, spiData, 1);
-	value = spiData[0];
-
-	Ft_Gpu_Hal_EndTransfer(phost);
-	return value;
-}
-
-ft_uint16_t Ft_Gpu_Hal_Rd16(EVE_HalContext *phost, ft_uint32_t addr)
-{
-	ft_uint16_t value;
-	ft_uint8_t spiData[2];
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	spi_readn(SPIM, spiData, 2);
-	value = spiData[0] | (spiData[1] << 8);
-	Ft_Gpu_Hal_EndTransfer(phost);
-	return value;
-}
-
-ft_uint32_t Ft_Gpu_Hal_Rd32(EVE_HalContext *phost, ft_uint32_t addr)
-{
-	ft_uint32_t value;
-	ft_uint8_t spiData[4];
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	spi_readn(SPIM, spiData, 4);
-	value = (spiData[3] << 24) | (spiData[2] << 16) | (spiData[1] << 8) | spiData[0];
-
-	Ft_Gpu_Hal_EndTransfer(phost);
-	return value;
-}
-
-ft_void_t Ft_Gpu_Hal_Wr8(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t v)
-{
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	Ft_Gpu_Hal_Transfer8(phost, v);
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_Wr16(EVE_HalContext *phost, ft_uint32_t addr, ft_uint16_t v)
-{
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	Ft_Gpu_Hal_Transfer16(phost, v);
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_Wr32(EVE_HalContext *phost, ft_uint32_t addr, ft_uint32_t v)
-{
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	Ft_Gpu_Hal_Transfer32(phost, v);
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
 ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 {
 	ft_uint8_t hcmd[4] = { 0 };
@@ -153,6 +44,7 @@ ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 	spi_writen(SPIM, hcmd, 3);
 	spi_close(SPIM, phost->Parameters.SpiCsPin);
 }
+
 //This API sends a 3byte command to the phost
 ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 {
@@ -164,64 +56,6 @@ ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd)
 	spi_open(SPIM, phost->Parameters.SpiCsPin);
 	spi_writen(SPIM, hcmd, 3);
 	spi_close(SPIM, phost->Parameters.SpiCsPin);
-}
-
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf(EVE_HalContext *phost, ft_uint8_t *buffer, ft_uint32_t count)
-{
-	ft_int32_t length = 0, availablefreesize = 0;
-	count = (count + 3) & ~0x3;
-	do
-	{
-		length = count;
-		availablefreesize = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & FIFO_SIZE_MASK; // max: 4095 ; last 4's multiple = 4092
-		if (FT_COCMD_FAULT(availablefreesize))
-			return FT_FALSE; // Co processor fault
-		if (length > availablefreesize)
-			length = availablefreesize;
-
-		Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-		spi_writen(SPIM, buffer, length);
-		buffer += length;
-
-		Ft_Gpu_Hal_EndTransfer(phost);
-		//printf("\n Length: %d", length);
-		count -= length;
-	} while (count > 0);
-	//printf("\n\n\n");
-	return FT_TRUE;
-}
-
-ft_bool_t Ft_Gpu_Hal_WrCmdBuf_ProgMem(EVE_HalContext *phost, ft_prog_uchar8_t *buffer, ft_uint32_t count)
-{
-	eve_assert(!phost->CmdFrame);
-	eve_assert(!((uintptr_t)buffer & 0x3)); // must have 32-bit alignment
-	ft_uint32_t FT_PROGMEM_CONST *buf32 = (ft_uint32_t FT_PROGMEM_CONST *)(void FT_PROGMEM_CONST *)(buffer);
-	ft_int32_t length = 0, availablefreesize = 0;
-	count = (count + 3) & ~0x3UL;
-	do
-	{
-		length = count;
-		availablefreesize = Ft_Gpu_Hal_Rd16(phost, REG_CMDB_SPACE) & FIFO_SIZE_MASK;
-		if (FT_COCMD_FAULT(availablefreesize))
-			return FT_FALSE; // Co processor fault
-		if (length > availablefreesize)
-			length = availablefreesize;
-		if (length)
-		{
-			count -= length;
-			length >>= 2;
-			Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, REG_CMDB_WRITE);
-			for (int i = 0; i < length; ++i)
-				Ft_Gpu_Hal_Transfer32(phost, *(buf32++));
-			Ft_Gpu_Hal_EndTransfer(phost);
-		}
-	} while (count > 0);
-	return FT_TRUE;
-}
-
-ft_void_t Ft_Gpu_Hal_WrCmd32(EVE_HalContext *phost, ft_uint32_t cmd)
-{
-	Ft_Gpu_Hal_Wr32(phost, REG_CMDB_WRITE, cmd);
 }
 
 /* Toggle PD_N pin of FT800 board for a power cycle*/
@@ -243,33 +77,6 @@ ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up)
 	}
 }
 
-ft_void_t Ft_Gpu_Hal_WrMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_uint8_t *buffer, ft_uint32_t length)
-{
-	ft_uint32_t SizeTransfered = 0;
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	spi_writen(SPIM, buffer, length);
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_WrMem_ProgMem(EVE_HalContext *phost, ft_uint32_t addr, const ft_prog_uchar8_t *buffer, ft_uint32_t length)
-{
-	eve_assert(!((uintptr_t)buffer & 0x3)); // must be 32-bit aligned
-	eve_assert(!(length & 0x3)); // must be 32-bit aligned
-	uint32_t FT_PROGMEM_CONST *buf32 = (uint32_t FT_PROGMEM_CONST *)(void FT_PROGMEM_CONST *)buffer;
-	length >>= 2;
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_WRITE, addr);
-	while (length--)
-		Ft_Gpu_Hal_Transfer32(phost, *(buf32++));
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
-ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
-{
-	Ft_Gpu_Hal_StartTransfer(phost, FT_GPU_READ, addr);
-	spi_readn(SPIM, buffer, length);
-	Ft_Gpu_Hal_EndTransfer(phost);
-}
-
 ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T numchnls, FT_GPU_SPI_NUMDUMMYBYTES numdummy)
 {
 	ft_uint8_t writebyte = 0;
@@ -281,7 +88,7 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 
 	//swicth EVE to multi channel SPI mode
 	writebyte = numchnls;
-	if (numdummy == FT_GPU_SPI_TWODUMMY)
+	if (numdummy == 2)
 		writebyte |= FT_SPI_TWO_DUMMY_BYTE;
 	Ft_Gpu_Hal_Wr8(phost, REG_SPI_WIDTH, writebyte);
 	//FT81x swicthed to dual/quad mode, now update global HAL context

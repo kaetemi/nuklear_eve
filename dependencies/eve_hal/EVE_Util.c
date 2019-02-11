@@ -253,7 +253,7 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	EVE_Hal_wr8(phost, REG_GPIO, 0xff);
 #endif
 
-	EVE_Hal_wrProgmem(phost, RAM_DL, (ft_uint8_t *)c_DlCodeBootup, sizeof(c_DlCodeBootup));
+	EVE_Hal_wrProgmem(phost, RAM_DL, (eve_progmem_const uint8_t *)c_DlCodeBootup, sizeof(c_DlCodeBootup));
 	EVE_Hal_wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
 
 	EVE_Hal_wr8(phost, REG_PCLK, parameters->Display.PCLK); /* after this display is visible on the LCD */

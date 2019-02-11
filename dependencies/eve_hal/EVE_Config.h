@@ -187,6 +187,7 @@ Additionally, the following support flags are set:
 - EVE_SUPPORT_ASTC
 - EVE_SUPPORT_PNG
 - EVE_SUPPORT_VIDEO
+- EVE_SUPPORT_CMDB
 - EVE_SCREEN_CAPACITIVE
 - EVE_SCREEN_RESISTIVE
 
@@ -579,22 +580,6 @@ It may also set platform, display, and flash values if none are configured.
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(FT900_PLATFORM)
-#define eve_progmem __flash__ const
-#define eve_progmem_const __flash__ const
-#else
-#define eve_progmem
-#define eve_progmem_const const
-#endif
-
-typedef eve_progmem int8_t eve_prog_int8_t;
-typedef eve_progmem uint8_t eve_prog_uint8_t;
-typedef eve_progmem uint16_t eve_prog_uint16_t;
-
-///////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
-
 /*
 
 Ultimately, the platform selection must set one of the following internal platform flags.
@@ -633,6 +618,22 @@ These may only be set by one of the platform target definitions, and should not 
 
 #define EVE_CONFIG__STR(x) #x
 #define EVE_CONFIG_STR(x) EVE_CONFIG__STR(x)
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+#if defined(FT900_PLATFORM)
+#define eve_progmem __flash__ const
+#define eve_progmem_const __flash__ const
+#else
+#define eve_progmem
+#define eve_progmem_const const
+#endif
+
+typedef eve_progmem int8_t eve_prog_int8_t;
+typedef eve_progmem uint8_t eve_prog_uint8_t;
+typedef eve_progmem uint16_t eve_prog_uint16_t;
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
