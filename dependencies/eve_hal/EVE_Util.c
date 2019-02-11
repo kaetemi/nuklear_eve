@@ -33,8 +33,6 @@
 #include "EVE_Platform.h"
 #include "EVE_HalImpl.h"
 
-#include "FT_Gpu_Hal.h"
-
 static eve_progmem_const uint8_t c_DlCodeBootup[12] = {
 	0, 0, 0, 2, // GPU instruction CLEAR_COLOR_RGB
 	7, 0, 0, 38, // GPU instruction CLEAR
@@ -145,27 +143,27 @@ ft_void_t uploadTouchFirmware(EVE_HalContext *phost)
 bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 {
 	EVE_HalParameters *parameters = &phost->Parameters;
-	ft_uint8_t chipid;
-	ft_uint8_t engine_status;
+	uint8_t chipid;
+	uint8_t engine_status;
 
-	Ft_Gpu_Hal_Powercycle(phost, FT_TRUE);
+	EVE_Hal_powerCycle(phost, true);
 
 	/* FT81x will be in SPI Single channel after POR
 	If we are here with FT4222 in multi channel, then
 	an explicit switch to single channel is essential
 	*/
 #if (EVE_MODEL >= EVE_FT810)
-	Ft_Gpu_Hal_SetSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
+	EVE_Hal_setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 #endif
 
 	/* Set the clk to external clock. Must disable it when no external clock source on the board*/
 #if (!defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813AU_WH50C))
-	Ft_Gpu_HostCommand(phost, EVE_EXTERNAL_OSC);
+	EVE_Hal_hostCommand(phost, EVE_EXTERNAL_OSC);
 	EVE_sleep(10);
 #endif
 
 	/* Access address 0 to wake up the FT800 */
-	Ft_Gpu_HostCommand(phost, EVE_ACTIVE_M);
+	EVE_Hal_hostCommand(phost, EVE_ACTIVE_M);
 	EVE_sleep(300);
 
 	/* Read Register ID to check if EVE is ready. */
@@ -188,7 +186,7 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	/* It may cause resistive touch not working any more*/
 	uploadTouchFirmware(phost); // FIXME: Shouldn't this be called *after* waiting for REG_ID?
 #if defined(PANL70) || defined(PANL70PLUS)
-	Ft_Gpu_Panl70_GOODIXGPIO(phost);
+	EVE_UtilImpl_bootupDisplayGpio(phost);
 #endif
 	EVE_sleep(100);
 #endif
@@ -278,11 +276,11 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 #if (EVE_MODEL >= EVE_FT810)
 	/* api to set quad and numbe of dummy bytes */
 #ifdef ENABLE_SPI_QUAD
-	Ft_Gpu_Hal_SetSPI(phost, EVE_SPI_QUAD_CHANNEL, 2);
+	EVE_Hal_setSPI(phost, EVE_SPI_QUAD_CHANNEL, 2);
 #elif ENABLE_SPI_DUAL
-	Ft_Gpu_Hal_SetSPI(phost, EVE_SPI_DUAL_CHANNEL, 2);
+	EVE_Hal_setSPI(phost, EVE_SPI_DUAL_CHANNEL, 2);
 #else
-	Ft_Gpu_Hal_SetSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
+	EVE_Hal_setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 #endif
 #endif
 

@@ -183,7 +183,7 @@ uint8_t ILI9488_SPI_Read(uint8_t cmd)
 
 		readbyte <<= 1;
 
-		if (FT_TRUE == ILI9488_MISO_LOWHIGH)
+		if (ILI9488_MISO_LOWHIGH == true)
 		{
 			readbyte |= 0x1;
 		}
@@ -237,7 +237,7 @@ uint8_t ILI9488_SPI_ReadN(uint8_t cmd, uint8_t numbytes, uint8_t *pbuffer)
 
 			readbyte <<= 1;
 
-			if (FT_TRUE == ILI9488_MISO_LOWHIGH)
+			if (ILI9488_MISO_LOWHIGH == true)
 			{
 				readbyte |= 0x1;
 			}

@@ -320,6 +320,111 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	return transferred;
 }
 
+/************
+** UTILITY **
+************/
+
+void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
+{
+	uint8_t hcmd[4] = { 0 };
+	hcmd[0] = cmd;
+	hcmd[1] = 0;
+	hcmd[2] = 0;
+	hcmd[3] = 0;
+
+	spi_open(SPIM, phost->Parameters.SpiCsPin);
+	spi_writen(SPIM, hcmd, 3);
+	spi_close(SPIM, phost->Parameters.SpiCsPin);
+}
+
+void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
+{
+	uint8_t hcmd[4] = { 0 };
+	hcmd[0] = cmd & 0xff;
+	hcmd[1] = (cmd >> 8) & 0xff;
+	hcmd[2] = (cmd >> 16) & 0xff;
+	hcmd[3] = 0;
+	spi_open(SPIM, phost->Parameters.SpiCsPin);
+	spi_writen(SPIM, hcmd, 3);
+	spi_close(SPIM, phost->Parameters.SpiCsPin);
+}
+
+void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
+{
+	if (up)
+	{
+		gpio_write(phost->Parameters.PowerDownPin, 0);
+		EVE_sleep(20);
+		gpio_write(phost->Parameters.PowerDownPin, 1);
+		EVE_sleep(20);
+	}
+	else
+	{
+		gpio_write(phost->Parameters.PowerDownPin, 1);
+		EVE_sleep(20);
+		gpio_write(phost->Parameters.PowerDownPin, 0);
+		EVE_sleep(20);
+	}
+}
+
+int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
+{
+	uint8_t writebyte = 0;
+
+	if ((numchnls > EVE_SPI_QUAD_CHANNEL) || (numdummy > 2) || (numdummy < 1))
+	{
+		return -1; //error
+	}
+
+	//swicth EVE to multi channel SPI mode
+	writebyte = numchnls;
+	if (numdummy == 2)
+		writebyte |= EVE_SPI_TWO_DUMMY_BYTES;
+	EVE_Hal_wr8(phost, REG_SPI_WIDTH, writebyte);
+	//FT81x swicthed to dual/quad mode, now update global HAL context
+	phost->SpiChannels = numchnls;
+	phost->SpiDummyBytes = numdummy;
+	return 0;
+}
+
+uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
+{
+	uint32_t t0, t1;
+	uint32_t addr = REG_CLOCK;
+	uint8_t spidata[4];
+	int32_t r = 15625;
+
+	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
+
+	__asm__(
+		"   move.l  $r0,%0"
+		"\n\t"
+		"   mul.l   $r0,$r0,100"
+		"\n\t"
+		"1:"
+		"\n\t"
+		"   sub.l   $r0,$r0,3"
+		"\n\t" /* Subtract the loop time = 4 cycles */
+		"   cmp.l   $r0,0"
+		"\n\t" /* Check that the counter is equal to 0 */
+		"   jmpc    gt, 1b"
+		"\n\t"
+		/* Outputs */
+		:
+	/* Inputs */
+	: "r"(r)
+		/* Using */
+		: "$r0"
+
+		);
+
+	//usleep(15625);
+	//EVE_sleep(15625);
+
+	t1 = EVE_Hal_rd32(phost, REG_CLOCK); /* t1 read */
+	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
+}
+
 /*********
 ** MISC **
 *********/
@@ -517,6 +622,21 @@ bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost)
 
 	gpio_write(28, 1);
 	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
+
+	return true;
+}
+
+bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost)
+{
+#if defined(PANL70) || defined(PANL70PLUS)
+	gpio_function(GOODIXGPIO, pad_gpio33);
+	gpio_dir(GOODIXGPIO, pad_dir_output);
+	gpio_write(GOODIXGPIO, 0);
+	EVE_sleep(1);
+	Ft_Gpu_Hal_Wr8(phost, REG_CPURESET, 0);
+	EVE_sleep(100);
+	gpio_dir(GOODIXGPIO, pad_dir_input);
+#endif
 
 	return true;
 }

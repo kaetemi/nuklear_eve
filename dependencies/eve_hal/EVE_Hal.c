@@ -301,22 +301,22 @@ void EVE_Host_selectSysClk(EVE_HalContext *phost, EVE_81X_PLL_FREQ_T freq)
 		EVE_Hal_hostCommandExt3(phost, 0x61);
 }
 
-void Ft_GPU_81X_PowerOffComponents(EVE_HalContext *phost, uint8_t val)
+void EVE_Host_powerOffComponents(EVE_HalContext *phost, uint8_t val)
 {
 	EVE_Hal_hostCommandExt3(phost, (uint32_t)0x49 | (val << 8));
 }
 
-void Ft_GPU_81X_PadDriveStrength(EVE_HalContext *phost, EVE_81X_GPIO_DRIVE_STRENGTH_T strength, EVE_81X_GPIO_GROUP_T group)
+void EVE_Host_padDriveStrength(EVE_HalContext *phost, EVE_81X_GPIO_DRIVE_STRENGTH_T strength, EVE_81X_GPIO_GROUP_T group)
 {
 	EVE_Hal_hostCommandExt3(phost, (uint32_t)0x70 | (group << 8) | (strength << 8));
 }
 
-void Ft_Gpu_81X_ResetActive(EVE_HalContext *phost)
+void EVE_Host_resetActive(EVE_HalContext *phost)
 {
 	EVE_Hal_hostCommandExt3(phost, EVE_81X_RESET_ACTIVE);
 }
 
-void Ft_Gpu_81X_ResetRemoval(EVE_HalContext *phost)
+void EVE_Host_resetRemoval(EVE_HalContext *phost)
 {
 	EVE_Hal_hostCommandExt3(phost, EVE_81X_RESET_REMOVAL);
 }

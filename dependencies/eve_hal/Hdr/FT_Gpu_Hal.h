@@ -31,8 +31,7 @@
 * File Description:
 *    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
 *    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
-*    I2C and SPI is selected by compiler switch "FT_I2C_MODE"  and "FT_SPI_MODE". In addition, there are
-*    some helper functions defined for FT800 coprocessor engine as well as phost commands.
+*    In addition, there are some helper functions defined for FT800 coprocessor engine as well as phost commands.
 *
 */
 
@@ -318,10 +317,6 @@ inline static ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, cons
 #define ft_millis_init eve_noop
 #define ft_millis_exit eve_noop
 #define ft_millis EVE_millis
-
-#if defined(PANL70) || defined(PANL70PLUS)
-ft_void_t Ft_Gpu_Panl70_GOODIXGPIO(EVE_HalContext *phost);
-#endif
 
 #define Ft_Hal_LoadSDCard() EVE_Util_loadSdCard(NULL)
 #define Eve_BootupConfig EVE_Util_bootupConfig

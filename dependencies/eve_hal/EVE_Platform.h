@@ -128,7 +128,7 @@ Main file to include the EVE HAL in your applications.
 #define eve_assert_do(cond)           \
 	do                                \
 	{                                 \
-		ft_bool_t r__assert = (cond); \
+		bool r__assert = (cond); \
 	} while (false)
 #define eve_trace(cond) eve_noop()
 #endif

@@ -31,8 +31,7 @@
 * File Description:
 *    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
 *    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
-*    I2C and SPI is selected by compiler switch "FT_I2C_MODE"  and "FT_SPI_MODE". In addition, there are
-*    some helper functions defined for FT800 coprocessor engine as well as phost commands.
+*    In addition, there are some helper functions defined for FT800 coprocessor engine as well as phost commands.
 *
 */
 
@@ -98,7 +97,7 @@ typedef bool (*EVE_Callback)(EVE_HalContext *phost);
 typedef struct EVE_HalParameters
 {
 	void *UserContext;
-	EVE_Callback CbCmdWait; /* Called anytime the code is waiting during CMD write. Return FT_FALSE to abort wait */
+	EVE_Callback CbCmdWait; /* Called anytime the code is waiting during CMD write. Return false to abort wait */
 
 	Eve_DisplayParameters Display;
 
@@ -260,11 +259,11 @@ void EVE_Host_coreReset(EVE_HalContext *phost);
 
 #if (EVE_MODEL >= EVE_FT810)
 /* This API can only be called when PLL is stopped(SLEEP mode).
-For compatibility, set frequency to the FT_GPU_12MHZ option in the FT_GPU_SETPLLSP1_T table. */
+For compatibility, set frequency to the EVE_GPU_12MHZ option in the EVE_SETPLLSP1_T table. */
 void EVE_Host_selectSysClk(EVE_HalContext *phost, EVE_81X_PLL_FREQ_T freq);
 
 /* Power down or up ROMs and ADCs.
-Specified one or more elements in the FT_GPU_81X_ROM_AND_ADC_T 
+Specified one or more elements in the EVE_81X_ROM_AND_ADC_T 
 table to power down, unspecified elements will be powered up.
 The application must retain the state of the ROMs and ADCs 
 as they're not readable from the device. */

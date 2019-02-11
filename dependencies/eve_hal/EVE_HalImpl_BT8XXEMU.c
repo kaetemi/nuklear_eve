@@ -321,6 +321,12 @@ bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost)
 	return true;
 }
 
+bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost)
+{
+	/* no-op */
+	return true;
+}
+
 bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost)
 {
 	/* no-op */
