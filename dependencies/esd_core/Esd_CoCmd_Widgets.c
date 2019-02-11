@@ -29,7 +29,8 @@
 * has no liability in relation to those amendments.
 */
 
-#include "FT_Platform.h"
+#include "Esd_CoCmd.h"
+#include "Gpu_Hal.h"
 
 #include "Ft_Esd_Dl.h"
 
@@ -39,14 +40,14 @@ extern ft_uint8_t Ft_Esd_Primitive;
 
 ft_void_t Ft_Gpu_CoCmd_Gradient(EVE_HalContext *phost, ft_int16_t x0, ft_int16_t y0, ft_uint32_t rgb0, ft_int16_t x1, ft_int16_t y1, ft_uint32_t rgb1)
 {
-	uint32_t cmd[5] = {
-		CMD_GRADIENT,
-		(((ft_uint32_t)y0 << 16) | (x0 & 0xffff)),
-		rgb0,
-		(((ft_uint32_t)y1 << 16) | (x1 & 0xffff)),
-		rgb1,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
+	Gpu_Copro_SendCmd(phost, CMD_GRADIENT);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y0 << 16) | (x0 & 0xffff)));
+	Gpu_Copro_SendCmd(phost, rgb0);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y1 << 16) | (x1 & 0xffff)));
+	Gpu_Copro_SendCmd(phost, rgb1);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -54,12 +55,65 @@ ft_void_t Ft_Gpu_CoCmd_Gradient(EVE_HalContext *phost, ft_int16_t x0, ft_int16_t
 
 ft_void_t Ft_Gpu_CoCmd_Spinner(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t style, ft_uint16_t scale)
 {
-	uint32_t cmd[3] = {
-		CMD_SPINNER,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)scale << 16) | (style & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 3);
+	Gpu_Copro_SendCmd(phost, CMD_SPINNER);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)scale << 16) | (style & 0xffff)));
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 3));
+
+#if ESD_DL_OPTIMIZE
+	Ft_Esd_Primitive = 0;
+#endif
+}
+
+#if (EVE_MODEL >= EVE_BT815)
+/* Count number of arguments in Cmd_Text for string format*/
+static uint8_t countArgs(const char* str)
+{
+	uint8_t count = 0;
+	const char *tmp = str;
+
+	while (tmp = strstr(tmp, "%"))
+	{
+		if (*(tmp + 1) == '%') {
+			tmp += 2;
+		}
+		else {
+			count++;
+			tmp++;
+		}
+	}
+	return count;
+}
+#endif
+
+void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char* s, ...)
+{
+	va_list args;
+#if (EVE_MODEL >= EVE_BT815)
+	uint8_t i, num;
+#endif
+	va_start(args, s);
+#if (EVE_MODEL >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
+	//l = GetFormatStringList(s, args);
+	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set 
+														  //printf("num = %d %d\n",num, (len + 1 + 3) & ~3);
+#endif
+
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_TEXT);
+	EVE_Cmd_wr16(phost, x);
+	EVE_Cmd_wr16(phost, y);
+	EVE_Cmd_wr16(phost, font);
+	EVE_Cmd_wr16(phost, options);
+	EVE_Cmd_wrString(phost, s, EVE_CMD_STRING_MAX);
+#if (EVE_MODEL >= EVE_BT815)
+	for (i = 0; i < num; i++)
+		EVE_Cmd_wr32(phost, (uint32_t)va_arg(args, uint32_t));
+#endif
+	EVE_Cmd_endFunc(phost);
+	va_end(args);
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -74,7 +128,7 @@ ft_void_t Ft_Gpu_CoCmd_Text(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, f
 		return;
 	}
 
-	EVE_Cmd_beginFunc(phost);
+	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_TEXT);
 	EVE_Cmd_wr16(phost, x);
 	EVE_Cmd_wr16(phost, y);
@@ -100,7 +154,7 @@ ft_void_t Ft_Gpu_CoCmd_Text_S(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 		return;
 	}
 
-	EVE_Cmd_beginFunc(phost);
+	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_TEXT);
 	// eve_printf_debug("wp: %i\n", EVE_Cmd_wp(phost));
 	EVE_Cmd_wr16(phost, x);
@@ -142,13 +196,46 @@ ft_void_t Ft_Gpu_CoCmd_Number(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 		eve_printf_debug("Invalid font handle specified: %i\n", (int)font);
 		return;
 	}
-	uint32_t cmd[4] = {
-		CMD_NUMBER,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)options << 16) | (font & 0xffff)),
-		n,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 4);
+	Gpu_Copro_SendCmd(phost, CMD_NUMBER);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (font & 0xffff)));
+	Gpu_Copro_SendCmd(phost, n);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 4));
+
+#if ESD_DL_OPTIMIZE
+	Ft_Esd_Primitive = 0;
+#endif
+}
+
+void Gpu_CoCmd_Toggle(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char* s, ...)
+{
+	va_list args;
+#if (EVE_MODEL >= EVE_BT815)
+	uint8_t i, num;
+#endif
+	va_start(args, s);
+#if (EVE_MODEL >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
+	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set 
+#endif
+
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_TOGGLE);
+	EVE_Cmd_wr16(phost, x);
+	EVE_Cmd_wr16(phost, y);
+	EVE_Cmd_wr16(phost, w);
+	EVE_Cmd_wr16(phost, font);
+	EVE_Cmd_wr16(phost, options);
+	EVE_Cmd_wr16(phost, state);
+	EVE_Cmd_wrString(phost, s, EVE_CMD_STRING_MAX);
+#if (EVE_MODEL >= EVE_BT815)
+	for (i = 0; i < num; i++)
+		EVE_Cmd_wr32(phost, (uint32_t)va_arg(args, uint32_t));
+#endif
+	EVE_Cmd_endFunc(phost);
+	va_end(args);
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -156,14 +243,17 @@ ft_void_t Ft_Gpu_CoCmd_Number(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 
 ft_void_t Ft_Gpu_CoCmd_Toggle(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t font, ft_uint16_t options, ft_uint16_t state, const ft_char8_t *s)
 {
-	uint32_t cmd[4] = {
-		CMD_TOGGLE,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)font << 16) | (w & 0xffff)),
-		(((ft_uint32_t)state << 16) | options),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-	Eve_CoCmd_SendStr(phost, s);
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_TOGGLE);
+	EVE_Cmd_wr16(phost, x);
+	EVE_Cmd_wr16(phost, y);
+	EVE_Cmd_wr16(phost, w);
+	EVE_Cmd_wr16(phost, font);
+	EVE_Cmd_wr16(phost, options);
+	EVE_Cmd_wr16(phost, state);
+	EVE_Cmd_wrString(phost, s, EVE_CMD_STRING_MAX);
+	EVE_Cmd_endFunc(phost);
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -171,14 +261,44 @@ ft_void_t Ft_Gpu_CoCmd_Toggle(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 
 ft_void_t Ft_Gpu_CoCmd_Slider(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t range)
 {
-	uint32_t cmd[5] = {
-		CMD_SLIDER,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-		(((ft_uint32_t)val << 16) | (options & 0xffff)),
-		range,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
+	Gpu_Copro_SendCmd(phost, CMD_SLIDER);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)val << 16) | (options & 0xffff)));
+	Gpu_Copro_SendCmd(phost, range);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
+
+#if ESD_DL_OPTIMIZE
+	Ft_Esd_Primitive = 0;
+#endif
+}
+
+void Gpu_CoCmd_Button(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char* s, ...)
+{
+	va_list args;
+#if (EVE_MODEL >= EVE_BT815)
+	uint8_t i, num;
+#endif
+
+	va_start(args, s);
+#if (EVE_MODEL >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
+	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set 
+#endif
+
+	EVE_Cmd_startFunc(phost);
+	Gpu_Copro_SendCmd(phost, CMD_BUTTON);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (font & 0xffff)));
+	Gpu_CoCmd_SendStr(phost, s);
+#if (EVE_MODEL >= EVE_BT815)
+	for (i = 0; i < num; i++)
+		Gpu_Copro_SendCmd(phost, (uint32_t)va_arg(args, uint32_t));
+#endif
+	EVE_Cmd_endFunc(phost);
+	va_end(args);
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -186,14 +306,14 @@ ft_void_t Ft_Gpu_CoCmd_Slider(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 
 ft_void_t Ft_Gpu_CoCmd_Button(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
 {
-	uint32_t cmd[4] = {
-		CMD_BUTTON,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-		(((ft_uint32_t)options << 16) | (font & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-	Eve_CoCmd_SendStr(phost, s);
+	EVE_Cmd_startFunc(phost);
+	Gpu_Copro_SendCmd(phost, CMD_BUTTON);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (font & 0xffff)));
+	Gpu_CoCmd_SendStr(phost, s);
+	EVE_Cmd_endFunc(phost);
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -201,14 +321,14 @@ ft_void_t Ft_Gpu_CoCmd_Button(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 
 ft_void_t Ft_Gpu_CoCmd_Keys(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t font, ft_uint16_t options, const ft_char8_t *s)
 {
-	uint32_t cmd[4] = {
-		CMD_KEYS,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-		(((ft_uint32_t)options << 16) | (font & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-	Eve_CoCmd_SendStr(phost, s);
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 4 + strlen(s) + 1);
+	Gpu_Copro_SendCmd(phost, CMD_KEYS);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (font & 0xffff)));
+	Gpu_CoCmd_SendStr(phost, s);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 4 + strlen(s) + 1));
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -216,13 +336,13 @@ ft_void_t Ft_Gpu_CoCmd_Keys(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, f
 
 ft_void_t Ft_Gpu_CoCmd_Dial(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t val)
 {
-	uint32_t cmd[4] = {
-		CMD_DIAL,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)options << 16) | (r & 0xffff)),
-		val,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 4);
+	Gpu_Copro_SendCmd(phost, CMD_DIAL);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (r & 0xffff)));
+	Gpu_Copro_SendCmd(phost, val);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 4));
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -231,14 +351,14 @@ ft_void_t Ft_Gpu_CoCmd_Dial(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, f
 /* Error handling for val is not done, so better to always use range of 65535 in order that needle is drawn within display region */
 ft_void_t Ft_Gpu_CoCmd_Gauge(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t major, ft_uint16_t minor, ft_uint16_t val, ft_uint16_t range)
 {
-	uint32_t cmd[5] = {
-		CMD_GAUGE,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)options << 16) | (r & 0xffff)),
-		(((ft_uint32_t)minor << 16) | (major & 0xffff)),
-		(((ft_uint32_t)range << 16) | (val & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
+	Gpu_Copro_SendCmd(phost, CMD_GAUGE);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (r & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)minor << 16) | (major & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)range << 16) | (val & 0xffff)));
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -246,14 +366,14 @@ ft_void_t Ft_Gpu_CoCmd_Gauge(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, 
 
 ft_void_t Ft_Gpu_CoCmd_Clock(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t h, ft_uint16_t m, ft_uint16_t s, ft_uint16_t ms)
 {
-	uint32_t cmd[5] = {
-		CMD_CLOCK,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)options << 16) | (r & 0xffff)),
-		(((ft_uint32_t)m << 16) | (h & 0xffff)),
-		(((ft_uint32_t)ms << 16) | (s & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
+	Gpu_Copro_SendCmd(phost, CMD_CLOCK);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (r & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)m << 16) | (h & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)ms << 16) | (s & 0xffff)));
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -261,14 +381,14 @@ ft_void_t Ft_Gpu_CoCmd_Clock(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, 
 
 ft_void_t Ft_Gpu_CoCmd_Scrollbar(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t size, ft_uint16_t range)
 {
-	uint32_t cmd[5] = {
-		CMD_SCROLLBAR,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-		(((ft_uint32_t)val << 16) | (options & 0xffff)),
-		(((ft_uint32_t)range << 16) | (size & 0xffff)),
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
+	Gpu_Copro_SendCmd(phost, CMD_SCROLLBAR);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)val << 16) | (options & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)range << 16) | (size & 0xffff)));
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif
@@ -276,14 +396,14 @@ ft_void_t Ft_Gpu_CoCmd_Scrollbar(EVE_HalContext *phost, ft_int16_t x, ft_int16_t
 
 ft_void_t Ft_Gpu_CoCmd_Progress(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t range)
 {
-	uint32_t cmd[5] = {
-		CMD_PROGRESS,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-		(((ft_uint32_t)val << 16) | (options & 0xffff)),
-		range,
-	};
-	Eve_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
+	Gpu_Copro_SendCmd(phost, CMD_PROGRESS);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)val << 16) | (options & 0xffff)));
+	Gpu_Copro_SendCmd(phost, range);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
+
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
 #endif

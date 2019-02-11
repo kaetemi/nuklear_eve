@@ -29,6 +29,7 @@
 * has no liability in relation to those amendments.
 */
 
+#include "Esd_CoCmd.h"
 #include "Gpu_Hal.h"
 
 ft_void_t Ft_Gpu_CoCmd_MemCpy(EVE_HalContext *phost, ft_uint32_t dest, ft_uint32_t src, ft_uint32_t num)

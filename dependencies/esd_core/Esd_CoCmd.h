@@ -47,6 +47,10 @@
 extern EVE_HalContext *Ft_Esd_Host;
 extern EVE_HalContext *Ft_Esd_GetHost();
 
+void Gpu_CoCmd_Text(EVE_HalContext *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char* s, ...);
+void Gpu_CoCmd_Toggle(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char* s, ...);
+void Gpu_CoCmd_Button(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char* s, ...);
+
 // ESD_FUNCTION(Ft_Gpu_CoCmd_SetBitmap, Type = ft_void_t, Category = _GroupHidden)
 // ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 // ESD_PARAMETER(source, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
@@ -125,25 +129,12 @@ ESD_PARAMETER(val, Type = ft_uint16_t, Default = 0)
 ESD_PARAMETER(range, Type = ft_uint16_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Gauge(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t r, ft_uint16_t options, ft_uint16_t major, ft_uint16_t minor, ft_uint16_t val, ft_uint16_t range);
 
-// FIXME: Result parameter (result) is an output that needs to be read back
-/* ESD_FUNCTION(Ft_Gpu_CoCmd_RegRead, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
-ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
-ESD_PARAMETER(result, Type = ft_uint32_t, Default = 0) */
-ft_void_t Ft_Gpu_CoCmd_RegRead(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t result);
+bool ESD_Cmd_regRead(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t *result);
 
 // Not exposed to logic editor
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_VideoStart, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
 ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST */
 ft_void_t Ft_Gpu_CoCmd_VideoStart(EVE_HalContext *phost);
-
-// FIXME: Result parameter (width, h) is an output that needs to be read back
-/* ESD_FUNCTION(Ft_Gpu_CoCmd_GetProps, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
-ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
-ESD_PARAMETER(ptr, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
-ESD_PARAMETER(width, Type = ft_uint32_t, Default = 0)
-ESD_PARAMETER(height, Type = ft_uint32_t, Default = 0) */
-ft_void_t Ft_Gpu_CoCmd_GetProps(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t w, ft_uint32_t h);
 
 ESD_FUNCTION(Ft_Gpu_CoCmd_MemCpy, Type = ft_void_t, Category = _GroupHidden)
 ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
@@ -247,7 +238,7 @@ ESD_PARAMETER(range, Type = ft_uint16_t, Default = 0)
 ft_void_t Ft_Gpu_CoCmd_Scrollbar(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_uint16_t options, ft_uint16_t val, ft_uint16_t size, ft_uint16_t range);
 
 // Not exposed directly to logic editor
-void ESD_Cmd_getMatrix(EVE_HalContext *phost, int32_t *m);
+bool ESD_Cmd_getMatrix(EVE_HalContext *phost, int32_t *m);
 
 // Not exposed directly to logic editor
 ft_void_t Ft_Gpu_CoCmd_Sketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format);
@@ -347,8 +338,11 @@ ft_void_t Ft_Gpu_CoCmd_Track(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, 
 // Not exposed directly to logic editor
 ft_void_t Ft_Gpu_CoCmd_Int_SWLoadImage(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t options);
 
-// Not exposed directly to logic editor
-ft_void_t Ft_Gpu_CoCmd_GetPtr(EVE_HalContext *phost, ft_uint32_t result);
+/* Get the end memory address of data inflated by CMD_INFLATE */
+bool ESD_Cmd_getPtr(EVE_HalContext *phost, uint32_t *result);
+
+/* Get the image properties decompressed by CMD_LOADIMAGE */
+bool ESD_Cmd_getProps(EVE_HalContext *phost, uint32_t *ptr, uint32_t *w, uint32_t *h);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Progress, Type = ft_void_t, Category = _GroupHidden)
 ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
@@ -419,7 +413,7 @@ ft_void_t Ft_Gpu_CoCmd_Snapshot(EVE_HalContext *phost, ft_uint32_t ptr);
 ft_void_t Ft_Gpu_CoCmd_ScreenSaver(EVE_HalContext *phost);
 
 // Not exposed directly to logic editor
-ft_void_t ESD_Cmd_memCrc(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num, ft_uint32_t result);
+bool ESD_Cmd_memCrc(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num, ft_uint32_t *result);
 
 // Not exposed directly to logic editor (fullscreen takeover)
 ft_void_t Ft_Gpu_CoCmd_Logo(EVE_HalContext *phost);

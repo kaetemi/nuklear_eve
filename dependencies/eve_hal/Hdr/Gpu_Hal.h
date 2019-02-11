@@ -49,6 +49,8 @@
 #define FIFO_BYTE_ALIGNMENT_MASK EVE_FIFO_BYTE_ALIGNMENT_MASK
 #define CMD_SIZE 4
 
+#define char8_t uint8_t
+
 #define GPU_HAL_MODE_E EVE_MODE_T
 #define GPU_I2C_MODE EVE_MODE_I2C
 #define GPU_SPI_MODE EVE_MODE_SPI
@@ -154,12 +156,6 @@ inline static ft_void_t Gpu_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t 
 #define Gpu_CoCmd_StartFrame(phost) eve_noop()
 #define Gpu_CoCmd_EndFrame(phost) eve_noop()
 
-#define Eve_CoCmd_SendCmd Gpu_CoCmd_SendCmd
-#define Eve_CoCmd_SendCmdArr Gpu_CoCmd_SendCmdArr
-#define Eve_CoCmd_SendStr Gpu_CoCmd_SendStr
-#define Eve_CoCmd_SendStr_S Gpu_CoCmd_SendStr_S
-#define Eve_CoCmd_StartFrame Gpu_CoCmd_StartFrame
-#define Eve_CoCmd_EndFrame Gpu_CoCmd_EndFrame
 #define Gpu_Copro_SendCmd Gpu_CoCmd_SendCmd
 
 #define Gpu_CoCmd_StartFunc(phost, size) EVE_Cmd_startFunc(phost)

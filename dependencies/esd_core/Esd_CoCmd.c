@@ -30,7 +30,7 @@
 */
 
 #include "Esd_CoCmd.h"
-#include "FT_Gpu_Hal.h"
+#include "Gpu_Hal.h"
 
 ft_void_t Ft_Gpu_CoCmd_DlStart(EVE_HalContext *phost)
 {
@@ -39,53 +39,49 @@ ft_void_t Ft_Gpu_CoCmd_DlStart(EVE_HalContext *phost)
 
 ft_void_t Ft_Gpu_CoCmd_Append(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t num)
 {
-	uint32_t cmd[3] = {
-		CMD_APPEND,
-		ptr,
-		num,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 3);
+	Gpu_Copro_SendCmd(phost, CMD_APPEND);
+	Gpu_Copro_SendCmd(phost, ptr);
+	Gpu_Copro_SendCmd(phost, num);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 3));
 }
 
 ft_void_t Ft_Gpu_CoCmd_Swap(EVE_HalContext *phost)
 {
-	Ft_Gpu_CoCmd_SendCmd(phost, CMD_SWAP);
+	EVE_Cmd_wr32(phost, CMD_SWAP);
 }
 
 ft_void_t Ft_Gpu_CoCmd_Sketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format)
 {
-	uint32_t cmd[5] = {
-		CMD_SKETCH,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-		ptr,
-		format,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
+	Gpu_Copro_SendCmd(phost, CMD_SKETCH);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, ptr);
+	Gpu_Copro_SendCmd(phost, format);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
 }
 
 #if (EVE_MODEL == EVE_FT801)
 ft_void_t Ft_Gpu_CoCmd_CSketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format, ft_uint16_t freq)
 {
-	uint32_t cmd[5] = {
-		CMD_CSKETCH,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-		ptr,
-		(((ft_uint32_t)freq << 16) | (format & 0xffff)),
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
+	Gpu_Copro_SendCmd(phost, CMD_CSKETCH);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, ptr);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)freq << 16) | (format & 0xffff)));
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
 }
 #endif
 
 #if (EVE_MODEL >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_PlayVideo(EVE_HalContext *phost, ft_uint32_t options)
 {
-	uint32_t cmd[2] = {
-		CMD_PLAYVIDEO,
-		options,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 2);
+	Gpu_Copro_SendCmd(phost, CMD_PLAYVIDEO);
+	Gpu_Copro_SendCmd(phost, options);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 2));
 }
 #endif
 
@@ -101,24 +97,17 @@ ft_void_t Ft_Gpu_CoCmd_ScreenSaver(EVE_HalContext *phost)
 
 ft_uint32_t Ft_Gpu_CoCmd_Calibrate(EVE_HalContext *phost)
 {
-	uint32_t resAddr;
-	uint32_t res;
+	uint16_t resAddr;
 
-	uint32_t cmd[2] = {
-		CMD_CALIBRATE,
-		0,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_CALIBRATE);
+	resAddr = EVE_Cmd_moveWp(phost, 4);
+	EVE_Cmd_endFunc(phost);
 
-	// Wait for the result
-	Ft_Gpu_CoCmd_EndFrame(phost);
-	eve_printf_debug("Waiting for Calibrate result\n");
-	if (!Ft_Gpu_Hal_WaitCmdFifoEmpty(phost))
+	/* Wait for the result */
+	if (!EVE_Cmd_waitFlush(phost))
 		return 0;
-	resAddr = (Ft_Gpu_Hal_Rd32(phost, REG_CMD_WRITE) - 4) & EVE_CMD_FIFO_MASK;
-	res = Ft_Gpu_Hal_Rd32(phost, RAM_CMD + resAddr); // Fetch result
-	Ft_Gpu_CoCmd_StartFrame(phost);
-	return res;
+	return EVE_Hal_rd32(phost, RAM_CMD + resAddr);
 }
 
 ft_void_t Ft_Gpu_CoCmd_Stop(EVE_HalContext *phost)
@@ -137,71 +126,68 @@ ft_bool_t Ft_Gpu_CoCmd_AnimStart(EVE_HalContext *phost, int32_t ch, uint32_t aop
 		return FT_FALSE;
 	}
 
-	scope
-	{
-		uint32_t cmd[4] = {
-			CMD_ANIMSTART,
-			ch,
-			aoptr,
-			loop,
-		};
-		EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
-		return EVE_Cmd_waitFlush(phost);
-	}
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 4);
+	Gpu_Copro_SendCmd(phost, CMD_ANIMSTART);
+	Gpu_Copro_SendCmd(phost, ch);
+	Gpu_Copro_SendCmd(phost, aoptr);
+	Gpu_Copro_SendCmd(phost, loop);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 4));
+	return EVE_Cmd_waitFlush(phost);
 }
 
 void Ft_Gpu_CoCmd_AnimStop(EVE_HalContext *phost, int32_t ch)
 {
-	uint32_t cmd[2] = {
-		CMD_ANIMSTOP,
-		ch,
-	};
-	EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 2);
+	Gpu_Copro_SendCmd(phost, CMD_ANIMSTOP);
+	Gpu_Copro_SendCmd(phost, ch);
+	Gpu_CoCmd_EndFunc(phost, CMD_SIZE * 2);
 }
 
 void Ft_Gpu_CoCmd_AnimXY(EVE_HalContext *phost, int32_t ch, int16_t x, int16_t y)
 {
-	uint32_t cmd[3] = {
-		CMD_ANIMXY,
-		ch,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-	};
-	EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 3);
+	Gpu_Copro_SendCmd(phost, CMD_ANIMXY);
+	Gpu_Copro_SendCmd(phost, ch);
+	Gpu_Copro_SendCmd(phost, ((uint32_t)y << 16) | (x & 0xFFFF));
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 3));
 }
 
 void Ft_Gpu_CoCmd_AnimDraw(EVE_HalContext *phost, int32_t ch)
 {
-	uint32_t cmd[2] = {
-		CMD_ANIMDRAW,
-		ch,
-	};
-	EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 2);
+	Gpu_Copro_SendCmd(phost, CMD_ANIMDRAW);
+	Gpu_Copro_SendCmd(phost, ch);
+	Gpu_CoCmd_EndFunc(phost, CMD_SIZE * 2);
 }
 
 void Ft_Gpu_CoCmd_AnimFrame(EVE_HalContext *phost, int16_t x, int16_t y, uint32_t aoptr, uint32_t frame)
 {
-	uint32_t cmd[4] = {
-		CMD_ANIMFRAME,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		aoptr,
-		frame,
-	};
-	EVE_Cmd_wrMem(phost, (ft_uint8_t *)cmd, sizeof(cmd));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 4);
+	Gpu_Copro_SendCmd(phost, CMD_ANIMFRAME);
+	Gpu_Copro_SendCmd(phost, ((uint32_t)y << 16) | (x & 0xFFFF));
+	Gpu_Copro_SendCmd(phost, aoptr);
+	Gpu_Copro_SendCmd(phost, frame);
+	Gpu_CoCmd_EndFunc(phost, CMD_SIZE * 4);
 }
 #endif
 
-// FIXME
-/*
-ft_void_t Ft_Gpu_CoCmd_RegRead(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t result)
+bool ESD_Cmd_regRead(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t *result)
 {
-	uint32_t cmd[3] = {
-		CMD_REGREAD,
-		ptr,
-		0,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	uint16_t resAddr;
+
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_REGREAD);
+	EVE_Cmd_wr32(phost, ptr);
+	resAddr = EVE_Cmd_moveWp(phost, 4);
+	EVE_Cmd_endFunc(phost);
+
+	/* Read result */
+	if (!EVE_Cmd_waitFlush(phost))
+		return false;
+	if (result)
+		*result = EVE_Hal_rd32(phost, RAM_CMD + resAddr);
+	return true;
 }
-*/
 
 #if (EVE_MODEL >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_VideoStart(EVE_HalContext *phost)
@@ -211,57 +197,79 @@ ft_void_t Ft_Gpu_CoCmd_VideoStart(EVE_HalContext *phost)
 
 ft_void_t Ft_Gpu_CoCmd_VideoFrame(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t ptr)
 {
-	uint32_t cmd[3] = {
-		CMD_VIDEOFRAME,
-		dst,
-		ptr,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 3);
+	Gpu_Copro_SendCmd(phost, CMD_VIDEOFRAME);
+	Gpu_Copro_SendCmd(phost, dst);
+	Gpu_Copro_SendCmd(phost, ptr);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 3));
 }
 #endif
 
-// FIXME
-/*
-ft_void_t Ft_Gpu_CoCmd_GetProps(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t w, ft_uint32_t h)
+bool ESD_Cmd_getProps(EVE_HalContext *phost, uint32_t *ptr, uint32_t *w, uint32_t *h)
 {
-	uint32_t cmd[4] = {
-		CMD_GETPROPS,
-		ptr,
-		w,
-		h,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	uint16_t resAddr;
+
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_GETPROPS);
+	resAddr = EVE_Cmd_moveWp(phost, 12);
+	EVE_Cmd_endFunc(phost);
+
+	/* Read result */
+	if (!EVE_Cmd_waitFlush(phost))
+		return false;
+	if (ptr)
+		*ptr = EVE_Hal_rd32(phost, RAM_CMD + resAddr);
+	if (w)
+		*w = EVE_Hal_rd32(phost, RAM_CMD + resAddr + 4);
+	if (h)
+		*h = EVE_Hal_rd32(phost, RAM_CMD + resAddr + 8);
+	return true;
 }
-*/
+
+/* Get the end memory address of data inflated by CMD_INFLATE */
+bool ESD_Cmd_getPtr(EVE_HalContext *phost, uint32_t *result)
+{
+	uint16_t resAddr;
+
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_GETPTR);
+	resAddr = EVE_Cmd_moveWp(phost, 12);
+	EVE_Cmd_endFunc(phost);
+
+	/* Read result */
+	if (!EVE_Cmd_waitFlush(phost))
+		return false;
+	if (result)
+		*result = EVE_Hal_rd32(phost, RAM_CMD + resAddr);
+	return true;
+}
 
 ft_void_t Ft_Gpu_CoCmd_TouchTransform(EVE_HalContext *phost, ft_int32_t x0, ft_int32_t y0, ft_int32_t x1, ft_int32_t y1, ft_int32_t x2, ft_int32_t y2, ft_int32_t tx0, ft_int32_t ty0, ft_int32_t tx1, ft_int32_t ty1, ft_int32_t tx2, ft_int32_t ty2, ft_uint16_t result)
 {
-	uint32_t cmd[4 * 6 * 2 + 4 * 2] = {
-		CMD_TOUCH_TRANSFORM,
-		x0,
-		y0,
-		x1,
-		y1,
-		x2,
-		y2,
-		tx0,
-		ty0,
-		tx1,
-		ty1,
-		tx2,
-		ty2,
-		result,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 6 * 2 + CMD_SIZE * 2);
+	Gpu_Copro_SendCmd(phost, CMD_TOUCH_TRANSFORM);
+	Gpu_Copro_SendCmd(phost, x0);
+	Gpu_Copro_SendCmd(phost, y0);
+	Gpu_Copro_SendCmd(phost, x1);
+	Gpu_Copro_SendCmd(phost, y1);
+	Gpu_Copro_SendCmd(phost, x2);
+	Gpu_Copro_SendCmd(phost, y2);
+	Gpu_Copro_SendCmd(phost, tx0);
+	Gpu_Copro_SendCmd(phost, ty0);
+	Gpu_Copro_SendCmd(phost, tx1);
+	Gpu_Copro_SendCmd(phost, ty1);
+	Gpu_Copro_SendCmd(phost, tx2);
+	Gpu_Copro_SendCmd(phost, ty2);
+	Gpu_Copro_SendCmd(phost, result);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 6 * 2 + CMD_SIZE * 2));
 }
 
 ft_void_t Ft_Gpu_CoCmd_Interrupt(EVE_HalContext *phost, ft_uint32_t ms)
 {
-	uint32_t cmd[2] = {
-		CMD_INTERRUPT,
-		ms,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 2);
+	Gpu_Copro_SendCmd(phost, CMD_INTERRUPT);
+	Gpu_Copro_SendCmd(phost, ms);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 2));
 }
 
 bool ESD_Cmd_getMatrix(EVE_HalContext *phost, int32_t *m)
@@ -269,11 +277,11 @@ bool ESD_Cmd_getMatrix(EVE_HalContext *phost, int32_t *m)
 	uint16_t resAddr;
 	int i;
 
-	EVE_Cmd_beginFunc(phost);
+	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_GETMATRIX);
 	resAddr = EVE_Cmd_moveWp(phost, 6 * 4);
 	EVE_Cmd_endFunc(phost);
-	
+
 	/* Read result */
 	if (!EVE_Cmd_waitFlush(phost))
 		return false;
@@ -296,46 +304,31 @@ ft_void_t Ft_Gpu_CoCmd_Sync(EVE_HalContext *phost)
 
 ft_void_t Ft_Gpu_CoCmd_Track(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_int16_t tag)
 {
-	uint32_t cmd[4] = {
-		CMD_TRACK,
-		(((ft_uint32_t)y << 16) | (x & 0xffff)),
-		(((ft_uint32_t)h << 16) | (w & 0xffff)),
-		tag,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 4);
+	Gpu_Copro_SendCmd(phost, CMD_TRACK);
+	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
+	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
+	Gpu_Copro_SendCmd(phost, tag);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 4));
 }
 
 #if (EVE_MODEL >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_Int_RAMShared(EVE_HalContext *phost, ft_uint32_t ptr)
 {
-	uint32_t cmd[2] = {
-		CMD_INT_RAMSHARED,
-		ptr,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 2);
+	Gpu_Copro_SendCmd(phost, CMD_INT_RAMSHARED);
+	Gpu_Copro_SendCmd(phost, ptr);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 2));
 }
 
 ft_void_t Ft_Gpu_CoCmd_Int_SWLoadImage(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t options)
 {
-	uint32_t cmd[3] = {
-		CMD_INT_SWLOADIMAGE,
-		ptr,
-		options,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
+	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 3);
+	Gpu_Copro_SendCmd(phost, CMD_INT_SWLOADIMAGE);
+	Gpu_Copro_SendCmd(phost, ptr);
+	Gpu_Copro_SendCmd(phost, options);
+	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 3));
 }
 #endif
-
-// FIXME
-/*
-ft_void_t Ft_Gpu_CoCmd_GetPtr(EVE_HalContext *phost, ft_uint32_t result)
-{
-	uint32_t cmd[2] = {
-		CMD_GETPTR,
-		result,
-	};
-	Ft_Gpu_CoCmd_SendCmdArr(phost, cmd, sizeof(cmd) / sizeof(cmd[0]));
-}
-*/
 
 /* Nothing beyond this */
