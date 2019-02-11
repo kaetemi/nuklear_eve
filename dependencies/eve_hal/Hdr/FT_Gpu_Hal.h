@@ -202,11 +202,6 @@ inline static ft_void_t Ft_Gpu_CoCmd_EndFrame(EVE_HalContext *phost)
 
 /*******************************************************************************/
 /*******************************************************************************/
-/* Power cycle */
-ft_void_t Ft_Gpu_Hal_Powercycle(EVE_HalContext *phost, ft_bool_t up);
-
-/*******************************************************************************/
-/*******************************************************************************/
 /* APIs for Host Commands */
 #define FT_GPU_INTERNAL_OSC EVE_INTERNAL_OSC
 #define FT_GPU_EXTERNAL_OSC EVE_EXTERNAL_OSC
@@ -305,16 +300,18 @@ inline static ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, cons
 }
 #define Ft_Gpu_Hal_Sleep EVE_sleep
 
+#define Ft_Gpu_HostCommand EVE_Hal_hostCommand
+#define Ft_Gpu_HostCommand_Ext3 EVE_Hal_hostCommandExt3
+#define Ft_Gpu_Hal_Powercycle EVE_Hal_powerCycle
+#define Ft_Gpu_Hal_SetSPI EVE_Hal_setSPI
+#define Ft_Gpu_CurrentFrequency EVE_Hal_currentFrequency
+
 ft_void_t Ft_Gpu_ClockSelect(EVE_HalContext *phost, FT_GPU_PLL_SOURCE_T pllsource);
 ft_void_t Ft_Gpu_PLL_FreqSelect(EVE_HalContext *phost, FT_GPU_PLL_FREQ_T freq);
 ft_void_t Ft_Gpu_PowerModeSwitch(EVE_HalContext *phost, FT_GPU_POWER_MODE_T pwrmode);
 ft_void_t Ft_Gpu_CoreReset(EVE_HalContext *phost);
 
-ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd);
-ft_void_t Ft_Gpu_HostCommand_Ext3(EVE_HalContext *phost, ft_uint32_t cmd);
-
 #if (EVE_MODEL >= EVE_FT810)
-ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T numchnls, FT_GPU_SPI_NUMDUMMYBYTES numdummy);
 ft_void_t Ft_Gpu_81X_SelectSysCLK(EVE_HalContext *phost, FT_GPU_81X_PLL_FREQ_T freq);
 ft_void_t Ft_GPU_81X_PowerOffComponents(EVE_HalContext *phost, ft_uint8_t val);
 ft_void_t Ft_GPU_81X_PadDriveStrength(EVE_HalContext *phost, FT_GPU_81X_GPIO_DRIVE_STRENGTH_T strength, FT_GPU_81X_GPIO_GROUP_T group);
@@ -322,7 +319,6 @@ ft_void_t Ft_Gpu_81X_ResetActive(EVE_HalContext *phost);
 ft_void_t Ft_Gpu_81X_ResetRemoval(EVE_HalContext *phost);
 #endif
 
-ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost);
 ft_int32_t Ft_Gpu_ClockTrimming(EVE_HalContext *phost, ft_uint32_t lowFreq);
 
 // #define ft_millis_init EVE_Millis_initialize

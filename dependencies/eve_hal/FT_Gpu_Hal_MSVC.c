@@ -322,6 +322,9 @@ ft_uint8_t Ft_Gpu_Hal_FT4222_Wr(EVE_HalContext *phost, ft_uint32_t hwraddr, cons
 
 #endif //FT4222_PLATFORM
 
+// Ft_Gpu_HostCommand
+// Ft_Gpu_HostCommand_Ext3
+
 ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 {
 #if defined(FT4222_PLATFORM) && !defined(ESD_SIMULATION)

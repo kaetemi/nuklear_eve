@@ -39,6 +39,10 @@
 ** INIT **
 *********/
 
+#if defined(ESD_SIMULATION)
+void Ft_MainReady__ESD(BT8XXEMU_Emulator *emulator);
+#endif
+
 EVE_HalPlatform g_HalPlatform;
 
 /* Initialize HAL platform */
@@ -69,7 +73,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	phost->EmulatorFlash = EVE_EmuFlash;
 #else
 	BT8XXEMU_EmulatorParameters params;
-	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, Ft_Emulator_Mode());
+	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
 
 	params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
 	BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
@@ -243,6 +247,82 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		eve_debug_break();
 	}
 	return transferred;
+}
+
+/************
+** UTILITY **
+************/
+
+void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
+{
+	/* no-op */
+}
+
+/* This API sends a 3byte command to the phost */
+void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
+{
+	/* no-op */
+}
+
+/* Toggle PD_N pin of FT800 board for a power cycle */
+void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
+{
+#if !defined(EVE_EMULATOR_MAIN)
+	// ESD would need to call MainReady__ESD again...
+	// TODO: Implement powercycle in BT8XXEMU
+	if (up)
+	{
+		if (phost->Emulator)
+		{
+			BT8XXEMU_stop(phost->Emulator);
+			BT8XXEMU_destroy(phost->Emulator);
+			phost->Emulator = NULL;
+		}
+
+		BT8XXEMU_EmulatorParameters params;
+
+		BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
+
+		params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
+		BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
+	}
+	else
+	{
+		if (!phost->Emulator)
+		{
+			BT8XXEMU_EmulatorParameters params;
+
+			BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
+
+			params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
+			BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
+		}
+
+		BT8XXEMU_stop(phost->Emulator);
+		BT8XXEMU_destroy(phost->Emulator);
+		phost->Emulator = NULL;
+	}
+#endif
+}
+
+int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
+{
+	/* no-op */
+	return -1;
+}
+
+uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
+{
+	uint32_t t0, t1;
+	uint32_t addr = REG_CLOCK;
+	int32_t r = 15625;
+
+	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
+										 /* may not be precise */
+	EVE_sleep(15625 / 1000);
+
+	t1 = EVE_Hal_rd32(phost, REG_CLOCK); /* t1 read */
+	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
 }
 
 /*********

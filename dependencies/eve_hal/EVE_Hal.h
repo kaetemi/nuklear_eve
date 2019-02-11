@@ -230,6 +230,23 @@ void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v);
 void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size);
 void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size);
 
+/************
+** UTILITY **
+************/
+
+void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd);
+
+/* This API sends a 3byte command to the phost */
+void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd);
+
+/* Toggle PD_N pin of FT800 board for a power cycle */
+void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up);
+
+/* Switch EVE to different SPI channel mode */
+int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy);
+
+uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost);
+
 /*********
 ** MISC **
 *********/

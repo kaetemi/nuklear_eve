@@ -32,6 +32,16 @@
 #include "FT_Platform.h"
 #if defined(FT900_PLATFORM)
 
+// platform specific
+// Ft_Gpu_HostCommand
+// Ft_Gpu_HostCommand_Ext3
+// Ft_Gpu_Hal_Powercycle
+// Ft_Gpu_Hal_SetSPI
+// Ft_Gpu_CurrentFrequency
+
+// ft900 only
+// Ft_Gpu_Panl70_GOODIXGPIO
+
 ft_void_t Ft_Gpu_HostCommand(EVE_HalContext *phost, ft_uint8_t cmd)
 {
 	ft_uint8_t hcmd[4] = { 0 };
@@ -95,13 +105,6 @@ ft_int16_t Ft_Gpu_Hal_SetSPI(EVE_HalContext *phost, FT_GPU_SPI_NUMCHANNELS_T num
 	phost->SpiChannels = numchnls;
 	phost->SpiDummyBytes = numdummy;
 	return 0;
-}
-
-ft_void_t getFlashTextString(char __flash__ *str, ft_uchar8_t *destArray, ft_uint16_t numOfChars)
-{
-	ft_uint16_t i;
-	for (i = 0; i < numOfChars; i++)
-		destArray[i] = str[i];
 }
 
 ft_uint32_t Ft_Gpu_CurrentFrequency(EVE_HalContext *phost)
