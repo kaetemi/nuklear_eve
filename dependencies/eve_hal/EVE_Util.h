@@ -42,7 +42,10 @@
 bool EVE_Util_bootupConfig(EVE_HalContext *phost);
 void EVE_Util_clearScreen(EVE_HalContext *phost);
 
-/* TODO: EVE_Util_resetCoprocessor(EVE_HalContext *phost) */
+/* Resets the coprocessor.
+To be used after a coprocessor fault, or to exit CMD_LOGO. 
+After a reset, flash will be in attached state. */
+bool EVE_Util_resetCoprocessor(EVE_HalContext *phost);
 
 #endif /* #ifndef EVE_HAL__H */
 

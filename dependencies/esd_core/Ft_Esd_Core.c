@@ -328,6 +328,10 @@ void Esd_WaitSwap(Esd_Context *ec)
 
 	ec->SwapIdled = FT_FALSE;
 	EVE_Cmd_waitFlush(&ec->HalContext);
+
+	/* Reset the coprocessor in case of fault */
+	if (ec->HalContext.CmdFault)
+		EVE_Util_resetCoprocessor(&ec->HalContext);
 }
 
 void Esd_Stop(Esd_Context *ec)

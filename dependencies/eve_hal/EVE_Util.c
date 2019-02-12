@@ -292,4 +292,97 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	return EVE_UtilImpl_postBootupConfig(phost);
 }
 
+#if (EVE_MODEL >= EVE_FT810) && (EVE_MODEL <= EVE_BT816)
+#ifndef EVE_HAS_OTP
+#define EVE_HAS_OTP
+#endif
+#endif
+
+#if (EVE_MODEL >= EVE_BT815) && (EVE_MODEL <= EVE_BT816)
+#ifndef EVE_HAS_VIDEOPATCH
+#define EVE_HAS_VIDEOPATCH
+#endif
+#define EVE_VIDEOPATCH_ADDR 0x309162
+#endif
+
+bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
+{
+	eve_printf_debug("Reset coprocessor\n");
+
+#ifdef EVE_HAS_VIDEOPATCH
+	/* BT81X video patch */
+	uint16_t videoPatchVector = EVE_Hal_rd16(phost, EVE_VIDEOPATCH_ADDR);
+#endif
+
+	/* Set REG_CPURESET to 1, to hold the coprocessor in the reset condition */
+	EVE_Hal_wr32(phost, REG_CPURESET, 1);
+	EVE_sleep(10);
+
+	/* Set REG_CMD_READ and REG_CMD_WRITE to zero */
+	EVE_Hal_wr32(phost, REG_CMD_READ, 0);
+	EVE_Hal_wr32(phost, REG_CMD_WRITE, 0);
+	EVE_Hal_wr32(phost, REG_CMD_DL, 0);
+	EVE_Hal_wr32(phost, REG_PCLK, 2); /* j1 will set the pclk to 0 for that error case */
+
+	/* Stop playing audio in case video with audio was playing during reset */
+	EVE_Hal_wr32(phost, REG_PLAYBACK_PLAY, 0);
+
+#ifdef EVE_HAS_OTP
+	/* Enable patched rom in case the reset is requested while CMD_LOGO is running.
+	This is necessary as CMD_LOGO may swap to the other rom page */
+	EVE_Hal_wr32(phost, REG_ROMSUB_SEL, 3);
+#endif
+
+	/* Refresh fifo */
+	EVE_Cmd_wp(phost);
+	EVE_Cmd_rp(phost);
+	EVE_Cmd_space(phost);
+
+	/* Default */
+	phost->CmdFault = false;
+
+	/* Set REG_CPURESET to 0, to restart the coprocessor */
+	EVE_Hal_wr32(phost, REG_CPURESET, 0);
+	EVE_sleep(100);
+
+#ifdef EVE_HAS_OTP
+	/* Go back into the patched coprocessor main loop */
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_EXECUTE);
+	EVE_Cmd_wr32(phost, 0x7ffe);
+	EVE_Cmd_wr32(phost, 0);
+	EVE_Cmd_endFunc(phost);
+
+	/* Can't know for sure when CMD_EXECUTE is processed,
+	since the read pointer remains at 0 */
+	EVE_sleep(10);
+
+	/* Need to manually stop previous command from repeating infinitely */
+	EVE_Hal_wr32(phost, REG_CMD_WRITE, 0);
+	EVE_sleep(10);
+
+	/* Refresh fifo */
+	EVE_Cmd_wp(phost);
+	EVE_Cmd_rp(phost);
+	EVE_Cmd_space(phost);
+#endif
+
+#ifdef EVE_HAS_VIDEOPATCH
+	/* BT81X video patch */
+	EVE_Hal_wr16(phost, EVE_VIDEOPATCH_ADDR, videoPatchVector);
+#endif
+
+	/* Start display list from beginning.
+	Allows us to detect that the coprocessor is ready. */
+	EVE_Cmd_wr32(phost, CMD_DLSTART);
+
+#ifdef EVE_FLASH_AVAILABLE
+	/* Reattach flash to avoid inconsistent state */
+	EVE_Cmd_wr32(phost, CMD_FLASHATTACH);
+#endif
+
+	/* Wait for coprocessor to be ready */
+	return EVE_Cmd_waitFlush(phost);
+}
+
 /* end of file */
