@@ -72,7 +72,17 @@ ESD_PARAMETER(bottomRight, Type = ft_rgb32_t, DisplayName = "Bottom Right", Defa
 ft_void_t Esd_Render_MultiGradient_Rounded(ft_int16_t x, ft_int16_t y, ft_int16_t width, ft_int16_t height, ft_int32_f4_t radius, ft_uint8_t alpha, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight);
 
 // Circle stroke
-ft_void_t Esd_Render_Circle_Stroke(ft_int32_f4_t x, ft_int32_f4_t y, ft_int32_f4_t radius, ft_int32_f4_t width, ft_argb32_t color);
+ft_void_t Esd_Render_Circle_Stroke(
+    ft_int32_f4_t x, ft_int32_f4_t y,
+    ft_int32_f4_t radius, ft_int32_f4_t border,
+    ft_argb32_t color);
+
+// Rect stroke
+ft_void_t Esd_Render_Rect_Stroke(
+    ft_int32_f4_t x, ft_int32_f4_t y,
+    ft_int32_f4_t width, ft_int32_f4_t height,
+    ft_int32_f4_t radius, ft_int32_f4_t border,
+    ft_argb32_t color);
 
 // Basic bitmap rendering
 ESD_RENDER(Ft_Esd_Render_Bitmap, Type = ft_void_t, DisplayName = "ESD Bitmap", Category = EsdPrimitives, Icon = ":/icons/image.png", Include = "FT_Esd_Primitives.h")

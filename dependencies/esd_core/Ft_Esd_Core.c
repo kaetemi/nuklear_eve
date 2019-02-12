@@ -336,6 +336,12 @@ bool Esd_WaitSwap(Esd_Context *ec)
 		EVE_Util_resetCoprocessor(&ec->HalContext);
 		Esd_ResetCoState();
 		Esd_BitmapHandle_Reset(&ec->HandleState);
+
+#if _DEBUG
+		/* Show error for a while */
+		EVE_sleep(1000);
+#endif
+
 		return false;
 	}
 
