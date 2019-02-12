@@ -243,7 +243,7 @@ ft_uint32_t Ft_Esd_LoadPalette(Ft_Esd_BitmapInfo *bitmapInfo)
 #else // FT_80X_ENABLE
 
 	eve_printf_debug("Palette not yet implemented for FT80x\n");
-	ft_uint32_t addr = GA_INVALID;
+	addr = GA_INVALID;
 
 #endif
 
