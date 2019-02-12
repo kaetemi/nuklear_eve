@@ -17,7 +17,10 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 /* #define NK_IMPLEMENTATION */
 /* #define NK_EVE_IMPLEMENTATION */
+#pragma warning(push)
+#pragma warning(disable: 4996)
 #include "nuklear.h"
+#pragma warning(pop)
 
 typedef struct nk_evefont nk_evefont;
 NK_API struct nk_context *nk_eve_init(struct nk_evefont *evefont);
