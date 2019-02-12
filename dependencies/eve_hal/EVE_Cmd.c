@@ -407,6 +407,9 @@ bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size)
 
 bool EVE_Cmd_waitLogo(EVE_HalContext *phost)
 {
+	eve_assert(!phost->CmdWaiting);
+	phost->CmdWaiting = true;
+
 	uint16_t rp, wp;
 	do
 	{
@@ -416,6 +419,8 @@ bool EVE_Cmd_waitLogo(EVE_HalContext *phost)
 			return false;
 
 	} while ((wp != 0) || (rp != 0));
+
+	phost->CmdWaiting = false;
 	return true;
 }
 
