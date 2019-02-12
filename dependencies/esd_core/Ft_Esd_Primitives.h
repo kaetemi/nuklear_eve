@@ -47,23 +47,29 @@ static inline ft_argb32_t Ft_Esd_ColorARGB_Combine(ft_rgb32_t rgb, ft_uint8_t a)
 
 // Rectangular gradient with four colored corners
 ESD_RENDER(Esd_Render_MultiGradient, Type = ft_void_t, DisplayName = "ESD Multi Gradient", Include = "FT_Esd_Primitives.h", Category = EsdPrimitives)
-ESD_PARAMETER(globalRect, Type = Ft_Esd_Rect16, DisplayName = "Global Rectangle", Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(x, Type = ft_int16_t, Default = 0)
+ESD_PARAMETER(y, Type = ft_int16_t, Default = 0)
+ESD_PARAMETER(width, Type = ft_int16_t, Default = 0)
+ESD_PARAMETER(height, Type = ft_int16_t, Default = 0)
 ESD_PARAMETER(topLeft, Type = ft_argb32_t, DisplayName = "Top Left", Default = #FFFF0000)
 ESD_PARAMETER(topRight, Type = ft_argb32_t, DisplayName = "Top Right", Default = #FF00FF00)
 ESD_PARAMETER(bottomLeft, Type = ft_argb32_t, DisplayName = "Bottom Left", Default = #FF0000FF)
 ESD_PARAMETER(bottomRight, Type = ft_argb32_t, DisplayName = "Bottom Right", Default = #FF000000)
-ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight);
+ft_void_t Esd_Render_MultiGradient(ft_int16_t x, ft_int16_t y, ft_int16_t width, ft_int16_t height, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight);
 
 // Rounded rectangular gradient with four colored corners
 ESD_RENDER(Esd_Render_MultiGradient_Rounded, Type = ft_void_t, DisplayName = "ESD Multi Gradient (Rounded)", Include = "FT_Esd_Primitives.h", Category = EsdPrimitives)
-ESD_PARAMETER(globalRect, Type = Ft_Esd_Rect16, DisplayName = "Global Rectangle", Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(x, Type = ft_int16_t, Default = 0)
+ESD_PARAMETER(y, Type = ft_int16_t, Default = 0)
+ESD_PARAMETER(width, Type = ft_int16_t, Default = 0)
+ESD_PARAMETER(height, Type = ft_int16_t, Default = 0)
 ESD_PARAMETER(radius, Type = ft_int32_f4_t, DisplayName = "Radius", Default = 4)
 ESD_PARAMETER(alpha, Type = ft_uint8_t, DisplayName = "Alpha", Default = 255)
 ESD_PARAMETER(topLeft, Type = ft_rgb32_t, DisplayName = "Top Left", Default = #FF0000)
 ESD_PARAMETER(topRight, Type = ft_rgb32_t, DisplayName = "Top Right", Default = #00FF00)
 ESD_PARAMETER(bottomLeft, Type = ft_rgb32_t, DisplayName = "Bottom Left", Default = #0000FF)
 ESD_PARAMETER(bottomRight, Type = ft_rgb32_t, DisplayName = "Bottom Right", Default = #000000)
-ft_void_t Esd_Render_MultiGradient_Rounded(Ft_Esd_Rect16 globalRect, ft_int32_f4_t radius, ft_uint8_t alpha, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight);
+ft_void_t Esd_Render_MultiGradient_Rounded(ft_int16_t x, ft_int16_t y, ft_int16_t width, ft_int16_t height, ft_int32_f4_t radius, ft_uint8_t alpha, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight);
 
 // Circle stroke
 ft_void_t Esd_Render_Circle_Stroke(ft_int32_f4_t x, ft_int32_f4_t y, ft_int32_f4_t radius, ft_int32_f4_t width, ft_argb32_t color);

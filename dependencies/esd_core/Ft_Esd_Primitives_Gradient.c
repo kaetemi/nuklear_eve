@@ -14,7 +14,7 @@ ft_uint32_t s_MultiGradient_Cell;
 // The maximum number of multi gradients that can be on screen at once, multiplied by two
 #define ESD_MULTIGRADIENT_MAX_NB (1 << 6)
 
-ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight)
+ft_void_t Esd_Render_MultiGradient(ft_int16_t x, ft_int16_t y, ft_int16_t width, ft_int16_t height, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight)
 {
 	// Get address of RAM_G used for gradient palette
 	ft_uint32_t addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, s_MultiGradient_GpuHandle);
@@ -33,9 +33,6 @@ ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft
 
 	// Select cell address directly
 	addr += (s_MultiGradient_Cell * 8);
-
-	// Rect
-	ft_int32_t x = globalRect.X, y = globalRect.Y, width = globalRect.Width, height = globalRect.Height;
 
 	// Check if the colors have alpha, if so we'll use ARGB4, otherwise RGB565
 	ft_bool_t alpha = topLeft < 0xFF000000 || topRight < 0xFF000000 || bottomLeft < 0xFF000000 || bottomRight < 0xFF000000;
@@ -86,7 +83,7 @@ ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft
 	// Set the scaling matrix
 #if ESD_MULTIGRADIENT_CO_SCALE
 	Ft_Gpu_CoCmd_LoadIdentity(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_Scale(Ft_Esd_Host, width << 16, height << 16);
+	Ft_Gpu_CoCmd_Scale(Ft_Esd_Host, (ft_int32_t)width << 16, (ft_int32_t)height << 16);
 	Ft_Gpu_CoCmd_SetMatrix(Ft_Esd_Host);
 #else
 #if (EVE_MODEL >= EVE_BT815)
@@ -116,7 +113,7 @@ ft_void_t Esd_Render_MultiGradient(Ft_Esd_Rect16 globalRect, ft_argb32_t topLeft
 	s_MultiGradient_Cell &= (ESD_MULTIGRADIENT_MAX_NB - 1);
 }
 
-ft_void_t Esd_Render_MultiGradient_Rounded(Ft_Esd_Rect16 globalRect, ft_int32_f4_t radius, ft_uint8_t alpha, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight)
+ft_void_t Esd_Render_MultiGradient_Rounded(ft_int16_t x, ft_int16_t y, ft_int16_t width, ft_int16_t height, ft_int32_f4_t radius, ft_uint8_t alpha, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight)
 {
 	// Esd_Dl_SAVE_CONTEXT();
 
@@ -129,18 +126,18 @@ ft_void_t Esd_Render_MultiGradient_Rounded(Ft_Esd_Rect16 globalRect, ft_int32_f4
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, COLOR_MASK(0, 0, 0, 1));
 	Esd_Dl_LINE_WIDTH(16);
 	Esd_Dl_BEGIN(RECTS);
-	Esd_Dl_VERTEX2F_0(globalRect.X, globalRect.Y);
-	Esd_Dl_VERTEX2F_0(globalRect.X + globalRect.Width, globalRect.Y + globalRect.Height);
+	Esd_Dl_VERTEX2F_0(x, y);
+	Esd_Dl_VERTEX2F_0(x + width, y + height);
 	Esd_Dl_END();
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, COLOR_MASK(1, 1, 1, 1));
 
 	// Draw rounded rectangle as masking shape
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, BLEND_FUNC(ZERO, ONE_MINUS_SRC_ALPHA));
-	Ft_Esd_Render_Rectangle(globalRect.X, globalRect.Y, globalRect.Width, globalRect.Height, radius, Ft_Esd_ColorARGB_Combine(0xFFFFFF, alpha));
+	Ft_Esd_Render_Rectangle(x, y, width, height, radius, Ft_Esd_ColorARGB_Combine(0xFFFFFF, alpha));
 
 	// Draw color using mask alpha
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, BLEND_FUNC(ONE_MINUS_DST_ALPHA, ONE));
-	Esd_Render_MultiGradient(globalRect, topLeft | 0xFF000000, topRight | 0xFF000000, bottomLeft | 0xFF000000, bottomRight | 0xFF000000);
+	Esd_Render_MultiGradient(x, y, width, height, topLeft | 0xFF000000, topRight | 0xFF000000, bottomLeft | 0xFF000000, bottomRight | 0xFF000000);
 
 	// Restore context
 	// Esd_Dl_RESTORE_CONTEXT();

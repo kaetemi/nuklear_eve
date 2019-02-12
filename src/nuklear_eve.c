@@ -17,6 +17,7 @@ References:
 - https://github.com/vurtun/nuklear/blob/master/nuklear.h
 - https://github.com/vurtun/nuklear/blob/master/demo/gdi/nuklear_gdi.h
 - https://github.com/vurtun/nuklear/blob/master/demo/allegro5/nuklear_allegro5.h
+- https://github.com/keharriso/love-nuklear/blob/master/src/nuklear_love.c
 
 /*
 TODO:
@@ -217,7 +218,7 @@ nk_eve_rect_multi_color(EVE_HalContext *phost, short x, short y, unsigned short 
     rect.Y = y;
     rect.Width = w;
     rect.Height = h;
-    Esd_Render_MultiGradient(rect,
+    Esd_Render_MultiGradient(x, y, w, h,
         ESD_COMPOSE_ARGB8888(left.r, left.g, left.b, left.a),
         ESD_COMPOSE_ARGB8888(top.r, top.g, top.b, top.a),
         ESD_COMPOSE_ARGB8888(bottom.r, bottom.g, bottom.b, bottom.a),
