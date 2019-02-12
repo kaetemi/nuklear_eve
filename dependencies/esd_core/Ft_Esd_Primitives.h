@@ -154,7 +154,7 @@ ESD_PARAMETER(width, Type = ft_int32_t, Default = 60)
 ESD_PARAMETER(height, Type = ft_int32_t, Default = 20)
 ESD_PARAMETER(radius, Type = ft_int32_t, Default = 4)
 ESD_PARAMETER(color, Type = ft_argb32_t, DisplayName = "Color", Default = #FFFFFFFF)
-static inline ft_void_t Ft_Esd_Render_Rectangle(ft_int32_t x, ft_int32_t y, ft_int32_f4_t w, ft_int32_f4_t h, ft_int32_f4_t radius, ft_argb32_t color)
+static inline ft_void_t Ft_Esd_Render_Rectangle(ft_int32_t x, ft_int32_t y, ft_int32_t w, ft_int32_t h, ft_int32_t radius, ft_argb32_t color)
 {
 	Ft_Esd_Render_RectangleF(x << 4, y << 4, w << 4, h << 4, radius << 4, color);
 }
