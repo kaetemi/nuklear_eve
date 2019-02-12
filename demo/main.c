@@ -21,9 +21,9 @@ This C source file demonstrates the Nuklear EVE implementation.
 #include "nuklear_eve.h"
 
 #pragma warning(push)
-#pragma warning(disable: 4996)
-#pragma warning(disable: 4477)
-#pragma warning(disable: 4244)
+#pragma warning(disable : 4996)
+#pragma warning(disable : 4477)
+#pragma warning(disable : 4244)
 // #include "demo/style.c"
 #include "demo/calculator.c"
 #include "demo/overview.c"
@@ -41,6 +41,8 @@ int main(void)
     int show_calculator = 0;
     int show_overview = 0;
     int show_node_editor = 0;
+
+    int overview_resized = 0;
 
     /* Initialize Nuklear EVE */
     font = nk_evefont_create_rom(27);
@@ -97,7 +99,18 @@ int main(void)
         if (show_calculator)
             calculator(ctx);
         if (show_overview)
+        {
             overview(ctx);
+            if (!overview_resized)
+            {
+                nk_window_set_size(ctx, "Overview", nk_vec2(400, 480));
+                overview_resized = 1;
+            }
+        }
+        else
+        {
+            overview_resized = 0;
+        }
         if (show_node_editor)
             node_editor(ctx);
         /* ----------------------------------------- */
