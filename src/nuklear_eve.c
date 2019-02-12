@@ -236,9 +236,9 @@ nk_eve_stroke_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
 {
     int offset = (line_thickness & 1) ? 0 : 8;
     Esd_Render_Rect_Stroke(
-        ((int)x << 4) - offset, ((int)y << 4) - offset, 
-        ((int)w << 4) + (offset << 1), ((int)h << 4) + (offset << 1), 
-        (int)r << 4, (int)line_thickness << 4, 
+        ((int)x << 4) - offset, ((int)y << 4) - offset,
+        ((int)w << 4) + (offset << 1), ((int)h << 4) + (offset << 1),
+        (int)r << 4, (int)line_thickness << 4,
         ESD_COMPOSE_ARGB8888(col.r, col.g, col.b, col.a));
 }
 
