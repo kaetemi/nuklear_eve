@@ -68,17 +68,19 @@ ft_void_t Ft_Gpu_CoCmd_Spinner(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y
 
 #if (EVE_MODEL >= EVE_BT815)
 /* Count number of arguments in Cmd_Text for string format*/
-static uint8_t countArgs(const char* str)
+static uint8_t countArgs(const char *str)
 {
 	uint8_t count = 0;
 	const char *tmp = str;
 
 	while (tmp = strstr(tmp, "%"))
 	{
-		if (*(tmp + 1) == '%') {
+		if (*(tmp + 1) == '%')
+		{
 			tmp += 2;
 		}
-		else {
+		else
+		{
 			count++;
 			tmp++;
 		}
@@ -87,7 +89,7 @@ static uint8_t countArgs(const char* str)
 }
 #endif
 
-void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char* s, ...)
+void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char *s, ...)
 {
 	va_list args;
 #if (EVE_MODEL >= EVE_BT815)
@@ -96,8 +98,8 @@ void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font
 	va_start(args, s);
 #if (EVE_MODEL >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
 	//l = GetFormatStringList(s, args);
-	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set 
-														  //printf("num = %d %d\n",num, (len + 1 + 3) & ~3);
+	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set
+	    //printf("num = %d %d\n",num, (len + 1 + 3) & ~3);
 #endif
 
 	EVE_Cmd_startFunc(phost);
@@ -209,7 +211,7 @@ ft_void_t Ft_Gpu_CoCmd_Number(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 #endif
 }
 
-void Gpu_CoCmd_Toggle(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char* s, ...)
+void Gpu_CoCmd_Toggle(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char *s, ...)
 {
 	va_list args;
 #if (EVE_MODEL >= EVE_BT815)
@@ -217,7 +219,7 @@ void Gpu_CoCmd_Toggle(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w,
 #endif
 	va_start(args, s);
 #if (EVE_MODEL >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
-	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set 
+	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set
 #endif
 
 	EVE_Cmd_startFunc(phost);
@@ -274,7 +276,7 @@ ft_void_t Ft_Gpu_CoCmd_Slider(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 #endif
 }
 
-void Gpu_CoCmd_Button(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char* s, ...)
+void Gpu_CoCmd_Button(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char *s, ...)
 {
 	va_list args;
 #if (EVE_MODEL >= EVE_BT815)
@@ -283,7 +285,7 @@ void Gpu_CoCmd_Button(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w,
 
 	va_start(args, s);
 #if (EVE_MODEL >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
-	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set 
+	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set
 #endif
 
 	EVE_Cmd_startFunc(phost);

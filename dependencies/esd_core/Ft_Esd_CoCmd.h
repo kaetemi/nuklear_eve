@@ -48,9 +48,9 @@ extern EVE_HalContext *Ft_Esd_Host;
 extern EVE_HalContext *Ft_Esd_GetHost();
 
 void Gpu_CoCmd_FillWidth(EVE_HalContext *phost, uint32_t s);
-void Gpu_CoCmd_Text(EVE_HalContext *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char* s, ...);
-void Gpu_CoCmd_Toggle(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char* s, ...);
-void Gpu_CoCmd_Button(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char* s, ...);
+void Gpu_CoCmd_Text(EVE_HalContext *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char *s, ...);
+void Gpu_CoCmd_Toggle(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char *s, ...);
+void Gpu_CoCmd_Button(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char *s, ...);
 
 // ESD_FUNCTION(Ft_Gpu_CoCmd_SetBitmap, Type = ft_void_t, Category = _GroupHidden)
 // ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST

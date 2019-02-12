@@ -367,6 +367,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 			{
 				buffer[transferred++] = 0;
 				// putchar('_');
+				break;
 			}
 		}
 		while (transferred & padMask)
@@ -415,7 +416,6 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 }
 
-
 /* Toggle PD_N pin of FT800 board for a power cycle */
 void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 {
@@ -448,7 +448,6 @@ int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8
 	/* no-op */
 	return -1;
 }
-
 
 /*********
 ** MISC **

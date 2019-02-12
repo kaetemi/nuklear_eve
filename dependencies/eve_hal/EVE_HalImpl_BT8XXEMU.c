@@ -251,6 +251,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 				++transferred;
 				transfer8(phost, 0);
 				// putchar('_');
+				break;
 			}
 		}
 		while (transferred & padMask)
@@ -286,6 +287,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 			{
 				buffer[transferred++] = 0;
 				// putchar('_');
+				break;
 			}
 		}
 		while (transferred & padMask)

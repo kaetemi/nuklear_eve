@@ -39,8 +39,30 @@
 #define GPU_HAL__H
 
 #include "FT_Gpu_Hal.h"
+#include "EVE_Util.h"
 
 #include <stdlib.h>
+
+#ifdef BT8XXEMU_PLATFORM
+#define MSVC_FT800EMU
+void setupComp();
+void loop();
+#define setup                               \
+	EVE_emuMain(int32_t argc, char *argv[]) \
+	{                                       \
+		setupComp();                        \
+		loop();                             \
+	}                                       \
+	void setupComp
+#endif
+
+#ifdef FT4222_PLATFORM
+#define MSVC_PLATFORM
+#endif
+
+#ifdef MPSSE_PLATFORM
+#define MSVC_PLATFORM
+#endif
 
 #ifdef BT81X_ENABLE
 #define FT81X_ENABLE
@@ -72,11 +94,17 @@
 #endif
 
 typedef eve_progmem uint16_t prog_uint16_t;
-typedef eve_progmem uchar8_t prog_uchar8_t;
+typedef eve_progmem char prog_uchar8_t;
+typedef eve_progmem char prog_char8_t;
 
+/*
 extern int16_t ESD_DispWidth, ESD_DispHeight;
 #define DispWidth ESD_DispWidth
 #define DispHeight ESD_DispHeight
+*/
+
+#define DispWidth phost->Parameters.Display.Width
+#define DispHeight phost->Parameters.Display.Height
 
 #define GPU_HAL_MODE_E EVE_MODE_T
 #define GPU_I2C_MODE EVE_MODE_I2C
@@ -122,20 +150,21 @@ typedef struct
 
 #define BootupConfig EVE_Util_bootupConfig
 
-typedef struct Fifo_t{
-	uint32_t fifo_buff;     //fifo buffer address
-	int32_t fifo_len;       //fifo length
-	int32_t fifo_wp;        //fifo write pointer - maintained by host
-	int32_t fifo_rp;        //fifo read point - maintained by device
-							/* FT800 series specific registers */
-	uint32_t HW_Read_Reg;    //hardware fifo read register
-	uint32_t HW_Write_Reg;    //hardware fifo write register
-}Fifo_t;
+typedef struct Fifo_t
+{
+	uint32_t fifo_buff; //fifo buffer address
+	int32_t fifo_len; //fifo length
+	int32_t fifo_wp; //fifo write pointer - maintained by host
+	int32_t fifo_rp; //fifo read point - maintained by device
+	/* FT800 series specific registers */
+	uint32_t HW_Read_Reg; //hardware fifo read register
+	uint32_t HW_Write_Reg; //hardware fifo write register
+} Fifo_t;
 
 /* Type of file to load from SDCard or Windows file system */
-#define LOADIMAGE 1  //loadimage command takes destination address and options before the actual bitmap data
-#define INFLATE 2    //inflate command takes destination address before the actual bitmap
-#define LOAD 3       //load bitmaps directly
+#define LOADIMAGE 1 //loadimage command takes destination address and options before the actual bitmap data
+#define INFLATE 2 //inflate command takes destination address before the actual bitmap
+#define LOAD 3 //load bitmaps directly
 #define INFLATE2 4
 
 /*******************************************************************************/
@@ -175,6 +204,7 @@ static inline bool Gpu_Hal_Open(EVE_HalContext *phost)
 
 #define Gpu_Hal_WrMem EVE_Hal_wrMem
 #define Gpu_Hal_WrMem_ProgMem EVE_Hal_wrProgmem
+#define Gpu_Hal_WrMemFromFlash EVE_Hal_wrProgmem
 
 static inline ft_void_t Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
 {
@@ -188,7 +218,10 @@ static inline ft_void_t Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, f
 
 /// Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FALSE in case a co processor fault occured
 #define Gpu_Hal_WrCmdBuf EVE_Cmd_wrMem
+#define Gpu_Hal_WrCmdBuf_nowait EVE_Cmd_wrMem
+
 #define Gpu_Hal_WrCmdBuf_ProgMem EVE_Cmd_wrProgmem
+#define Gpu_Hal_WrCmdBufFromFlash EVE_Cmd_wrProgmem
 
 /// Wait for the command buffer to fully empty. Returns FALSE in case a co processor fault occured
 #define Gpu_Hal_WaitCmdFifoEmpty EVE_Cmd_waitFlush
@@ -377,7 +410,6 @@ inline static ft_int16_t Gpu_Hal_TransferString_S(EVE_HalContext *phost, const f
 #define Gpu_CoCmd_Stop Ft_Gpu_CoCmd_Stop
 #define Gpu_CoCmd_SetBase Ft_Gpu_CoCmd_SetBase
 #define Gpu_CoCmd_Slider Ft_Gpu_CoCmd_Slider
-#define Gpu_CoCmd_Nop Ft_Gpu_CoCmd_Nop
 #define Gpu_CoCmd_VideoFrame Ft_Gpu_CoCmd_VideoFrame
 #define Gpu_CoCmd_Interrupt Ft_Gpu_CoCmd_Interrupt
 #define Gpu_CoCmd_FgColor Ft_Gpu_CoCmd_FgColor
@@ -390,7 +422,7 @@ inline static ft_int16_t Gpu_Hal_TransferString_S(EVE_HalContext *phost, const f
 #define Gpu_CoCmd_CSketch Ft_Gpu_CoCmd_CSketch
 #define Gpu_CoCmd_PlayVideo Ft_Gpu_CoCmd_PlayVideo
 #define Gpu_CoCmd_MemSet Ft_Gpu_CoCmd_MemSet
-#define Gpu_CoCmd_Calibrate Ft_Gpu_CoCmd_Calibrate
+#define Gpu_CoCmd_Calibrate(phost, r) Ft_Gpu_CoCmd_Calibrate((phost))
 #define Gpu_CoCmd_SetFont Ft_Gpu_CoCmd_SetFont
 #define Gpu_CoCmd_Bitmap_Transform Ft_Gpu_CoCmd_Bitmap_Transform
 #define Gpu_CoCmd_GradColor Ft_Gpu_CoCmd_GradColor
@@ -418,13 +450,265 @@ inline static ft_int16_t Gpu_Hal_TransferString_S(EVE_HalContext *phost, const f
 #define Gpu_CoCmd_ScreenSaver Ft_Gpu_CoCmd_ScreenSaver
 #define Gpu_CoCmd_MemCrc Ft_Gpu_CoCmd_MemCrc
 #define Gpu_CoCmd_Logo Ft_Gpu_CoCmd_Logo
-#define Gpu_CoCmd_Inflate2 Ft_Gpu_CoCmd_Inflate2
-#define Gpu_CoCmd_RotateAround Ft_Gpu_CoCmd_RotateAround
 #define Gpu_CoCmd_Sync Ft_Gpu_CoCmd_Sync
 
 #define Gpu_CoCmd_AnimStop Ft_Gpu_CoCmd_AnimStop
 #define Gpu_CoCmd_AnimXY Ft_Gpu_CoCmd_AnimXY
 #define Gpu_CoCmd_AnimDraw Ft_Gpu_CoCmd_AnimDraw
 #define Gpu_CoCmd_AnimFrame Ft_Gpu_CoCmd_AnimFrame
+
+void Gpu_CoCmd_SetBitmap(Gpu_Hal_Context_t *phost, uint32_t source, uint16_t fmt, uint16_t w, uint16_t h);
+void Gpu_CoCmd_SetScratch(Gpu_Hal_Context_t *phost, uint32_t handle);
+void Gpu_CoCmd_RomFont(Gpu_Hal_Context_t *phost, uint32_t font, uint32_t romslot);
+void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char *s, ...);
+void Gpu_CoCmd_Number(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font, uint16_t options, int32_t n);
+void Gpu_CoCmd_LoadIdentity(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_Toggle(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char *s, ...);
+void Gpu_CoCmd_Gauge(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t r, uint16_t options, uint16_t major, uint16_t minor, uint16_t val, uint16_t range);
+void Gpu_CoCmd_FillWidth(Gpu_Hal_Context_t *phost, uint32_t s);
+void Gpu_CoCmd_RegRead(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t result);
+void Gpu_CoCmd_VideoStart(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_GetProps(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t w, uint32_t h);
+void Gpu_CoCmd_Memcpy(Gpu_Hal_Context_t *phost, uint32_t dest, uint32_t src, uint32_t num);
+void Gpu_CoCmd_Spinner(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint16_t style, uint16_t scale);
+void Gpu_CoCmd_BgColor(Gpu_Hal_Context_t *phost, uint32_t c);
+void Gpu_CoCmd_Swap(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_Inflate(Gpu_Hal_Context_t *phost, uint32_t ptr);
+void Gpu_CoCmd_Translate(Gpu_Hal_Context_t *phost, int32_t tx, int32_t ty);
+void Gpu_CoCmd_Stop(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_SetBase(Gpu_Hal_Context_t *phost, uint32_t base);
+void Gpu_CoCmd_Slider(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t options, uint16_t val, uint16_t range);
+void Gpu_CoCmd_Nop(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_VideoFrame(Gpu_Hal_Context_t *phost, uint32_t dst, uint32_t ptr);
+void Gpu_CoCmd_Interrupt(Gpu_Hal_Context_t *phost, uint32_t ms);
+void Gpu_CoCmd_FgColor(Gpu_Hal_Context_t *phost, uint32_t c);
+void Gpu_CoCmd_Rotate(Gpu_Hal_Context_t *phost, int32_t a);
+void Gpu_CoCmd_Button(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char *s, ...);
+void Gpu_CoCmd_MemWrite(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t num);
+void Gpu_CoCmd_Scrollbar(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t options, uint16_t val, uint16_t size, uint16_t range);
+void Gpu_CoCmd_GetMatrix(Gpu_Hal_Context_t *phost, int32_t a, int32_t b, int32_t c, int32_t d, int32_t e, int32_t f);
+void Gpu_CoCmd_Sketch(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t ptr, uint16_t format);
+void Gpu_CoCmd_CSketch(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t ptr, uint16_t format, uint16_t freq);
+void Gpu_CoCmd_PlayVideo(Gpu_Hal_Context_t *phost, uint32_t options);
+void Gpu_CoCmd_MemSet(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t value, uint32_t num);
+void Gpu_CoCmd_SetFont(Gpu_Hal_Context_t *phost, uint32_t font, uint32_t ptr);
+void Gpu_CoCmd_Bitmap_Transform(Gpu_Hal_Context_t *phost, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t tx0, int32_t ty0, int32_t tx1, int32_t ty1, int32_t tx2, int32_t ty2, uint16_t result);
+void Gpu_CoCmd_GradColor(Gpu_Hal_Context_t *phost, uint32_t c);
+void Gpu_CoCmd_Sync(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_Append(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t num);
+void Gpu_CoCmd_MemZero(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t num);
+void Gpu_CoCmd_Scale(Gpu_Hal_Context_t *phost, int32_t sx, int32_t sy);
+void Gpu_CoCmd_Clock(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t r, uint16_t options, uint16_t h, uint16_t m, uint16_t s, uint16_t ms);
+void Gpu_CoCmd_Gradient(Gpu_Hal_Context_t *phost, int16_t x0, int16_t y0, uint32_t rgb0, int16_t x1, int16_t y1, uint32_t rgb1);
+void Gpu_CoCmd_SetMatrix(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_Track(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t tag);
+
+void Gpu_CoCmd_Int_SWLoadImage(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t options);
+void Gpu_CoCmd_GetPtr(Gpu_Hal_Context_t *phost, uint32_t result);
+void Gpu_CoCmd_Progress(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t options, uint16_t val, uint16_t range);
+void Gpu_CoCmd_ColdStart(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_MediaFifo(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t size);
+void Gpu_CoCmd_Keys(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char *s);
+void Gpu_CoCmd_Dial(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t r, uint16_t options, uint16_t val);
+void Gpu_CoCmd_Snapshot2(Gpu_Hal_Context_t *phost, uint32_t fmt, uint32_t ptr, int16_t x, int16_t y, int16_t w, int16_t h);
+void Gpu_CoCmd_LoadImage(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t options);
+void Gpu_CoCmd_SetFont2(Gpu_Hal_Context_t *phost, uint32_t font, uint32_t ptr, uint32_t firstchar);
+void Gpu_CoCmd_SetRotate(Gpu_Hal_Context_t *phost, uint32_t r);
+void Gpu_CoCmd_Dlstart(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_Snapshot(Gpu_Hal_Context_t *phost, uint32_t ptr);
+void Gpu_CoCmd_ScreenSaver(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_MemCrc(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t num, uint32_t result);
+
+uint32_t Ft_Gpu_CoCmd_Calibrate(EVE_HalContext *phost);
+
+void Gpu_CoCmd_Logo(Gpu_Hal_Context_t *phost);
+/* Added during BT815 integration - for reference only*/
+void Gpu_CoCmd_Inflate2(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t options);
+void Gpu_CoCmd_RotateAround(Gpu_Hal_Context_t *phost, int32_t x, int32_t y, int32_t a, int32_t s);
+
+void Gpu_CoCmd_FlashErase(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_FlashWrite(Gpu_Hal_Context_t *phost, uint32_t dest, uint32_t num);
+void Gpu_CoCmd_FlashWriteExt(Gpu_Hal_Context_t *phost, uint32_t dest, uint32_t num, uint8_t *data);
+void Gpu_CoCmd_FlashUpdate(Gpu_Hal_Context_t *phost, uint32_t dest, uint32_t src, uint32_t num);
+void Gpu_CoCmd_FlashRead(Gpu_Hal_Context_t *phost, uint32_t dest, uint32_t src, uint32_t num);
+void Gpu_CoCmd_FlashSource(Gpu_Hal_Context_t *phost, uint32_t ptr);
+void Gpu_CoCmd_FlashSpiTx(Gpu_Hal_Context_t *phost, uint32_t num);
+void Gpu_CoCmd_FlashFast(Gpu_Hal_Context_t *phost, uint32_t result);
+void Gpu_CoCmd_FlashSpiRx(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t num);
+void Gpu_CoCmd_FlashAttach(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_FlashDetach(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_FlashSpiDesel(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_ClearCache(Gpu_Hal_Context_t *phost);
+
+void Gpu_CoCmd_Int_RamShared(Gpu_Hal_Context_t *phost, uint32_t ptr);
+void Gpu_CoCmd_Sha1(Gpu_Hal_Context_t *phost, uint32_t src, uint32_t num, uint32_t hash);
+void Gpu_CoCmd_Crc(Gpu_Hal_Context_t *phost, uint32_t ptr); //not yet available
+void Gpu_CoCmd_Hmac(Gpu_Hal_Context_t *phost, uint32_t src, uint32_t num, uint32_t hash); //not yet available
+
+void Gpu_CoCmd_ResetFonts(Gpu_Hal_Context_t *phost);
+
+void Gpu_CoCmd_Sync(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_GradientA(Gpu_Hal_Context_t *phost, int16_t x0, int16_t y0, uint32_t argb0, int16_t x1, int16_t y1, uint32_t argb1);
+void Gpu_CoCmd_AppendF(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t num);
+void Gpu_CoCmd_GetPoint(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_t sx, uint32_t sy);
+
+typedef enum
+{
+	FLASH_CMD_SUCCESS = 0,
+	FLASH_CMD_ALIGNED_ERR
+} Flash_Cmd_Status_t;
+
+#define FLASH_WRITE_ALIGN_BYTE (256)
+#define FLASH_UPDATE_ALIGN_BYTE (4096)
+#define FLASH_READ_ALIGN_BYTE (64)
+
+/* Flash section */
+void Gpu_CoCmd_FlashHelper_Init(Gpu_Hal_Context_t *phost);
+uint32_t Gpu_CoCmd_FlashHelper_SwitchState(Gpu_Hal_Context_t *phost, uint8_t nextState);
+uint32_t Gpu_CoCmd_FlashHelper_SwitchFullMode(Gpu_Hal_Context_t *phost);
+Flash_Cmd_Status_t Gpu_CoCmd_FlashHelper_Write(Gpu_Hal_Context_t *phost, uint32_t dest_flash, uint32_t num, uint8_t *write_data);
+Flash_Cmd_Status_t Gpu_CoCmd_FlashHelper_Update(Gpu_Hal_Context_t *phost, uint32_t dest_flash, uint32_t src_ram, uint32_t num);
+Flash_Cmd_Status_t Gpu_CoCmd_FlashHelper_Read(Gpu_Hal_Context_t *phost, uint32_t dest_ram, uint32_t src_flash, uint32_t num, uint8_t *read_data);
+void Gpu_CoCmd_FlashHelper_Erase(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_FlashHelper_ClearCache(Gpu_Hal_Context_t *phost);
+uint8_t Gpu_CoCmd_FlashHelper_GetState(Gpu_Hal_Context_t *phost);
+
+/* Animation section */
+void Gpu_CoCmd_AnimStart(Gpu_Hal_Context_t *phost, int32_t ch, uint32_t aoptr, uint32_t loop);
+void Gpu_CoCmd_AnimStop(Gpu_Hal_Context_t *phost, int32_t ch);
+void Gpu_CoCmd_AnimXY(Gpu_Hal_Context_t *phost, int32_t ch, int16_t x, int16_t y);
+void Gpu_CoCmd_AnimDraw(Gpu_Hal_Context_t *phost, int32_t ch);
+void Gpu_CoCmd_AnimFrame(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_t aoptr, uint32_t frame);
+
+/* Definitions to ensure these don't get redefined */
+#define App_WrCoCmd_Buffer(phost, cmd) EVE_Cmd_wr32((phost), (cmd))
+#define App_WrCoStr_Buffer(phost, s) EVE_Cmd_wrString((phost), (s), EVE_CMD_STRING_MAX)
+#define App_Flush_Co_Buffer(phost) EVE_Cmd_waitFlush((phost))
+#define App_Flush_Co_Buffer_nowait(phost) EVE_Cmd_waitFlush((phost))
+
+#define App_Set_CmdBuffer_Index(idx) eve_noop()
+
+#define POLAR_UTIL /* Enable sin()/cos() calculator utilities */
+
+#ifdef RGB //Undefine RGB from wingdi.h in Visual Studio
+#undef RGB
+#endif
+#define RGB(r, g, b) ((((vc_int32_t)(r)) << 16) | (((vc_int32_t)(g)) << 8) | (b))
+#define SQ(v) ((v) * (v))
+#define MIN(x, y) ((x) > (y) ? (y) : (x))
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define PLAYCOLOR 0x00A0A080
+#define NOTE(n, sharp) (((n) - 'C') + ((sharp)*128))
+#define F16(s) ((int32_t)((s)*65536))
+#define INVALID_TOUCH_XY 0x8000
+#define ABS(x) ((x) > (0) ? (x) : (-x))
+#define ALIGN_TWO_POWER_N(Value, alignval) (((Value) + (alignval - 1)) & (~(alignval - 1)))
+
+#if !defined(ARDUINO_PLATFORM) //Arduino support these keyword
+#define pgm_read_byte_near(x) (*(x))
+#define pgm_read_byte(x) (*(x))
+#define pgm_read_word(addr) (*((prog_uint16_t *)(addr)))
+#define delay(x) Gpu_Hal_Sleep(x)
+#define random(x) (rand() % (x))
+#define DBGPRINT(x) printf(x)
+#endif
+
+#if defined(MSVC_PLATFORM) || defined(MSVC_FT800EMU)
+/* strcpy_P and strlen_P only support Arduino */
+#define strcpy_P strcpy
+#define strlen_P strlen
+#endif
+
+void fadeout(Gpu_Hal_Context_t *phost);
+void fadein(Gpu_Hal_Context_t *phost);
+void GPU_DLSwap(Gpu_Hal_Context_t *phost, uint8_t DL_Swap_Type);
+float_t cal_average(float_t *ptr_elements, uint16_t elements);
+int16_t qsin(uint16_t a);
+int16_t qcos(uint16_t a);
+float_t da(float_t i, int16_t degree);
+
+void polarxy(int32_t r, float_t th, int32_t *x, int32_t *y, int32_t ox, int32_t oy);
+void polar(Gpu_Hal_Context_t *phost, int32_t r, float_t th, int32_t ox, int32_t oy);
+
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
+#define GET_CURR_MILLIS() get_millis()
+#elif defined(MSVC_PLATFORM) || defined(MSVC_FT800EMU)
+#define GET_CURR_MILLIS() time(NULL)
+#elif defined(ARDUINO_PLATFORM)
+#define GET_CURR_MILLIS() millis()
+#else
+#define GET_CURR_MILLIS() 0
+#endif
+
+uint32_t GET_ASTC_FORMAT(uint16_t w, uint16_t h);
+void astc_tile2(uint8_t *iData, uint16_t bw, uint16_t bh, uint32_t size, uint8_t *oData);
+#ifdef FT81X_ENABLE
+void Set_GpuClock(Gpu_Hal_Context_t *phost);
+uint32_t Get_GpuClock(Gpu_Hal_Context_t *phost);
+#endif
+
+static int32_t Gpu_Hal_Dec2Ascii(char8_t *pSrc, int32_t value)
+{
+	int16_t Length;
+	char8_t *pdst, charval;
+	int32_t CurrVal = value, tmpval, i;
+	char8_t tmparray[16], idx = 0;
+
+	Length = (int16_t)strlen(pSrc);
+	pdst = pSrc + Length;
+
+	if (0 == value)
+	{
+		*pdst++ = '0';
+		*pdst++ = '\0';
+		return 0;
+	}
+
+	if (CurrVal < 0)
+	{
+		*pdst++ = '-';
+		CurrVal = -CurrVal;
+	}
+	/* insert the value */
+	while (CurrVal > 0)
+	{
+		tmpval = CurrVal;
+		CurrVal /= 10;
+		tmpval = tmpval - CurrVal * 10;
+		charval = '0' + tmpval;
+		tmparray[idx++] = charval;
+	}
+
+	for (i = 0; i < idx; i++)
+	{
+		*pdst++ = tmparray[idx - i - 1];
+	}
+	*pdst++ = '\0';
+
+	return 0;
+}
+
+static void Gpu_Hal_LoadImageToMemory(Gpu_Hal_Context_t *phost, char8_t *fileName, uint32_t destination, uint8_t type)
+{
+	if (type == LOADIMAGE)
+	{
+		EVE_Util_loadImageFile(phost, destination, fileName, NULL);
+	}
+	else if (type == INFLATE)
+	{
+		EVE_Util_loadInflateFile(phost, destination, fileName);
+	}
+	else if (type == LOAD)
+	{
+		EVE_Util_loadRawFile(phost, destination, fileName);
+	}
+}
+
+static void Gpu_Hal_ResetCmdFifo(Gpu_Hal_Context_t *phost)
+{
+	EVE_Cmd_rp(phost);
+	EVE_Cmd_wp(phost);
+	EVE_Cmd_space(phost);
+}
 
 #endif /* GPU_HAL__H */

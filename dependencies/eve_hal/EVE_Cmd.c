@@ -94,9 +94,11 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 	{
 		uint32_t transfer = (size - transfered);
 		uint32_t space = phost->CmdSpace;
-		if (space < transfer && space < (EVE_CMD_FIFO_SIZE >> 1))
+		uint32_t req = min((string ? (transfer + 1) : transfer), (EVE_CMD_FIFO_SIZE >> 1));
+		eve_assert(!string || (req == (transfer + 1)));
+		if (space < req)
 		{
-			if (!EVE_Cmd_waitSpace(phost, min(transfer, (EVE_CMD_FIFO_SIZE >> 1))))
+			if (!EVE_Cmd_waitSpace(phost, req))
 				return transfered; /* Co processor fault */
 			space = phost->CmdSpace;
 		}
@@ -117,9 +119,11 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			{
 				eve_assert(transfered == 0);
 				eve_assert(transfer == size); /* Cannot split string transfers */
+				eve_assert(transfer <= phost->CmdSpace);
 				uint32_t t = EVE_Hal_transferString(phost, (const char *)buffer, transfered, transfer, 0x3);
 				if (t != transfer) /* End of string */
 				{
+					eve_assert(t <= phost->CmdSpace);
 					transfer = t;
 					size = (transfered + transfer);
 				}
@@ -191,7 +195,7 @@ uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLe
 {
 	uint32_t transfered;
 	eve_assert(phost->CmdBufferIndex == 0);
-	transfered = wrBuffer(phost, str, maxLength + 1, false, true);
+	transfered = wrBuffer(phost, str, maxLength, false, true);
 	return transfered;
 }
 
@@ -332,7 +336,8 @@ static bool checkWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 {
 	/* Check for coprocessor fault */
-	checkWait(phost, rpOrSpace);
+	if (!checkWait(phost, rpOrSpace))
+		return false;
 
 	/* Process any idling */
 	EVE_Hal_idle(phost);

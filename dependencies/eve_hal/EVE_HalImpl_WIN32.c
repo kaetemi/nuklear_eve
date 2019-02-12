@@ -44,7 +44,7 @@ uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 	int32_t r = 15625;
 
 	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
-										 /* may not be precise */
+	/* may not be precise */
 	EVE_sleep(15625 / 1000);
 
 	t1 = EVE_Hal_rd32(phost, REG_CLOCK); /* t1 read */

@@ -35,6 +35,9 @@ Revision History:
 #include "Gpu_Hal.h"
 
 void Gpu_CoCmd_FillWidth(Gpu_Hal_Context_t *phost, uint32_t s);
+void Gpu_CoCmd_Nop(Gpu_Hal_Context_t *phost);
+void Gpu_CoCmd_Inflate2(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t options);
+void Gpu_CoCmd_RotateAround(Gpu_Hal_Context_t *phost, int32_t x, int32_t y, int32_t a, int32_t s);
 
 void Gpu_CoCmd_FlashErase(Gpu_Hal_Context_t *phost);
 void Gpu_CoCmd_FlashWrite(Gpu_Hal_Context_t *phost, uint32_t dest, uint32_t num);
@@ -59,16 +62,6 @@ void Gpu_CoCmd_ResetFonts(Gpu_Hal_Context_t *phost);
 void Gpu_CoCmd_GradientA(Gpu_Hal_Context_t *phost, int16_t x0, int16_t y0, uint32_t argb0, int16_t x1, int16_t y1, uint32_t argb1);
 void Gpu_CoCmd_AppendF(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t num);
 void Gpu_CoCmd_GetPoint(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_t sx, uint32_t sy);
-
-typedef enum
-{
-	FLASH_CMD_SUCCESS = 0,
-	FLASH_CMD_ALIGNED_ERR
-} Flash_Cmd_Status_t;
-
-#define FLASH_WRITE_ALIGN_BYTE (256)
-#define FLASH_UPDATE_ALIGN_BYTE (4096)
-#define FLASH_READ_ALIGN_BYTE (64)
 
 /* Flash section */
 void Gpu_CoCmd_FlashHelper_Init(Gpu_Hal_Context_t *phost);
