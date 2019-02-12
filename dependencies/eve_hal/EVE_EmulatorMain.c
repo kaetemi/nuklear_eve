@@ -109,7 +109,10 @@ int main(int argc, char *argv[])
 	flashParams.SizeBytes = 2097152;
 #endif
 #if !defined(ESD_SIMULATION)
+#pragma warning(push)
+#pragma warning(disable: 4996)
 	wcscpy(flashParams.DataFilePath, L"__Flash.bin");
+#pragma warning(pop)
 	// flashParams.Persistent = true; // For test purpose
 #endif
 #if defined(ESD_SIMULATION)

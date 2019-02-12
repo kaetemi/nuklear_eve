@@ -49,7 +49,10 @@ bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *f
 	uint16_t blocklen;
 	uint32_t addr = address;
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
 	afile = fopen(filename, "rb");
+#pragma warning(pop)
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
@@ -81,7 +84,10 @@ bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const cha
 	if (!EVE_Cmd_waitSpace(phost, 8))
 		return false; // Space for CMD_INFLATE
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
 	afile = fopen(filename, "rb"); // read Binary (rb)
+#pragma warning(pop)
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);
@@ -114,7 +120,10 @@ bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char 
 	uint8_t pbuff[8192];
 	uint16_t blocklen;
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
 	afile = fopen(filename, "rb"); // read Binary (rb)
+#pragma warning(pop)
 	if (afile == NULL)
 	{
 		eve_printf_debug("Unable to open: %s\n", filename);

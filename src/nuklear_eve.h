@@ -7,7 +7,7 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 #ifndef NK_EVE_H_
 #define NK_EVE_H_
 
-#include "Esd_Core.h"
+#include "Ft_Esd_Core.h"
 
 #if !defined(_MSC_VER) || (_MSC_VER >= 1900)
 #define NK_INCLUDE_FIXED_TYPES
