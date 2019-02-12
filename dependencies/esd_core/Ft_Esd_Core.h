@@ -118,7 +118,7 @@ void Esd_Loop(Esd_Context *ec);
 void Esd_Start(Esd_Context *ec);
 void Esd_Update(Esd_Context *ec);
 void Esd_Render(Esd_Context *ec);
-void Esd_WaitSwap(Esd_Context *ec);
+bool Esd_WaitSwap(Esd_Context *ec);
 void Esd_Stop(Esd_Context *ec);
 
 #endif /* #ifndef ESD_CORE__H */

@@ -29,6 +29,9 @@ void Esd_BitmapHandle_Initialize();
 /// Call at start of frame to start tracking handle usage for the new frame for the current context
 void Esd_BitmapHandle_FrameStart(Esd_HandleState *state);
 
+/// Reset the bitmap handle state
+void Esd_BitmapHandle_Reset(Esd_HandleState *state);
+
 ft_uint32_t Ft_Esd_BitmapHandle_GetTotalUsed();
 ft_uint32_t Ft_Esd_BitmapHandle_GetTotal();
 

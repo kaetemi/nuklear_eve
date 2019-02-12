@@ -105,6 +105,12 @@ void Esd_BitmapHandle_FrameStart(Esd_HandleState *handleState)
 	}
 }
 
+/// Reset the bitmap handle state
+void Esd_BitmapHandle_Reset(Esd_HandleState *state)
+{
+	memset(state, 0, sizeof(Esd_HandleState));
+}
+
 ft_uint32_t Ft_Esd_BitmapHandle_GetTotalUsed()
 {
 	ft_uint32_t total = 0;

@@ -28,7 +28,7 @@ This C source file demonstrates the Nuklear EVE implementation.
 
 int main(void)
 {
-    nk_evefont *font;
+    struct nk_evefont *font;
     struct nk_context *ctx;
 
     int show_calculator = 0;
@@ -70,6 +70,13 @@ int main(void)
             if (nk_button_label(ctx, "Show Bridgetek Logo"))
                 Esd_ShowLogo();
 
+            nk_layout_row_static(ctx, 30, 200, 1);
+            if (nk_button_label(ctx, "Play Sound"))
+            {
+                EVE_Hal_wr32(nk_eve_hal(), REG_SOUND, (60 << 8) | 0x46);
+                EVE_Hal_wr32(nk_eve_hal(), REG_PLAY, 1);
+            }
+
             nk_layout_row_dynamic(ctx, 30, 2);
             if (nk_option_label(ctx, "easy", op == EASY))
                 op = EASY;
@@ -90,7 +97,13 @@ int main(void)
         /* ----------------------------------------- */
 
         /* Draw */
-        nk_eve_render(nk_rgb(30, 30, 30));
+        if (!nk_eve_render(nk_rgb(30, 30, 30)))
+        {
+            /* Coprocessor fault */
+            show_calculator = 0;
+            show_overview = 0;
+            show_node_editor = 0;
+        }
     }
 
     /* Release Nuklear EVE */

@@ -321,7 +321,7 @@ void Esd_Render(Esd_Context *ec)
 	++ec->Frame;
 }
 
-void Esd_WaitSwap(Esd_Context *ec)
+bool Esd_WaitSwap(Esd_Context *ec)
 {
 	Esd_SetCurrent(ec);
 	EVE_HalContext *phost = &ec->HalContext;
@@ -331,7 +331,15 @@ void Esd_WaitSwap(Esd_Context *ec)
 
 	/* Reset the coprocessor in case of fault */
 	if (ec->HalContext.CmdFault)
+	{
+		/* TODO: Create a utility function that resets the coprocessor and all cached state */
 		EVE_Util_resetCoprocessor(&ec->HalContext);
+		Esd_ResetCoState();
+		Esd_BitmapHandle_Reset(&ec->HandleState);
+		return false;
+	}
+
+	return true;
 }
 
 void Esd_Stop(Esd_Context *ec)

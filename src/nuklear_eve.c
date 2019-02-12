@@ -22,7 +22,6 @@ References:
 /*
 TODO:
 - Rounded rectangle stroke
-- Font metrics
 - Unicode font
 - Bitmap
 - Oval
@@ -32,6 +31,7 @@ TODO:
 #define NK_EVE_IMPLEMENTATION
 #include "nuklear_eve.h"
 
+#include "Ft_Esd_Core.h"
 #include "Ft_Esd_Primitives.h"
 
 static struct
@@ -44,42 +44,129 @@ static struct
 struct nk_evefont
 {
     struct nk_user_font nk;
-    int rom_handle;
+    Esd_FontInfo *font_info;
+    union
+    {
+        EVE_Gpu_Fonts *font_block;
+        EVE_Gpu_FontsExt *font_ext_block;
+    };
 };
-
-NK_API nk_evefont *
-nk_evefont_create_rom(int handle)
-{
-    nk_evefont *font = (nk_evefont *)calloc(1, sizeof(nk_evefont));
-    if (!font)
-        return NULL;
-    font->rom_handle = handle;
-    return font;
-}
 
 NK_API void
 nk_evefont_del(nk_evefont *font)
 {
     if (!font)
         return;
+    if (font->font_block)
+    {
+        free(font->font_block);
+        font->font_block = NULL;
+    }
     free(font);
+}
+
+static float
+nk_evefont_get_text_width(nk_handle handle, float height, const char *text, int len);
+
+static bool
+nk_evefont_setup(struct nk_evefont *evefont)
+{
+    struct nk_user_font *font = &evefont->nk;
+    eve_assert(evefont->font_info);
+    eve_assert(font);
+    if (!evefont->font_block)
+    {
+        uint32_t fontAddr;
+        if (evefont->font_info->Type == ESD_FONT_ROM)
+        {
+            Esd_RomFontInfo *romfont = (Esd_RomFontInfo *)evefont->font_info;
+            uint32_t ft = Ft_Gpu_Hal_Rd32(Ft_Esd_Host, ROMFONT_TABLEADDRESS);
+            fontAddr = ft + (FT_GPU_FONT_TABLE_SIZE * (romfont->RomFont - 16));
+            eve_assert(sizeof(EVE_Gpu_Fonts) == FT_GPU_FONT_TABLE_SIZE);
+        }
+        else
+        {
+            fontAddr = Esd_LoadFont(evefont->font_info);
+        }
+        if (fontAddr == GA_INVALID)
+            return false;
+        if (evefont->font_info->Type == ESD_FONT_EXTENDED)
+        {
+            eve_debug_break();
+            /* ... TODO ... */
+        }
+        else
+        {
+            evefont->font_block = calloc(1, sizeof(EVE_Gpu_Fonts));
+            EVE_Hal_rdMem(&eve.ec.HalContext, (uint8_t *)evefont->font_block, fontAddr, sizeof(EVE_Gpu_Fonts));
+        }
+        evefont->nk.height = evefont->font_info->CapsHeight;
+        evefont->nk.width = nk_evefont_get_text_width;
+    }
+    else
+    {
+        if (evefont->font_info->Type != ESD_FONT_ROM)
+            return Esd_LoadFont(evefont->font_info) != GA_INVALID;
+    }
+    return true;
 }
 
 static float
 nk_evefont_get_text_width(nk_handle handle, float height, const char *text, int len)
 {
-    /* ... TODO ... */
-    return 20.f;
+    struct nk_evefont *evefont = (struct nk_evefont *)handle.ptr;
+    eve_assert(evefont);
+    eve_assert(evefont->nk.userdata.ptr == handle.ptr);
+    if (evefont->font_info->Type == ESD_FONT_EXTENDED)
+    {
+        eve_debug_break();
+        /* ... TODO ... */
+        return 20.f;
+    }
+    else
+    {
+        int width, i, c;
+        if (!nk_evefont_setup(evefont) && !evefont->font_block)
+            return 20.f;
+        eve_assert(evefont->font_block);
+        eve_assert(EVE_GPU_NUMCHAR_PERFONT == 128);
+        eve_assert(sizeof(evefont->font_block->FontWidth) == 128);
+        width = 0;
+        for (i = 0; (c = text[i]) != 0 && i < len; ++i)
+            width += evefont->font_block->FontWidth[c & 0x7F];
+        return (float)width;
+    }
 }
 
 NK_API void
-nk_eve_set_font(nk_evefont *evefont)
+nk_eve_set_font(struct nk_evefont *evefont)
 {
     struct nk_user_font *font = &evefont->nk;
-    font->userdata = nk_handle_ptr(evefont);
-    font->height = 20; /* ... TODO ... */
-    font->width = nk_evefont_get_text_width;
+    nk_evefont_setup(evefont);
     nk_style_set_font(&eve.ctx, font);
+}
+
+NK_API struct nk_evefont *
+nk_evefont_create(struct Esd_FontInfo *font_info)
+{
+    eve_assert(font_info);
+    if (!font_info)
+        return NULL;
+    struct nk_evefont *evefont = (struct nk_evefont *)calloc(1, sizeof(struct nk_evefont));
+    if (!evefont)
+        return NULL;
+    evefont->font_info = font_info;
+    evefont->nk.userdata = nk_handle_ptr(evefont);
+    // evefont->nk.height = 20; /* ... TODO ... */
+    // evefont->nk.width = nk_evefont_get_text_width;
+    eve_assert(!evefont->font_block);
+    return evefont;
+}
+
+NK_API struct nk_evefont *
+nk_evefont_create_rom(int handle)
+{
+    return nk_evefont_create(Esd_GetRomFont(handle));
 }
 
 static void
@@ -455,15 +542,21 @@ nk_eve_stroke_curve(EVE_HalContext *phost,
 
 static void
 nk_eve_draw_text(EVE_HalContext *phost, short x, short y, unsigned short w, unsigned short h,
-    const char *text, int len, nk_evefont *font, struct nk_color cfg)
+    const char *text, int len, nk_evefont *evefont, struct nk_color cfg)
 {
     if (!len)
         return;
 
+    eve_assert(evefont->font_info);
+    uint8_t handle = Ft_Esd_Dl_Font_Setup(evefont->font_info);
+    if (handle == FT_ESD_BITMAPHANDLE_INVALID)
+        return;
+
+    y = y - evefont->font_info->BaseLine + evefont->font_info->CapsHeight;
     Esd_Dl_COLOR_RGB((((cfg.r) & 255UL) << 16) | (((cfg.g) & 255UL) << 8) | ((cfg.b) & 255UL));
     Esd_Dl_COLOR_A(cfg.a);
-    Ft_Gpu_CoCmd_Text_S(phost, x, y, font->rom_handle, 0, text, len);
-    // Ft_Gpu_CoCmd_Text(phost, x, y, font->rom_handle, 0, text);
+    Ft_Gpu_CoCmd_Text_S(phost, x, y, handle, 0, text, len);
+    // Ft_Gpu_CoCmd_Text(phost, x, y, handle, 0, text);
 }
 
 static void
@@ -661,15 +754,10 @@ nk_eve_cb_end(void *context)
 }
 
 NK_API struct nk_context *
-nk_eve_init(nk_evefont *evefont)
+nk_eve_init(struct nk_evefont *evefont)
 {
     Esd_Parameters ep;
     struct nk_user_font *font = &evefont->nk;
-
-    font->userdata = nk_handle_ptr(evefont);
-    font->height = 20; /* ... TODO ... */
-    font->width = nk_evefont_get_text_width;
-
     nk_init_default(&eve.ctx, font);
     Esd_Defaults(&ep);
     ep.Start = nk_eve_cb_start;
@@ -679,6 +767,7 @@ nk_eve_init(nk_evefont *evefont)
     ep.End = nk_eve_cb_end;
     Esd_Initialize(&eve.ec, &ep);
     Esd_Start(&eve.ec);
+    eve_assert_do(nk_evefont_setup(evefont));
     // eve.ctx.clip.copy = nk_eve_clipboard_copy;
     // eve.ctx.clip.paste = nk_eve_clipboard_paste;
     // eve.ctx.clip.userdata = nk_handle_ptr(0);
@@ -696,17 +785,23 @@ nk_eve_shutdown(void)
 }
 
 NK_API void
-nk_eve_update()
+nk_eve_update(void)
 {
     Esd_Update(&eve.ec);
 }
 
-NK_API void
+NK_API bool
 nk_eve_render(struct nk_color clear)
 {
     Esd_Render(&eve.ec);
-    Esd_WaitSwap(&eve.ec);
     nk_clear(&eve.ctx);
+    return Esd_WaitSwap(&eve.ec);
+}
+
+NK_API EVE_HalContext *
+nk_eve_hal(void)
+{
+    return &eve.ec.HalContext;
 }
 
 /* end of file */

@@ -87,6 +87,10 @@ uint32_t Esd_LoadFont(Esd_FontInfo *fontInfo)
 				break;
 			}
 			}
+			if (!fontInfo->BaseLine)
+				fontInfo->BaseLine = fontInfo->FontHeight;
+			if (!fontInfo->CapsHeight)
+				fontInfo->CapsHeight = fontInfo->FontHeight;
 			fontInfo->GlyphAddress = glyphAddr;
 
 #ifdef EVE_FLASH_AVAILABLE
