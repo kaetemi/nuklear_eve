@@ -24,7 +24,7 @@ This C source file demonstrates the Nuklear EVE implementation.
 #pragma warning(disable : 4996)
 #pragma warning(disable : 4477)
 #pragma warning(disable : 4244)
-// #include "demo/style.c"
+/*#include "demo/style.c"*/
 #include "demo/calculator.c"
 #include "demo/overview.c"
 #include "demo/node_editor.c"
@@ -49,6 +49,12 @@ int main(void)
     ctx = nk_eve_init(font);
 
     font_large = nk_evefont_create_rom(32);
+    
+    /* style.c */
+    /*set_style(ctx, THEME_WHITE);*/
+    /*set_style(ctx, THEME_RED);*/
+    /*set_style(ctx, THEME_BLUE);*/
+    /*set_style(ctx, THEME_DARK);*/
 
     /* Main Loop */
     while (true)
