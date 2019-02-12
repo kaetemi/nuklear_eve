@@ -31,11 +31,11 @@ static inline ft_argb32_t Ft_Esd_ColorARGB_Combine(ft_rgb32_t rgb, ft_uint8_t a)
 #define ESD_DECOMPOSE_ALPHA(argb) ((argb) >> 24)
 #define ESD_DECOMPOSE_RED(rgb) (((rgb) >> 16) & 0xFF)
 #define ESD_DECOMPOSE_GREEN(rgb) (((rgb) >> 8) & 0xFF)
-#define ESD_DECOMPOSE_BLUE(rgb) ((rgb) & 0xFF)
+#define ESD_DECOMPOSE_BLUE(rgb) ((rgb)&0xFF)
 
 #define ESD_COMPOSE_ARGB4(r, g, b, a) (((a & 0xF0) << 8) | ((r & 0xF0) << 4) | (g & 0xF0) | (b >> 4))
 #define ESD_COMPOSE_RGB565(r, g, b) (((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3))
-#define ESD_COMPOSE_ARGB1555(r, g, b, a) ((((a) & 0x80) << 8) | (((r) & 0xF8) << 7) | (((g) & 0xF8) << 2) | ((b) >> 3))
+#define ESD_COMPOSE_ARGB1555(r, g, b, a) ((((a)&0x80) << 8) | (((r)&0xF8) << 7) | (((g)&0xF8) << 2) | ((b) >> 3))
 #define ESD_COMPOSE_ARGB8888(r, g, b, a) ((a) << 24) | ((r) << 16) | ((g) << 8) | (b)
 
 #define ESD_COLOR_ARGB4(argb) ESD_COMPOSE_ARGB4(ESD_DECOMPOSE_RED(argb), ESD_DECOMPOSE_GREEN(argb), ESD_DECOMPOSE_BLUE(argb), ESD_DECOMPOSE_ALPHA(argb))

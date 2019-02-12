@@ -78,6 +78,8 @@ void loop();
 #define char8_t uint8_t
 #define bool_t bool
 #define uchar8_t uint8_t
+#define float_t float
+#define double_t double
 
 #ifndef FALSE
 #define FALSE false

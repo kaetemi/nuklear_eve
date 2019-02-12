@@ -9,7 +9,7 @@
 #include "Ft_Esd_GpuAlloc.h"
 #include "Ft_Esd_TouchTag.h"
 #include "Ft_Esd_CoCmd.h"
-#include "Esd_Core.h"
+#include "Ft_Esd_Core.h"
 
 extern EVE_HalContext *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;

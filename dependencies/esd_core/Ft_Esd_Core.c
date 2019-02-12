@@ -29,7 +29,7 @@
 * has no liability in relation to those amendments.
 */
 
-#include "Esd_Core.h"
+#include "Ft_Esd_Core.h"
 #include "Ft_Esd_Utility.h"
 
 #include "Ft_Esd_GpuAlloc.h"
