@@ -5,25 +5,29 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 */
 
 /*
+
 This C source file provides the Nuklear implementation for Bridgetek EVE.
 It depends on:
 - Nuklear (https://github.com/vurtun/nuklear/)
 - EVE Hardware Abstraction Layer
 - EVE Screen Designer Framework Core
-*/
 
-/*
 References:
 - https://github.com/vurtun/nuklear/blob/master/nuklear.h
 - https://github.com/vurtun/nuklear/blob/master/demo/gdi/nuklear_gdi.h
 - https://github.com/vurtun/nuklear/blob/master/demo/allegro5/nuklear_allegro5.h
 - https://github.com/keharriso/love-nuklear/blob/master/src/nuklear_love.c
 
-/*
+Known limitations:
+- Ovals are not supported, only circles
+
 TODO:
-- Unicode font
-- Bitmap
-- Oval
+- Unicode font (glyph width)
+- Bitmap (NK_COMMAND_IMAGE)
+- Cross integration with ESD Layout
+- NK_COMMAND_ARC
+- NK_COMMAND_ARC_FILLED
+
 */
 
 #define NK_IMPLEMENTATION
