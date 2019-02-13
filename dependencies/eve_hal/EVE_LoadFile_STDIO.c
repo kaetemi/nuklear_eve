@@ -31,7 +31,7 @@
 
 #include "EVE_LoadFile.h"
 #include "EVE_Platform.h"
-#if !defined(FT900_PLATFORM)
+#if !defined(FT900_PLATFORM) && !defined(FT93X_PLATFORM)
 
 #include <stdio.h>
 

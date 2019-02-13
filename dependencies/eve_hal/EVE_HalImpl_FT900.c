@@ -31,7 +31,7 @@
 
 #include "EVE_HalImpl.h"
 #include "EVE_Platform.h"
-#if defined(FT900_PLATFORM)
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
 
 void ticker();
 
@@ -58,33 +58,34 @@ void EVE_HalImpl_initialize()
 {
 	g_HalPlatform.TotalDevices = 1;
 
-	// Initialize SPIM HW
+	/* Initialize SPIM HW */
+	/* TODO: This is duplicate in bootup */
 	sys_enable(sys_device_spi_master);
+	gpio_function(GPIO_SPIM_CLK, pad_spim_sck); /* GPIO27 to SPIM_CLK */
+	gpio_function(GPIO_SPIM_SS0, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_function(GPIO_SPIM_MOSI, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
+	gpio_function(GPIO_SPIM_MISO, pad_spim_miso); /* GPIO30 to SPIM_MISO */
 
-	gpio_function(27, pad_spim_sck); /* GPIO27 to SPIM_CLK */
-	gpio_function(28, pad_spim_ss0); /* GPIO28 as CS */
-	gpio_function(29, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
-	gpio_function(30, pad_spim_miso); /* GPIO30 to SPIM_MISO */
+	gpio_dir(GPIO_SPIM_CLK, pad_dir_output);
+	gpio_dir(GPIO_SPIM_SS0, pad_dir_output);
+	gpio_dir(GPIO_SPIM_MOSI, pad_dir_output);
+	gpio_dir(GPIO_SPIM_MISO, pad_dir_input);
 
-	gpio_dir(27, pad_dir_output);
-	gpio_dir(28, pad_dir_output);
-	gpio_dir(29, pad_dir_output);
-	gpio_dir(30, pad_dir_input);
-#if (defined(ENABLE_SPI_QUAD))
-	/* Initialize IO2 and IO3 pad/pin for quad settings */
-	gpio_function(31, pad_spim_io2); /* GPIO31 to IO2 */
-	gpio_function(32, pad_spim_io3); /* GPIO32 to IO3 */
-	gpio_dir(31, pad_dir_output);
-	gpio_dir(32, pad_dir_output);
+#if defined(ENABLE_SPI_DUAL) || defined(ENABLE_SPI_QUAD)
+	/* Initialize IO2 and IO3 pad/pin for dual and quad settings */
+	gpio_function(GPIO_SPIM_IO2, pad_spim_io2);
+	gpio_function(GPIO_SPIM_IO3, pad_spim_io3);
+	gpio_dir(GPIO_SPIM_IO2, pad_dir_output);
+	gpio_dir(GPIO_SPIM_IO3, pad_dir_output);
 #endif
 
 #if defined(PANL70) || defined(PANL70PLUS)
-	gpio_function(GOODIXGPIO, pad_gpio33);
+	gpio_function(GOODIXGPIO, pad_goodixgpio);
 	gpio_dir(GOODIXGPIO, pad_dir_output);
 	gpio_write(GOODIXGPIO, 1);
 #endif
 
-	gpio_write(28, 1);
+	gpio_write(GPIO_SPIM_SS0, 1);
 
 #ifdef EVDEMO
 	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
@@ -112,7 +113,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	gpio_function(phost->Parameters.SpiCsPin, pad_spim_ss0); /* GPIO28 as CS */
 	gpio_write(phost->Parameters.SpiCsPin, 1);
 
-	gpio_function(phost->Parameters.PowerDownPin, pad_gpio43);
+	gpio_function(phost->Parameters.PowerDownPin, pad_pwd);
 	gpio_dir(phost->Parameters.PowerDownPin, pad_dir_output);
 
 	gpio_write(phost->Parameters.PowerDownPin, 1);
@@ -131,7 +132,7 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 {
 	phost->Status = EVE_STATUS_CLOSED;
 	--g_HalPlatform.OpenedDevices;
-	/* spi_close(SPIM,0); */
+	spi_close(SPIM, phost->Parameters.SpiCsPin);
 }
 
 /* Idle. Call regularly to update frequently changing internal state */
@@ -404,39 +405,23 @@ int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8
 uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 {
 	uint32_t t0, t1;
-	uint32_t addr = REG_CLOCK;
-	uint8_t spidata[4];
 	int32_t r = 15625;
 
 	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
 
 	__asm__(
-	    "   move.l  $r0,%0"
-	    "\n\t"
-	    "   mul.l   $r0,$r0,100"
-	    "\n\t"
-	    "1:"
-	    "\n\t"
-	    "   sub.l   $r0,$r0,3"
-	    "\n\t" /* Subtract the loop time = 4 cycles */
-	    "   cmp.l   $r0,0"
-	    "\n\t" /* Check that the counter is equal to 0 */
-	    "   jmpc    gt, 1b"
-	    "\n\t"
-	    /* Outputs */
-	    :
-	    /* Inputs */
-	    : "r"(r)
-	    /* Using */
-	    : "$r0"
-
-	);
-
-	//usleep(15625);
-	//EVE_sleep(15625);
+	    "   move.l  $r0,%0               \n\t"
+	    "   mul.l   $r0,$r0,100          \n\t"
+	    "1:                              \n\t"
+	    "   sub.l   $r0,$r0,3            \n\t" /* Subtract the loop time = 4 cycles */
+	    "   cmp.l   $r0,0                \n\t" /* Check that the counter is equal to 0 */
+	    "   jmpc    gt, 1b               \n\t"
+	    : /* Outputs */
+	    : "r"(r) /* Inputs */
+	    : "$r0"); /* Using */
 
 	t1 = EVE_Hal_rd32(phost, REG_CLOCK); /* t1 read */
-	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
+	return ((t1 - t0) << 6); /* bitshift 6 places is the same as multiplying 64 */
 }
 
 /*********
@@ -446,16 +431,8 @@ uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 static void initSdHost()
 {
 	sys_enable(sys_device_sd_card);
+	/* sdhost_sys_init(); */ /* TODO: This line is in latest hal. Verify. */
 	sdhost_init();
-
-#define GPIO_SD_CLK (19)
-#define GPIO_SD_CMD (20)
-#define GPIO_SD_DAT3 (21)
-#define GPIO_SD_DAT2 (22)
-#define GPIO_SD_DAT1 (23)
-#define GPIO_SD_DAT0 (24)
-#define GPIO_SD_CD (25)
-#define GPIO_SD_WP (26)
 
 	gpio_function(GPIO_SD_CLK, pad_sd_clk);
 	gpio_pull(GPIO_SD_CLK, pad_pull_none); // pad_pull_none
@@ -505,52 +482,53 @@ void EVE_Mcu_initialize()
 
 	interrupt_enable_globally();
 
-#ifndef EVDEMO
 	sys_enable(sys_device_uart0);
-	gpio_function(48, pad_uart0_txd); /* UART0 TXD */
-	gpio_function(49, pad_uart0_rxd); /* UART0 RXD */
+	gpio_function(GPIO_UART0_TX, pad_uart0_txd); /* UART0 TXD */
+	gpio_function(GPIO_UART0_RX, pad_uart0_rxd); /* UART0 RXD */
 	uart_open(UART0, /* Device */
 	    1, /* Prescaler = 1 */
 	    UART_DIVIDER_115200_BAUD, /* Divider = 1302 */
 	    uart_data_bits_8, /* No. Data Bits */
 	    uart_parity_none, /* Parity */
 	    uart_stop_bits_1); /* No. Stop Bits */
-#endif
 
 #if (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
 	/* asign all the respective pins to gpio and set them to default values */
-	gpio_function(34, pad_gpio34);
-	gpio_dir(34, pad_dir_output);
-	gpio_write(34, 1);
+	gpio_function(GPIO_ILI9488_DCX, pad_ili9488_dcx);
+	gpio_dir(GPIO_ILI9488_DCX, pad_dir_output);
+	gpio_write(GPIO_ILI9488_DCX, 1);
 
-	gpio_function(27, pad_gpio27);
-	gpio_dir(27, pad_dir_output);
-	gpio_write(27, 1);
+	gpio_function(GPIO_SPIM_CLK, pad_gpio_spim_sck);
+	gpio_dir(GPIO_SPIM_CLK, pad_dir_output);
+	gpio_write(GPIO_SPIM_CLK, 1);
 
-	gpio_function(29, pad_gpio29);
-	gpio_dir(29, pad_dir_output);
-	gpio_write(29, 1);
+	gpio_function(GPIO_SPIM_MOSI, pad_gpio_spim_mosi);
+	gpio_dir(GPIO_SPIM_MOSI, pad_dir_output);
+	gpio_write(GPIO_SPIM_MOSI, 1);
 
-	gpio_function(33, pad_gpio33);
-	gpio_dir(33, pad_dir_output);
-	gpio_write(33, 1);
+	gpio_function(GPIO_ILI9488_CS1, pad_ili9488_cs1);
+	gpio_dir(GPIO_ILI9488_CS1, pad_dir_output);
+	gpio_write(GPIO_ILI9488_CS1, 1);
 
-	gpio_function(30, pad_gpio30);
-	gpio_dir(30, pad_dir_output);
-	gpio_write(30, 1);
+	gpio_function(GPIO_SPIM_MISO, pad_gpio_spim_miso);
+	gpio_dir(GPIO_SPIM_MISO, pad_dir_output);
+	gpio_write(GPIO_SPIM_MISO, 1);
 
-	gpio_function(28, pad_gpio28);
-	gpio_dir(28, pad_dir_output);
-	gpio_write(28, 1);
+	gpio_function(GPIO_SPIM_SS0, pad_gpio_spim_ss0);
+	gpio_dir(GPIO_SPIM_SS0, pad_dir_output);
+	gpio_write(GPIO_SPIM_SS0, 1);
 
-	gpio_function(43, pad_gpio43);
-	gpio_dir(43, pad_dir_output);
-	gpio_write(43, 1);
-	gpio_write(34, 1);
-	gpio_write(28, 1);
-	gpio_write(43, 1);
-	gpio_write(33, 1);
-	gpio_write(33, 1);
+	gpio_function(GPIO_PWD, pad_pwd);
+	gpio_dir(GPIO_PWD, pad_dir_output);
+
+	gpio_write(FT800_PD_N, 1);
+
+	gpio_write(GPIO_ILI9488_DCX, 1);
+	gpio_write(GPIO_SPIM_SS0, 1);
+	gpio_write(GPIO_PWD, 1);
+	gpio_write(GPIO_ILI9488_CS1, 1);
+
+	gpio_write(GPIO_ILI9488_CS1, 1);
 #endif
 
 	initSdHost();
@@ -566,15 +544,16 @@ void EVE_Mcu_release()
 *********/
 
 /* Globals for interrupt implementation */
+#if !defined(EVE_MODULE_PANL)
 static uint32_t s_TotalMilliseconds = 0;
+#endif
 
 void EVE_Millis_initialize()
 {
-	s_TotalMilliseconds = 0;
 #if (defined(EVE_MODULE_PANL))
 	panl_timer_register_ms_callback(ticker);
 #else
-
+	s_TotalMilliseconds = 0;
 	sys_enable(sys_device_timer_wdt);
 	timer_prescaler(FT900_TIMER_PRESCALE_VALUE);
 	timer_init(FT900_FT_MILLIS_TIMER, FT900_TIMER_OVERFLOW_VALUE, timer_direction_up, timer_prescaler_select_on, timer_mode_continuous);
@@ -589,15 +568,17 @@ void EVE_Millis_initialize()
 
 void EVE_Millis_release()
 {
+#if !defined(EVE_MODULE_PANL)
 	timer_stop(FT900_FT_MILLIS_TIMER);
 	timer_disable_interrupt(FT900_FT_MILLIS_TIMER);
+#endif
 }
 
 /* Need to ensure that below api is called at least once in 6.5 seconds duration for FT900 platform as this module doesnt use timer for context update */
 /* global counter to loopback after ~49.71 days */
 uint32_t EVE_millis()
 {
-#if (defined(EVE_MODULE_PANL))
+#if defined(EVE_MODULE_PANL)
 	return panl_timer_get_time();
 #else
 	/* Interrupt implementation */
@@ -607,12 +588,14 @@ uint32_t EVE_millis()
 
 void ticker()
 {
+#if !defined(EVE_MODULE_PANL)
 	s_TotalMilliseconds += 1;
 
 	timer_disable_interrupt(FT900_FT_MILLIS_TIMER);
 	/* Clear the interrupt and increment the counter */
 	timer_is_interrupted(FT900_FT_MILLIS_TIMER);
 	timer_enable_interrupt(FT900_FT_MILLIS_TIMER);
+#endif
 }
 
 void EVE_sleep(uint32_t ms)
@@ -629,13 +612,18 @@ bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost)
 	/* Reconfigure the SPI */
 	// Initialize SPIM HW
 	sys_enable(sys_device_spi_master);
-	gpio_function(27, pad_spim_sck); /* GPIO27 to SPIM_CLK */
-	gpio_function(28, pad_spim_ss0); /* GPIO28 as CS */
-	gpio_function(29, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
-	gpio_function(30, pad_spim_miso); /* GPIO30 to SPIM_MISO */
+	gpio_function(GPIO_SPIM_CLK, pad_spim_sck); /* GPIO27 to SPIM_CLK */
+	gpio_function(GPIO_SPIM_SS0, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_function(GPIO_SPIM_MOSI, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
+	gpio_function(GPIO_SPIM_MISO, pad_spim_miso); /* GPIO30 to SPIM_MISO */
 
-	gpio_write(28, 1);
-	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
+	gpio_dir(GPIO_SPIM_CLK, pad_dir_output);
+	gpio_dir(GPIO_SPIM_SS0, pad_dir_output);
+	gpio_dir(GPIO_SPIM_MOSI, pad_dir_output);
+	gpio_dir(GPIO_SPIM_MISO, pad_dir_input);
+
+	gpio_write(GPIO_SPIM_SS0, 1);
+	spi_init(SPIM, spi_dir_master, spi_mode_0, 4); /* TODO: Latest HAL has 16 instead of 4, validate */
 
 	return true;
 }
@@ -657,16 +645,19 @@ bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost)
 
 bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost)
 {
+	/* TODO: This may need to be called in relation to setSPI instead */
+
 	/* Change clock frequency to 25mhz */
 	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
 
-#if (defined(ENABLE_SPI_QUAD))
+#if defined(ENABLE_SPI_DUAL) || defined(ENABLE_SPI_QUAD)
 	/* Initialize IO2 and IO3 pad/pin for dual and quad settings */
-	gpio_function(31, pad_spim_io2);
-	gpio_function(32, pad_spim_io3);
-	gpio_write(31, 1);
-	gpio_write(32, 1);
+	gpio_function(GPIO_SPIM_IO2, pad_spim_io2);
+	gpio_function(GPIO_SPIM_IO3, pad_spim_io3);
+	gpio_dir(GPIO_SPIM_IO2, pad_dir_output);
+	gpio_dir(GPIO_SPIM_IO3, pad_dir_output);
 #endif
+
 	/* Enable FIFO of QSPI */
 	spi_option(SPIM, spi_option_fifo_size, 64);
 	spi_option(SPIM, spi_option_fifo, 1);
@@ -683,6 +674,6 @@ bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost)
 	return true;
 }
 
-#endif /* #if defined(FT900_PLATFORM) */
+#endif /* #if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM) */
 
 /* end of file */

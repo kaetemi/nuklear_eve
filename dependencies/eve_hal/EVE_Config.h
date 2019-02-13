@@ -130,6 +130,7 @@ ESD_TARGET_PLATFORM(MM900EV1B, SupportedArchitectures = "\bFT32\b")
 ESD_TARGET_PLATFORM(MM900EV2A, SupportedArchitectures = "\bFT32\b")
 ESD_TARGET_PLATFORM(MM900EV3A, SupportedArchitectures = "\bFT32\b")
 ESD_TARGET_PLATFORM(MM900EV_LITE, DisplayName = "MM900EV-Lite", SupportedArchitectures = "\bFT32\b")
+ESD_TARGET_PLATFORM(MM930EV_LITE, DisplayName = "MM930EV-Lite", SupportedArchitectures = "\bFT32\b")
 ESD_TARGET_PLATFORM(EVE_PLATFORM_FT4222, DisplayName = "FT4222", Icon = ":/icons/terminal.png", SupportedArchitectures = "\bFT4222\b")
 ESD_TARGET_PLATFORM(EVE_PLATFORM_MPSSE, DisplayName = "MPSSE", Icon = ":/icons/terminal.png", SupportedArchitectures = "\bMPSSE\b")
 
@@ -222,7 +223,7 @@ Validate the configured options.
 #if defined(ESD_SIMULATION) || defined(EVE_PLATFORM_BT8XXEMU) \
     || defined(MM900EV1A) || defined(MM900EV1B)               \
     || defined(MM900EV2A) || defined(MM900EV3A)               \
-    || defined(MM900EV_LITE)                                  \
+    || defined(MM900EV_LITE) || defined(MM930EV_LITE)         \
     || defined(EVE_PLATFORM_FT4222) || defined(EVE_PLATFORM_MPSSE)
 #define EVE_PLATFORM_AVAILABLE
 #endif
@@ -355,6 +356,7 @@ It may also set platform, display, and flash values if none are configured.
 #ifndef EVE_PLATFORM_AVAILABLE
 #define EVE_PLATFORM_AVAILABLE
 #define FT900_PLATFORM
+#define EVE_MODULE_PANL
 #define malloc pvPortMalloc
 #define calloc vPortCalloc
 #define free vPortFree
@@ -375,6 +377,7 @@ It may also set platform, display, and flash values if none are configured.
 #ifndef EVE_PLATFORM_AVAILABLE
 #define EVE_PLATFORM_AVAILABLE
 #define FT900_PLATFORM
+#define EVE_MODULE_PANL
 #define malloc pvPortMalloc
 #define calloc vPortCalloc
 #define free vPortFree
@@ -395,6 +398,7 @@ It may also set platform, display, and flash values if none are configured.
 #ifndef EVE_PLATFORM_AVAILABLE
 #define EVE_PLATFORM_AVAILABLE
 #define FT900_PLATFORM
+#define EVE_MODULE_PANL
 #define malloc pvPortMalloc
 #define calloc vPortCalloc
 #define free vPortFree
@@ -615,10 +619,9 @@ These may only be set by one of the platform target definitions, and should not 
 
 #define FT900_PLATFORM
 
-#elif defined(EVE_MODULE_PANL)
+#elif defined(MM930EV_LITE)
 
-#define FT900_PLATFORM
-#define EVE_MODULE_PANL
+#define FT93X_PLATFORM
 
 #elif defined(EVE_PLATFORM_FT4222) || defined(EVE_PLATFORM_MPSSE)
 
@@ -639,7 +642,7 @@ These may only be set by one of the platform target definitions, and should not 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(FT900_PLATFORM)
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
 #define eve_progmem __flash__ const
 #define eve_progmem_const __flash__ const
 #else
@@ -670,6 +673,7 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 #undef EVE_FLASH_AVAILABLE
 #endif
 #if ((defined(FT900_PLATFORM) ? 1 : 0)      \
+    + (defined(FT93X_PLATFORM) ? 1 : 0)    \
     + (defined(FT4222_PLATFORM) ? 1 : 0)    \
     + (defined(MPSSE_PLATFORM) ? 1 : 0)     \
     + (defined(BT8XXEMU_PLATFORM) ? 1 : 0)) \
@@ -677,7 +681,7 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
                                                       "More than one platform has been selected")
 #endif
-#if (!defined(FT900_PLATFORM) && !defined(FT4222_PLATFORM) && !defined(MPSSE_PLATFORM) && !defined(BT8XXEMU_PLATFORM))
+#if (!defined(FT900_PLATFORM) && !defined(FT93X_PLATFORM) && !defined(FT4222_PLATFORM) && !defined(MPSSE_PLATFORM) && !defined(BT8XXEMU_PLATFORM))
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
                                                       "No platform was selected")
 #endif

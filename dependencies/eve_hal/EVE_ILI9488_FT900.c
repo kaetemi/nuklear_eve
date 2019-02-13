@@ -34,7 +34,7 @@
 */
 
 #include "EVE_Platform.h"
-#if defined(FT900_PLATFORM) \
+#if (defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)) \
     && (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
 
 //only write command

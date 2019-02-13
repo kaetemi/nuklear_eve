@@ -13,10 +13,7 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 #ifdef ESD_FONTINFO_DEBUG
 #define esd_resourceinfo_printf(fmt, ...) eve_printf(fmt, ##__VA_ARGS__)
 #else
-#define esd_resourceinfo_printf(fmt, ...) \
-	do                                    \
-	{                                     \
-	} while (false)
+#define esd_resourceinfo_printf(fmt, ...) eve_noop()
 #endif
 
 extern EVE_HalContext *Ft_Esd_Host;

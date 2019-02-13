@@ -27,114 +27,154 @@
 * distributed by that other user ("Adapted Software").  If so that user may
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
+
+Author : BRIDGETEK
+
+Revision History:
+0.1 - date 2013.04.24 - Initial version
+0.2 - date 2014.04.28 - Split in individual files according to platform
+1.0 - date 2014.11.24 - Addition of FT81X
+1.1 - date 2015.01.15 - Addition of module specific configurations switches. Especially for MM900 modules
+1.2 - data 2017.03.24 - Addition of GPIOs pin definitions
+
 */
 
 #ifndef EVE_PLATFORM_FT900__H
 #define EVE_PLATFORM_FT900__H
 
 #include "EVE_Config.h"
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
+
 #if defined(FT900_PLATFORM)
+
+#define GPIO_UART0_TX (48)
+#define GPIO_UART0_RX (49)
+
+#define GPIO_SPIM_CLK (27)
+#define GPIO_SPIM_SS0 (28)
+#define GPIO_SPIM_MOSI (29)
+#define GPIO_SPIM_MISO (30)
+
+#define GPIO_SPIM_IO2 (31)
+#define GPIO_SPIM_IO3 (32)
+
+#define GPIO_SPIM_SS1 (33)
+#define GPIO_SPIM_SS2 (34)
+
+#define GPIO_ILI9488_CS1 (33)
+#define GPIO_ILI9488_DCX (34)
+#define GPIO_PWD (43)
+
+#define pad_ili9488_dcx (pad_gpio34)
+#define pad_ili9488_cs1 (pad_gpio33)
+#define pad_pwd (pad_gpio43)
+
+#define GPIO_SD_CLK (19)
+#define GPIO_SD_CMD (20)
+#define GPIO_SD_DAT3 (21)
+#define GPIO_SD_DAT2 (22)
+#define GPIO_SD_DAT1 (23)
+#define GPIO_SD_DAT0 (24)
+#define GPIO_SD_CD (25)
+#define GPIO_SD_WP (26)
+
+#elif defined(FT93X_PLATFORM)
+
+#define GPIO_UART0_TX (23)
+#define GPIO_UART0_RX (22)
+
+#define GPIO_SPIM_CLK (34)
+#define GPIO_SPIM_SS0 (30)
+#define GPIO_SPIM_MOSI (36)
+#define GPIO_SPIM_MISO (35)
+
+#define GPIO_SPIM_IO2 (37)
+#define GPIO_SPIM_IO3 (38)
+
+#define GPIO_SPIM_SS1 (31)
+#define GPIO_SPIM_SS2 (32)
+#define GPIO_SPIM_SS3 (33)
+
+#define GPIO_ILI9488_CS1 (31)
+#define GPIO_ILI9488_DCX (8)
+#define GPIO_PWD (15)
+
+#define pad_ili9488_dcx (pad_gpio8)
+#define pad_ili9488_cs1 (pad_gpio31)
+#define pad_pwd (pad_gpio15)
+
+#define GPIO_SD_CLK (0)
+#define GPIO_SD_CMD (1)
+#define GPIO_SD_DAT3 (6)
+#define GPIO_SD_DAT2 (5)
+#define GPIO_SD_DAT1 (4)
+#define GPIO_SD_DAT0 (3)
+#define GPIO_SD_CD (2)
+#define GPIO_SD_WP (7)
+
+#endif
+
+/* Timer 1 is been utilized in case of FT900 platform */
+#define FT900_FT_MILLIS_TIMER (timer_select_b)
+#define FT900_TIMER_MAX_VALUE (65536L)
+#define FT900_TIMER_PRESCALE_VALUE (100)
+#define FT900_TIMER_OVERFLOW_VALUE (1000)
 
 /* Hardware or Module specific macros for gpio line numbers  */
 #if defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
-#define FT800_SEL_PIN (0)
-#define FT800_PD_N (43) //for mm900 module
 
-#define FT900_UART0_TX (48)
-#define FT900_UART0_RX (49)
+#define FT800_SEL_PIN (0) /* SPI Channel 0-3 */
+#define FT800_PD_N (43)
 
-/* Timer 1 is been utilized in case of FT900 platform */
-#define FT900_FT_MILLIS_TIMER (timer_select_b)
-#define FT900_TIMER_MAX_VALUE (65536L)
-#define FT900_TIMER_PRESCALE_VALUE (100)
-#define FT900_TIMER_OVERFLOW_VALUE (1000)
-#endif
+#elif defined(MM930EV_LITE)
 
-#if (defined(CLEO35))
+#define FT800_SEL_PIN (0) /* SPI Channel 0-7 */
+#define FT800_PD_N (15)
+
+#elif defined(CLEO35)
+
 #define FT800_SEL_PIN (0)
 #define FT800_PD_N (66) //for cleo35 module
 
-#define FT900_UART0_TX (48)
-#define FT900_UART0_RX (49)
+#elif defined(CLEO50)
 
-/* Timer 1 is been utilized in case of FT900 platform */
-#define FT900_FT_MILLIS_TIMER (timer_select_b)
-#define FT900_TIMER_MAX_VALUE (65536L)
-#define FT900_TIMER_PRESCALE_VALUE (100)
-#define FT900_TIMER_OVERFLOW_VALUE (1000)
-#endif
-
-#ifdef CLEO50
 #define FT800_SEL_PIN (0)
 #define FT800_PD_N (0) //for cleo50 module
 
-#define FT900_UART0_TX (48)
-#define FT900_UART0_RX (49)
+#elif defined(FT900DEMOBOARD)
 
-/* Timer 1 is been utilized in case of FT900 platform */
-#define FT900_FT_MILLIS_TIMER (timer_select_b)
-#define FT900_TIMER_MAX_VALUE (65536L)
-#define FT900_TIMER_PRESCALE_VALUE (100)
-#define FT900_TIMER_OVERFLOW_VALUE (1000)
-#endif
-
-#ifdef FT900DEMOBOARD
 #define FT800_SEL_PIN (0)
 #define FT800_PD_N (32)
 
-#define FT900_UART0_TX (48)
-#define FT900_UART0_RX (49)
+#elif defined(PANL35)
 
-/* Timer 1 is been utilized in case of FT900 platform */
-#define FT900_FT_MILLIS_TIMER (timer_select_b)
-#define FT900_TIMER_MAX_VALUE (65536L)
-#define FT900_TIMER_PRESCALE_VALUE (100)
-#define FT900_TIMER_OVERFLOW_VALUE (1000)
-#endif
-
-#ifdef PANL35
 #define FT800_SEL_PIN 0
 #define FT800_PD_N 1
 #define FT800_INT 0
 
-/* Timer 1 is been utilized in case of FT900 platform */
-#define FT900_FT_MILLIS_TIMER (timer_select_b)
-#define FT900_TIMER_MAX_VALUE (65536L)
-#define FT900_TIMER_PRESCALE_VALUE (100)
-#define FT900_TIMER_OVERFLOW_VALUE (1000)
-#endif
+#elif defined(PANL70)
 
-#ifdef PANL70
 #define FT800_SEL_PIN 0
 #define FT800_PD_N 1
 #define FT800_INT 0
 #define GOODIXGPIO (33)
+#define pad_pwd (pad_gpio15)
 
-/* Timer 1 is been utilized in case of FT900 platform */
-#define FT900_FT_MILLIS_TIMER (timer_select_b)
-#define FT900_TIMER_MAX_VALUE (65536L)
-#define FT900_TIMER_PRESCALE_VALUE (100)
-#define FT900_TIMER_OVERFLOW_VALUE (1000)
-#endif //PANL70
+#elif defined(PANL70PLUS)
 
-#ifdef PANL70PLUS
 #define FT800_SEL_PIN 0
 #define FT800_PD_N 1
 #define FT800_INT 0
 #define GOODIXGPIO (33)
+#define pad_goodixgpio (pad_gpio33)
 
-/* Timer 1 is been utilized in case of FT900 platform */
-#define FT900_FT_MILLIS_TIMER (timer_select_b)
-#define FT900_TIMER_MAX_VALUE (65536L)
-#define FT900_TIMER_PRESCALE_VALUE (100)
-#define FT900_TIMER_OVERFLOW_VALUE (1000)
-#endif //PANL70PLUS
+#endif
 
 #ifndef RTC_PRESENT
 #ifdef FT900_PLATFORM_RTC_I2C
 #define RTC_PRESENT (1)
 #endif
-#endif /*RTC_PRESENT*/
+#endif /* RTC_PRESENT */
 
 /* Standard C libraries */
 #define ESD_USING_NEW_LIB // Using NewLib C Library for runtime

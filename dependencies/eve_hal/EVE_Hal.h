@@ -105,11 +105,11 @@ typedef struct EVE_HalParameters
 	uint8_t MpsseChannelNo; /* MPSSE channel number */
 #endif
 
-#if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM)
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM) || defined(FT4222_PLATFORM)
 	uint8_t SpiCsPin; /* SPI chip select number of FT8XX chip */
 #endif
 
-#if defined(FT900_PLATFORM) || defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM) || defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
 	uint8_t PowerDownPin; /* FT8XX power down pin number */
 #endif
 

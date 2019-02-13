@@ -52,7 +52,7 @@ Main file to include the EVE HAL in your applications.
 #if defined(MPSSE_PLATFORM)
 #include "EVE_Platform_MPSSE.h"
 #endif
-#if defined(FT900_PLATFORM)
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
 #include "EVE_Platform_FT900.h"
 #endif
 #include "EVE_GpuTypes.h"
