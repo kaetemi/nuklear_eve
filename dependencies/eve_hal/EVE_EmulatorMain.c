@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 #endif
 #if !defined(ESD_SIMULATION)
 #pragma warning(push)
-#pragma warning(disable: 4996)
+#pragma warning(disable : 4996)
 	wcscpy(flashParams.DataFilePath, L"__Flash.bin");
 #pragma warning(pop)
 	// flashParams.Persistent = true; // For test purpose

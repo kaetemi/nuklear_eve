@@ -26,7 +26,7 @@ ft_void_t Ft_Esd_Render_RectangleF_Gradient(
 ft_void_t Ft_Esd_Render_RectangleF(ft_int32_f4_t x, ft_int32_f4_t y, ft_int32_f4_t w, ft_int32_f4_t h, ft_int32_f4_t radius, ft_argb32_t color)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
-	ft_int32_t width = radius;
+	ft_int32_t width = radius + 8;
 	ft_int32_t x0 = x + radius;
 	ft_int32_t y0 = y + radius;
 	ft_int32_t x1 = x + w - 16 - radius;

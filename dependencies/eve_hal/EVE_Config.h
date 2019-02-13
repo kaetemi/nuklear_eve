@@ -658,15 +658,15 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 /// Configuration sanity checks
 #if !defined(EVE_MODEL)
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_MODEL: " \
-                                                        "No EVE device model has been selected")
+                                                      "No EVE device model has been selected")
 #endif
 #if !defined(EVE_DISPLAY_AVAILABLE)
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_DISPLAY_AVAILABLE: " \
-                                                        "No display model has been selected")
+                                                      "No display model has been selected")
 #endif
 #if !defined(EVE_SUPPORT_FLASH) && defined(EVE_FLASH_AVAILABLE)
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning EVE_FLASH_AVAILABLE: " \
-                                                        "Cannot enable flash on EVE model which doesn't support flash")
+                                                      "Cannot enable flash on EVE model which doesn't support flash")
 #undef EVE_FLASH_AVAILABLE
 #endif
 #if ((defined(FT900_PLATFORM) ? 1 : 0)      \
@@ -675,11 +675,11 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
     + (defined(BT8XXEMU_PLATFORM) ? 1 : 0)) \
     > 1
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
-                                                        "More than one platform has been selected")
+                                                      "More than one platform has been selected")
 #endif
 #if (!defined(FT900_PLATFORM) && !defined(FT4222_PLATFORM) && !defined(MPSSE_PLATFORM) && !defined(BT8XXEMU_PLATFORM))
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
-                                                        "No platform was selected")
+                                                      "No platform was selected")
 #endif
 
 #endif /* EVE_CONFIG_H */
