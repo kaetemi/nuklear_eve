@@ -346,6 +346,12 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	EVE_sleep(100);
 
 #ifdef EVE_HAS_OTP
+	/* Clear cmd with CMD_STOP, exiting CMD_EXECUTE may loop over, depending on OTP */
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD);
+	for (int i = 0; i < 4096; i += 4)
+		EVE_Hal_transfer32(phost, CMD_STOP);
+	EVE_Hal_endTransfer(phost);
+
 	/* Go back into the patched coprocessor main loop */
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_EXECUTE);
@@ -354,8 +360,8 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	EVE_Cmd_endFunc(phost);
 
 	/* Can't know for sure when CMD_EXECUTE is processed,
-	since the read pointer remains at 0 */
-	EVE_sleep(10);
+	since the read pointer remains at 0 when there's an OTP */
+	EVE_sleep(100);
 
 	/* Need to manually stop previous command from repeating infinitely */
 	EVE_Hal_wr32(phost, REG_CMD_WRITE, 0);
@@ -372,9 +378,9 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	EVE_Hal_wr16(phost, EVE_VIDEOPATCH_ADDR, videoPatchVector);
 #endif
 
-	/* Start display list from beginning.
-	Allows us to detect that the coprocessor is ready. */
+	/* Cold start. Ensure that the coprocessor is ready. */
 	EVE_Cmd_wr32(phost, CMD_DLSTART);
+	EVE_Cmd_wr32(phost, CMD_COLDSTART);
 
 #ifdef EVE_FLASH_AVAILABLE
 	/* Reattach flash to avoid inconsistent state */
