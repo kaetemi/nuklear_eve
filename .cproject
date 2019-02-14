@@ -17,10 +17,10 @@
 				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.debug.1866498756" name="Debug" parent="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.debug">
 					<folderInfo id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.debug.1866498756." name="/" resourcePath="">
 						<toolChain id="com.ftdichip.managedbuild.gnu.cross.ft90x.toolchain.exe.debug.340330192" name="FTDIchip FT90x GCC" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.toolchain.exe.debug">
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash.11276562" name="Create Flash Image" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize.1989528252" name="Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize" value="true" valueType="boolean"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix.304329001" name="Target Prefix" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix" value="ft32-elf-" valueType="string"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path.2058073457" name="Toolchain Path" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path" value="C:/Program Files (x86)/FTDI/FT90x Toolchain/Toolchain/tools/bin" valueType="string"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash.11276562" name="Create Flash Image" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash" useByScannerDiscovery="false"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize.1989528252" name="Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix.304329001" name="Target Prefix" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix" useByScannerDiscovery="true" value="ft32-elf-" valueType="string"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path.2058073457" name="Toolchain Path" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path" useByScannerDiscovery="true" value="C:/Program Files (x86)/FTDI/FT90x Toolchain/Toolchain/tools/bin" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.ftdichip.managedbuild.targetPlatform.gnu.cross.ft90x.235980793" isAbstract="false" osList="all" superClass="com.ftdichip.managedbuild.targetPlatform.gnu.cross.ft90x"/>
 							<builder buildPath="${workspace_loc:/Eclipse}/Debug" id="com.ftdichip.managedbuild.gnu.cross.ft90x.builder.2112176701" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.builder"/>
 							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.1595504115" name="FT90x GCC Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler">
@@ -112,6 +112,20 @@
 							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.printsize.507442448" name="FT90x Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.printsize.627385988"/>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.debug.1866498756.1443412621" name="nuklear_eve.c" rcbsApplicability="disable" resourcePath="src/nuklear_eve.c" toolsToInvoke="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.1595504115.1550316800">
+						<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.1595504115.1550316800" name="FT90x GCC Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.1595504115">
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.level.558807487" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+							<option id="gnu.c.compiler.option.dialect.std.317950137" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.optimization.flags.345191239" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.optimization.flags" useByScannerDiscovery="false" value="-Os" valueType="string"/>
+							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.54233577" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+						</tool>
+						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1271834897" name="Resource Custom Build Step">
+							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.724809416" name="Resource Custom Build Step Input Type">
+								<additionalInput kind="additionalinputdependency" paths=""/>
+							</inputType>
+							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.292162534" name="Resource Custom Build Step Output Type"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding="dependencies/bt8xxemu|dependencies/nuklear/src|dependencies/nuklear/extra_font|dependencies/nuklear/example|dependencies/nuklear/doc|dependencies/nuklear/demo|dependencies/mpsse_spi|dependencies/ftd2xx|dependencies/ft4222|build_*|Debug|Release|CMake" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
@@ -135,10 +149,10 @@
 				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.CWDLocator;org.eclipse.cdt.core.GCCErrorParser" id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.release.2037371586" name="Release" parent="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.release" postannouncebuildStep="" postbuildStep="" preannouncebuildStep="" prebuildStep="">
 					<folderInfo id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.release.2037371586." name="/" resourcePath="">
 						<toolChain errorParsers="" id="com.ftdichip.managedbuild.gnu.cross.ft90x.toolchain.exe.release.1203981358" name="FTDIchip FT90x GCC" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.toolchain.exe.release">
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash.215119174" name="Create Flash Image" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize.395204212" name="Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize" value="true" valueType="boolean"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix.1070140087" name="Target Prefix" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix" value="ft32-elf-" valueType="string"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path.1818661340" name="Toolchain Path" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path" value="C:/Program Files (x86)/FTDI/FT90x Toolchain/Toolchain/tools/bin" valueType="string"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash.215119174" name="Create Flash Image" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash" useByScannerDiscovery="false"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize.395204212" name="Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix.1070140087" name="Target Prefix" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix" useByScannerDiscovery="true" value="ft32-elf-" valueType="string"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path.1818661340" name="Toolchain Path" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path" useByScannerDiscovery="true" value="C:/Program Files (x86)/FTDI/FT90x Toolchain/Toolchain/tools/bin" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.ftdichip.managedbuild.targetPlatform.gnu.cross.ft90x.1179904067" isAbstract="false" osList="all" superClass="com.ftdichip.managedbuild.targetPlatform.gnu.cross.ft90x"/>
 							<builder buildPath="${workspace_loc:/Eclipse}/Release" errorParsers="org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.CWDLocator" id="com.ftdichip.managedbuild.gnu.cross.ft90x.builder.1025475300" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.builder"/>
 							<tool command="gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.2109780649" name="FT90x GCC Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler">
@@ -206,8 +220,21 @@
 							<tool command="size" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="" id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.printsize.1936370767" name="FT90x Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.printsize"/>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.release.2037371586.196674605" name="nuklear_eve.c" rcbsApplicability="disable" resourcePath="src/nuklear_eve.c" toolsToInvoke="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.2109780649.1777295583">
+						<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.2109780649.1777295583" name="FT90x GCC Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.2109780649">
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.other.1083514953" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -ffunction-sections -Wno-unused-variable" valueType="string"/>
+							<option id="gnu.c.compiler.option.dialect.std.2061410770" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.705914069" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+						</tool>
+						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1619601637" name="Resource Custom Build Step">
+							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1995190830" name="Resource Custom Build Step Input Type">
+								<additionalInput kind="additionalinputdependency" paths=""/>
+							</inputType>
+							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.456070286" name="Resource Custom Build Step Output Type"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="dependencies/bt8xxemu|dependencies/nuklear/src|dependencies/nuklear/extra_font|dependencies/nuklear/example|dependencies/nuklear/doc|dependencies/nuklear/demo|dependencies/mpsse_spi|dependencies/ftd2xx|dependencies/ft4222" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="CMake|dependencies/bt8xxemu|dependencies/nuklear/src|dependencies/nuklear/extra_font|dependencies/nuklear/example|dependencies/nuklear/doc|dependencies/nuklear/demo|dependencies/mpsse_spi|dependencies/ftd2xx|dependencies/ft4222|Debug|Release|build_*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

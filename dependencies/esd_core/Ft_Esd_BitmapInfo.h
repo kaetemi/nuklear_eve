@@ -148,7 +148,7 @@ void Ft_Esd_BitmapPersist(Ft_Esd_BitmapCell bitmapCell);
 /// A function to get bitmap information structure from bitmap cell
 ESD_FUNCTION(Ft_Esd_BitmapCell_GetInfo, Type = Ft_Esd_BitmapInfo *, DisplayName = "ESD BitmapCell GetInfo", Category = EsdUtilities, Inline)
 ESD_PARAMETER(bitmapCell, Type = Ft_Esd_BitmapCell)
-static Ft_Esd_BitmapInfo *Ft_Esd_BitmapCell_GetInfo(Ft_Esd_BitmapCell bitmapCell)
+static inline Ft_Esd_BitmapInfo *Ft_Esd_BitmapCell_GetInfo(Ft_Esd_BitmapCell bitmapCell)
 {
 	return bitmapCell.Info;
 }

@@ -30,8 +30,18 @@ TODO:
 
 */
 
+#include "EVE_Config.h"
 #define NK_IMPLEMENTATION
 #define NK_EVE_IMPLEMENTATION
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
+#define NK_MEMSET memset
+#define NK_MEMCPY memcpy
+#define NK_SQRT sqrtf
+#define NK_SIN sinf
+#define NK_COS cosf
+#define NK_STRTOD strtod
+#define NK_VSNPRINTF vsnprintf
+#endif
 #include "nuklear_eve.h"
 
 #include "Ft_Esd_Core.h"
@@ -278,11 +288,6 @@ nk_eve_rect_multi_color(EVE_HalContext *phost, short x, short y, unsigned short 
     unsigned short h, struct nk_color left, struct nk_color top,
     struct nk_color right, struct nk_color bottom)
 {
-    Ft_Esd_Rect16 rect;
-    rect.X = x;
-    rect.Y = y;
-    rect.Width = w;
-    rect.Height = h;
     Esd_Render_MultiGradient(x, y, w, h,
         ESD_COMPOSE_ARGB8888(left.r, left.g, left.b, left.a),
         ESD_COMPOSE_ARGB8888(top.r, top.g, top.b, top.a),
@@ -544,14 +549,6 @@ nk_eve_draw_image(EVE_HalContext *phost, short x, short y, unsigned short w, uns
 {
     /* ... TODO ... */
     nk_eve_placeholder(phost, x, y, w, h, col);
-}
-
-static void
-nk_eve_clear(EVE_HalContext *phost, struct nk_color col)
-{
-    Esd_Dl_CLEAR_COLOR_RGB((((col.r) & 255UL) << 16) | (((col.g) & 255UL) << 8) | ((col.b) & 255UL));
-    Esd_Dl_CLEAR_COLOR_A(col.a);
-    Esd_Dl_CLEAR(1, 1, 1);
 }
 
 static void
