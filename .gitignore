@@ -60,3 +60,5 @@ distribution/*
 distribution_*
 deployment/*
 deployment_*
+/Debug/
+/Release/
