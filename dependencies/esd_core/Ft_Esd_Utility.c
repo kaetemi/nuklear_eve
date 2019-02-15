@@ -97,10 +97,7 @@ void Esd_AttachFlashFast()
 	}
 }
 #else
-#define Esd_AttachFlashFast() \
-	do                        \
-	{                         \
-	} while (false)
+#define Esd_AttachFlashFast() eve_noop()
 #endif
 
 void Esd_BeginLogo()

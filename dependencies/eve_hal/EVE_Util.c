@@ -149,7 +149,8 @@ void EVE_Util_clearScreen(EVE_HalContext *phost)
 bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 {
 	EVE_HalParameters *parameters = &phost->Parameters;
-	uint8_t chipid;
+	uint16_t chipId;
+	uint8_t id;
 	uint8_t engine_status;
 
 	EVE_Hal_powerCycle(phost, true);
@@ -172,15 +173,24 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	EVE_Hal_hostCommand(phost, EVE_ACTIVE_M);
 	EVE_sleep(300);
 
-	/* Read Register ID to check if EVE is ready. */
-	chipid = EVE_Hal_rd8(phost, REG_ID);
-	while (chipid != 0x7C)
+	/* Validate chip ID to ensure the correct HAL is used */
+	/* ROM_CHIPID is valid accross all EVE devices */
+	while ((chipId = EVE_Hal_rd16(phost, ROM_CHIPID)) != ((EVE_MODEL >> 8) | ((EVE_MODEL & 0xFF) << 8)))
 	{
-		chipid = EVE_Hal_rd8(phost, REG_ID);
-		eve_printf_debug("EVE register ID after wake up %x\n", chipid);
+		eve_printf_debug("Mismatching EVE chip id %x, expect model %x\n", (chipId >> 8) | ((chipId & 0xFF) << 8), EVE_MODEL);
+		EVE_sleep(300);
+	}
+	eve_printf_debug("EVE chip id %x\n", (chipId >> 8) | ((chipId & 0xFF) << 8));
+
+	/* Read Register ID to check if EVE is ready. */
+	id = EVE_Hal_rd8(phost, REG_ID);
+	while (id != 0x7C)
+	{
+		id = EVE_Hal_rd8(phost, REG_ID);
+		eve_printf_debug("EVE register ID after wake up %x\n", id);
 		EVE_sleep(100);
 	}
-	eve_printf_debug("EVE register ID after wake up %x\n", chipid);
+	eve_printf_debug("EVE register ID after wake up %x\n", id);
 
 #if !defined(BT8XXEMU_PLATFORM) /* TODO: Can the emulator handle this? */
 #if (EVE_MODEL == EVE_FT811) || (EVE_MODEL == EVE_FT813)

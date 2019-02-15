@@ -56,6 +56,8 @@ due to conflicts with other libraries.
 #undef POINTS
 #endif
 
+#define ROM_CHIPID 786432UL
+
 #if defined(BT_81X_ENABLE)
 
 #define RAM_G_SIZE (1024 * 1024L)
@@ -507,7 +509,6 @@ ESD_END()
 #define REPLACE 2UL
 #define RGB332 4UL
 #define RGB565 7UL
-#define ROM_CHIPID 786432UL
 #define SRC_ALPHA 2UL
 #define SS_A0 19UL
 #define SS_A1 20UL
