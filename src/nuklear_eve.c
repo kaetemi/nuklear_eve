@@ -42,6 +42,9 @@ TODO:
 #define NK_COS cosf
 #define NK_STRTOD strtod
 #define NK_VSNPRINTF vsnprintf
+/* FT900 requires fixed memory, due to memory capacity limitations */
+/* 12k seems to generally stay below the display list limit, as well */
+#define NK_EVE_MEMORY_SIZE 12 * 1024
 #endif
 #include "nuklear_eve.h"
 
@@ -53,6 +56,10 @@ static struct
     struct nk_context ctx;
     Esd_Context ec;
     Ft_Esd_Rect16 scissor;
+#if defined(NK_EVE_MEMORY_SIZE)
+    uint8_t mem[NK_EVE_MEMORY_SIZE];
+#endif
+
 } eve;
 
 struct nk_evefont
@@ -766,7 +773,11 @@ nk_eve_init(struct nk_evefont *evefont)
 {
     Esd_Parameters ep;
     struct nk_user_font *font = &evefont->nk;
+#if defined(NK_EVE_MEMORY_SIZE)
+    nk_init_fixed(&eve.ctx, &eve.mem, sizeof(eve.mem), font);
+#else
     nk_init_default(&eve.ctx, font);
+#endif
     Esd_Defaults(&ep);
     ep.Start = nk_eve_cb_start;
     ep.Update = nk_eve_cb_update;
