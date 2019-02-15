@@ -423,6 +423,7 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 		uint16_t sizeTransferred;
 		uint8_t hrdpkt[8] = { 0 }; // 3 byte addr + 2 or 1 byte dummy
 		uint32_t addr = phost->SpiRamGAddr;
+		eve_assert(!(addr & 0x3));
 
 		/* Compose the HOST MEMORY READ packet */
 		hrdpkt[0] = (uint8_t)(addr >> 16) & 0xFF;
