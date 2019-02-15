@@ -218,19 +218,19 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	{
 		if (engine_status & 0x01)
 		{
-			eve_printf_debug("coprocessor engine is not ready\n");
+			eve_printf_debug("Coprocessor engine is not ready\n");
 		}
 		if (engine_status & 0x02)
 		{
-			eve_printf_debug("touch engine is not ready\n");
+			eve_printf_debug("Touch engine is not ready\n");
 		}
 		if (engine_status & 0x04)
 		{
-			eve_printf_debug("audio engine is not ready\n");
+			eve_printf_debug("Audio engine is not ready\n");
 		}
 
-		engine_status = EVE_Hal_rd8(phost, REG_CPURESET);
 		EVE_sleep(100);
+		engine_status = EVE_Hal_rd8(phost, REG_CPURESET);
 	}
 	eve_printf_debug("All engines are ready\n");
 
@@ -286,8 +286,18 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	eve_printf_debug("after ILI9488 bootup\n");
 #endif
 
-	EVE_UtilImpl_prepareSpiMaster(phost);
+	/* Refresh fifo */
+	EVE_Cmd_wp(phost);
+	EVE_Cmd_rp(phost);
+	EVE_Cmd_space(phost);
 
+	/* Wait for coprocessor ready */
+	eve_printf_debug("Check coprocessor\n");
+	EVE_Cmd_wr32(phost, CMD_COLDSTART);
+	EVE_Cmd_waitFlush(phost);
+
+	/* Switch to configured default SPI channel mode */
+	EVE_UtilImpl_prepareSpiMaster(phost);
 #if (EVE_MODEL >= EVE_FT810)
 	/* api to set quad and numbe of dummy bytes */
 #ifdef ENABLE_SPI_QUAD
@@ -298,7 +308,6 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	EVE_Hal_setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 #endif
 #endif
-
 	return EVE_UtilImpl_postBootupConfig(phost);
 }
 
