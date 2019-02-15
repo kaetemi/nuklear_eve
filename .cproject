@@ -87,36 +87,11 @@
 							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.printsize.627385988" name="FT90x Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.printsize"/>
 						</toolChain>
 					</folderInfo>
-					<folderInfo id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.debug.1866498756.2120677443" name="/" resourcePath="build_eclipse">
-						<toolChain id="com.ftdichip.managedbuild.gnu.cross.ft90x.toolchain.exe.debug.2089458295" name="FTDIchip FT90x GCC" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.toolchain.exe.debug" unusedChildren="">
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash.11276562.1084597033" name="Create Flash Image" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.createflash.11276562"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize.1989528252.1859791417" name="Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.printsize.1989528252"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix.304329001.878989333" name="Target Prefix" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.prefix.304329001"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path.2058073457.376499535" name="Toolchain Path" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.option.path.2058073457"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.ftdichip.managedbuild.targetPlatform.gnu.cross.ft90x" isAbstract="false" osList="all" superClass="com.ftdichip.managedbuild.targetPlatform.gnu.cross.ft90x"/>
-							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.83887130" name="FT90x GCC Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.1595504115">
-								<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.other.2009011016" name="Other debugging flags" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.other" value="-fvar-tracking -fvar-tracking-assignments" valueType="string"/>
-								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1581631841" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
-							</tool>
-							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.cpp.compiler.2061653753" name="FT90x G++ Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.cpp.compiler.194337017">
-								<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.cpp.compiler.option.debugging.level.2037330119" name="Debug Level" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.cpp.compiler.option.debugging.level"/>
-								<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.cpp.compiler.option.debugging.other.703703615" name="Other debugging flags" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.cpp.compiler.option.debugging.other" value="-fvar-tracking -fvar-tracking-assignments" valueType="string"/>
-							</tool>
-							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.linker.1851197663" name="FT90x GCC Linker" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.linker.1781103590"/>
-							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.cpp.linker.538048428" name="FT90x G++ Linker" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.cpp.linker.1505516647"/>
-							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.archiver.83614940" name="FT90x GCC Archiver" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.archiver.1363491882"/>
-							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.assembler.1708390910" name="FT90x GCC Assembler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.assembler.1648188666">
-								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2064198136" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
-							</tool>
-							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.createflash.1633669014" name="FT90x Flash File Generator" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.createflash.947201630"/>
-							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.printsize.507442448" name="FT90x Display Image Size" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.printsize.627385988"/>
-						</toolChain>
-					</folderInfo>
 					<fileInfo id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.debug.1866498756.1443412621" name="nuklear_eve.c" rcbsApplicability="disable" resourcePath="src/nuklear_eve.c" toolsToInvoke="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.1595504115.1550316800">
 						<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.1595504115.1550316800" name="FT90x GCC Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.1595504115">
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.level.558807487" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
-							<option id="gnu.c.compiler.option.dialect.std.317950137" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.optimization.flags.345191239" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.optimization.flags" useByScannerDiscovery="false" value="-Os" valueType="string"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.level.558807487" name="Debug Level" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.default" valueType="enumerated"/>
+							<option id="gnu.c.compiler.option.dialect.std.317950137" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.optimization.flags.345191239" name="Other optimization flags" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.optimization.flags" useByScannerDiscovery="false" value="-Os" valueType="string"/>
 							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.54233577" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 						</tool>
 						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1271834897" name="Resource Custom Build Step">
@@ -222,8 +197,8 @@
 					</folderInfo>
 					<fileInfo id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.release.2037371586.196674605" name="nuklear_eve.c" rcbsApplicability="disable" resourcePath="src/nuklear_eve.c" toolsToInvoke="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.2109780649.1777295583">
 						<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.2109780649.1777295583" name="FT90x GCC Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.c.compiler.2109780649">
-							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.other.1083514953" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -ffunction-sections -Wno-unused-variable" valueType="string"/>
-							<option id="gnu.c.compiler.option.dialect.std.2061410770" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+							<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.other.1083514953" name="Other flags" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -ffunction-sections -Wno-unused-variable" valueType="string"/>
+							<option id="gnu.c.compiler.option.dialect.std.2061410770" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
 							<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.705914069" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 						</tool>
 						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1619601637" name="Resource Custom Build Step">
