@@ -1,6 +1,6 @@
 
 FILE(GLOB SRCS *.c ../src/*.c)
-FILE(GLOB HDRS *.h ../src/*.h)
+FILE(GLOB HDRS *.h ../src/*.h ../dependencies/nuklear/*.h)
 SOURCE_GROUP("" FILES ${SRCS} ${HDRS})
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src")

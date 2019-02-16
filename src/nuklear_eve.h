@@ -18,7 +18,7 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 /* #define NK_IMPLEMENTATION */
 /* #define NK_EVE_IMPLEMENTATION */
 #pragma warning(push)
-#pragma warning(disable: 4996)
+#pragma warning(disable : 4996)
 #include "nuklear.h"
 #pragma warning(pop)
 

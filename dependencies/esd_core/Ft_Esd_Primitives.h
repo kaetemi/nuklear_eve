@@ -75,14 +75,14 @@ ft_void_t Esd_Render_MultiGradient_Rounded(ft_int16_t x, ft_int16_t y, ft_int16_
 ft_void_t Esd_Render_Circle_Stroke(
     ft_int32_f4_t x, ft_int32_f4_t y,
     ft_int32_f4_t radius, ft_int32_f4_t border,
-    ft_argb32_t color);
+    uint8_t stroke, ft_argb32_t color);
 
 // Rect stroke
 ft_void_t Esd_Render_Rect_Stroke(
     ft_int32_f4_t x, ft_int32_f4_t y,
     ft_int32_f4_t width, ft_int32_f4_t height,
     ft_int32_f4_t radius, ft_int32_f4_t border,
-    ft_argb32_t color);
+    uint8_t stroke, ft_argb32_t color);
 
 // Basic bitmap rendering
 ESD_RENDER(Ft_Esd_Render_Bitmap, Type = ft_void_t, DisplayName = "ESD Bitmap", Category = EsdPrimitives, Icon = ":/icons/image.png", Include = "FT_Esd_Primitives.h")
@@ -256,6 +256,13 @@ ESD_ENUM(Esd_Scaling, Type = ft_uint8_t)
 #define ESD_SCALING_FILL (1) // Keep Aspect ratio, extend outside rect
 #define ESD_SCALING_FIT (2) // Keep Aspect ratio, stay inside rect
 #define ESD_SCALING_STRETCH (3)
+ESD_END()
+
+ESD_ENUM(Esd_Stroke, Type = ft_uint8_t)
+#define ESD_STROKE_NONE (0)
+#define ESD_STROKE_INNER (1)
+#define ESD_STROKE_OUTER (2)
+#define ESD_STROKE_CENTER (3)
 ESD_END()
 
 #endif /* #ifndef FT_ESD_PRIMITIVES_H */

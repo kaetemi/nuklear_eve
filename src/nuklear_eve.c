@@ -260,7 +260,7 @@ nk_eve_stroke_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
     Esd_Render_Rect_Stroke(
         ((int)x << 4) - offset, ((int)y << 4) - offset,
         ((int)w << 4) + (offset << 1), ((int)h << 4) + (offset << 1),
-        (int)r << 4, (int)line_thickness << 4,
+        (int)r << 4, (int)line_thickness << 4, ESD_STROKE_CENTER,
         ESD_COMPOSE_ARGB8888(col.r, col.g, col.b, col.a));
 }
 
@@ -492,7 +492,9 @@ nk_eve_stroke_circle(EVE_HalContext *phost, short x, short y, unsigned short w,
     int xc = ((int)x << 1) + (int)w - 1;
     int yc = ((int)y << 1) + (int)h - 1;
     int offset = (line_thickness & 1) ? 0 : 8;
-    Esd_Render_Circle_Stroke(xc << 3, yc << 3, r, ((int)line_thickness << 4) + offset, ESD_COMPOSE_ARGB8888(col.r, col.g, col.b, col.a));
+    Esd_Render_Circle_Stroke(xc << 3, yc << 3, r,
+        ((int)line_thickness << 4) + offset, ESD_STROKE_CENTER,
+        ESD_COMPOSE_ARGB8888(col.r, col.g, col.b, col.a));
 }
 
 static void

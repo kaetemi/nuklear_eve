@@ -6,7 +6,7 @@ ft_void_t Esd_Render_Rect_Stroke(
     ft_int32_f4_t x, ft_int32_f4_t y,
     ft_int32_f4_t width, ft_int32_f4_t height,
     ft_int32_f4_t radius, ft_int32_f4_t border,
-    ft_argb32_t color)
+    uint8_t stroke, ft_argb32_t color)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_int32_f4_t r = radius;
@@ -15,8 +15,26 @@ ft_void_t Esd_Render_Rect_Stroke(
 	ft_int32_f4_t x1 = x + width - 16 - radius;
 	ft_int32_f4_t y1 = y + height - 16 - radius;
 
-	ft_int32_f4_t innerRadius = r - (border >> 1);
-	ft_int32_f4_t outerRadius = innerRadius + border;
+	ft_int32_f4_t innerRadius; // = r - (border >> 1);
+	ft_int32_f4_t outerRadius; // = innerRadius + border;
+
+	switch (stroke)
+	{
+	case ESD_STROKE_NONE:
+		return;
+	case ESD_STROKE_INNER:
+		innerRadius = r - border;
+		outerRadius = r;
+		break;
+	case ESD_STROKE_OUTER:
+		innerRadius = r;
+		outerRadius = r + border;
+		break;
+	case ESD_STROKE_CENTER:
+		innerRadius = r - (border >> 1);
+		outerRadius = innerRadius + border;
+		break;
+	}
 
 	if (innerRadius < 16)
 	{

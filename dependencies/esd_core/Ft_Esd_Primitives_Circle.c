@@ -5,12 +5,30 @@
 ft_void_t Esd_Render_Circle_Stroke(
     ft_int32_f4_t x, ft_int32_f4_t y,
     ft_int32_f4_t radius, ft_int32_f4_t border,
-    ft_argb32_t color)
+    uint8_t stroke, ft_argb32_t color)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_int32_f4_t r = radius;
-	ft_int32_f4_t innerRadius = r - (border >> 1);
-	ft_int32_f4_t outerRadius = innerRadius + border;
+	ft_int32_f4_t innerRadius;
+	ft_int32_f4_t outerRadius;
+
+	switch (stroke)
+	{
+	case ESD_STROKE_NONE:
+		return;
+	case ESD_STROKE_INNER:
+		innerRadius = r - border;
+		outerRadius = r;
+		break;
+	case ESD_STROKE_OUTER:
+		innerRadius = r;
+		outerRadius = r + border;
+		break;
+	case ESD_STROKE_CENTER:
+		innerRadius = r - (border >> 1);
+		outerRadius = innerRadius + border;
+		break;
+	}
 
 	// Use local rendering context, bypass ESD display list functions.
 	Esd_Dl_BEGIN(POINTS);
