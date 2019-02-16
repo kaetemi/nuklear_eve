@@ -169,24 +169,30 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 /* Begin writing a function, keeps the transfer open */
 void EVE_Cmd_startFunc(EVE_HalContext *phost)
 {
+	eve_assert(!phost->CmdWaiting);
+	eve_assert(phost->CmdBufferIndex == 0);
 	phost->CmdFunc = true;
 }
 
 /* End writing a function, closes the transfer */
 void EVE_Cmd_endFunc(EVE_HalContext *phost)
 {
+	eve_assert(!phost->CmdWaiting);
+	eve_assert(phost->CmdBufferIndex == 0);
 	endFunc(phost);
 	phost->CmdFunc = false;
 }
 
 bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
 {
+	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
 	return wrBuffer(phost, buffer, size, false, false) == size;
 }
 
 bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
+	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
 	return wrBuffer(phost, (void *)(uintptr_t)buffer, size, true, false) == size;
 }
@@ -194,6 +200,7 @@ bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer,
 uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength)
 {
 	uint32_t transfered;
+	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
 	transfered = wrBuffer(phost, str, maxLength, false, true);
 	return transfered;
@@ -201,6 +208,7 @@ uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLe
 
 bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value)
 {
+	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex < 4);
 
 	phost->CmdBuffer[phost->CmdBufferIndex++] = value;
@@ -216,6 +224,7 @@ bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value)
 
 bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value)
 {
+	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex < 3);
 
 	phost->CmdBuffer[phost->CmdBufferIndex++] = value & 0xFF;
@@ -232,6 +241,7 @@ bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value)
 
 bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 {
+	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
 
 	if (phost->CmdSpace < 4 && !EVE_Cmd_waitSpace(phost, 4))
@@ -268,6 +278,8 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
 {
 	uint16_t wp, prevWp;
+	eve_assert(!phost->CmdWaiting);
+	eve_assert(phost->CmdBufferIndex == 0);
 
 	if (!EVE_Cmd_waitSpace(phost, bytes))
 		return -1;
