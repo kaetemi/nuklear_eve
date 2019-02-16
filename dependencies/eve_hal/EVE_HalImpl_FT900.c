@@ -183,12 +183,12 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 	phost->Status = EVE_STATUS_OPENED;
 }
 
-static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
+static inline void rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
 {
 	spi_readn(SPIM, buffer, size);
 }
 
-static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
+static inline void wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
 {
 	spi_writen(SPIM, buffer, size);
 }

@@ -2,7 +2,7 @@
 #define FT_LOAD_FILE__H
 
 #include "FT_Platform.h"
-#include "../EVE_LoadFile.h"
+#include "EVE_LoadFile.h"
 
 #define Ft_Hal_LoadRawFile EVE_Util_loadRawFile
 #define Ft_Hal_LoadInflateFile EVE_Util_loadInflateFile
