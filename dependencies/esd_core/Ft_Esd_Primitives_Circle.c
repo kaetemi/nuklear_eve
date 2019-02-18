@@ -12,6 +12,11 @@ ft_void_t Esd_Render_Circle_Stroke(
 	ft_int32_f4_t innerRadius;
 	ft_int32_f4_t outerRadius;
 
+	if (border <= 0)
+	{
+		return;
+	}
+
 	switch (stroke)
 	{
 	case ESD_STROKE_NONE:
@@ -28,6 +33,27 @@ ft_void_t Esd_Render_Circle_Stroke(
 		innerRadius = r - (border >> 1);
 		outerRadius = innerRadius + border;
 		break;
+	}
+
+	if (border < 16)
+	{
+		// Expand border centrally to 16 subpixels
+		ft_int32_f4_t adjust = (16 - border);
+		ft_int32_f4_t innerAdjust = adjust >> 1;
+		ft_int32_f4_t outerAdjust = adjust - innerAdjust;
+		innerRadius -= innerAdjust;
+		outerRadius += outerAdjust;
+
+		// Lessen alpha
+		uint32_t alpha = color >> 24;
+		alpha *= border;
+		alpha >>= 4; // Divide by 4
+		color = (alpha << 24) | (color & 0xFFFFFF);
+	}
+
+	if (innerRadius <= 0)
+	{
+		// TODO: This is just a circle
 	}
 
 	// Use local rendering context, bypass ESD display list functions.

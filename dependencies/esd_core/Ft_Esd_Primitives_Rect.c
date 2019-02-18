@@ -18,6 +18,11 @@ ft_void_t Esd_Render_Rect_Stroke(
 	ft_int32_f4_t innerRadius; // = r - (border >> 1);
 	ft_int32_f4_t outerRadius; // = innerRadius + border;
 
+	if (border <= 0)
+	{
+		return;
+	}
+
 	switch (stroke)
 	{
 	case ESD_STROKE_NONE:
@@ -34,6 +39,22 @@ ft_void_t Esd_Render_Rect_Stroke(
 		innerRadius = r - (border >> 1);
 		outerRadius = innerRadius + border;
 		break;
+	}
+
+	if (border < 16)
+	{
+		// Expand border centrally to 16 subpixels
+		ft_int32_f4_t adjust = (16 - border);
+		ft_int32_f4_t innerAdjust = adjust >> 1;
+		ft_int32_f4_t outerAdjust = adjust - innerAdjust;
+		innerRadius -= innerAdjust;
+		outerRadius += outerAdjust;
+
+		// Lessen alpha
+		uint32_t alpha = color >> 24;
+		alpha *= border;
+		alpha >>= 4; // Divide by 4
+		color = (alpha << 24) | (color & 0xFFFFFF);
 	}
 
 	if (innerRadius < 16)
