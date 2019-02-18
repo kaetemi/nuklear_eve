@@ -632,7 +632,7 @@ float_t da(float_t i, int16_t degree);
 void polarxy(int32_t r, float_t th, int32_t *x, int32_t *y, int32_t ox, int32_t oy);
 void polar(Gpu_Hal_Context_t *phost, int32_t r, float_t th, int32_t ox, int32_t oy);
 
-#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
+#if defined(FT9XX_PLATFORM)
 #define GET_CURR_MILLIS() get_millis()
 #elif defined(MSVC_PLATFORM) || defined(MSVC_FT800EMU)
 #define GET_CURR_MILLIS() time(NULL)

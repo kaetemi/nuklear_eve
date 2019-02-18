@@ -153,15 +153,8 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	uint8_t id;
 	uint8_t engine_status;
 
+	/* FT81x will be in SPI Single channel after POR */
 	EVE_Hal_powerCycle(phost, true);
-
-	/* FT81x will be in SPI Single channel after POR
-	If we are here with FT4222 in multi channel, then
-	an explicit switch to single channel is essential
-	*/
-#if (EVE_MODEL >= EVE_FT810)
-	EVE_Hal_setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
-#endif
 
 	/* Set the clk to external clock. Must disable it when no external clock source on the board*/
 #if (!defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813AU_WH50C))
@@ -297,9 +290,7 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	EVE_Cmd_waitFlush(phost);
 
 	/* Switch to configured default SPI channel mode */
-	EVE_UtilImpl_prepareSpiMaster(phost);
 #if (EVE_MODEL >= EVE_FT810)
-	/* api to set quad and numbe of dummy bytes */
 #ifdef ENABLE_SPI_QUAD
 	EVE_Hal_setSPI(phost, EVE_SPI_QUAD_CHANNEL, 2);
 #elif ENABLE_SPI_DUAL
@@ -308,7 +299,8 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	EVE_Hal_setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 #endif
 #endif
-	return EVE_UtilImpl_postBootupConfig(phost);
+
+	return true;
 }
 
 #if (EVE_MODEL >= EVE_FT810) && (EVE_MODEL <= EVE_BT816)
@@ -334,22 +326,22 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 #endif
 
 	/* Set REG_CPURESET to 1, to hold the coprocessor in the reset condition */
-	EVE_Hal_wr32(phost, REG_CPURESET, 1);
+	EVE_Hal_wr8(phost, REG_CPURESET, 1);
 	EVE_sleep(10);
 
 	/* Set REG_CMD_READ and REG_CMD_WRITE to zero */
-	EVE_Hal_wr32(phost, REG_CMD_READ, 0);
-	EVE_Hal_wr32(phost, REG_CMD_WRITE, 0);
-	EVE_Hal_wr32(phost, REG_CMD_DL, 0);
-	EVE_Hal_wr32(phost, REG_PCLK, 2); /* j1 will set the pclk to 0 for that error case */
+	EVE_Hal_wr16(phost, REG_CMD_READ, 0);
+	EVE_Hal_wr16(phost, REG_CMD_WRITE, 0);
+	EVE_Hal_wr16(phost, REG_CMD_DL, 0);
+	EVE_Hal_wr8(phost, REG_PCLK, phost->Parameters.Display.PCLK); /* j1 will set the pclk to 0 for that error case */
 
 	/* Stop playing audio in case video with audio was playing during reset */
-	EVE_Hal_wr32(phost, REG_PLAYBACK_PLAY, 0);
+	EVE_Hal_wr8(phost, REG_PLAYBACK_PLAY, 0);
 
 #ifdef EVE_HAS_OTP
 	/* Enable patched rom in case the reset is requested while CMD_LOGO is running.
 	This is necessary as CMD_LOGO may swap to the other rom page */
-	EVE_Hal_wr32(phost, REG_ROMSUB_SEL, 3);
+	EVE_Hal_wr8(phost, REG_ROMSUB_SEL, 3);
 #endif
 
 	/* Refresh fifo */
@@ -361,7 +353,7 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	phost->CmdFault = false;
 
 	/* Set REG_CPURESET to 0, to restart the coprocessor */
-	EVE_Hal_wr32(phost, REG_CPURESET, 0);
+	EVE_Hal_wr8(phost, REG_CPURESET, 0);
 	EVE_sleep(100);
 
 #ifdef EVE_HAS_OTP
@@ -378,12 +370,14 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	EVE_Cmd_wr32(phost, 0);
 	EVE_Cmd_endFunc(phost);
 
-	/* Can't know for sure when CMD_EXECUTE is processed,
-	since the read pointer remains at 0 when there's an OTP */
+	/* Difficult to check when CMD_EXECUTE is processed when there's an OTP,
+	since the read pointer keeps looping back to 0. */
 	EVE_sleep(100);
 
-	/* Need to manually stop previous command from repeating infinitely */
-	EVE_Hal_wr32(phost, REG_CMD_WRITE, 0);
+	/* Need to manually stop previous command from repeating infinitely,
+	however, this may cause the coprocessor to overshoot the command fifo,
+	hence it's been filled with harmless CMD_STOP commands. */
+	EVE_Hal_wr16(phost, REG_CMD_WRITE, 0);
 	EVE_sleep(10);
 
 	/* Refresh fifo */

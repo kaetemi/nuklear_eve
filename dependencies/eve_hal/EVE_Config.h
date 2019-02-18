@@ -169,7 +169,7 @@ Graphics target:
 
 Platform target:
 - BT8XXEMU_PLATFORM
-- FT900_PLATFORM
+- FT9XX_PLATFORM
 - FT4222_PLATFORM
 - MPSSE_PLATFORM
 
@@ -635,6 +635,12 @@ These may only be set by one of the platform target definitions, and should not 
 
 #endif
 
+#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
+
+#define FT9XX_PLATFORM
+
+#endif
+
 #define EVE_CONFIG__STR(x) #x
 #define EVE_CONFIG_STR(x) EVE_CONFIG__STR(x)
 
@@ -672,8 +678,7 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
                                                       "Cannot enable flash on EVE model which doesn't support flash")
 #undef EVE_FLASH_AVAILABLE
 #endif
-#if ((defined(FT900_PLATFORM) ? 1 : 0)      \
-    + (defined(FT93X_PLATFORM) ? 1 : 0)     \
+#if ((defined(FT9XX_PLATFORM) ? 1 : 0)      \
     + (defined(FT4222_PLATFORM) ? 1 : 0)    \
     + (defined(MPSSE_PLATFORM) ? 1 : 0)     \
     + (defined(BT8XXEMU_PLATFORM) ? 1 : 0)) \
@@ -681,7 +686,7 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
                                                       "More than one platform has been selected")
 #endif
-#if (!defined(FT900_PLATFORM) && !defined(FT93X_PLATFORM) && !defined(FT4222_PLATFORM) && !defined(MPSSE_PLATFORM) && !defined(BT8XXEMU_PLATFORM))
+#if (!defined(FT9XX_PLATFORM) && !defined(FT4222_PLATFORM) && !defined(MPSSE_PLATFORM) && !defined(BT8XXEMU_PLATFORM))
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
                                                       "No platform was selected")
 #endif

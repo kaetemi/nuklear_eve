@@ -31,7 +31,7 @@
 
 #include "EVE_LoadFile.h"
 #include "EVE_Platform.h"
-#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
+#if defined(FT9XX_PLATFORM)
 
 #if defined(EVE_ENABLE_FATFS)
 #include "ff.h"

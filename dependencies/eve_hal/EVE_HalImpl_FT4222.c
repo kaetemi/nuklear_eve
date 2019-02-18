@@ -377,6 +377,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	if (ret)
 	{
 		phost->SpiChannels = EVE_SPI_SINGLE_CHANNEL;
+		phost->SpiDummyBytes = 1;
 		phost->Status = EVE_STATUS_OPENED;
 		++g_HalPlatform.OpenedDevices;
 	}
@@ -481,7 +482,11 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 			size -= sizeTransferred;
 			buffer += sizeTransferred;
 
+#ifdef EVE_SUPPORT_CMDB
 			if (addr != REG_CMDB_WRITE)
+#else
+			scope
+#endif
 			{
 				bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
 				addr += sizeTransferred;
@@ -598,7 +603,11 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 					buffer += sizeTransferred;
 					size -= sizeTransferred;
 
+#ifdef EVE_SUPPORT_CMDB
 					if (addr != REG_CMDB_WRITE)
+#else
+					scope
+#endif
 					{
 						bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
 						addr += sizeTransferred;
@@ -647,7 +656,11 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 
 	/* Transfers to FIFO are kept open */
 	addr = phost->SpiRamGAddr;
+#ifdef EVE_SUPPORT_CMDB
 	if (addr != REG_CMDB_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
+#else
+	if (!((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
+#endif
 	{
 		if (phost->SpiWrBufIndex)
 			wrBuffer(phost, NULL, 0);
@@ -895,6 +908,28 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 	}
 }
 
+void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
+{
+	FT4222_STATUS ftstatus;
+	FT4222_SPIMode spimode;
+
+	/* switch FT4222 to relevant multi channel SPI communication mode */
+	if (numchnls == EVE_SPI_DUAL_CHANNEL)
+		spimode = SPI_IO_DUAL;
+	else if (numchnls == EVE_SPI_QUAD_CHANNEL)
+		spimode = SPI_IO_QUAD;
+	else
+		spimode = SPI_IO_SINGLE;
+
+	ftstatus = FT4222_SPIMaster_SetLines(phost->SpiHandle, spimode);
+	if (FT4222_OK != ftstatus)
+		eve_printf_debug("FT4222_SPIMaster_SetLines failed with status %d\n", ftstatus);
+
+	/* FT81x swicthed to dual/quad mode, now update global HAL context */
+	phost->SpiChannels = numchnls;
+	phost->SpiDummyBytes = numdummy;
+}
+
 void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 {
 	if (up)
@@ -921,61 +956,37 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		EVE_sleep(20);
 	}
+
+	/* Reset to single channel SPI mode */
+	setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 }
 
-int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
+void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
 {
+#if (EVE_MODEL < EVE_FT810)
+	return;
+#else
 	uint8_t writebyte = 0;
-	FT4222_STATUS ftstatus;
-	FT4222_SPIMode spimode;
 
 	if ((numchnls > EVE_SPI_QUAD_CHANNEL) || (numdummy > 2) || (numdummy < 1))
-	{
-		return -1; //error
-	}
+		return; // error
 
-	/* switch EVE to multi channel SPI mode */
+	/* Switch EVE to multi channel SPI mode */
 	writebyte = numchnls;
 	if (numdummy == 2)
 		writebyte |= EVE_SPI_TWO_DUMMY_BYTES;
 	EVE_Hal_wr8(phost, REG_SPI_WIDTH, writebyte);
 
-	/* switch FT4222 to relevant multi channel SPI communication mode */
-	if (numchnls == EVE_SPI_DUAL_CHANNEL)
-		spimode = SPI_IO_DUAL;
-	else if (numchnls == EVE_SPI_QUAD_CHANNEL)
-		spimode = SPI_IO_QUAD;
-	else
-		spimode = SPI_IO_SINGLE;
-
-	ftstatus = FT4222_SPIMaster_SetLines(phost->SpiHandle, spimode);
-	if (FT4222_OK != ftstatus)
-		eve_printf_debug("FT4222_SPIMaster_SetLines failed with status %d\n", ftstatus);
-
-	/* FT81x swicthed to dual/quad mode, now update global HAL context */
-	phost->SpiChannels = numchnls;
-	phost->SpiDummyBytes = numdummy;
-
-	return 0;
+	/* Switch FT4222 to multi channel SPI mode */
+	setSPI(phost, numchnls, numdummy);
+#endif
 }
 
 /*********
 ** MISC **
 *********/
 
-bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost)
-{
-	/* no-op */
-	return true;
-}
-
 bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost)
-{
-	/* no-op */
-	return true;
-}
-
-bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost)
 {
 	/* no-op */
 	return true;

@@ -443,29 +443,16 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 	}
 }
 
-int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
+void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
 {
 	/* no-op */
-	return -1;
 }
 
 /*********
 ** MISC **
 *********/
 
-bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost)
-{
-	/* no-op */
-	return true;
-}
-
 bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost)
-{
-	/* no-op */
-	return true;
-}
-
-bool EVE_UtilImpl_postBootupConfig(EVE_HalContext *phost)
 {
 	/* no-op */
 	return true;

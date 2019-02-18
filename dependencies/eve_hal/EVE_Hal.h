@@ -105,11 +105,11 @@ typedef struct EVE_HalParameters
 	uint8_t MpsseChannelNo; /* MPSSE channel number */
 #endif
 
-#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM) || defined(FT4222_PLATFORM)
+#if defined(FT9XX_PLATFORM) || defined(FT4222_PLATFORM)
 	uint8_t SpiCsPin; /* SPI chip select number of FT8XX chip */
 #endif
 
-#if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM) || defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
+#if defined(FT9XX_PLATFORM) || defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
 	uint8_t PowerDownPin; /* FT8XX power down pin number */
 #endif
 
@@ -243,7 +243,7 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd);
 void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up);
 
 /* Switch EVE to different SPI channel mode */
-int16_t EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy);
+void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy);
 
 uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost);
 
