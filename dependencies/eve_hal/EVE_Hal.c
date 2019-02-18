@@ -202,7 +202,7 @@ uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr)
 void EVE_Hal_rdMem(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
-	EVE_Hal_transferBuffer(phost, result, NULL, size);
+	EVE_Hal_transferMem(phost, result, NULL, size);
 	EVE_Hal_endTransfer(phost);
 }
 
@@ -230,7 +230,7 @@ void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v)
 void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
-	EVE_Hal_transferBuffer(phost, NULL, buffer, size);
+	EVE_Hal_transferMem(phost, NULL, buffer, size);
 	EVE_Hal_endTransfer(phost);
 }
 
@@ -238,6 +238,13 @@ void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const u
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transferProgmem(phost, NULL, buffer, size);
+	EVE_Hal_endTransfer(phost);
+}
+
+void EVE_Hal_wrString(EVE_HalContext *phost, uint32_t addr, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
+{
+	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
+	EVE_Hal_transferString(phost, NULL, str, index, size, padMask);
 	EVE_Hal_endTransfer(phost);
 }
 

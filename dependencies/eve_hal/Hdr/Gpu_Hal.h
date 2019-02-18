@@ -218,14 +218,14 @@ static inline ft_void_t Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, f
 /* APIs for coprocessor Fifo read/write and space management */
 #define Gpu_Hal_WrCmd32 EVE_Cmd_wr32
 
-/// Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FALSE in case a co processor fault occured
+/// Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FALSE in case a coprocessor fault occurred
 #define Gpu_Hal_WrCmdBuf EVE_Cmd_wrMem
 #define Gpu_Hal_WrCmdBuf_nowait EVE_Cmd_wrMem
 
 #define Gpu_Hal_WrCmdBuf_ProgMem EVE_Cmd_wrProgmem
 #define Gpu_Hal_WrCmdBufFromFlash EVE_Cmd_wrProgmem
 
-/// Wait for the command buffer to fully empty. Returns FALSE in case a co processor fault occured
+/// Wait for the command buffer to fully empty. Returns FALSE in case a coprocessor fault occurred
 #define Gpu_Hal_WaitCmdFifoEmpty EVE_Cmd_waitFlush
 #define Gpu_Hal_WaitCmdfifo_empty EVE_Cmd_waitFlush
 

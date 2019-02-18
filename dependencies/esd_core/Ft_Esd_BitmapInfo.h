@@ -72,7 +72,7 @@ typedef struct Ft_Esd_BitmapInfo
 	// Prefer loading the bitmap into RAM_G, even if it's an ASTC stored on Flash
 	ft_bool_t PreferRam : 1;
 
-	// Load image using co processor (for JPEG and PNG)
+	// Load image using coprocessor (for JPEG and PNG)
 	ft_bool_t CoLoad : 1;
 
 } Ft_Esd_BitmapInfo;

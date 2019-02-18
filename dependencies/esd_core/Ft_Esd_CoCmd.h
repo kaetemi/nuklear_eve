@@ -449,13 +449,13 @@ Enter fast flash state. Return new FLASH_STATUS. Result will be 0 on success
 */
 ft_uint32_t Ft_Gpu_CoCmd_FlashFast(EVE_HalContext *phost, ft_uint32_t *result);
 
-/// Read from Flash to RAM_G. Returns FT_FALSE on co processor fault
+/// Read from Flash to RAM_G. Returns FT_FALSE on coprocessor fault
 ft_bool_t Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src, ft_uint32_t size);
 
-/// Load image from Flash to RAM_G. Output parameter format returns loaded bitmap format on success. Returns FT_FALSE on co processor fault
+/// Load image from Flash to RAM_G. Output parameter format returns loaded bitmap format on success. Returns FT_FALSE on coprocessor fault
 ft_bool_t Ft_Gpu_CoCmd_LoadImage_Flash(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src, ft_uint32_t *format);
 
-/// Deflates data from Flash to RAM_G. Returns FT_FALSE on co processor fault
+/// Deflates data from Flash to RAM_G. Returns FT_FALSE on coprocessor fault
 ft_bool_t Ft_Gpu_CoCmd_Inflate_Flash(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src);
 
 #endif

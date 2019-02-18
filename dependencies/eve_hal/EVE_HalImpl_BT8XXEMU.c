@@ -181,7 +181,7 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 	return retVal;
 }
 
-void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size)
+void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size)
 {
 	uint32_t i;
 	if (result && buffer)
@@ -298,7 +298,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 
 		eve_assert(transferred);
 
-		EVE_Hal_transferBuffer(phost, NULL, buffer, transferred);
+		EVE_Hal_transferMem(phost, NULL, buffer, transferred);
 	}
 	else
 	{
@@ -313,12 +313,12 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	{
 		transferred += (uint32_t)strnlen(str, size) + 1;
 		eve_assert(str[transferred - 1] == '\0');
-		EVE_Hal_transferBuffer(phost, NULL, str, transferred);
+		EVE_Hal_transferMem(phost, NULL, str, transferred);
 		if (transferred & padMask)
 		{
 			uint32_t pad = 4 - (transferred & padMask);
 			uint8_t padding[4] = { 0 };
-			EVE_Hal_transferBuffer(phost, NULL, padding, pad);
+			EVE_Hal_transferMem(phost, NULL, padding, pad);
 			transferred += pad;
 			eve_assert(!(transferred & 0x3));
 		}

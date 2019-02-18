@@ -121,7 +121,7 @@ ft_bool_t Ft_Gpu_CoCmd_AnimStart(EVE_HalContext *phost, int32_t ch, uint32_t aop
 	uint32_t flashStatus = Ft_Gpu_Hal_Rd32(phost, REG_FLASH_STATUS);
 	if (flashStatus < FLASH_STATUS_FULL)
 	{
-		// Don't attempt to start animation without full flash speed, it hangs the co processor
+		// Don't attempt to start animation without full flash speed, it hangs the coprocessor
 		eve_printf_debug("Attempt to send CMD_ANIMSTART without FLASH_STATUS_FULL (REG_FLASH_STATUS: %i)\n", (int)flashStatus);
 		return FT_FALSE;
 	}

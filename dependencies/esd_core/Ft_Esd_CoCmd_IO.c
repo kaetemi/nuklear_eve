@@ -149,7 +149,7 @@ ft_uint32_t Ft_Gpu_CoCmd_FlashAttach(EVE_HalContext *phost)
 	if (flashStatus != FLASH_STATUS_DETACHED)
 		return flashStatus; // Only attach when detached
 	if (!EVE_Cmd_waitFlush(phost))
-		return flashStatus; // Co processor must be ready
+		return flashStatus; // Coprocessor must be ready
 	EVE_Cmd_wr32(phost, CMD_FLASHATTACH);
 	EVE_Cmd_waitFlush(phost); // Wait for command completion
 	return EVE_Hal_rd32(phost, REG_FLASH_STATUS); // Return current status
@@ -177,10 +177,10 @@ ft_uint32_t Ft_Gpu_CoCmd_FlashFast(EVE_HalContext *phost, ft_uint32_t *result)
 		if (result)
 			*result = 0xE000;
 		return flashStatus;
-	} // Co processor must be ready
+	} // Coprocessor must be ready
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_FLASHFAST);
-	resAddr = EVE_Cmd_moveWp(phost, 4); // Get the address where the co processor will write the result
+	resAddr = EVE_Cmd_moveWp(phost, 4); // Get the address where the coprocessor will write the result
 	EVE_Cmd_endFunc(phost);
 	EVE_Cmd_waitFlush(phost); // Wait for command completion
 	if (result)
@@ -191,7 +191,7 @@ ft_uint32_t Ft_Gpu_CoCmd_FlashFast(EVE_HalContext *phost, ft_uint32_t *result)
 ft_bool_t Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src, ft_uint32_t size)
 {
 	if (!EVE_Cmd_waitFlush(phost))
-		return false; // Co processor must be ready
+		return false; // Coprocessor must be ready
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_FLASHREAD);
 	EVE_Cmd_wr32(phost, dst);
@@ -204,7 +204,7 @@ ft_bool_t Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, ft_uint32_t dst, ft_uint
 ft_bool_t Ft_Gpu_CoCmd_LoadImage_Flash(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src, ft_uint32_t *format)
 {
 	if (!EVE_Cmd_waitFlush(phost))
-		return false; // Co processor must be ready
+		return false; // Coprocessor must be ready
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_FLASHSOURCE);
 	EVE_Cmd_wr32(phost, src);
@@ -222,7 +222,7 @@ ft_bool_t Ft_Gpu_CoCmd_LoadImage_Flash(EVE_HalContext *phost, ft_uint32_t dst, f
 ft_bool_t Ft_Gpu_CoCmd_Inflate_Flash(EVE_HalContext *phost, ft_uint32_t dst, ft_uint32_t src)
 {
 	if (!EVE_Cmd_waitFlush(phost))
-		return false; // Co processor must be ready
+		return false; // Coprocessor must be ready
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_FLASHSOURCE);
 	EVE_Cmd_wr32(phost, src);
@@ -237,7 +237,7 @@ ft_bool_t Ft_Gpu_CoCmd_Inflate_Flash(EVE_HalContext *phost, ft_uint32_t dst, ft_
 ft_bool_t Ft_Gpu_CoCmd_LoadImage_ProgMem(EVE_HalContext *phost, ft_uint32_t dst, ft_prog_uchar8_t *src, ft_uint32_t size, ft_uint32_t *format)
 {
 	if (!EVE_Cmd_waitFlush(phost))
-		return false; // Co processor must be ready
+		return false; // Coprocessor must be ready
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_LOADIMAGE);
 	EVE_Cmd_wr32(phost, dst);
@@ -254,7 +254,7 @@ ft_bool_t Ft_Gpu_CoCmd_LoadImage_ProgMem(EVE_HalContext *phost, ft_uint32_t dst,
 ft_bool_t Ft_Gpu_CoCmd_Inflate_ProgMem(EVE_HalContext *phost, ft_uint32_t dst, ft_prog_uchar8_t *src, ft_uint32_t size)
 {
 	if (!EVE_Cmd_waitFlush(phost))
-		return false; // Co processor must be ready
+		return false; // Coprocessor must be ready
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_INFLATE);
 	EVE_Cmd_wr32(phost, dst);

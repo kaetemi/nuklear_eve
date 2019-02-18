@@ -166,7 +166,7 @@ typedef struct EVE_HalContext
 #endif
 
 	bool CmdFunc; /* Flagged while transfer to cmd is kept open */
-	bool CmdFault; /* Flagged when co processor is in fault mode and needs to be reset */
+	bool CmdFault; /* Flagged when coprocessor is in fault mode and needs to be reset */
 	bool CmdWaiting; /* Flagged while waiting for CMD write (to check during any function that may be called by CbCmdWait) */
 
 } EVE_HalContext;
@@ -209,7 +209,7 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
-void EVE_Hal_transferBuffer(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size);
+void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size);
 void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size);
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask);
 void EVE_Hal_endTransfer(EVE_HalContext *phost);
@@ -228,6 +228,7 @@ void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v);
 void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v);
 void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size);
 void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size);
+void EVE_Hal_wrString(EVE_HalContext *phost, uint32_t addr, const char *str, uint32_t index, uint32_t size, uint32_t padMask);
 
 /************
 ** UTILITY **

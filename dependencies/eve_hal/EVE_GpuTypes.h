@@ -37,7 +37,7 @@
 ** MACROS **
 ***********/
 
-/* Definitions used for FT800 co processor command buffer */
+/* Definitions used for FT800 coprocessor command buffer */
 #define EVE_DL_SIZE (8 * 1024) /* 8kB Display List buffer size */
 #define EVE_CMD_FIFO_SIZE ((4) * 1024) /* 4kB coprocessor Fifo size */
 #define EVE_CMD_FIFO_MASK (EVE_CMD_FIFO_SIZE - 1)

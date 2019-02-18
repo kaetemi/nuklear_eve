@@ -99,7 +99,7 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 		if (space < req)
 		{
 			if (!EVE_Cmd_waitSpace(phost, req))
-				return transfered; /* Co processor fault */
+				return transfered; /* Coprocessor fault */
 			space = phost->CmdSpace;
 		}
 		if (transfer > space)
@@ -135,14 +135,14 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			}
 			else
 			{
-				EVE_Hal_transferBuffer(phost, NULL, &((uint8_t *)buffer)[transfered], transfer);
+				EVE_Hal_transferMem(phost, NULL, &((uint8_t *)buffer)[transfered], transfer);
 			}
 			if (!string && (transfer & 0x3))
 			{
 				eve_assert((transfered + transfer) == size);
 				uint32_t pad = 4 - (transfer & 0x3);
 				uint8_t padding[4] = { 0 };
-				EVE_Hal_transferBuffer(phost, NULL, padding, pad);
+				EVE_Hal_transferMem(phost, NULL, padding, pad);
 				transfer += pad;
 				eve_assert(!(transfer & 0x3));
 			}
@@ -330,7 +330,7 @@ static bool checkWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 #if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
 		char err[128];
 #endif
-		/* Co processor fault */
+		/* Coprocessor fault */
 		phost->CmdWaiting = false;
 		eve_printf_debug("Coprocessor fault\n");
 #if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
