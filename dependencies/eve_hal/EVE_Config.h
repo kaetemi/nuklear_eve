@@ -673,7 +673,7 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 #undef EVE_FLASH_AVAILABLE
 #endif
 #if ((defined(FT900_PLATFORM) ? 1 : 0)      \
-    + (defined(FT93X_PLATFORM) ? 1 : 0)    \
+    + (defined(FT93X_PLATFORM) ? 1 : 0)     \
     + (defined(FT4222_PLATFORM) ? 1 : 0)    \
     + (defined(MPSSE_PLATFORM) ? 1 : 0)     \
     + (defined(BT8XXEMU_PLATFORM) ? 1 : 0)) \

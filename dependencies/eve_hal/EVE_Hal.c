@@ -244,7 +244,7 @@ void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const u
 void EVE_Hal_wrString(EVE_HalContext *phost, uint32_t addr, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
-	EVE_Hal_transferString(phost, NULL, str, index, size, padMask);
+	EVE_Hal_transferString(phost, str, index, size, padMask);
 	EVE_Hal_endTransfer(phost);
 }
 
