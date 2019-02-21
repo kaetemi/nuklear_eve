@@ -238,7 +238,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 			hrdpkt[1] = (addr >> 8) & 0xFF;
 			hrdpkt[2] = addr & 0xFF;
 
-			printf("wr %x\n", addr);
+			/* printf("wr %x\n", addr); */
 			status = SPI_Write((FT_HANDLE)phost->SpiHandle, hrdpkt, 3, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
 
 			if ((status != FT_OK) || (sizeTransferred != 3))
