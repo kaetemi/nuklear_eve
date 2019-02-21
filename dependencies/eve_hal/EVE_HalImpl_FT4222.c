@@ -444,7 +444,6 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 		uint16_t sizeTransferred;
 		uint8_t hrdpkt[8] = { 0 }; // 3 byte addr + 2 or 1 byte dummy
 		uint32_t addr = phost->SpiRamGAddr;
-		eve_assert(!(addr & 0x3));
 
 		/* Compose the HOST MEMORY READ packet */
 		hrdpkt[0] = (uint8_t)(addr >> 16) & 0xFF;
@@ -689,7 +688,7 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 
 static bool flush(EVE_HalContext *phost)
 {
-	bool res;
+	bool res = true;
 	if (phost->SpiWrBufIndex)
 	{
 		res = wrBuffer(phost, NULL, 0);
@@ -698,6 +697,7 @@ static bool flush(EVE_HalContext *phost)
 #if !defined(EVE_SUPPORT_CMDB)
 	if (phost->SpiWpWritten)
 	{
+		phost->SpiWpWritten = false;
 		phost->SpiRamGAddr = REG_CMD_WRITE;
 		phost->SpiWrBufIndex = 2;
 		phost->SpiWrBuf[0] = phost->SpiWpWrite & 0xFF;

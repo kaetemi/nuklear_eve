@@ -149,7 +149,6 @@ typedef struct EVE_HalContext
 #endif
 
 #if defined(BUFFER_OPTIMIZATION)
-#if defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
 	uint8_t SpiWrBuf[0xFFFF];
 	uint32_t SpiWrBufIndex;
 	uint32_t SpiRamGAddr; /* Current RAM_G address of ongoing SPI write transaction */
@@ -157,7 +156,6 @@ typedef struct EVE_HalContext
 	bool SpiWpWriting;
 	bool SpiWpWritten;
 	uint16_t SpiWpWrite;
-#endif
 #endif
 #endif
 
