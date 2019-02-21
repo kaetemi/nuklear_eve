@@ -126,7 +126,7 @@ Revision History:
 #define FT800_SEL_PIN (GPIO_SPIM_SS0) /* SPI Channel 0-3 */
 #define FT800_PD_N (GPIO_PWD)
 
-#elif defined(MM930EV_LITE)
+#elif defined(MM930MINI) || defined(MM930LITE) || defined(MM932LC)
 
 #define FT800_SEL_PIN (GPIO_SPIM_SS0) /* SPI Channel 0-7 */
 #define FT800_PD_N (GPIO_PWD)
