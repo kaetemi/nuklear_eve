@@ -96,6 +96,7 @@ ESD_TARGET_GRAPHICS(ME813AU_WH50C, DisplayName = "ME813AU-WH50C", SupportedDispl
 ESD_TARGET_GRAPHICS(PANL35, DisplayName = "PanL35", IntegratedDisplay = "KD2401 (320x480)", IntegratedPlatform = "FT903", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
 ESD_TARGET_GRAPHICS(PANL70, DisplayName = "PanL70", IntegratedDisplay = "WVGA (800x480)", IntegratedPlatform = "FT930", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
 ESD_TARGET_GRAPHICS(PANL70PLUS, DisplayName = "PanL70 Plus", IntegratedDisplay = "WVGA (800x480)", IntegratedPlatform = "FT930", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
+ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM800C, DisplayName = "VM800C", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT80X|FT800)\b")
 ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM810C, DisplayName = "VM810C", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT810)\b")
 ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM816C, DisplayName = "VM816C", IntegratedFlash = "W25Q128", LibraryTargets = "\b(BT81X|BT816)\b")
 
@@ -177,6 +178,7 @@ Display resolution:
 - DISPLAY_RESOLUTION_HVGA_PORTRAIT
 - DISPLAY_RESOLUTION_WVGA
 - DISPLAY_RESOLUTION_QVGA
+- DISPLAY_RESOLUTION_WQVGA
 
 Flash, with size in megabytes:
 - EVE_FLASH_AVAILABLE
@@ -342,6 +344,22 @@ It may also set platform, display, and flash values if none are configured.
 #define FT4222_PLATFORM
 #endif
 
+#elif defined(EVE_GRAPHICS_VM800C)
+
+#define FT800_ENABLE
+// #define ENABLE_SPI_QUAD
+#define RESISTANCE_THRESHOLD (1800)
+
+#ifndef EVE_DISPLAY_AVAILABLE
+#define EVE_DISPLAY_AVAILABLE
+#define DISPLAY_RESOLUTION_WQVGA
+#endif
+
+#ifndef EVE_PLATFORM_AVAILABLE
+#define EVE_PLATFORM_AVAILABLE
+#define MPSSE_PLATFORM
+#endif
+
 #elif defined(PANL35)
 
 #define FT811_ENABLE
@@ -408,7 +426,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #elif defined(EVE_GRAPHICS_FT800)
 
-#define FT801_ENABLE
+#define FT800_ENABLE
 // #define ENABLE_SPI_QUAD
 #define RESISTANCE_THRESHOLD (1800)
 

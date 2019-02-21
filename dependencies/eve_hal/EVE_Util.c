@@ -224,6 +224,14 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	}
 	eve_printf_debug("All engines are ready\n");
 
+#if (EVE_MODEL < EVE_FT810)
+	eve_assert(parameters->Display.Width < 512);
+	eve_assert(parameters->Display.Height < 512);
+#else
+	eve_assert(parameters->Display.Width < 2048);
+	eve_assert(parameters->Display.Height < 2048);
+#endif
+
 	EVE_Hal_wr16(phost, REG_HCYCLE, parameters->Display.HCycle);
 	EVE_Hal_wr16(phost, REG_HOFFSET, parameters->Display.HOffset);
 	EVE_Hal_wr16(phost, REG_HSYNC0, parameters->Display.HSync0);
@@ -277,9 +285,16 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 #endif
 
 	/* Refresh fifo */
-	EVE_Cmd_wp(phost);
-	EVE_Cmd_rp(phost);
+	uint16_t wp = EVE_Cmd_wp(phost);
+	uint16_t rp = EVE_Cmd_rp(phost);
 	EVE_Cmd_space(phost);
+
+	/* Coprocessor needs a reset */
+	if (wp || rp)
+	{
+		eve_printf_debug("Coprocessor fifo not empty after powerdown\n");
+		EVE_Util_resetCoprocessor(phost);
+	}
 
 	/* Wait for coprocessor ready */
 	eve_printf_debug("Check coprocessor\n");
