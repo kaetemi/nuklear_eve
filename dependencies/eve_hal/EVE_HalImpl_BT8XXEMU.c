@@ -153,6 +153,12 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 	phost->Status = EVE_STATUS_OPENED;
 }
 
+void EVE_Hal_flush(EVE_HalContext *phost)
+{
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
+	/* no-op */
+}
+
 static inline uint8_t transfer8(EVE_HalContext *phost, uint8_t value)
 {
 	return BT8XXEMU_transfer(phost->Emulator, value);

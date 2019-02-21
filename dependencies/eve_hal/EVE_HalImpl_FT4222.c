@@ -548,9 +548,9 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 				}
 
 				/* Compose the HOST MEMORY WRITE packet */
-				hrdpkt[0] = (addr >> 16) | 0x80; //MSB bits 10 for WRITE
+				hrdpkt[0] = (addr >> 16) | 0x80; /* MSB bits 10 for WRITE */
 				hrdpkt[1] = (addr >> 8) & 0xFF;
-				hrdpkt[2] = addr & 0xff;
+				hrdpkt[2] = addr & 0xFF;
 
 				status = FT4222_SPIMaster_SingleWrite(
 				    phost->SpiHandle,
@@ -667,6 +667,19 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 	}
 
 	phost->Status = EVE_STATUS_OPENED;
+}
+
+static void flush(EVE_HalContext *phost)
+{
+	if (phost->SpiWrBufIndex)
+		wrBuffer(phost, NULL, 0);
+	eve_assert(!phost->SpiWrBufIndex);
+}
+
+void EVE_Hal_flush(EVE_HalContext *phost)
+{
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
+	flush(phost);
 }
 
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
@@ -827,6 +840,8 @@ void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 	uint16_t sizeTransferred;
 	uint32_t sizeOfRead;
 
+	flush(phost);
+
 	transferArray[0] = cmd;
 	transferArray[1] = 0;
 	transferArray[2] = 0;
@@ -872,6 +887,8 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 	uint16_t sizeTransferred;
 	uint32_t sizeOfRead;
 
+	flush(phost);
+
 	transferArray[0] = cmd;
 	transferArray[1] = (cmd >> 8) & 0xff;
 	transferArray[2] = (cmd >> 16) & 0xff;
@@ -913,6 +930,8 @@ void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy
 	FT4222_STATUS ftstatus;
 	FT4222_SPIMode spimode;
 
+	flush(phost);
+
 	/* switch FT4222 to relevant multi channel SPI communication mode */
 	if (numchnls == EVE_SPI_DUAL_CHANNEL)
 		spimode = SPI_IO_DUAL;
@@ -932,6 +951,8 @@ void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy
 
 void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 {
+	flush(phost);
+
 	if (up)
 	{
 		FT4222_STATUS status = FT4222_OTHER_ERROR;
@@ -963,6 +984,7 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 
 void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
 {
+	flush(phost);
 #if (EVE_MODEL < EVE_FT810)
 	return;
 #else

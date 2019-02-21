@@ -74,6 +74,8 @@ uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
 
+void EVE_Hal_flush(EVE_HalContext *phost);
+
 /*********
 ** MISC **
 *********/

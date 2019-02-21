@@ -129,8 +129,6 @@ typedef struct EVE_HalContext
 
 	EVE_STATUS_T Status;
 
-	/* uint16_t CmdFifoWp; Coprocessor fifo write pointer */
-
 #if defined(BT8XXEMU_PLATFORM)
 	void *Emulator; /* FT8XXEMU_Emulator */
 	void *EmulatorFlash; /* FT8XXEMU_Flash */
@@ -140,17 +138,22 @@ typedef struct EVE_HalContext
 	void *SpiHandle;
 #endif
 
+#if defined(FT4222_PLATFORM)
+	void *GpioHandle; /* LibFT4222 uses this member to store GPIO handle */
+#endif
+
 #if defined(FT4222_PLATFORM) | defined(MPSSE_PLATFORM)
 	/* Currently configured SPI clock rate. In kHz.
 	May be different from requested the clock rate in parameters */
 	uint16_t SpiClockrateKHz;
 #endif
 
-#if defined(FT4222_PLATFORM)
-	void *GpioHandle; /* LibFT4222 uses this member to store GPIO handle */
+#if defined(BUFFER_OPTIMIZATION)
+#if defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
 	uint8_t SpiWrBuf[0xFFFF];
 	uint32_t SpiWrBufIndex;
-	uint32_t SpiRamGAddr; /* Current RAM_G address of ongoing SPI transaction, if continous is not supported */
+	uint32_t SpiRamGAddr; /* Current RAM_G address of ongoing SPI write transaction */
+#endif
 #endif
 
 	EVE_SPI_CHANNELS_T SpiChannels; /* Variable to contain single/dual/quad channels */
@@ -213,6 +216,9 @@ void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *
 void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size);
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask);
 void EVE_Hal_endTransfer(EVE_HalContext *phost);
+
+/* Flush any pending write transfers */
+void EVE_Hal_flush(EVE_HalContext *phost);
 
 /*********************
 ** TRANSFER HELPERS **

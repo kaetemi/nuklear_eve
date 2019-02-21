@@ -194,6 +194,7 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 #if defined(PANL70) || defined(PANL70PLUS)
 	EVE_UtilImpl_bootupDisplayGpio(phost);
 #endif
+	EVE_Hal_flush(phost);
 	EVE_sleep(100);
 #endif
 #endif
@@ -272,10 +273,13 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 #if (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
 	/* to cross check reset pin */
 	EVE_Hal_wr8(phost, REG_GPIO, 0xff);
+	EVE_Hal_flush(phost);
 	EVE_sleep(120);
 	EVE_Hal_wr8(phost, REG_GPIO, 0x7f);
+	EVE_Hal_flush(phost);
 	EVE_sleep(120);
 	EVE_Hal_wr8(phost, REG_GPIO, 0xff);
+	EVE_Hal_flush(phost);
 	EVE_sleep(120);
 #endif
 
@@ -300,6 +304,7 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 	eve_printf_debug("Check coprocessor\n");
 	EVE_Cmd_wr32(phost, CMD_COLDSTART);
 	EVE_Cmd_waitFlush(phost);
+	EVE_Hal_flush(phost);
 
 	/* Switch to configured default SPI channel mode */
 #if (EVE_MODEL >= EVE_FT810)
@@ -339,6 +344,7 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 
 	/* Set REG_CPURESET to 1, to hold the coprocessor in the reset condition */
 	EVE_Hal_wr8(phost, REG_CPURESET, 1);
+	EVE_Hal_flush(phost);
 	EVE_sleep(10);
 
 	/* Set REG_CMD_READ and REG_CMD_WRITE to zero */
@@ -366,6 +372,7 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 
 	/* Set REG_CPURESET to 0, to restart the coprocessor */
 	EVE_Hal_wr8(phost, REG_CPURESET, 0);
+	EVE_Hal_flush(phost);
 	EVE_sleep(100);
 
 #ifdef EVE_HAS_OTP
@@ -381,6 +388,7 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	EVE_Cmd_wr32(phost, 0x7ffe);
 	EVE_Cmd_wr32(phost, 0);
 	EVE_Cmd_endFunc(phost);
+	EVE_Hal_flush(phost);
 
 	/* Difficult to check when CMD_EXECUTE is processed when there's an OTP,
 	since the read pointer keeps looping back to 0. */
@@ -390,6 +398,7 @@ bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	however, this may cause the coprocessor to overshoot the command fifo,
 	hence it's been filled with harmless CMD_STOP commands. */
 	EVE_Hal_wr16(phost, REG_CMD_WRITE, 0);
+	EVE_Hal_flush(phost);
 	EVE_sleep(10);
 
 	/* Refresh fifo */

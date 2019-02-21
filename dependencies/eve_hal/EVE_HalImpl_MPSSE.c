@@ -86,14 +86,14 @@ void EVE_HalImpl_initialize()
 		eve_printf_debug(" LocId=0x%x\n", devList.LocId);
 		eve_printf_debug(" SerialNumber=%s\n", devList.SerialNumber);
 		eve_printf_debug(" Description=%s\n", devList.Description);
-		eve_printf_debug(" ftHandle=0x%p\n", devList.ftHandle); /*is 0 unless open*/
+		eve_printf_debug(" ftHandle=0x%p\n", devList.ftHandle); /* is 0 unless open */
 	}
 }
 
 /* Release HAL platform */
 void EVE_HalImpl_release()
 {
-	//Cleanup the MPSSE Lib
+	/* Cleanup the MPSSE Lib */
 	Cleanup_libMPSSE();
 }
 
@@ -102,7 +102,7 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 {
 	parameters->MpsseChannelNo = 0;
 	parameters->PowerDownPin = 7;
-	parameters->SpiClockrateKHz = 12000; //in KHz
+	parameters->SpiClockrateKHz = 12000; /* in KHz */
 }
 
 /* Opens a new HAL context using the specified parameters */
@@ -135,7 +135,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	eve_printf_debug("\nhandle=0x%p status=0x%x\n", phost->SpiHandle, status);
 
 	/* Initialize the context variables */
-	phost->SpiDummyBytes = 1; // by default ft800/801/810/811 goes with single dummy byte for read
+	phost->SpiDummyBytes = 1; /* by default ft800/801/810/811 goes with single dummy byte for read */
 	phost->SpiChannels = EVE_SPI_SINGLE_CHANNEL;
 	phost->Status = EVE_STATUS_OPENED;
 	++g_HalPlatform.OpenedDevices;
@@ -160,56 +160,6 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 ** TRANSFER **
 *************/
 
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr)
-{
-	eve_assert(phost->Status == EVE_STATUS_OPENED);
-
-	// eve_assert(!(phost->CmdFrame && (addr == REG_CMDB_WRITE)));
-	if (rw == EVE_TRANSFER_READ)
-	{
-		uint8_t transferArray[5];
-		uint32_t sizeTransferred;
-
-		/* Compose the read packet */
-		transferArray[0] = addr >> 16;
-		transferArray[1] = addr >> 8;
-		transferArray[2] = addr;
-		transferArray[3] = 0; // Dummy Read byte
-		transferArray[4] = 0; // Dummy Read byte
-
-		SPI_Write((FT_HANDLE)phost->SpiHandle, transferArray, 3 + phost->SpiDummyBytes, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-
-		phost->Status = EVE_STATUS_READING;
-	}
-	else
-	{
-		uint8_t transferArray[3];
-		uint32_t sizeTransferred;
-
-		/* Compose the read packet */
-		transferArray[0] = (0x80 | (addr >> 16));
-		transferArray[1] = addr >> 8;
-		transferArray[2] = addr;
-
-		SPI_Write((FT_HANDLE)phost->SpiHandle, transferArray, 3, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
-
-		phost->Status = EVE_STATUS_WRITING;
-	}
-}
-
-void EVE_Hal_endTransfer(EVE_HalContext *phost)
-{
-	eve_assert(phost->Status == EVE_STATUS_READING || phost->Status == EVE_STATUS_WRITING);
-
-	// just disable the CS
-	FT_STATUS status = SPI_ToggleCS((FT_HANDLE)phost->SpiHandle, FALSE);
-
-	if (status != FT_OK)
-		phost->Status = EVE_STATUS_ERROR;
-	else
-		phost->Status = EVE_STATUS_OPENED;
-}
-
 static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
 {
 	uint32_t sizeTransferred = 0;
@@ -224,8 +174,87 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 
 	return true;
 }
+
 static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
 {
+#if defined(BUFFER_OPTIMIZATION)
+	if (buffer && (size < (sizeof(phost->SpiWrBuf) - phost->SpiWrBufIndex)))
+	{
+		/* Write to buffer */
+		memcpy(&phost->SpiWrBuf[phost->SpiWrBufIndex], buffer, size);
+		phost->SpiWrBufIndex += size;
+		return true;
+	}
+	else
+	{
+		if (buffer && phost->SpiWrBufIndex)
+		{
+			/* Buffer is over size, flush now */
+			if (!wrBuffer(phost, NULL, 0))
+				return false;
+
+			/* Write to buffer */
+			if (size < sizeof(phost->SpiWrBuf))
+				return wrBuffer(phost, buffer, size);
+		}
+
+		if (buffer || phost->SpiWrBufIndex)
+		{
+			uint32_t sizeTransferred;
+			uint8_t hrdpkt[8];
+			uint32_t addr = phost->SpiRamGAddr;
+			FT_STATUS status;
+
+			if (!buffer)
+			{
+				/* Flushing */
+				buffer = phost->SpiWrBuf;
+				size = phost->SpiWrBufIndex;
+				phost->SpiWrBufIndex = 0;
+			}
+
+			/* Compose the HOST MEMORY WRITE packet */
+			hrdpkt[0] = (addr >> 16) | 0x80; /* MSB bits 10 for WRITE */
+			hrdpkt[1] = (addr >> 8) & 0xFF;
+			hrdpkt[2] = addr & 0xFF;
+
+			status = SPI_Write((FT_HANDLE)phost->SpiHandle, hrdpkt, 3, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
+
+			if ((status != FT_OK) || (sizeTransferred != 3))
+			{
+				eve_printf_debug("%d SPI_Write failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
+				if (sizeTransferred != 3)
+					phost->Status = EVE_STATUS_ERROR;
+				return false;
+			}
+
+			status = SPI_Write(phost->SpiHandle, (uint8 *)buffer, size, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
+
+			if ((status != FT_OK) || (sizeTransferred != size))
+			{
+				eve_printf_debug("%d SPI_Write failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
+				if (sizeTransferred != size)
+					phost->Status = EVE_STATUS_ERROR;
+				return false;
+			}
+
+#ifdef EVE_SUPPORT_CMDB
+			if (addr != REG_CMDB_WRITE)
+#else
+			scope
+#endif
+			{
+				bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
+				addr += sizeTransferred;
+				if (wrapCmdAddr)
+					addr = RAM_CMD + (addr & EVE_CMD_FIFO_MASK);
+				phost->SpiRamGAddr = addr;
+			}
+		}
+
+		return true;
+	}
+#else
 	uint32_t sizeTransferred = 0;
 
 	FT_STATUS status = SPI_Write(phost->SpiHandle, (uint8 *)buffer, size, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES);
@@ -237,6 +266,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 	}
 
 	return true;
+#endif
 }
 
 static inline uint8_t transfer8(EVE_HalContext *phost, uint8_t value)
@@ -251,6 +281,123 @@ static inline uint8_t transfer8(EVE_HalContext *phost, uint8_t value)
 		rdBuffer(phost, &value, sizeof(value));
 	}
 	return value;
+}
+
+#if defined(BUFFER_OPTIMIZATION)
+static void flush(EVE_HalContext *phost)
+{
+	if (phost->SpiWrBufIndex)
+		wrBuffer(phost, NULL, 0);
+	eve_assert(!phost->SpiWrBufIndex);
+}
+#endif
+
+void EVE_Hal_flush(EVE_HalContext *phost)
+{
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
+#if defined(BUFFER_OPTIMIZATION)
+	flush(phost);
+#endif
+}
+
+void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr)
+{
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
+
+#if defined(BUFFER_OPTIMIZATION)
+	if (addr != phost->SpiRamGAddr || rw == EVE_TRANSFER_READ)
+	{
+		/* Close any write transfer that was left open, if the address changed */
+		if (phost->SpiWrBufIndex)
+			wrBuffer(phost, NULL, 0);
+
+		phost->SpiRamGAddr = addr;
+	}
+#endif
+
+	if (rw == EVE_TRANSFER_READ)
+	{
+		uint8_t transferArray[5];
+		uint32_t sizeTransferred;
+
+		eve_assert(!phost->SpiWrBufIndex);
+
+		/* Compose the read packet */
+		transferArray[0] = addr >> 16;
+		transferArray[1] = addr >> 8;
+		transferArray[2] = addr;
+		transferArray[3] = 0; // Dummy Read byte
+		transferArray[4] = 0; // Dummy Read byte
+
+		SPI_Write((FT_HANDLE)phost->SpiHandle, transferArray, 3 + phost->SpiDummyBytes, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
+
+		phost->Status = EVE_STATUS_READING;
+	}
+	else
+	{
+#if defined(BUFFER_OPTIMIZATION)
+		phost->Status = EVE_STATUS_WRITING;
+#else
+		uint8_t transferArray[3];
+		uint32_t sizeTransferred;
+
+		/* Compose the write packet */
+		transferArray[0] = (0x80 | (addr >> 16));
+		transferArray[1] = addr >> 8;
+		transferArray[2] = addr;
+
+		SPI_Write((FT_HANDLE)phost->SpiHandle, transferArray, 3, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
+
+		phost->Status = EVE_STATUS_WRITING;
+#endif
+	}
+}
+
+void EVE_Hal_endTransfer(EVE_HalContext *phost)
+{
+	FT_STATUS status;
+#if defined(BUFFER_OPTIMIZATION)
+	uint32_t addr;
+#endif
+
+	eve_assert(phost->Status == EVE_STATUS_READING || phost->Status == EVE_STATUS_WRITING);
+
+#if defined(BUFFER_OPTIMIZATION)
+	/* Transfers to FIFO are kept open */
+	addr = phost->SpiRamGAddr;
+#ifdef EVE_SUPPORT_CMDB
+	if (addr != REG_CMDB_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
+#else
+	if (!((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
+#endif
+	{
+		if (phost->SpiWrBufIndex)
+			wrBuffer(phost, NULL, 0);
+	}
+
+	if (phost->Status == EVE_STATUS_READING)
+	{
+		/* just disable the CS */
+		status = SPI_ToggleCS((FT_HANDLE)phost->SpiHandle, FALSE);
+
+		if (status != FT_OK)
+			phost->Status = EVE_STATUS_ERROR;
+		else
+			phost->Status = EVE_STATUS_OPENED;
+	}
+	else if (phost->Status == EVE_STATUS_WRITING)
+	{
+		phost->Status = EVE_STATUS_OPENED;
+	}
+#else
+	/* just disable the CS */
+	status = SPI_ToggleCS((FT_HANDLE)phost->SpiHandle, FALSE);
+
+	if (status != FT_OK)
+		phost->Status = EVE_STATUS_ERROR;
+	else
+		phost->Status = EVE_STATUS_OPENED;
+#endif
 }
 
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
@@ -401,6 +548,7 @@ void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 	transferArray[1] = 0;
 	transferArray[2] = 0;
 
+	flush(phost);
 	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 }
 
@@ -413,12 +561,14 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 	transferArray[1] = (cmd >> 8) & 0xff;
 	transferArray[2] = (cmd >> 16) & 0xff;
 
+	flush(phost);
 	SPI_Write(phost->SpiHandle, transferArray, sizeof(transferArray), &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE | SPI_TRANSFER_OPTIONS_CHIPSELECT_DISABLE);
 }
 
 /* Toggle PD_N pin of FT800 board for a power cycle */
 void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 {
+	flush(phost);
 	if (up)
 	{
 		// FT_WriteGPIO(phost->SpiHandle, 0xBB, 0x08);//PDN set to 0 ,connect BLUE wire of MPSSE to PDN# of FT800 board
@@ -445,6 +595,7 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 
 void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
 {
+	flush(phost);
 	/* no-op */
 }
 
