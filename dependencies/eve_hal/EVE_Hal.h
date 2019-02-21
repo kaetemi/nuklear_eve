@@ -153,6 +153,11 @@ typedef struct EVE_HalContext
 	uint8_t SpiWrBuf[0xFFFF];
 	uint32_t SpiWrBufIndex;
 	uint32_t SpiRamGAddr; /* Current RAM_G address of ongoing SPI write transaction */
+#if !defined(EVE_SUPPORT_CMDB)
+	bool SpiWpWriting;
+	bool SpiWpWritten;
+	uint16_t SpiWpWrite;
+#endif
 #endif
 #endif
 
