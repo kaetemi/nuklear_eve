@@ -415,6 +415,26 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 ** TRANSFER **
 *************/
 
+#if defined(BUFFER_OPTIMIZATION)
+static bool flush(EVE_HalContext *phost);
+#endif
+
+uint32_t incrementRamGAddr(uint32_t addr, uint32_t inc)
+{
+#ifdef EVE_SUPPORT_CMDB
+	if (addr != REG_CMDB_WRITE)
+#else
+	scope
+#endif
+	{
+		bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
+		addr += inc;
+		if (wrapCmdAddr)
+			addr = RAM_CMD + (addr & EVE_CMD_FIFO_MASK);
+	}
+	return addr;
+}
+
 static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
 {
 	FT4222_STATUS status;
@@ -522,7 +542,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 		if (buffer && phost->SpiWrBufIndex)
 		{
 			/* Buffer is over size, flush now */
-			if (!wrBuffer(phost, NULL, 0))
+			if (!flush(phost))
 				return false;
 
 			/* Write to buffer */
@@ -603,18 +623,8 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 					buffer += sizeTransferred;
 					size -= sizeTransferred;
 
-#ifdef EVE_SUPPORT_CMDB
-					if (addr != REG_CMDB_WRITE)
-#else
-					scope
-#endif
-					{
-						bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
-						addr += sizeTransferred;
-						if (wrapCmdAddr)
-							addr = RAM_CMD + (addr & EVE_CMD_FIFO_MASK);
-						phost->SpiRamGAddr = addr;
-					}
+					addr = incrementRamGAddr(addr, sizeTransferred);
+					phost->SpiRamGAddr = addr;
 				}
 			}
 			else
@@ -633,12 +643,18 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 {
 	eve_assert(phost->Status == EVE_STATUS_OPENED);
 
-	if (addr != phost->SpiRamGAddr || rw == EVE_TRANSFER_READ)
+#if !defined(EVE_SUPPORT_CMDB)
+	if (addr == REG_CMD_WRITE && rw == EVE_TRANSFER_WRITE)
+	{
+		/* Bypass fifo write pointer write */
+		phost->SpiWpWriting = true;
+	}
+	else
+#endif
+	    if (addr != incrementRamGAddr(phost->SpiRamGAddr, phost->SpiWrBufIndex) || rw == EVE_TRANSFER_READ)
 	{
 		/* Close any write transfer that was left open, if the address changed */
-		if (phost->SpiWrBufIndex)
-			wrBuffer(phost, NULL, 0);
-
+		flush(phost);
 		phost->SpiRamGAddr = addr;
 	}
 
@@ -659,21 +675,38 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 #ifdef EVE_SUPPORT_CMDB
 	if (addr != REG_CMDB_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
 #else
-	if (!((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
+	if (addr != REG_CMD_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
 #endif
 	{
-		if (phost->SpiWrBufIndex)
-			wrBuffer(phost, NULL, 0);
+		flush(phost);
 	}
-
+	
+#if !defined(EVE_SUPPORT_CMDB)
+	phost->SpiWpWriting = false;
+#endif
 	phost->Status = EVE_STATUS_OPENED;
 }
 
-static void flush(EVE_HalContext *phost)
+static bool flush(EVE_HalContext *phost)
 {
+	bool res;
 	if (phost->SpiWrBufIndex)
-		wrBuffer(phost, NULL, 0);
+	{
+		res = wrBuffer(phost, NULL, 0);
+	}
 	eve_assert(!phost->SpiWrBufIndex);
+#if !defined(EVE_SUPPORT_CMDB)
+	if (phost->SpiWpWritten)
+	{
+		phost->SpiRamGAddr = REG_CMD_WRITE;
+		phost->SpiWrBufIndex = 2;
+		phost->SpiWrBuf[0] = phost->SpiWpWrite & 0xFF;
+		phost->SpiWrBuf[1] = phost->SpiWpWrite >> 8;
+		res = wrBuffer(phost, NULL, 0);
+	}
+	eve_assert(!phost->SpiWrBufIndex);
+#endif
+	return res;
 }
 
 void EVE_Hal_flush(EVE_HalContext *phost)
@@ -684,6 +717,9 @@ void EVE_Hal_flush(EVE_HalContext *phost)
 
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 {
+#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
+	eve_assert(!phost->SpiWpWriting);
+#endif
 	if (phost->Status == EVE_STATUS_READING)
 	{
 		rdBuffer(phost, &value, 1);
@@ -698,6 +734,14 @@ uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 {
+#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
+	if (phost->SpiWpWriting)
+	{
+		phost->SpiWpWrite = value;
+		phost->SpiWpWritten = true;
+		return 0;
+	}
+#endif
 	uint8_t buffer[2];
 	if (phost->Status == EVE_STATUS_READING)
 	{
@@ -716,6 +760,9 @@ uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 {
+#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
+	eve_assert(!phost->SpiWpWriting);
+#endif
 	uint8_t buffer[4];
 	if (phost->Status == EVE_STATUS_READING)
 	{
@@ -741,6 +788,10 @@ void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *
 	if (!size)
 		return;
 
+#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
+	eve_assert(!phost->SpiWpWriting);
+#endif
+
 	if (result && buffer)
 	{
 		/* not implemented */
@@ -760,6 +811,10 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 {
 	if (!size)
 		return;
+
+#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
+	eve_assert(!phost->SpiWpWriting);
+#endif
 
 	if (result && buffer)
 	{
@@ -785,7 +840,10 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		EVE_Hal_transfer32(phost, 0);
 		return 4;
 	}
-
+	
+#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
+	eve_assert(!phost->SpiWpWriting);
+#endif
 	eve_assert(size <= EVE_CMD_STRING_MAX);
 	uint32_t transferred = 0;
 	if (phost->Status == EVE_STATUS_WRITING)
