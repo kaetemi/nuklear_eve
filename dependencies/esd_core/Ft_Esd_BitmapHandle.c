@@ -22,7 +22,11 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 // #define FT_ESD_ROMFONT_NB 35UL
 // ft_uint8_t Ft_Esd_RomFontHandles[FT_ESD_ROMFONT_NB - FT_ESD_FONTHANDLE_NB] = { 0 };
 
+#if (EVE_MODEL >= EVE_FT810)
 #define ESD_ROMFONT_MAX 35UL // Max, rom font handle, exclusive
+#else
+#define ESD_ROMFONT_MAX 32UL // Max, rom font handle, exclusive
+#endif
 #define ESD_ROMFONT_MIN 16UL // Min, rom font handle, inclusive
 #define ESD_ROMFONT_NB (ESD_ROMFONT_MAX - ESD_ROMFONT_MIN)
 Esd_RomFontInfo Esd_RomFonts[ESD_ROMFONT_NB] = {
@@ -42,9 +46,11 @@ Esd_RomFontInfo Esd_RomFonts[ESD_ROMFONT_NB] = {
 	{ .Type = ESD_FONT_ROM, .RomFont = 29UL },
 	{ .Type = ESD_FONT_ROM, .RomFont = 30UL },
 	{ .Type = ESD_FONT_ROM, .RomFont = 31UL },
+#if (EVE_MODEL >= EVE_FT810)
 	{ .Type = ESD_FONT_ROM, .RomFont = 32UL },
 	{ .Type = ESD_FONT_ROM, .RomFont = 33UL },
 	{ .Type = ESD_FONT_ROM, .RomFont = 34UL },
+#endif
 };
 
 void Esd_InitRomFontHeight()
@@ -272,6 +278,7 @@ ft_uint8_t Ft_Esd_Dl_Font_Setup(Esd_FontInfo *fontInfo)
 		// Get rom font
 		Esd_RomFontInfo *romFontInfo = (Esd_RomFontInfo *)(void *)fontInfo;
 		ft_uint8_t font = romFontInfo->RomFont;
+#if (EVE_MODEL >= EVE_FT810)
 		if (!(font >= ESD_ROMFONT_MIN && font < ESD_ROMFONT_MAX))
 		{
 			return FT_ESD_BITMAPHANDLE_INVALID; // Not a valid rom font
@@ -311,17 +318,17 @@ ft_uint8_t Ft_Esd_Dl_Font_Setup(Esd_FontInfo *fontInfo)
 
 			// Set the font
 			romFontInfo->BitmapHandle = handle;
-#if (EVE_MODEL >= EVE_FT810)
 			Ft_Gpu_CoCmd_RomFont(Ft_Esd_Host, handle, font);
-#else
-			eve_assert_ex(false, "No support yet in ESD for rom fonts");
-#endif
 #if ESD_DL_OPTIMIZE
 			FT_ESD_STATE.Handle = handle;
 #endif
 			Esd_CurrentContext->HandleState.Resized[handle] = 0;
 			Esd_CurrentContext->HandleState.Page[handle] = 0;
 		}
+#else
+		romFontInfo->BitmapHandle = font;
+		return font;
+#endif
 	}
 	else
 	{

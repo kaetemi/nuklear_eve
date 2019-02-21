@@ -35,7 +35,9 @@ This C source file demonstrates the Nuklear EVE implementation.
 int main(void)
 {
     struct nk_evefont *font;
+#if (EVE_MODEL >= EVE_FT810)
     struct nk_evefont *font_large;
+#endif
     struct nk_context *ctx;
 
     int show_calculator = 0;
@@ -48,7 +50,9 @@ int main(void)
     font = nk_evefont_create_rom(27);
     ctx = nk_eve_init(font);
 
+#if (EVE_MODEL >= EVE_FT810)
     font_large = nk_evefont_create_rom(32);
+#endif
     
     /* style.c */
     /*set_style(ctx, THEME_WHITE);*/
@@ -93,11 +97,13 @@ int main(void)
                 EVE_Hal_wr32(nk_eve_hal(), REG_SOUND, (60 << 8) | 0x46);
                 EVE_Hal_wr32(nk_eve_hal(), REG_PLAY, 1);
             }
-
+            
+#if (EVE_MODEL >= EVE_FT810)
             nk_eve_set_font(font_large);
             nk_layout_row_static(ctx, 50, 210, 1);
             nk_label(ctx, "Big Font", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_TOP);
             nk_eve_set_font(font);
+#endif
         }
         nk_end(ctx);
 
@@ -133,7 +139,9 @@ int main(void)
 
     /* Release Nuklear EVE */
     nk_evefont_del(font);
+#if (EVE_MODEL >= EVE_FT810)
     nk_evefont_del(font_large);
+#endif
     nk_eve_shutdown();
 
     return EXIT_SUCCESS;
