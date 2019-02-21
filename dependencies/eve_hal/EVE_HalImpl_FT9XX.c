@@ -551,16 +551,16 @@ void EVE_Mcu_initialize()
 	    uart_stop_bits_1); /* No. Stop Bits */
 
 #if (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
-	/* asign all the respective pins to gpio and set them to default values */
+	/* assign all the respective pins to gpio and set them to default values */
 	gpio_function(GPIO_ILI9488_DCX, pad_ili9488_dcx);
 	gpio_dir(GPIO_ILI9488_DCX, pad_dir_output);
 	gpio_write(GPIO_ILI9488_DCX, 1);
 
-	gpio_function(GPIO_SPIM_CLK, pad_gpio_spim_sck);
+	gpio_function(GPIO_SPIM_CLK, pad_spim_sck);
 	gpio_dir(GPIO_SPIM_CLK, pad_dir_output);
 	gpio_write(GPIO_SPIM_CLK, 1);
 
-	gpio_function(GPIO_SPIM_MOSI, pad_gpio_spim_mosi);
+	gpio_function(GPIO_SPIM_MOSI, pad_spim_mosi);
 	gpio_dir(GPIO_SPIM_MOSI, pad_dir_output);
 	gpio_write(GPIO_SPIM_MOSI, 1);
 
@@ -568,24 +568,13 @@ void EVE_Mcu_initialize()
 	gpio_dir(GPIO_ILI9488_CS1, pad_dir_output);
 	gpio_write(GPIO_ILI9488_CS1, 1);
 
-	gpio_function(GPIO_SPIM_MISO, pad_gpio_spim_miso);
+	gpio_function(GPIO_SPIM_MISO, pad_spim_miso);
 	gpio_dir(GPIO_SPIM_MISO, pad_dir_output);
 	gpio_write(GPIO_SPIM_MISO, 1);
 
-	gpio_function(phost->Parameters.SpiCsPin, pad_gpio_spim_ss0);
-	gpio_dir(phost->Parameters.SpiCsPin, pad_dir_output);
-	gpio_write(phost->Parameters.SpiCsPin, 1);
-
-	gpio_function(parameters->PowerDownPin, pad_pwd);
-	gpio_dir(parameters->PowerDownPin, pad_dir_output);
-	gpio_write(parameters->PowerDownPin, 1);
-
-	gpio_write(GPIO_ILI9488_DCX, 1);
-	gpio_write(phost->Parameters.SpiCsPin, 1);
-	gpio_write(parameters->PowerDownPin, 1);
-	gpio_write(GPIO_ILI9488_CS1, 1);
-
-	gpio_write(GPIO_ILI9488_CS1, 1);
+	gpio_function(FT800_SEL_PIN, pad_spim_ss0);
+	gpio_dir(FT800_SEL_PIN, pad_dir_output);
+	gpio_write(FT800_SEL_PIN, 1);
 #endif
 
 	initSdHost();

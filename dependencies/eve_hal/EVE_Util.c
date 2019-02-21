@@ -131,7 +131,7 @@ static eve_progmem_const uint8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
 };
 
 /* Download new touch firmware for FT811 and FT813 chip */
-ft_void_t uploadTouchFirmware(EVE_HalContext *phost)
+void uploadTouchFirmware(EVE_HalContext *phost)
 {
 	/* bug fix pen up section */
 	eve_assert_do(EVE_Cmd_wrProgmem(phost, c_TouchDataU8, TOUCH_DATA_LEN));

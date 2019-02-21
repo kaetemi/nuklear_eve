@@ -148,23 +148,23 @@ Revision History:
 
 #elif defined(PANL35)
 
-#define FT800_SEL_PIN GPIO_SPIM_SS0
-#define FT800_PD_N 1
-#define FT800_INT 0
+#define FT800_SEL_PIN (GPIO_SPIM_SS0)
+#define FT800_PD_N (1)
+#define FT800_INT (0)
 
 #elif defined(PANL70)
 
-#define FT800_SEL_PIN GPIO_SPIM_SS0
-#define FT800_PD_N 1
-#define FT800_INT 0
+#define FT800_SEL_PIN (GPIO_SPIM_SS0)
+#define FT800_PD_N (1)
+#define FT800_INT (0)
 #define GOODIXGPIO (33)
 #define pad_pwd (pad_gpio15)
 
 #elif defined(PANL70PLUS)
 
-#define FT800_SEL_PIN GPIO_SPIM_SS0
-#define FT800_PD_N 1
-#define FT800_INT 0
+#define FT800_SEL_PIN (GPIO_SPIM_SS0)
+#define FT800_PD_N (1)
+#define FT800_INT (0)
 #define GOODIXGPIO (33)
 #define pad_goodixgpio (pad_gpio33)
 

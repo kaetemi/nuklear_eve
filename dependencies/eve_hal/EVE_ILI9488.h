@@ -101,13 +101,13 @@
 
 #define ILI9488_CMD_SPI_READCMDSETTINGS (0xFB)
 
-ft_int16_t ILI9488_SPI_WriteCmd(ft_uint8_t cmd, ft_uint8_t data);
-ft_int16_t ILI9488_SPI_WriteCmdN(ft_uint8_t cmd, ft_uint8_t bytecount, ft_uint8_t *pbuff);
-ft_uint8_t ILI9488_SPI_Read(ft_uint8_t cmd);
-ft_uint8_t ILI9488_SPI_ReadN(ft_uint8_t cmd, ft_uint8_t numbytes, ft_uint8_t *pbuffer);
-ft_uint32_t ILI9488_SPI_ReadRDDID(ft_uint8_t cmd);
-ft_uint32_t ILI9488_SPI_ReadRDDST(ft_uint8_t cmd);
-ft_void_t EVE_ILI9488_bootup();
+int16_t ILI9488_SPI_WriteCmd(uint8_t cmd, uint8_t data);
+int16_t ILI9488_SPI_WriteCmdN(uint8_t cmd, uint8_t bytecount, uint8_t *pbuff);
+uint8_t ILI9488_SPI_Read(uint8_t cmd);
+uint8_t ILI9488_SPI_ReadN(uint8_t cmd, uint8_t numbytes, uint8_t *pbuffer);
+uint32_t ILI9488_SPI_ReadRDDID(uint8_t cmd);
+uint32_t ILI9488_SPI_ReadRDDST(uint8_t cmd);
+void EVE_ILI9488_bootup();
 
 #endif /* ENABLE_ILI9488_HVGA_PORTRAIT */
 
