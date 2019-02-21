@@ -681,8 +681,21 @@ typedef eve_progmem int8_t eve_prog_int8_t;
 typedef eve_progmem uint8_t eve_prog_uint8_t;
 typedef eve_progmem uint16_t eve_prog_uint16_t;
 
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+/* Set implementation options */
 #if defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
 #define BUFFER_OPTIMIZATION
+#endif
+
+/* Disable unsupported options */
+#if defined(ENABLE_ILI9488_HVGA_PORTRAIT) && !defined(FT9XX_PLATFORM)
+#undef ENABLE_ILI9488_HVGA_PORTRAIT
+#endif
+#if defined(ENABLE_KD2401_HVGA_PORTRAIT) && !defined(FT9XX_PLATFORM)
+#undef ENABLE_KD2401_HVGA_PORTRAIT
 #endif
 
 ///////////////////////////////////////////////////////////////////////
