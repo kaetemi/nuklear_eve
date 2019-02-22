@@ -500,7 +500,7 @@ void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *
 {
 	if (!size)
 		return;
-	
+
 #if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
 	eve_assert(!phost->SpiWpWriting);
 #endif
@@ -524,7 +524,7 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 {
 	if (!size)
 		return;
-	
+
 #if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
 	eve_assert(!phost->SpiWpWriting);
 #endif
@@ -553,7 +553,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		EVE_Hal_transfer32(phost, 0);
 		return 4;
 	}
-	
+
 #if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
 	eve_assert(!phost->SpiWpWriting);
 #endif

@@ -679,7 +679,7 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 	{
 		flush(phost);
 	}
-	
+
 #if !defined(EVE_SUPPORT_CMDB)
 	phost->SpiWpWriting = false;
 #endif
@@ -840,7 +840,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		EVE_Hal_transfer32(phost, 0);
 		return 4;
 	}
-	
+
 #if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
 	eve_assert(!phost->SpiWpWriting);
 #endif
