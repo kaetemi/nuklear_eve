@@ -132,11 +132,9 @@ void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy
 	}
 
 	/* Enable FIFO of QSPI */
-	/*
 	spi_option(SPIM, spi_option_fifo_size, 64);
 	spi_option(SPIM, spi_option_fifo, 1);
 	spi_option(SPIM, spi_option_fifo_receive_trigger, 1);
-	*/
 
 	switch (numchnls)
 	{
@@ -159,11 +157,11 @@ void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy
 bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
 	gpio_function(phost->Parameters.SpiCsPin, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_dir(phost->Parameters.SpiCsPin, pad_dir_output);
 	gpio_write(phost->Parameters.SpiCsPin, 1);
 
 	gpio_function(phost->Parameters.PowerDownPin, pad_pwd);
 	gpio_dir(phost->Parameters.PowerDownPin, pad_dir_output);
-
 	gpio_write(phost->Parameters.PowerDownPin, 1);
 
 	/* Initialize single channel */

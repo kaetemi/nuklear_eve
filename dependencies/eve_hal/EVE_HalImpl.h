@@ -87,8 +87,6 @@ void EVE_Millis_initialize();
 void EVE_Millis_release();
 uint32_t EVE_millis();
 
-bool EVE_UtilImpl_prepareSpiMaster(EVE_HalContext *phost);
-
 bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost);
 
 #endif /* #ifndef EVE_HAL_IMPL__H */
