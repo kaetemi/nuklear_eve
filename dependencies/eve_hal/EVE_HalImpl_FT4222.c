@@ -33,16 +33,14 @@
 #include "EVE_Platform.h"
 #if defined(FT4222_PLATFORM)
 
-#define FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH 65535
-#define FT4222_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH 65535
+#define FT4222_TRANSFER_SIZE_MAX (0xFFFF)
+#define FT4222_WRITE_HEADER_SIZE (3)
+#define FT4222_WRITE_SIZE_MAX (FT4222_TRANSFER_SIZE_MAX - FT4222_WRITE_HEADER_SIZE)
 
-#define FT4222_MAX_RD_BYTES_PER_CALL_IN_MULTI_CH 65535
-#define FT4222_MAX_WR_BYTES_PER_CALL_IN_MULTI_CH 65532 //3 bytes for FT81x memory address to which data to be written
+#define FT4222_READ_TIMEOUT (5000)
+#define FT4222_WRITE_TIMEOUT (5000)
 
-#define FT4222_ReadTimeout 5000
-#define FT4222_WriteTimeout 5000
-
-#define FT4222_LatencyTime 2
+#define FT4222_LATENCY_TIME (2)
 
 EVE_HalPlatform g_HalPlatform;
 
@@ -283,7 +281,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	if (ret)
 	{
 		//Set default Read timeout 5s and Write timeout 5sec
-		status = FT_SetTimeouts(phost->SpiHandle, FT4222_ReadTimeout, FT4222_WriteTimeout);
+		status = FT_SetTimeouts(phost->SpiHandle, FT4222_READ_TIMEOUT, FT4222_WRITE_TIMEOUT);
 		if (status != FT_OK)
 		{
 			eve_printf_debug("FT_SetTimeouts failed!\n");
@@ -294,7 +292,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	if (ret)
 	{
 		// no latency to usb
-		status = FT_SetLatencyTimer(phost->SpiHandle, FT4222_LatencyTime);
+		status = FT_SetLatencyTimer(phost->SpiHandle, FT4222_LATENCY_TIME);
 		if (status != FT_OK)
 		{
 			eve_printf_debug("FT_SetLatencyTimerfailed!\n");
@@ -472,14 +470,14 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 			uint32_t bytesPerRead;
 			BOOL isEndTransaction;
 
-			if (size <= FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH)
+			if (size <= FT4222_TRANSFER_SIZE_MAX)
 			{
 				bytesPerRead = size;
 				isEndTransaction = TRUE;
 			}
 			else
 			{
-				bytesPerRead = FT4222_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH;
+				bytesPerRead = FT4222_TRANSFER_SIZE_MAX;
 				isEndTransaction = FALSE;
 			}
 
@@ -529,10 +527,10 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 {
 	FT4222_STATUS status;
 
-	if (buffer && (size < (sizeof(phost->SpiWrBuf) - phost->SpiWrBufIndex)))
+	if (buffer && (size < (sizeof(phost->SpiWrBuf) - phost->SpiWrBufIndex - FT4222_WRITE_HEADER_SIZE)))
 	{
 		/* Write to buffer */
-		memcpy(&phost->SpiWrBuf[phost->SpiWrBufIndex], buffer, size);
+		memcpy(&phost->SpiWrBuf[phost->SpiWrBufIndex + FT4222_WRITE_HEADER_SIZE], buffer, size);
 		phost->SpiWrBufIndex += size;
 		return true;
 	}
@@ -545,7 +543,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 				return false;
 
 			/* Write to buffer */
-			if (size < sizeof(phost->SpiWrBuf))
+			if (size < (sizeof(phost->SpiWrBuf) - FT4222_WRITE_HEADER_SIZE))
 				return wrBuffer(phost, buffer, size);
 		}
 
@@ -554,37 +552,13 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 			if (phost->SpiChannels == EVE_SPI_SINGLE_CHANNEL)
 			{
 				/* Flush now, or write oversize buffer */
-				uint16_t sizeTransferred;
-				uint8_t hrdpkt[8];
 				uint32_t addr = phost->SpiRamGAddr;
 
 				if (!buffer)
 				{
 					/* Flushing */
-					buffer = phost->SpiWrBuf;
 					size = phost->SpiWrBufIndex;
 					phost->SpiWrBufIndex = 0;
-				}
-
-				/* Compose the HOST MEMORY WRITE packet */
-				hrdpkt[0] = (addr >> 16) | 0x80; /* MSB bits 10 for WRITE */
-				hrdpkt[1] = (addr >> 8) & 0xFF;
-				hrdpkt[2] = addr & 0xFF;
-
-				status = FT4222_SPIMaster_SingleWrite(
-				    phost->SpiHandle,
-				    hrdpkt,
-				    3, // 3 address bytes
-				    &sizeTransferred,
-				    FALSE /* continue transaction */
-				);
-
-				if ((status != FT4222_OK) || (sizeTransferred != 3))
-				{
-					eve_printf_debug("%d FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", __LINE__, sizeTransferred, status);
-					if (sizeTransferred != 3)
-						phost->Status = EVE_STATUS_ERROR;
-					return false;
 				}
 
 				while (size)
@@ -593,23 +567,28 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 					uint32_t bytesPerWrite;
 					BOOL isEndTransaction;
 
-					if (size <= FT4222_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH)
-					{
-						bytesPerWrite = size;
-						isEndTransaction = TRUE;
-					}
+					if (size <= FT4222_WRITE_SIZE_MAX)
+						bytesPerWrite = size + FT4222_WRITE_HEADER_SIZE;
 					else
+						bytesPerWrite = FT4222_TRANSFER_SIZE_MAX;
+
+					if (buffer)
 					{
-						bytesPerWrite = FT4222_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH;
-						isEndTransaction = FALSE;
+						/* Writing large buffer */
+						memcpy(phost->SpiWrBuf + FT4222_WRITE_HEADER_SIZE, buffer, (bytesPerWrite - FT4222_WRITE_HEADER_SIZE));
 					}
+
+					/* Compose the HOST MEMORY WRITE packet */
+					phost->SpiWrBuf[0] = (addr >> 16) | 0x80; /* MSB bits 10 for WRITE */
+					phost->SpiWrBuf[1] = (addr >> 8) & 0xFF;
+					phost->SpiWrBuf[2] = addr & 0xFF;
 
 					status = FT4222_SPIMaster_SingleWrite(
 					    phost->SpiHandle,
-					    (uint8_t *)buffer,
+					    phost->SpiWrBuf,
 					    bytesPerWrite,
 					    &sizeTransferred,
-					    isEndTransaction);
+					    TRUE);
 
 					if ((status != FT4222_OK) || (sizeTransferred != bytesPerWrite))
 					{
@@ -619,8 +598,16 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 						return false;
 					}
 
-					buffer += sizeTransferred;
-					size -= sizeTransferred;
+					if (buffer)
+					{
+						buffer += sizeTransferred - FT4222_WRITE_HEADER_SIZE;
+					}
+					if (size)
+					{
+						eve_assert((sizeTransferred - FT4222_WRITE_HEADER_SIZE) <= size, "Cannot have transferred more than size\n");
+						size -= sizeTransferred - FT4222_WRITE_HEADER_SIZE;
+						eve_assert_ex(!(buffer && size), "Cannot have space left after flushing buffer\n");
+					}
 
 					addr = incrementRamGAddr(addr, sizeTransferred);
 					phost->SpiRamGAddr = addr;
@@ -700,8 +687,8 @@ static bool flush(EVE_HalContext *phost)
 		phost->SpiWpWritten = false;
 		phost->SpiRamGAddr = REG_CMD_WRITE;
 		phost->SpiWrBufIndex = 2;
-		phost->SpiWrBuf[0] = phost->SpiWpWrite & 0xFF;
-		phost->SpiWrBuf[1] = phost->SpiWpWrite >> 8;
+		phost->SpiWrBuf[FT4222_WRITE_HEADER_SIZE + 0] = phost->SpiWpWrite & 0xFF;
+		phost->SpiWrBuf[FT4222_WRITE_HEADER_SIZE + 1] = phost->SpiWpWrite >> 8;
 		res = wrBuffer(phost, NULL, 0);
 	}
 	eve_assert(!phost->SpiWrBufIndex);
