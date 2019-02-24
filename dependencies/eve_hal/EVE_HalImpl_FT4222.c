@@ -439,65 +439,62 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 
 	if (phost->SpiChannels == EVE_SPI_SINGLE_CHANNEL)
 	{
-		uint16_t sizeTransferred;
 		uint8_t hrdpkt[8] = { 0 }; // 3 byte addr + 2 or 1 byte dummy
-		uint32_t addr = phost->SpiRamGAddr;
-
-		/* Compose the HOST MEMORY READ packet */
-		hrdpkt[0] = (uint8_t)(addr >> 16) & 0xFF;
-		hrdpkt[1] = (uint8_t)(addr >> 8) & 0xFF;
-		hrdpkt[2] = (uint8_t)(addr & 0xFF);
-
-		status = FT4222_SPIMaster_SingleWrite(
-		    phost->SpiHandle,
-		    hrdpkt,
-		    3 + phost->SpiDummyBytes, /* 3 address and chosen dummy bytes */
-		    &sizeTransferred,
-		    FALSE /* continue transaction */
-		);
-
-		if ((status != FT4222_OK) || (sizeTransferred != (3 + phost->SpiDummyBytes)))
-		{
-			eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", sizeTransferred, status);
-			if (sizeTransferred != (3 + phost->SpiDummyBytes))
-				phost->Status = EVE_STATUS_ERROR;
-			return false;
-		}
 
 		while (size)
 		{
-			uint16_t sizeTransferred;
+			uint16_t sizeWritten;
+			uint16_t sizeRead;
 			uint32_t bytesPerRead;
-			BOOL isEndTransaction;
+			uint32_t addr = phost->SpiRamGAddr;
+
+			/* Compose the HOST MEMORY READ packet */
+			hrdpkt[0] = (uint8_t)(addr >> 16) & 0xFF;
+			hrdpkt[1] = (uint8_t)(addr >> 8) & 0xFF;
+			hrdpkt[2] = (uint8_t)(addr & 0xFF);
+
+			status = FT4222_SPIMaster_SingleWrite(
+				phost->SpiHandle,
+				hrdpkt,
+				3 + phost->SpiDummyBytes, /* 3 address and chosen dummy bytes */
+				&sizeWritten,
+				FALSE
+			);
+
+			if ((status != FT4222_OK) || (sizeWritten != (3 + phost->SpiDummyBytes)))
+			{
+				eve_printf_debug("FT4222_SPIMaster_SingleWrite failed, sizeTransferred is %d with status %d\n", sizeWritten, status);
+				if (sizeWritten != (3 + phost->SpiDummyBytes))
+					phost->Status = EVE_STATUS_ERROR;
+				return false;
+			}
 
 			if (size <= FT4222_TRANSFER_SIZE_MAX)
-			{
 				bytesPerRead = size;
-				isEndTransaction = TRUE;
-			}
 			else
-			{
 				bytesPerRead = FT4222_TRANSFER_SIZE_MAX;
-				isEndTransaction = FALSE;
-			}
 
 			status = FT4222_SPIMaster_SingleRead(
 			    phost->SpiHandle,
 			    buffer,
 			    bytesPerRead,
-			    &sizeTransferred,
-			    isEndTransaction);
+			    &sizeRead,
+			    TRUE);
 
-			if ((status != FT4222_OK) || (sizeTransferred != bytesPerRead))
+			if ((status != FT4222_OK) || (sizeRead != bytesPerRead))
 			{
-				eve_printf_debug("FT4222_SPIMaster_SingleRead failed,sizeTransferred is %d with status %d\n", sizeTransferred, status);
-				if (sizeTransferred != bytesPerRead)
+				eve_printf_debug("FT4222_SPIMaster_SingleRead failed,sizeTransferred is %d with status %d\n", sizeRead, status);
+				if (sizeRead != bytesPerRead)
 					phost->Status = EVE_STATUS_ERROR;
 				return false;
 			}
-
-			size -= sizeTransferred;
-			buffer += sizeTransferred;
+			
+			buffer += sizeRead;
+			if (size)
+			{
+				eve_assert_ex(sizeRead <= size, "Cannot have transferred more than size\n");
+				size -= sizeRead;
+			}
 
 #ifdef EVE_SUPPORT_CMDB
 			if (addr != REG_CMDB_WRITE)
@@ -506,7 +503,7 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 #endif
 			{
 				bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
-				addr += sizeTransferred;
+				addr += sizeRead;
 				if (wrapCmdAddr)
 					addr = RAM_CMD + (addr & EVE_CMD_FIFO_MASK);
 				phost->SpiRamGAddr = addr;
@@ -565,7 +562,6 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 				{
 					uint16_t sizeTransferred;
 					uint32_t bytesPerWrite;
-					BOOL isEndTransaction;
 
 					if (size <= FT4222_WRITE_SIZE_MAX)
 						bytesPerWrite = size + FT4222_WRITE_HEADER_SIZE;
@@ -604,7 +600,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 					}
 					if (size)
 					{
-						eve_assert((sizeTransferred - FT4222_WRITE_HEADER_SIZE) <= size, "Cannot have transferred more than size\n");
+						eve_assert_ex((sizeTransferred - FT4222_WRITE_HEADER_SIZE) <= (int32_t)size, "Cannot have transferred more than size\n");
 						size -= sizeTransferred - FT4222_WRITE_HEADER_SIZE;
 						eve_assert_ex(!(buffer && size), "Cannot have space left after flushing buffer\n");
 					}
