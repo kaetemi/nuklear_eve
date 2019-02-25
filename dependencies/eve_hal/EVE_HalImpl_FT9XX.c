@@ -66,36 +66,11 @@ void EVE_HalImpl_initialize()
 {
 	g_HalPlatform.TotalDevices = 1;
 
-	/* Initialize SPIM HW */
-	/* TODO: This is duplicate in bootup */
-	// sys_enable(sys_device_spi_master);
-	// gpio_function(GPIO_SPIM_CLK, pad_spim_sck); /* GPIO27 to SPIM_CLK */
-	// gpio_function(GPIO_SPIM_SS0, pad_spim_ss0); /* GPIO28 as CS */
-	// gpio_function(GPIO_SPIM_MOSI, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
-	// gpio_function(GPIO_SPIM_MISO, pad_spim_miso); /* GPIO30 to SPIM_MISO */
-	//
-	// gpio_dir(GPIO_SPIM_CLK, pad_dir_output);
-	// gpio_dir(GPIO_SPIM_SS0, pad_dir_output);
-	// gpio_dir(GPIO_SPIM_MOSI, pad_dir_output);
-	// gpio_dir(GPIO_SPIM_MISO, pad_dir_input);
-
-#if defined(ENABLE_SPI_DUAL) || defined(ENABLE_SPI_QUAD)
-	/* Initialize IO2 and IO3 pad/pin for dual and quad settings */
-	// gpio_function(GPIO_SPIM_IO2, pad_spim_io2);
-	// gpio_function(GPIO_SPIM_IO3, pad_spim_io3);
-	// gpio_dir(GPIO_SPIM_IO2, pad_dir_output);
-	// gpio_dir(GPIO_SPIM_IO3, pad_dir_output);
-#endif
-
 #if defined(PANL70) || defined(PANL70PLUS)
 	gpio_function(GOODIXGPIO, pad_goodixgpio);
 	gpio_dir(GOODIXGPIO, pad_dir_output);
 	gpio_write(GOODIXGPIO, 1);
 #endif
-
-	// gpio_write(GPIO_SPIM_SS0, 1);
-
-	// spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
 }
 
 /* Release HAL platform */
@@ -143,11 +118,9 @@ void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy
 	}
 
 	/* Enable FIFO of QSPI */
-	/*
 	spi_option(SPIM, spi_option_fifo_size, 64);
 	spi_option(SPIM, spi_option_fifo, 1);
 	spi_option(SPIM, spi_option_fifo_receive_trigger, 1);
-	*/
 
 	switch (numchnls)
 	{
