@@ -40,9 +40,9 @@
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.467861730" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="_DEBUG"/>
-									<listOptionValue builtIn="false" value="EVE_GRAPHICS_VM816C"/>
+									<listOptionValue builtIn="false" value="ME812A_WH50R"/>
 									<listOptionValue builtIn="false" value="EVE_DISPLAY_WVGA"/>
-									<listOptionValue builtIn="false" value="MM900EV1A"/>
+									<listOptionValue builtIn="false" value="MM900EV2A"/>
 								</option>
 								<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.other.275981158" name="Other flags" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -ffunction-sections -Wno-unused-variable" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1722695471" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -136,9 +136,9 @@
 								<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.level.51088400" name="Debug Level" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.576915987" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG"/>
-									<listOptionValue builtIn="false" value="EVE_GRAPHICS_VM816C"/>
+									<listOptionValue builtIn="false" value="ME812A_WH50R"/>
 									<listOptionValue builtIn="false" value="EVE_DISPLAY_WVGA"/>
-									<listOptionValue builtIn="false" value="MM900EV1A"/>
+									<listOptionValue builtIn="false" value="MM900EV2A"/>
 								</option>
 								<option id="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.include.paths.1904078320" name="Include paths (-I)" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.build.gcc.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${FT90X_TOOLCHAIN}/hardware/include&quot;"/>
@@ -151,6 +151,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/nuklear_eve/dependencies/fatfs}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/nuklear_eve/dependencies/nuklear}&quot;"/>
 								</option>
+								<option id="gnu.c.compiler.option.dialect.std.1162126412" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1880262206" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.cpp.compiler.1914228660" name="FT90x G++ Compiler" superClass="com.ftdichip.managedbuild.gnu.cross.ft90x.tool.cpp.compiler">
