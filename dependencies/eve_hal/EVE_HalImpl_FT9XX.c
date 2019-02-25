@@ -47,6 +47,14 @@ bool bacnet_msg_received(uint8_t src, const uint8_t *indata, const size_t inlen,
 void bacnet_unconf_msg_received(uint8_t src, const uint8_t *indata, const size_t inlen); /* Placeholder for user code */
 #endif /* #if defined(EVE_MODULE_PANL) */
 
+#if defined(__FT930__)
+static const uint8_t s_SpimGpio[5] = { 30, 31, 32, 33, 29 };
+static const pad_dir_t s_SpimFunc[5] = { pad_spim_ss0, pad_spim_ss1, pad_spim_ss2, pad_spim_ss3, pad29_spim_ss0 }
+#else
+static const uint8_t s_SpimGpio[4] = { 28, 33, 34, 35 };
+static const pad_dir_t s_SpimFunc[4] = { pad_spim_ss0, pad_spim_ss1, pad_spim_ss2, pad_spim_ss3 };
+#endif
+
 /*********
 ** INIT **
 *********/
@@ -100,27 +108,30 @@ void EVE_HalImpl_release()
 void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
 {
 	parameters->PowerDownPin = FT800_PD_N;
-	parameters->SpiCsPin = FT800_SEL_PIN;
+	parameters->SpiCsPin = 0; // SS0
 }
 
 void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
 {
+	uint8_t spimGpio = s_SpimGpio[phost->Parameters.SpiCsPin];
+	pad_dir_t spimFunc = s_SpimFunc[phost->Parameters.SpiCsPin];
+
 	/* Reconfigure the SPI */
 	sys_enable(sys_device_spi_master);
 	gpio_function(GPIO_SPIM_CLK, pad_spim_sck); /* GPIO27 to SPIM_CLK */
-	gpio_function(phost->Parameters.SpiCsPin, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_function(spimGpio, spimFunc); /* GPIO as SS0-SS4 */
 	gpio_function(GPIO_SPIM_MOSI, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
 	gpio_function(GPIO_SPIM_MISO, pad_spim_miso); /* GPIO30 to SPIM_MISO */
 
 	gpio_dir(GPIO_SPIM_CLK, pad_dir_output);
-	gpio_dir(phost->Parameters.SpiCsPin, pad_dir_output);
+	gpio_dir(spimGpio, pad_dir_output);
 	gpio_dir(GPIO_SPIM_MOSI, pad_dir_output);
 	gpio_dir(GPIO_SPIM_MISO, pad_dir_input);
 
-	gpio_write(phost->Parameters.SpiCsPin, 1);
+	gpio_write(spimGpio, 1);
 
 	/* Change clock frequency to 25mhz */
-	spi_init(SPIM, spi_dir_master, spi_mode_0, 4); /* TODO: Latest HAL has 16 instead of 4, validate */
+	uint8_t res = spi_init(SPIM, spi_dir_master, spi_mode_0, 4); /* TODO: Latest HAL has 16 instead of 4, validate */
 
 	if (numchnls > EVE_SPI_SINGLE_CHANNEL)
 	{
@@ -132,9 +143,11 @@ void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy
 	}
 
 	/* Enable FIFO of QSPI */
+	/*
 	spi_option(SPIM, spi_option_fifo_size, 64);
 	spi_option(SPIM, spi_option_fifo, 1);
 	spi_option(SPIM, spi_option_fifo_receive_trigger, 1);
+	*/
 
 	switch (numchnls)
 	{
@@ -156,9 +169,12 @@ void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy
 /* Opens a new HAL context using the specified parameters */
 bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
-	gpio_function(phost->Parameters.SpiCsPin, pad_spim_ss0); /* GPIO28 as CS */
-	gpio_dir(phost->Parameters.SpiCsPin, pad_dir_output);
-	gpio_write(phost->Parameters.SpiCsPin, 1);
+	uint8_t spimGpio = s_SpimGpio[phost->Parameters.SpiCsPin];
+	pad_dir_t spimFunc = s_SpimFunc[phost->Parameters.SpiCsPin];
+
+	gpio_function(spimGpio, spimFunc); /* GPIO as SS0-SS4 */
+	gpio_dir(spimGpio, pad_dir_output);
+	gpio_write(spimGpio, 1);
 
 	gpio_function(phost->Parameters.PowerDownPin, pad_pwd);
 	gpio_dir(phost->Parameters.PowerDownPin, pad_dir_output);
@@ -167,7 +183,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	/* Initialize single channel */
 	setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 
-	/* Initialize the context valriables */
+	/* Initialize the context variables */
 	phost->Status = EVE_STATUS_OPENED;
 	++g_HalPlatform.OpenedDevices;
 
@@ -423,6 +439,7 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 	{
 		gpio_write(phost->Parameters.PowerDownPin, 0);
 		EVE_sleep(20);
+		setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 		gpio_write(phost->Parameters.PowerDownPin, 1);
 		EVE_sleep(20);
 	}
@@ -433,8 +450,6 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 		gpio_write(phost->Parameters.PowerDownPin, 0);
 		EVE_sleep(20);
 	}
-
-	setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 }
 
 void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)

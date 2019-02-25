@@ -67,7 +67,7 @@ Revision History:
 
 #define pad_ili9488_dcx (pad_gpio34)
 #define pad_ili9488_cs1 (pad_gpio33)
-#define pad_pwd (pad_gpio43)
+#define pad_pwd (pad_func_0)
 
 #define GPIO_SD_CLK (19)
 #define GPIO_SD_CMD (20)
@@ -123,38 +123,31 @@ Revision History:
 /* Hardware or Module specific macros for gpio line numbers  */
 #if defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
 
-#define FT800_SEL_PIN (GPIO_SPIM_SS0) /* SPI Channel 0-3 */
 #define FT800_PD_N (GPIO_PWD)
 
 #elif defined(MM930MINI) || defined(MM930LITE) || defined(MM932LC)
 
-#define FT800_SEL_PIN (GPIO_SPIM_SS0) /* SPI Channel 0-7 */
 #define FT800_PD_N (GPIO_PWD)
 
 #elif defined(CLEO35)
 
-#define FT800_SEL_PIN (GPIO_SPIM_SS0)
 #define FT800_PD_N (66) //for cleo35 module
 
 #elif defined(CLEO50)
 
-#define FT800_SEL_PIN (GPIO_SPIM_SS0)
 #define FT800_PD_N (0) //for cleo50 module
 
 #elif defined(FT900DEMOBOARD)
 
-#define FT800_SEL_PIN (GPIO_SPIM_SS0)
 #define FT800_PD_N (32)
 
 #elif defined(PANL35)
 
-#define FT800_SEL_PIN (GPIO_SPIM_SS0)
 #define FT800_PD_N (1)
 #define FT800_INT (0)
 
 #elif defined(PANL70)
 
-#define FT800_SEL_PIN (GPIO_SPIM_SS0)
 #define FT800_PD_N (1)
 #define FT800_INT (0)
 #define GOODIXGPIO (33)
@@ -162,7 +155,6 @@ Revision History:
 
 #elif defined(PANL70PLUS)
 
-#define FT800_SEL_PIN (GPIO_SPIM_SS0)
 #define FT800_PD_N (1)
 #define FT800_INT (0)
 #define GOODIXGPIO (33)
