@@ -596,7 +596,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 				if (phost->SpiChannels == EVE_SPI_SINGLE_CHANNEL)
 				{
 					uint16_t sizeWritten;
-				
+
 					status = FT4222_SPIMaster_SingleWrite(
 					    phost->SpiHandle,
 					    phost->SpiWrBuf,

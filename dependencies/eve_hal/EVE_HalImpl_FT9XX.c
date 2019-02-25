@@ -145,6 +145,19 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	uint8_t spimGpio = s_SpimGpio[phost->Parameters.SpiCsPin];
 	pad_dir_t spimFunc = s_SpimFunc[phost->Parameters.SpiCsPin];
 
+	sys_enable(sys_device_spi_master);
+	gpio_function(GPIO_SPIM_CLK, pad_spim_sck); /* GPIO27 to SPIM_CLK */
+	gpio_function(GPIO_SPIM_SS0, pad_spim_ss0); /* GPIO28 as CS */
+	gpio_function(GPIO_SPIM_MOSI, pad_spim_mosi); /* GPIO29 to SPIM_MOSI */
+	gpio_function(GPIO_SPIM_MISO, pad_spim_miso); /* GPIO30 to SPIM_MISO */
+	gpio_dir(GPIO_SPIM_CLK, pad_dir_output);
+	gpio_dir(GPIO_SPIM_SS0, pad_dir_output);
+	gpio_dir(GPIO_SPIM_MOSI, pad_dir_output);
+	gpio_dir(GPIO_SPIM_MISO, pad_dir_input);
+	gpio_write(GPIO_SPIM_SS0, 1);
+	spi_init(SPIM, spi_dir_master, spi_mode_0, 4);
+	// spi_close(SPIM, phost->Parameters.SpiCsPin);
+
 	gpio_function(spimGpio, spimFunc); /* GPIO as SS0-SS4 */
 	gpio_dir(spimGpio, pad_dir_output);
 	gpio_write(spimGpio, 1);
@@ -383,6 +396,8 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 
 void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 {
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
+
 	uint8_t hcmd[4] = { 0 };
 	hcmd[0] = cmd;
 	hcmd[1] = 0;
@@ -396,11 +411,14 @@ void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 
 void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 {
+	eve_assert(phost->Status == EVE_STATUS_OPENED);
+
 	uint8_t hcmd[4] = { 0 };
 	hcmd[0] = cmd & 0xff;
 	hcmd[1] = (cmd >> 8) & 0xff;
 	hcmd[2] = (cmd >> 16) & 0xff;
 	hcmd[3] = 0;
+
 	spi_open(SPIM, phost->Parameters.SpiCsPin);
 	spi_writen(SPIM, hcmd, 3);
 	spi_close(SPIM, phost->Parameters.SpiCsPin);
@@ -475,7 +493,7 @@ uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 static void initSdHost()
 {
 	sys_enable(sys_device_sd_card);
-	/* sdhost_sys_init(); */ /* TODO: This line is in latest hal. Verify. */
+	sdhost_sys_init();
 	sdhost_init();
 
 	gpio_function(GPIO_SD_CLK, pad_sd_clk);

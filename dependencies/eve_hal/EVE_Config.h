@@ -109,17 +109,8 @@ ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM816C, DisplayName = "VM816C", IntegratedFlash
 // ESD_TARGET_GRAPHICS(EVE_GRAPHICS_BT815, DisplayName = "BT815 (Generic)", LibraryTargets="\b(BT81X|BT815)\b")
 // ESD_TARGET_GRAPHICS(EVE_GRAPHICS_BT816, DisplayName = "BT816 (Generic)", LibraryTargets="\b(BT81X|BT816)\b")
 
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_CONNECTEVE, DisplayName = "ConnectEVE", IntegratedDisplay = "AT043B35 (480x272)", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT80X|FT800)\b")
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_HMI35RES, DisplayName = "mikromedia HMI 3.5\" Res", IntegratedDisplay = "Riverdi (320x240)", IntegratedPlatform = "FT900Q", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT81X|FT812)\b")
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_HMI43RES, DisplayName = "mikromedia HMI 4.3\" Res", IntegratedDisplay = "Riverdi (480x272)", IntegratedPlatform = "FT900Q", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT81X|FT812)\b")
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_HMI50RES, DisplayName = "mikromedia HMI 5\" Res", IntegratedDisplay = "Riverdi (800x480)", IntegratedPlatform = "FT900Q", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT81X|FT812)\b")
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_HMI70RES, DisplayName = "mikromedia HMI 7\" Res", IntegratedDisplay = "Riverdi (800x480)", IntegratedPlatform = "FT900Q", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT81X|FT812)\b")
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_HMI35CAP, DisplayName = "mikromedia HMI 3.5\" Cap", IntegratedDisplay = "Riverdi (320x240)", IntegratedPlatform = "FT900Q", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT81X|FT813)\b")
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_HMI43CAP, DisplayName = "mikromedia HMI 4.3\" Cap", IntegratedDisplay = "Riverdi (480x272)", IntegratedPlatform = "FT900Q", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT81X|FT813)\b")
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_HMI50CAP, DisplayName = "mikromedia HMI 5\" Cap", IntegratedDisplay = "Riverdi (800x480)", IntegratedPlatform = "FT900Q", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT81X|FT813)\b")
-// ESD_TARGET_GRAPHICS(EVE_GRAPHICS_MIKROE_HMI70CAP, DisplayName = "mikromedia HMI 7\" Cap", IntegratedDisplay = "Riverdi (800x480)", IntegratedPlatform = "FT900Q", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets="\b(FT81X|FT813)\b")
-
 ESD_TARGET_DISPLAY(EVE_DISPLAY_QVGA, DisplayName = "QVGA (320x240)")
+ESD_TARGET_DISPLAY(EVE_DISPLAY_WQVGA, DisplayName = "WQVGA (400x240)")
 ESD_TARGET_DISPLAY(EVE_DISPLAY_WVGA, DisplayName = "WVGA (800x480)")
 // ESD_TARGET_DISPLAY(EVE_DISPLAY_AT043B35, DisplayName = "AT043B35 (480x272)")
 // ESD_TARGET_DISPLAY(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT, DisplayName = "ILI9488 (320x480)")
@@ -218,8 +209,9 @@ Validate the configured options.
 #define EVE_GRAPHICS_AVAILABLE
 #endif
 
-#if defined(EVE_DISPLAY_QVGA) || defined(EVE_DISPLAY_WVGA) \
-    || defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT)          \
+#if defined(EVE_DISPLAY_QVGA) || defined(EVE_DISPLAY_WQVGA) \
+    || defined(EVE_DISPLAY_WVGA)                            \
+    || defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT)           \
     || defined(EVE_DISPLAY_KD2401_HVGA_PORTRAIT)
 #define EVE_DISPLAY_AVAILABLE
 #endif
@@ -565,6 +557,8 @@ It may also set platform, display, and flash values if none are configured.
 
 #if defined(EVE_DISPLAY_QVGA)
 #define DISPLAY_RESOLUTION_QVGA
+#elif defined(EVE_DISPLAY_WQVGA)
+#define DISPLAY_RESOLUTION_WQVGA
 #elif defined(EVE_DISPLAY_WVGA)
 #define DISPLAY_RESOLUTION_WVGA
 #elif defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT)
