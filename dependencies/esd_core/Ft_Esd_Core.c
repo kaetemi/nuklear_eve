@@ -124,6 +124,9 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 	ec->UserContext = ep->UserContext;
 	Esd_SetCurrent(ec);
 
+	Ft_Gpu_HalInit_t halInit;
+	Ft_Gpu_Hal_Init(&halInit);
+
 #ifdef ESD_SIMULATION
 	eve_printf_debug("\f"); // Shows horizontal line in ESD output window
 #endif
@@ -132,9 +135,6 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 #if _DEBUG
 	Esd_CheckTypeSizes();
 #endif
-
-	Ft_Gpu_HalInit_t halInit;
-	Ft_Gpu_Hal_Init(&halInit);
 
 	EVE_HalParameters parameters;
 	EVE_Hal_defaults(&parameters);
