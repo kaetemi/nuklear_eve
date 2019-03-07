@@ -1,0 +1,3 @@
+[submodule "dependencies/nuklear"]
+	path = dependencies/nuklear
+	url = https://github.com/vurtun/nuklear.git
