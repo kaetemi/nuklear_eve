@@ -9,6 +9,7 @@ Nuklear on EVE.
 
 ## Supported platforms
 - FT90X mcu
+- STM32 mcu (STM32L476GDISCOVERY board)
 - MPSSE cable using Windows
 - FT4222 adapter using Windows
 - BT8XXEMU emulator on Windows
