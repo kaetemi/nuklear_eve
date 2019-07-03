@@ -29,76 +29,51 @@
 * has no liability in relation to those amendments.
 */
 
-#include "EVE_HalImpl.h"
-#include "EVE_Platform.h"
-#if defined(_WIN32)
+#include "EVE_Config.h"
+#ifdef EVE_MULTI_TARGET
+#include "EVE_Hal.h"
 
-/************
-** UTILITY **
-************/
+#undef EVE_MULTI_TARGET
+#define FT_80X_ENABLE
+#include "EVE_GpuDefs.h"
 
-uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
-{
-	uint32_t t0, t1;
-	uint32_t addr = REG_CLOCK;
-	int32_t r = 15625;
+EVE_GpuDefs EVE_GpuDefs_FT80X = {
+	REG_CLOCK,
+	REG_CMD_READ,
+	REG_CMD_WRITE,
+	REG_CMD_DL,
+	0,
+	0,
+	REG_TRIM,
+	REG_FREQUENCY,
+	REG_DLSWAP,
+	REG_ID,
+	REG_CPURESET,
+	REG_HCYCLE,
+	REG_HOFFSET,
+	REG_HSYNC0,
+	REG_HSYNC1,
+	REG_VCYCLE,
+	REG_VOFFSET,
+	REG_VSYNC0,
+	REG_VSYNC1,
+	REG_SWIZZLE,
+	REG_PCLK_POL,
+	REG_HSIZE,
+	REG_VSIZE,
+	REG_CSPREAD,
+	REG_DITHER,
+	REG_TOUCH_RZTHRESH,
+	REG_GPIO_DIR,
+	REG_GPIO,
+	REG_PCLK,
+	REG_PLAYBACK_PLAY,
+	RAM_DL,
+	RAM_CMD,
+	ROM_CHIPID,
+	ROMFONT_TABLEADDRESS,
 
-	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
-	/* may not be precise */
-	EVE_sleep(15625 / 1000);
-
-	t1 = EVE_Hal_rd32(phost, REG_CLOCK); /* t1 read */
-	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
-}
-
-/*********
-** MISC **
-*********/
-
-void EVE_Mcu_initialize()
-{
-	/* no-op */
-}
-
-void EVE_Mcu_release()
-{
-	/* no-op */
-}
-
-/*********
-** MISC **
-*********/
-
-static DWORD s_Millis_Start;
-
-void EVE_Millis_initialize()
-{
-	s_Millis_Start = GetTickCount();
-}
-
-void EVE_Millis_release()
-{
-	/* no-op */
-}
-
-/* global counter to loopback after ~49.71 days */
-uint32_t EVE_millis()
-{
-	return GetTickCount() - s_Millis_Start;
-}
-
-#if defined(ESD_SIMULATION)
-int Ft_Sleep__ESD(int ms);
-#endif
-
-void EVE_sleep(uint32_t ms)
-{
-#if defined(ESD_SIMULATION)
-	Ft_Sleep__ESD(ms);
-#else
-	Sleep(ms);
-#endif
-}
+};
 
 #endif
 

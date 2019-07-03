@@ -186,7 +186,7 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 static bool flush(EVE_HalContext *phost);
 #endif
 
-uint32_t incrementRamGAddr(uint32_t addr, uint32_t inc)
+uint32_t incrementRamGAddr(EVE_HalContext *phost, uint32_t addr, uint32_t inc)
 {
 #ifdef EVE_SUPPORT_CMDB
 	if (addr != REG_CMDB_WRITE)
@@ -281,7 +281,7 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 				return false;
 			}
 
-			addr = incrementRamGAddr(addr, sizeTransferred);
+			addr = incrementRamGAddr(phost, addr, sizeTransferred);
 			phost->SpiRamGAddr = addr;
 		}
 
@@ -362,7 +362,7 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 	}
 	else
 #endif
-	    if (addr != incrementRamGAddr(phost->SpiRamGAddr, phost->SpiWrBufIndex) || rw == EVE_TRANSFER_READ)
+	    if (addr != incrementRamGAddr(phost, phost->SpiRamGAddr, phost->SpiWrBufIndex) || rw == EVE_TRANSFER_READ)
 	{
 		/* Close any write transfer that was left open, if the address changed */
 		flush(phost);

@@ -77,6 +77,7 @@
 /*								Type defines								  */
 /******************************************************************************/
 
+#ifndef _FTDI_LIB_FT4222_H_
 typedef unsigned char   uint8;
 typedef unsigned short  uint16;
 typedef unsigned long long uint64;
@@ -92,6 +93,7 @@ typedef signed long long int64;
 #else
 	typedef unsigned long   uint32;
 	typedef signed long   int32;
+#endif
 #endif
 
 typedef enum I2C_ClockRate_t{

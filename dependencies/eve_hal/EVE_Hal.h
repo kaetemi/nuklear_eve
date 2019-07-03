@@ -94,6 +94,48 @@ typedef struct EVE_HalContext EVE_HalContext;
 typedef bool (*EVE_Callback)(EVE_HalContext *phost);
 
 #if defined(EVE_MULTI_TARGET)
+typedef struct EVE_GpuDefs
+{
+	uint32_t RegClock;
+	uint32_t RegCmdRead;
+	uint32_t RegCmdWrite;
+	uint32_t RegCmdDl;
+	uint32_t RegCmdBSpace;
+	uint32_t RegCmdBWrite;
+	uint32_t RegTrim;
+	uint32_t RegFrequency;
+	uint32_t RegDlSwap;
+	uint32_t RegId;
+	uint32_t RegCpuReset;
+	uint32_t RegHCycle;
+	uint32_t RegHOffset;
+	uint32_t RegHSync0;
+	uint32_t RegHSync1;
+	uint32_t RegVCycle;
+	uint32_t RegVOffset;
+	uint32_t RegVSync0;
+	uint32_t RegVSync1;
+	uint32_t RegSwizzle;
+	uint32_t RegPClkPol;
+	uint32_t RegHSize;
+	uint32_t RegVSize;
+	uint32_t RegCSpread;
+	uint32_t RegDither;
+	uint32_t RegTouchRzThresh;
+	uint32_t RegGpioDir;
+	uint32_t RegGpio;
+	uint32_t RegPclk;
+	uint32_t RegPlaybackPlay;
+	uint32_t RamDl;
+	uint32_t RamCmd;
+	uint32_t RomChipId;
+	uint32_t RomFontTableAddress;
+} EVE_GpuDefs;
+
+extern EVE_GpuDefs EVE_GpuDefs_FT80X;
+extern EVE_GpuDefs EVE_GpuDefs_FT81X;
+extern EVE_GpuDefs EVE_GpuDefs_BT81X;
+
 typedef enum EVE_DEVICE_T
 {
 	EVE_DEVICE_UNKNOWN = 0,
@@ -150,6 +192,11 @@ typedef struct EVE_HalContext
 	};
 
 	EVE_STATUS_T Status;
+
+#if defined(EVE_MULTI_TARGET)
+	EVE_DEVICE_T DeviceType;
+	const EVE_GpuDefs *GpuDefs;
+#endif
 
 #if defined(BT8XXEMU_PLATFORM)
 	void *Emulator; /* FT8XXEMU_Emulator */

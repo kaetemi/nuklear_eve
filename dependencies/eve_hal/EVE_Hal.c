@@ -141,7 +141,7 @@ void EVE_Hal_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
 	parameters->Display.Dither = 1;
 #endif
 
-	EVE_HalImpl_defaults(parameters);
+	EVE_HalImpl_defaults(parameters, device);
 }
 
 bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters)

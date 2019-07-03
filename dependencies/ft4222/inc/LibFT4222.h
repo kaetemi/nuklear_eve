@@ -33,6 +33,7 @@
     // Compiling on Windows
     #include <windows.h>
 
+#ifndef LIBMPSSE_SPI_H
     typedef UINT8  uint8;
     typedef UINT16 uint16;
     typedef UINT32 uint32;
@@ -41,6 +42,7 @@
     typedef INT16  int16;
     typedef INT32  int32;
     typedef INT64  int64;
+#endif
 
     #ifdef LIBFT4222_EXPORTS
         #define LIBFT4222_API __declspec(dllexport)
