@@ -158,7 +158,8 @@ typedef struct EVE_HalParameters
 {
 	void *UserContext;
 	EVE_Callback CbCmdWait; /* Called anytime the code is waiting during CMD write. Return false to abort wait */
-
+	
+	uint32_t Model;
 	Eve_DisplayParameters Display;
 
 #if defined(BT8XXEMU_PLATFORM)
@@ -269,7 +270,8 @@ EVE_DeviceInfo *EVE_Hal_list(size_t *deviceCount);
 #endif
 
 /* Get the default configuration parameters */
-void EVE_Hal_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device);
+void EVE_Hal_defaults(EVE_HalParameters *parameters);
+void EVE_Hal_defaultsEx(EVE_HalParameters *parameters, uint32_t model, EVE_DeviceInfo *device);
 
 /* Opens a new HAL context using the specified parameters */
 bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters);

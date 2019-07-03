@@ -58,9 +58,21 @@ void EVE_Hal_release()
 	memset(&g_HalPlatform, 0, sizeof(EVE_HalPlatform));
 }
 
-void EVE_Hal_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
+void EVE_Hal_defaults(EVE_HalParameters *parameters)
+{
+#ifdef EVE_MODEL
+	EVE_Hal_defaultsEx(parameters, EVE_MODEL, NULL);
+#else
+	EVE_Hal_defaultsEx(parameters, EVE_BT816, NULL);
+#endif
+}
+
+void EVE_Hal_defaultsEx(EVE_HalParameters *parameters, uint32_t model, EVE_DeviceInfo *device)
 {
 	memset(parameters, 0, sizeof(EVE_HalParameters));
+
+	parameters->Model = model;
+
 #if defined(DISPLAY_RESOLUTION_QVGA)
 	/* Values specific to QVGA LCD display */
 	parameters->Display.Width = 320;
@@ -141,7 +153,7 @@ void EVE_Hal_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
 	parameters->Display.Dither = 1;
 #endif
 
-	EVE_HalImpl_defaults(parameters, device);
+	EVE_HalImpl_defaults(parameters, model, device);
 }
 
 bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters)

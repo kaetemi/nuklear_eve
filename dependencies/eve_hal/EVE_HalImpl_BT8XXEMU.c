@@ -53,6 +53,7 @@
 #define EVE_Hal_hostCommandExt3 EVE_Hal_BT8XXEMU_hostCommandExt3
 #define EVE_Hal_powerCycle EVE_Hal_BT8XXEMU_powerCycle
 #define EVE_UtilImpl_bootupDisplayGpio EVE_UtilImpl_BT8XXEMU_bootupDisplayGpio
+#define EVE_Hal_setSPI EVE_Hal_BT8XXEMU_setSPI
 #endif
 
 #include <bt8xxemu.h>
@@ -82,6 +83,12 @@ void EVE_HalImpl_release()
 /* List the available devices */
 void EVE_HalImpl_BT8XXEMU_list(EVE_DeviceInfo *deviceList, size_t *deviceCount)
 {
+	strcpy_s((deviceList[*deviceCount]).DisplayName, 
+		sizeof((deviceList[*deviceCount]).DisplayName), "BT8XX Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	++(*deviceCount);
+
+	/*
 #if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
 	strcpy_s((deviceList[*deviceCount]).DisplayName, 
 		sizeof((deviceList[*deviceCount]).DisplayName), "FT800 Emulator");
@@ -145,10 +152,11 @@ void EVE_HalImpl_BT8XXEMU_list(EVE_DeviceInfo *deviceList, size_t *deviceCount)
 	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorBT816;
 	++(*deviceCount);
 #endif
+*/
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
+void EVE_HalImpl_defaults(EVE_HalParameters *parameters, uint32_t model, EVE_DeviceInfo *device)
 {
 	BT8XXEMU_EmulatorParameters *params = (void *)parameters->EmulatorParameters;
 	if (sizeof(BT8XXEMU_EmulatorParameters) > sizeof(parameters->EmulatorParameters))
@@ -162,7 +170,7 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
 			return;
 	}
 
-	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, params, device->Identifier);
+	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, params, model);
 	params->Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
 }
 

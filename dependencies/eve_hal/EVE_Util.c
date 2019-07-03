@@ -168,8 +168,8 @@ bool EVE_Util_bootupConfig(EVE_HalContext *phost)
 
 	/* Validate chip ID to ensure the correct HAL is used */
 	/* ROM_CHIPID is valid accross all EVE devices */
-	if (((chipId = EVE_Hal_rd32(phost, ROM_CHIPID)) & 0xFFFF) != (((EVE_MODEL >> 8) & 0xFF) | ((EVE_MODEL & 0xFF) << 8)))
-		eve_printf_debug("Mismatching EVE chip id %x, expect model %x\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), EVE_MODEL);
+	if (((chipId = EVE_Hal_rd32(phost, ROM_CHIPID)) & 0xFFFF) != (((phost->Parameters.Model >> 8) & 0xFF) | ((phost->Parameters.Model & 0xFF) << 8)))
+		eve_printf_debug("Mismatching EVE chip id %x, expect model %x\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), phost->Parameters.Model);
 	eve_printf_debug("EVE chip id %x %x.%x\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), ((chipId >> 16) & 0xFF), ((chipId >> 24) & 0xFF));
 
 	/* Read Register ID to check if EVE is ready. */

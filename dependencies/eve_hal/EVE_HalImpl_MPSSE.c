@@ -53,6 +53,7 @@
 #define EVE_Hal_hostCommandExt3 EVE_Hal_MPSSE_hostCommandExt3
 #define EVE_Hal_powerCycle EVE_Hal_MPSSE_powerCycle
 #define EVE_UtilImpl_bootupDisplayGpio EVE_UtilImpl_MPSSE_bootupDisplayGpio
+#define EVE_Hal_setSPI EVE_Hal_MPSSE_setSPI
 #endif
 
 #define LIBMPSSE_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH 65535
@@ -120,7 +121,7 @@ void EVE_HalImpl_release()
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
+void EVE_HalImpl_defaults(EVE_HalParameters *parameters, uint32_t model, EVE_DeviceInfo *device)
 {
 	parameters->MpsseChannelNo = 0;
 	parameters->PowerDownPin = 7;
@@ -186,7 +187,7 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 static bool flush(EVE_HalContext *phost);
 #endif
 
-uint32_t incrementRamGAddr(EVE_HalContext *phost, uint32_t addr, uint32_t inc)
+static inline uint32_t incrementRamGAddr(EVE_HalContext *phost, uint32_t addr, uint32_t inc)
 {
 #ifdef EVE_SUPPORT_CMDB
 	if (addr != REG_CMDB_WRITE)

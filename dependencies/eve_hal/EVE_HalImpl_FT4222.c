@@ -53,6 +53,7 @@
 #define EVE_Hal_hostCommandExt3 EVE_Hal_FT4222_hostCommandExt3
 #define EVE_Hal_powerCycle EVE_Hal_FT4222_powerCycle
 #define EVE_UtilImpl_bootupDisplayGpio EVE_UtilImpl_FT4222_bootupDisplayGpio
+#define EVE_Hal_setSPI EVE_Hal_FT4222_setSPI
 #endif
 
 #define FT4222_TRANSFER_SIZE_MAX (0xFFFF)
@@ -109,7 +110,7 @@ void EVE_HalImpl_release()
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
+void EVE_HalImpl_defaults(EVE_HalParameters *parameters, uint32_t model, EVE_DeviceInfo *device)
 {
 	parameters->PowerDownPin = GPIO_PORT0;
 	parameters->SpiCsPin = 1;
@@ -439,7 +440,7 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 static bool flush(EVE_HalContext *phost);
 #endif
 
-uint32_t incrementRamGAddr(EVE_HalContext *phost, uint32_t addr, uint32_t inc)
+static inline uint32_t incrementRamGAddr(EVE_HalContext *phost, uint32_t addr, uint32_t inc)
 {
 #ifdef EVE_SUPPORT_CMDB
 	if (addr != REG_CMDB_WRITE)
