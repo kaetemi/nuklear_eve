@@ -33,6 +33,28 @@
 #include "EVE_Platform.h"
 #if defined(FT4222_PLATFORM)
 
+#if defined(EVE_MULTI_TARGET)
+#define EVE_HalImpl_initialize EVE_HalImpl_FT4222_initialize
+#define EVE_HalImpl_release EVE_HalImpl_FT4222_release
+#define EVE_HalImpl_defaults EVE_HalImpl_FT4222_defaults
+#define EVE_HalImpl_open EVE_HalImpl_FT4222_open
+#define EVE_HalImpl_close EVE_HalImpl_FT4222_close
+#define EVE_HalImpl_idle EVE_HalImpl_FT4222_idle
+#define EVE_Hal_flush EVE_Hal_FT4222_flush
+#define EVE_Hal_startTransfer EVE_Hal_FT4222_startTransfer
+#define EVE_Hal_endTransfer EVE_Hal_FT4222_endTransfer
+#define EVE_Hal_transfer8 EVE_Hal_FT4222_transfer8
+#define EVE_Hal_transfer16 EVE_Hal_FT4222_transfer16
+#define EVE_Hal_transfer32 EVE_Hal_FT4222_transfer32
+#define EVE_Hal_transferMem EVE_Hal_FT4222_transferMem
+#define EVE_Hal_transferProgmem EVE_Hal_FT4222_transferProgmem
+#define EVE_Hal_transferString EVE_Hal_FT4222_transferString
+#define EVE_Hal_hostCommand EVE_Hal_FT4222_hostCommand
+#define EVE_Hal_hostCommandExt3 EVE_Hal_FT4222_hostCommandExt3
+#define EVE_Hal_powerCycle EVE_Hal_FT4222_powerCycle
+#define EVE_UtilImpl_bootupDisplayGpio EVE_UtilImpl_FT4222_bootupDisplayGpio
+#endif
+
 #define FT4222_TRANSFER_SIZE_MAX (0xFFFF)
 #define FT4222_WRITE_HEADER_SIZE (3)
 #define FT4222_WRITE_SIZE_MAX (FT4222_TRANSFER_SIZE_MAX - FT4222_WRITE_HEADER_SIZE)
@@ -87,7 +109,7 @@ void EVE_HalImpl_release()
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
+void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
 {
 	parameters->PowerDownPin = GPIO_PORT0;
 	parameters->SpiCsPin = 1;

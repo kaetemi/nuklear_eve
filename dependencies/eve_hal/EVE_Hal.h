@@ -93,6 +93,24 @@ typedef struct EVE_DisplayParameters
 typedef struct EVE_HalContext EVE_HalContext;
 typedef bool (*EVE_Callback)(EVE_HalContext *phost);
 
+#if defined(EVE_MULTI_TARGET)
+typedef enum EVE_DEVICE_T
+{
+	EVE_DEVICE_UNKNOWN = 0,
+	EVE_DEVICE_BT8XXEMU,
+	EVE_DEVICE_FT4222,
+	EVE_DEVICE_MPSSE,
+} EVE_DEVICE_T;
+
+typedef struct EVE_DeviceInfo
+{
+	char DisplayName[256];
+	size_t Identifier;
+	EVE_DEVICE_T Type;
+
+} EVE_DeviceInfo;
+#endif
+
 /* Hal parameters */
 typedef struct EVE_HalParameters
 {
@@ -100,6 +118,10 @@ typedef struct EVE_HalParameters
 	EVE_Callback CbCmdWait; /* Called anytime the code is waiting during CMD write. Return false to abort wait */
 
 	Eve_DisplayParameters Display;
+
+#if defined(BT8XXEMU_PLATFORM)
+	char EmulatorParameters[4096];
+#endif
 
 #if defined(MPSSE_PLATFORM)
 	uint8_t MpsseChannelNo; /* MPSSE channel number */
@@ -194,8 +216,13 @@ EVE_HalPlatform *EVE_Hal_initialize();
 /* Release HAL platform */
 void EVE_Hal_release();
 
+#if defined(EVE_MULTI_TARGET)
+/* List the available devices */
+EVE_DeviceInfo *EVE_Hal_list(size_t *deviceCount);
+#endif
+
 /* Get the default configuration parameters */
-void EVE_Hal_defaults(EVE_HalParameters *parameters);
+void EVE_Hal_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device);
 
 /* Opens a new HAL context using the specified parameters */
 bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters);

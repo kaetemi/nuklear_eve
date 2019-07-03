@@ -33,6 +33,28 @@
 #include "EVE_Platform.h"
 #if defined(MPSSE_PLATFORM)
 
+#if defined(EVE_MULTI_TARGET)
+#define EVE_HalImpl_initialize EVE_HalImpl_MPSSE_initialize
+#define EVE_HalImpl_release EVE_HalImpl_MPSSE_release
+#define EVE_HalImpl_defaults EVE_HalImpl_MPSSE_defaults
+#define EVE_HalImpl_open EVE_HalImpl_MPSSE_open
+#define EVE_HalImpl_close EVE_HalImpl_MPSSE_close
+#define EVE_HalImpl_idle EVE_HalImpl_MPSSE_idle
+#define EVE_Hal_flush EVE_Hal_MPSSE_flush
+#define EVE_Hal_startTransfer EVE_Hal_MPSSE_startTransfer
+#define EVE_Hal_endTransfer EVE_Hal_MPSSE_endTransfer
+#define EVE_Hal_transfer8 EVE_Hal_MPSSE_transfer8
+#define EVE_Hal_transfer16 EVE_Hal_MPSSE_transfer16
+#define EVE_Hal_transfer32 EVE_Hal_MPSSE_transfer32
+#define EVE_Hal_transferMem EVE_Hal_MPSSE_transferMem
+#define EVE_Hal_transferProgmem EVE_Hal_MPSSE_transferProgmem
+#define EVE_Hal_transferString EVE_Hal_MPSSE_transferString
+#define EVE_Hal_hostCommand EVE_Hal_MPSSE_hostCommand
+#define EVE_Hal_hostCommandExt3 EVE_Hal_MPSSE_hostCommandExt3
+#define EVE_Hal_powerCycle EVE_Hal_MPSSE_powerCycle
+#define EVE_UtilImpl_bootupDisplayGpio EVE_UtilImpl_MPSSE_bootupDisplayGpio
+#endif
+
 #define LIBMPSSE_MAX_RD_BYTES_PER_CALL_IN_SINGLE_CH 65535
 #define LIBMPSSE_MAX_WR_BYTES_PER_CALL_IN_SINGLE_CH 65535
 
@@ -98,7 +120,7 @@ void EVE_HalImpl_release()
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
+void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
 {
 	parameters->MpsseChannelNo = 0;
 	parameters->PowerDownPin = 7;

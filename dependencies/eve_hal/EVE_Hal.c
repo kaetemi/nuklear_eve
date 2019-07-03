@@ -58,7 +58,7 @@ void EVE_Hal_release()
 	memset(&g_HalPlatform, 0, sizeof(EVE_HalPlatform));
 }
 
-void EVE_Hal_defaults(EVE_HalParameters *parameters)
+void EVE_Hal_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
 {
 	memset(parameters, 0, sizeof(EVE_HalParameters));
 #if defined(DISPLAY_RESOLUTION_QVGA)

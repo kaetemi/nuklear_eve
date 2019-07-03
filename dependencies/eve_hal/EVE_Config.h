@@ -663,6 +663,59 @@ These may only be set by one of the platform target definitions, and should not 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
+#if defined(FT9XX_PLATFORM)     \
+    || defined(FT4222_PLATFORM) \
+    || defined(MPSSE_PLATFORM)  \
+    || defined(BT8XXEMU_PLATFORM)
+#define EVE_PLATFORM_AVAILABLE
+#endif
+
+#if defined(WIN32)                      \
+    && !defined(EVE_PLATFORM_AVAILABLE) \
+    && !defined(EVE_MODEL)
+#define EVE_MULTI_TARGET
+#endif
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+// Under multi target, the build should create a dynamic library
+// Multi target is used by EVE Screen Editor for uploading to a device
+#ifdef EVE_MULTI_TARGET
+#ifdef EVE_HAL_EXPORT
+#undef EVE_HAL_EXPORT
+#define EVE_HAL_EXPORT _declspec(dllexport)
+#else
+#define EVE_HAL_EXPORT _declspec(dllimport)
+#endif
+#else
+#define EVE_HAL_EXPORT
+#endif
+
+// Under multi target, enable all desktop functionality.
+// None should have been defined previously.
+#ifdef EVE_MULTI_TARGET
+#define FT4222_PLATFORM
+#define MPSSE_PLATFORM
+#define BT8XXEMU_PLATFORM
+#define EVE_SUPPORT_FLASH
+#define EVE_FLASH_AVAILABLE
+#define EVE_SUPPORT_FLASH
+#define EVE_SUPPORT_UNICODE
+#define EVE_SUPPORT_ASTC
+#define EVE_SUPPORT_PNG
+#define EVE_SUPPORT_VIDEO
+#define EVE_SUPPORT_CMDB
+#define EVE_SCREEN_CAPACITIVE
+#define EVE_SCREEN_RESISTIVE
+#define RESISTANCE_THRESHOLD (1800)
+#endif
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
 #if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
 #define eve_progmem __flash__ const
 #define eve_progmem_const __flash__ const
@@ -697,11 +750,11 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 ///////////////////////////////////////////////////////////////////////
 
 /// Configuration sanity checks
-#if !defined(EVE_MODEL)
+#if !defined(EVE_MODEL) && !defined(EVE_MULTI_TARGET)
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_MODEL: " \
                                                       "No EVE device model has been selected")
 #endif
-#if !defined(EVE_DISPLAY_AVAILABLE)
+#if !defined(EVE_DISPLAY_AVAILABLE) && !defined(EVE_MULTI_TARGET)
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_DISPLAY_AVAILABLE: " \
                                                       "No display model has been selected")
 #endif
@@ -710,6 +763,7 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
                                                       "Cannot enable flash on EVE model which doesn't support flash")
 #undef EVE_FLASH_AVAILABLE
 #endif
+#ifndef EVE_MULTI_TARGET
 #if ((defined(FT9XX_PLATFORM) ? 1 : 0)      \
     + (defined(FT4222_PLATFORM) ? 1 : 0)    \
     + (defined(MPSSE_PLATFORM) ? 1 : 0)     \
@@ -718,7 +772,8 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
                                                       "More than one platform has been selected")
 #endif
-#if (!defined(FT9XX_PLATFORM) && !defined(FT4222_PLATFORM) && !defined(MPSSE_PLATFORM) && !defined(BT8XXEMU_PLATFORM))
+#endif
+#if !defined(EVE_PLATFORM_AVAILABLE) && !defined(EVE_MULTI_TARGET)
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning PLATFORM: " \
                                                       "No platform was selected")
 #endif

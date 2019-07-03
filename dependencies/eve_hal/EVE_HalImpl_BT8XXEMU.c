@@ -33,6 +33,28 @@
 #include "EVE_Platform.h"
 #if defined(BT8XXEMU_PLATFORM)
 
+#if defined(EVE_MULTI_TARGET)
+#define EVE_HalImpl_initialize EVE_HalImpl_BT8XXEMU_initialize
+#define EVE_HalImpl_release EVE_HalImpl_BT8XXEMU_release
+#define EVE_HalImpl_defaults EVE_HalImpl_BT8XXEMU_defaults
+#define EVE_HalImpl_open EVE_HalImpl_BT8XXEMU_open
+#define EVE_HalImpl_close EVE_HalImpl_BT8XXEMU_close
+#define EVE_HalImpl_idle EVE_HalImpl_BT8XXEMU_idle
+#define EVE_Hal_flush EVE_Hal_BT8XXEMU_flush
+#define EVE_Hal_startTransfer EVE_Hal_BT8XXEMU_startTransfer
+#define EVE_Hal_endTransfer EVE_Hal_BT8XXEMU_endTransfer
+#define EVE_Hal_transfer8 EVE_Hal_BT8XXEMU_transfer8
+#define EVE_Hal_transfer16 EVE_Hal_BT8XXEMU_transfer16
+#define EVE_Hal_transfer32 EVE_Hal_BT8XXEMU_transfer32
+#define EVE_Hal_transferMem EVE_Hal_BT8XXEMU_transferMem
+#define EVE_Hal_transferProgmem EVE_Hal_BT8XXEMU_transferProgmem
+#define EVE_Hal_transferString EVE_Hal_BT8XXEMU_transferString
+#define EVE_Hal_hostCommand EVE_Hal_BT8XXEMU_hostCommand
+#define EVE_Hal_hostCommandExt3 EVE_Hal_BT8XXEMU_hostCommandExt3
+#define EVE_Hal_powerCycle EVE_Hal_BT8XXEMU_powerCycle
+#define EVE_UtilImpl_bootupDisplayGpio EVE_UtilImpl_BT8XXEMU_bootupDisplayGpio
+#endif
+
 #include <bt8xxemu.h>
 
 /*********
@@ -57,26 +79,91 @@ void EVE_HalImpl_release()
 	/* no-op */
 }
 
-/* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
+/* List the available devices */
+void EVE_HalImpl_BT8XXEMU_list(EVE_DeviceInfo *deviceList, size_t *deviceCount)
 {
-	/* no-op */
+#if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
+	strcpy((deviceList[*deviceCount]).DisplayName, "FT800 Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorFT800;
+	++(*deviceCount);
+#endif
+
+#if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
+	strcpy((deviceList[*deviceCount]).DisplayName, "FT801 Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorFT801;
+	++(*deviceCount);
+#endif
+
+#if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
+	strcpy((deviceList[*deviceCount]).DisplayName, "FT810 Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorFT810;
+	++(*deviceCount);
+#endif
+
+#if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
+	strcpy((deviceList[*deviceCount]).DisplayName, "FT811 Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorFT811;
+	++(*deviceCount);
+#endif
+
+#if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
+	strcpy((deviceList[*deviceCount]).DisplayName, "FT812 Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorFT812;
+	++(*deviceCount);
+#endif
+
+#if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
+	strcpy((deviceList[*deviceCount]).DisplayName, "FT813 Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorFT813;
+	++(*deviceCount);
+#endif
+
+#if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
+	strcpy((deviceList[*deviceCount]).DisplayName, "BT815 Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorBT815;
+	++(*deviceCount);
+#endif
+
+#if defined(EVE_MULTI_TARGET) || (EVE_MODEL == EVE_FT800)
+	strcpy((deviceList[*deviceCount]).DisplayName, "BT816 Emulator");
+	(deviceList[*deviceCount]).Type = EVE_DEVICE_BT8XXEMU;
+	(deviceList[*deviceCount]).Identifier = BT8XXEMU_EmulatorBT816;
+	++(*deviceCount);
+#endif
+}
+
+/* Get the default configuration parameters */
+void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
+{
+	BT8XXEMU_EmulatorParameters *params = (void *)parameters->EmulatorParameters;
+	if (sizeof(BT8XXEMU_EmulatorParameters) > sizeof(parameters->EmulatorParameters))
+		return;
+	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, params, device->Identifier);
+	params->Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
 }
 
 /* Opens a new HAL context using the specified parameters */
 bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
 	bool ret;
+	BT8XXEMU_EmulatorParameters *params;
+
+	if (sizeof(BT8XXEMU_EmulatorParameters) > sizeof(parameters->EmulatorParameters))
+		return false;
 
 #if defined(EVE_EMULATOR_MAIN)
 	phost->Emulator = EVE_GpuEmu;
 	phost->EmulatorFlash = EVE_EmuFlash;
 #else
-	BT8XXEMU_EmulatorParameters params;
-	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
-
-	params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
-	BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
+	params = (void *)parameters->EmulatorParameters;
+	BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, params);
 #endif
 
 #if defined(ESD_SIMULATION)
@@ -357,6 +444,8 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 {
 #if !defined(EVE_EMULATOR_MAIN)
+	BT8XXEMU_EmulatorParameters *params;
+
 	// ESD would need to call MainReady__ESD again...
 	// TODO: Implement powercycle in BT8XXEMU
 	if (up)
@@ -368,22 +457,14 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 			phost->Emulator = NULL;
 		}
 
-		BT8XXEMU_EmulatorParameters params;
-
-		BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
-
-		params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
+		params = (void *)phost->Parameters.EmulatorParameters;
 		BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
 	}
 	else
 	{
 		if (!phost->Emulator)
 		{
-			BT8XXEMU_EmulatorParameters params;
-
-			BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
-
-			params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
+			params = (void *)phost->Parameters.EmulatorParameters;
 			BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
 		}
 

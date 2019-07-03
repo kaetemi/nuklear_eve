@@ -31,80 +31,47 @@
 
 #include "EVE_HalImpl.h"
 #include "EVE_Platform.h"
-#if defined(_WIN32)
-
-/************
-** UTILITY **
-************/
-
 #if defined(EVE_MULTI_TARGET)
-extern uint32_t g_RegClock;
-#define REG_CLOCK g_RegClock;
+
+static size_t s_DeviceCount;
+static EVE_DeviceInfo s_DeviceList[256];
+
+void EVE_HalImpl_BT8XXEMU_list(EVE_DeviceInfo *deviceList, size_t *deviceCount);
+
+EVE_DeviceInfo *EVE_Hal_list(size_t *deviceCount)
+{
+	memset(s_DeviceList, 0, sizeof(s_DeviceList));
+	s_DeviceCount = 0;
+	EVE_HalImpl_BT8XXEMU_list(&s_DeviceCount);
+	*deviceCount = s_DeviceCount;
+	return s_DeviceList;
+}
+
+/*
+#if defined(EVE_MULTI_TARGET)
+#define EVE_HalImpl_initialize EVE_HalImpl_BT8XXEMU_initialize
+#define EVE_HalImpl_release EVE_HalImpl_BT8XXEMU_release
+#define EVE_HalImpl_defaults EVE_HalImpl_BT8XXEMU_defaults
+#define EVE_HalImpl_open EVE_HalImpl_BT8XXEMU_open
+#define EVE_HalImpl_close EVE_HalImpl_BT8XXEMU_close
+#define EVE_HalImpl_idle EVE_HalImpl_BT8XXEMU_idle
+#define EVE_Hal_flush EVE_Hal_BT8XXEMU_flush
+#define EVE_Hal_startTransfer EVE_Hal_BT8XXEMU_startTransfer
+#define EVE_Hal_endTransfer EVE_Hal_BT8XXEMU_endTransfer
+#define EVE_Hal_transfer8 EVE_Hal_BT8XXEMU_transfer8
+#define EVE_Hal_transfer16 EVE_Hal_BT8XXEMU_transfer16
+#define EVE_Hal_transfer32 EVE_Hal_BT8XXEMU_transfer32
+#define EVE_Hal_transferMem EVE_Hal_BT8XXEMU_transferMem
+#define EVE_Hal_transferProgmem EVE_Hal_BT8XXEMU_transferProgmem
+#define EVE_Hal_transferString EVE_Hal_BT8XXEMU_transferString
+#define EVE_Hal_hostCommand EVE_Hal_BT8XXEMU_hostCommand
+#define EVE_Hal_hostCommandExt3 EVE_Hal_BT8XXEMU_hostCommandExt3
+#define EVE_Hal_powerCycle EVE_Hal_BT8XXEMU_powerCycle
+#define EVE_UtilImpl_bootupDisplayGpio EVE_UtilImpl_BT8XXEMU_bootupDisplayGpio
 #endif
+*/
 
-uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
-{
-	uint32_t t0, t1;
-	uint32_t addr = REG_CLOCK;
-	int32_t r = 15625;
 
-	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
-	/* may not be precise */
-	EVE_sleep(15625 / 1000);
-
-	t1 = EVE_Hal_rd32(phost, REG_CLOCK); /* t1 read */
-	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
-}
-
-/*********
-** MISC **
-*********/
-
-void EVE_Mcu_initialize()
-{
-	/* no-op */
-}
-
-void EVE_Mcu_release()
-{
-	/* no-op */
-}
-
-/*********
-** MISC **
-*********/
-
-static DWORD s_Millis_Start;
-
-void EVE_Millis_initialize()
-{
-	s_Millis_Start = GetTickCount();
-}
-
-void EVE_Millis_release()
-{
-	/* no-op */
-}
-
-/* global counter to loopback after ~49.71 days */
-uint32_t EVE_millis()
-{
-	return GetTickCount() - s_Millis_Start;
-}
-
-#if defined(ESD_SIMULATION)
-int Ft_Sleep__ESD(int ms);
-#endif
-
-void EVE_sleep(uint32_t ms)
-{
-#if defined(ESD_SIMULATION)
-	Ft_Sleep__ESD(ms);
-#else
-	Sleep(ms);
-#endif
-}
-
-#endif
+#endif /* #if defined(BT8XXEMU_PLATFORM) */
 
 /* end of file */

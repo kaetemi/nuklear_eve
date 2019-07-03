@@ -80,7 +80,7 @@ void EVE_HalImpl_release()
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
+void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_DeviceInfo *device)
 {
 	parameters->PowerDownPin = FT800_PD_N;
 	parameters->SpiCsPin = 0; // SS0
