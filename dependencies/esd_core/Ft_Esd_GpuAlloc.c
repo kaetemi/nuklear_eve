@@ -34,7 +34,7 @@ void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga)
 
 	for (idx = 0; idx < MAX_NUM_ALLOCATIONS; ++idx)
 	{
-		ga->AllocEntries[idx].Address = RAM_G_SIZE;
+		ga->AllocEntries[idx].Address = ga->RamGSize;
 		ga->AllocEntries[idx].Length = 0;
 		ga->AllocEntries[idx].Id = MAX_NUM_ALLOCATIONS;
 		ga->AllocEntries[idx].Flags = 0;
@@ -42,7 +42,7 @@ void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga)
 
 	// First allocation entry is unallocated entry of entire RAM_G_SIZE
 	ga->AllocEntries[0].Address = 0;
-	ga->AllocEntries[0].Length = RAM_G_SIZE;
+	ga->AllocEntries[0].Length = ga->RamGSize;
 	ga->NbAllocEntries = 1;
 }
 
@@ -284,7 +284,7 @@ uint32_t Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GpuAlloc *ga)
 // Get total GPU RAM
 uint32_t Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GpuAlloc *ga)
 {
-	return RAM_G_SIZE;
+	return ga->RamGSize;
 }
 
 #ifndef NDEBUG

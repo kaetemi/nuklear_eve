@@ -54,7 +54,7 @@ ESD_TYPE(EVE_HalContext *, Native = Pointer, Edit = Library)
 typedef struct
 {
 	// Keep to a minimum
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 	ft_uint32_t PaletteSource;
 #endif
 	ft_int16_f4_t LineWidth;
@@ -63,7 +63,7 @@ typedef struct
 	ft_uint8_t ColorA;
 	ft_uint8_t Handle; // Current handle
 	ft_uint8_t Cell; // Current cell
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 	ft_uint8_t VertexFormat; // Current vertex format
 #endif
 	ft_bool_t BitmapTransform; // BitmapTransform other than default is set
@@ -227,7 +227,7 @@ inline static ft_void_t Ft_Esd_Dl_RESTORE_CONTEXT()
 #endif
 }
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 // Specify vertex format , see VERTEX_FORMAT command
 ESD_FUNCTION(Ft_Esd_Dl_VERTEX_FORMAT, Type = ft_void_t, Category = EveRenderFunctions, Inline)
 ESD_PARAMETER(frac, Type = ft_uint8_t, Min = 0, Max = 4)
@@ -245,7 +245,7 @@ inline static ft_void_t Ft_Esd_Dl_VERTEX_FORMAT(ft_uint8_t frac)
 }
 #endif
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 // Set palette source, see PALETTE_SOURCE command
 ESD_FUNCTION(Ft_Esd_Dl_PALETTE_SOURCE, Type = ft_void_t, Category = EveRenderFunctions, Inline)
 ESD_PARAMETER(addr, Type = ft_uint32_t, Min = 0)
@@ -355,9 +355,9 @@ ESD_PARAMETER(x, Type = ft_int16_f4_t)
 ESD_PARAMETER(y, Type = ft_int16_f4_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_4(ft_int16_f4_t x, ft_int16_f4_t y)
 {
-#if (EVE_MODEL >= EVE_FT810)
-	Esd_Dl_VERTEX_FORMAT(4);
-#endif
+	EVE_HalContext *phost = Ft_Esd_Host;
+	if (EVE_CHIPID >= EVE_FT810)
+		Esd_Dl_VERTEX_FORMAT(4);
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
 }
 
@@ -367,12 +367,16 @@ ESD_PARAMETER(x, Type = ft_int16_f2_t)
 ESD_PARAMETER(y, Type = ft_int16_f2_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_2(ft_int16_f2_t x, ft_int16_f2_t y)
 {
-#if (EVE_MODEL >= EVE_FT810)
-	Esd_Dl_VERTEX_FORMAT(2);
-#else
-	x <<= 2;
-	y <<= 2;
-#endif
+	EVE_HalContext *phost = Ft_Esd_Host;
+	if (EVE_CHIPID >= EVE_FT810)
+	{
+		Esd_Dl_VERTEX_FORMAT(2);
+	}
+	else
+	{
+		x <<= 2;
+		y <<= 2;
+	}
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
 }
 
@@ -382,12 +386,16 @@ ESD_PARAMETER(x, Type = ft_uint16_t)
 ESD_PARAMETER(y, Type = ft_uint16_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_0(ft_uint16_t x, ft_uint16_t y)
 {
-#if (EVE_MODEL >= EVE_FT810)
-	Esd_Dl_VERTEX_FORMAT(0);
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
-#else
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2II(x, y, 0, 0));
-#endif
+	EVE_HalContext *phost = Ft_Esd_Host;
+	if (EVE_CHIPID >= EVE_FT810)
+	{
+		Esd_Dl_VERTEX_FORMAT(0);
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
+	}
+	else
+	{
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2II(x, y, 0, 0));
+	}
 }
 
 // Display list calls without state caching

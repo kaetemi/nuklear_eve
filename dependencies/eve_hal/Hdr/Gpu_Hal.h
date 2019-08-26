@@ -131,7 +131,7 @@ extern int16_t ESD_DispWidth, ESD_DispHeight;
 
 typedef struct
 {
-	ft_uint32_t TotalChannelNum; //< Total number channels for libmpsse
+	size_t TotalChannelNum; //< Total number channels for libmpsse
 } Gpu_HalInit_t;
 
 #define Gpu_Hal_Context_t EVE_HalContext

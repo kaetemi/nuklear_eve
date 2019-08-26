@@ -84,6 +84,8 @@ void Ft_Esd_TouchTag_Start(Ft_Esd_TouchTag *context)
 
 void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
+
 	if (s_LastTagFrame != Esd_CurrentContext->Frame)
 	{
 		ft_uint32_t regTouchXY;

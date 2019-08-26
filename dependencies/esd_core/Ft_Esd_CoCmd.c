@@ -62,7 +62,7 @@ ft_void_t Ft_Gpu_CoCmd_Sketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 5));
 }
 
-#if (EVE_MODEL == EVE_FT801)
+#if (EVE_SUPPORT_CHIPID == EVE_FT801) || defined(EVE_MULTI_TARGET)
 ft_void_t Ft_Gpu_CoCmd_CSketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, ft_uint16_t w, ft_uint16_t h, ft_uint32_t ptr, ft_uint16_t format, ft_uint16_t freq)
 {
 	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 5);
@@ -75,7 +75,7 @@ ft_void_t Ft_Gpu_CoCmd_CSketch(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y
 }
 #endif
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_PlayVideo(EVE_HalContext *phost, ft_uint32_t options)
 {
 	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 2);
@@ -115,7 +115,7 @@ ft_void_t Ft_Gpu_CoCmd_Stop(EVE_HalContext *phost)
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_STOP);
 }
 
-#if (EVE_MODEL >= EVE_BT815)
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 ft_bool_t Ft_Gpu_CoCmd_AnimStart(EVE_HalContext *phost, int32_t ch, uint32_t aoptr, uint32_t loop)
 {
 	uint32_t flashStatus = Ft_Gpu_Hal_Rd32(phost, REG_FLASH_STATUS);
@@ -190,7 +190,7 @@ bool ESD_Cmd_regRead(uint32_t ptr, uint32_t *result)
 	return true;
 }
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_VideoStart(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_VIDEOSTART);
@@ -299,7 +299,7 @@ bool ESD_Cmd_getMatrix(int32_t *m)
 	return true;
 }
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_Sync(EVE_HalContext *phost)
 {
 	Ft_Gpu_CoCmd_SendCmd(phost, CMD_SYNC);
@@ -316,7 +316,7 @@ ft_void_t Ft_Gpu_CoCmd_Track(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, 
 	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 4));
 }
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_Int_RAMShared(EVE_HalContext *phost, ft_uint32_t ptr)
 {
 	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 2);

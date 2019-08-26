@@ -157,6 +157,7 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 	}
 #endif
 
+	ec->GpuAlloc.RamGSize = RAM_G_SIZE;
 	Ft_Esd_GpuAlloc_Reset(&ec->GpuAlloc);
 
 	Esd_BitmapHandle_Initialize();

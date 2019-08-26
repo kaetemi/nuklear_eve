@@ -16,6 +16,8 @@ ft_uint32_t s_MultiGradient_Cell;
 
 ft_void_t Esd_Render_MultiGradient(ft_int16_t x, ft_int16_t y, ft_int16_t width, ft_int16_t height, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight)
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
+
 	// Don't render empty
 	if (width == 0 || height == 0)
 		return;
@@ -65,9 +67,8 @@ ft_void_t Esd_Render_MultiGradient(ft_int16_t x, ft_int16_t y, ft_int16_t width,
 
 	// Use the scratch handle
 	Esd_Dl_BITMAP_HANDLE(ESD_CO_SCRATCH_HANDLE);
-#if (EVE_MODEL >= EVE_FT810)
-	Esd_Dl_VERTEX_FORMAT(0);
-#endif
+	if (EVE_CHIPID >= EVE_FT810)
+		Esd_Dl_VERTEX_FORMAT(0);
 	Esd_Dl_BEGIN(BITMAPS);
 
 	// Use local rendering context, bypass ESD display list functions.
@@ -75,10 +76,11 @@ ft_void_t Esd_Render_MultiGradient(ft_int16_t x, ft_int16_t y, ft_int16_t width,
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, SAVE_CONTEXT());
 
 	// Initialize the bitmap options
-#if (EVE_MODEL >= EVE_FT810)
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_LAYOUT_H(0, 0));
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_SIZE_H(width >> 9, height >> 9));
-#endif
+	if (EVE_CHIPID >= EVE_FT810)
+	{
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_LAYOUT_H(0, 0));
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_SIZE_H(width >> 9, height >> 9));
+	}
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_LAYOUT(alpha ? ARGB4 : RGB565, 4, 2));
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_SIZE(BILINEAR, REPEAT, REPEAT, width, height));
 
@@ -90,20 +92,26 @@ ft_void_t Esd_Render_MultiGradient(ft_int16_t x, ft_int16_t y, ft_int16_t width,
 	Ft_Gpu_CoCmd_Scale(Ft_Esd_Host, (ft_int32_t)width << 16, (ft_int32_t)height << 16);
 	Ft_Gpu_CoCmd_SetMatrix(Ft_Esd_Host);
 #else
-#if (EVE_MODEL >= EVE_BT815)
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_A_EXT(1, 0x8000 / width));
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_E_EXT(1, 0x8000 / height));
-#else
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_A(0x0100 / width));
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_E(0x0100 / height));
-#endif
+	if (EVE_CHIPID >= EVE_BT815)
+	{
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_A_EXT(1, 0x8000 / width));
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_E_EXT(1, 0x8000 / height));
+	}
+	else
+	{
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_A(0x0100 / width));
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_TRANSFORM_E(0x0100 / height));
+	}
 #endif
 
-#if (EVE_MODEL >= EVE_FT810)
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
-#else
-	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2II(x, y, ESD_CO_SCRATCH_HANDLE, 0));
-#endif
+	if (EVE_CHIPID >= EVE_BT815)
+	{
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
+	}
+	else
+	{
+		Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2II(x, y, ESD_CO_SCRATCH_HANDLE, 0));
+	}
 
 	// Restore rendering context, ESD display list optimizations functions should be used again after this.
 #if ESD_MULTIGRADIENT_CO_SCALE

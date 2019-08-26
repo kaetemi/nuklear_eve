@@ -65,16 +65,16 @@ typedef struct Esd_ResourceInfo // (16 bytes) (24 bytes on 64 bit)
 
 ESD_TYPE(Esd_ResourceInfo *, Native = Pointer, Edit = Library)
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 #ifdef EVE_FLASH_AVAILABLE
 /// Transform flash address to BITMAP_SOURCE address parameter
 #define ESD_DL_FLASH_ADDRESS(address) ((address >> 5) | 0x800000)
 #endif
 /// Transform RAM_G address to BITMAP_SOURCE address paramter
-#define ESD_DL_RAM_G_ADDRESS(address) ((address & 0x3FFFFF))
+#define ESD_DL_RAM_G_ADDRESS(address) (EVE_CHIPID >= EVE_FT810 ? (address & 0x3FFFFF) : (address & 0xFFFFF))
 #else
 /// Transform RAM_G address to BITMAP_SOURCE address paramter
-#define ESD_DL_RAM_G_ADDRESS(address) ((address & 0xFFFFF))
+#define ESD_DL_RAM_G_ADDRESS(address) (address & 0xFFFFF)
 #endif
 
 /// Flash address invalid
@@ -94,17 +94,18 @@ ESD_PARAMETER(resourceInfo, Type = Esd_ResourceInfo *)
 void Esd_ResourcePersist(Esd_ResourceInfo *resourceInfo);
 
 // Number of available bitmap handles
-#if (EVE_MODEL >= EVE_FT810)
-#define FT_ESD_BITMAPHANDLE_NB 32UL
+#define FT_ESD_BITMAPHANDLE_NB (EVE_CHIPID >= EVE_FT810 ? 32UL : 16UL)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+#define FT_ESD_BITMAPHANDLE_CAP (32UL)
 #else
-#define FT_ESD_BITMAPHANDLE_NB 16UL
+#define FT_ESD_BITMAPHANDLE_CAP (16UL)
 #endif
 
 // An invalid bitmap handle
 #define FT_ESD_BITMAPHANDLE_INVALID 0x3F
 #define FT_ESD_BITMAPHANDLE_VALID(bitmapHandle) (bitmapHandle < FT_ESD_BITMAPHANDLE_NB)
 
-#if (EVE_MODEL >= EVE_BT815)
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 #define ESD_IS_FORMAT_ASTC(format) ((format & 0xFFF0) == 0x93B0)
 #endif
 

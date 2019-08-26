@@ -73,7 +73,7 @@ ft_void_t Ft_Gpu_CoCmd_SetMatrix(EVE_HalContext *phost)
 	Eve_CoCmd_SendCmd(phost, CMD_SETMATRIX);
 }
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_SetRotate(EVE_HalContext *phost, ft_uint32_t r)
 {
 	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 2);
@@ -136,7 +136,7 @@ ft_void_t Ft_Gpu_CoCmd_SetFont(EVE_HalContext *phost, ft_uint32_t font, ft_uint3
 	Gpu_CoCmd_EndFunc(phost, (CMD_SIZE * 3));
 }
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_SetFont2(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t ptr, ft_uint32_t firstchar)
 {
 	Gpu_CoCmd_StartFunc(phost, CMD_SIZE * 4);

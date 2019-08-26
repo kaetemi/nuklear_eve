@@ -26,6 +26,7 @@ extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
 uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, ft_uint32_t *imageFormat)
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_uint32_t addr;
 	bool loaded;
 
