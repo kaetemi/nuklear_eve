@@ -706,7 +706,6 @@ These may only be set by one of the platform target definitions, and should not 
 #define FT4222_PLATFORM
 #define MPSSE_PLATFORM
 #define BT8XXEMU_PLATFORM
-#define EVE_SUPPORT_FLASH
 #define EVE_FLASH_AVAILABLE
 #define EVE_SUPPORT_FLASH
 #define EVE_SUPPORT_UNICODE
