@@ -36,7 +36,7 @@
 #include "EVE_Platform.h"
 #if (defined(FT9XX_PLATFORM)) \
     && (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
-
+#define ILI9488_SEL 1
 //only write command
 int16_t ILI9488_SPI_WriteCmd(uint8_t cmd, uint8_t data)
 {
@@ -46,46 +46,13 @@ int16_t ILI9488_SPI_WriteCmd(uint8_t cmd, uint8_t data)
 
 	ILI9488_CS_LOW;
 	usleep(1);
-	for (i = 0; i < 8; i++)
-	{
-		ILI9488_CLK_LOW;
-		if (cmd & 0x80)
-		{
-			ILI9488_MOSI_HIGH;
-		}
-		else
-		{
-			ILI9488_MOSI_LOW;
-		}
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-		cmd <<= 1;
-	}
+	spi_open(SPIM, ILI9488_SEL);
+	spi_writen(SPIM, &cmd, 1);
 	ILI9488_DCX_HIGH;
-	for (i = 0; i < 8; i++)
-	{
-		ILI9488_CLK_LOW;
-		if (i == 7)
-		{
-			ILI9488_DCX_HIGH;
-		}
-		if (data & 0x80)
-		{
-			ILI9488_MOSI_HIGH;
-		}
-		else
-		{
-			ILI9488_MOSI_LOW;
-		}
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-		data <<= 1;
-	}
-
+	spi_writen(SPIM, &data, 1);
 	ILI9488_CS_HIGH;
 	ILI9488_DCX_LOW;
+	spi_close(SPIM, ILI9488_SEL);
 
 	return 0;
 }
@@ -99,45 +66,11 @@ int16_t ILI9488_SPI_WriteCmdN(uint8_t cmd, uint8_t bytecount, uint8_t *pbuff)
 
 	ILI9488_CS_LOW;
 	usleep(1);
-	for (i = 0; i < 8; i++)
-	{
-		ILI9488_CLK_LOW;
-		if (cmd & 0x80)
-		{
-			ILI9488_MOSI_HIGH;
-		}
-		else
-		{
-			ILI9488_MOSI_LOW;
-		}
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-		cmd <<= 1;
-	}
+	spi_open(SPIM, ILI9488_SEL);
+	spi_writen(SPIM, &cmd, 1);
 	ILI9488_DCX_HIGH;
-	for (j = 0; j < bytecount; j++)
-	{
-		transbit = 0x80;
-		for (i = 0; i < 8; i++)
-		{
-			ILI9488_CLK_LOW;
-			if (*pbuff & transbit)
-			{
-				ILI9488_MOSI_HIGH;
-			}
-			else
-			{
-				ILI9488_MOSI_LOW;
-			}
-			usleep(1);
-			ILI9488_CLK_HIGH;
-			usleep(1);
-			transbit >>= 1;
-		}
-		pbuff++;
-	}
-
+	spi_writen(SPIM, pbuff, bytecount);
+	spi_close(SPIM, ILI9488_SEL);
 	ILI9488_CS_HIGH;
 	ILI9488_DCX_LOW;
 
@@ -152,43 +85,11 @@ uint8_t ILI9488_SPI_Read(uint8_t cmd)
 	ILI9488_DCX_LOW;
 	ILI9488_CS_LOW;
 	usleep(1);
-	for (i = 0; i < 8; i++)
-	{
-		ILI9488_CLK_LOW;
-		if (cmd & 0x80)
-		{
-			ILI9488_MOSI_HIGH;
-		}
-		else
-		{
-			ILI9488_MOSI_LOW;
-		}
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-		cmd <<= 1;
-	}
+	spi_open(SPIM, ILI9488_SEL);
+	spi_writen(SPIM, &cmd, 1);
 	ILI9488_DCX_HIGH;
-	for (i = 0; i < 8; i++)
-	{
-		if (i == 7)
-		{
-			ILI9488_DCX_HIGH;
-		}
-		ILI9488_CLK_LOW;
-		usleep(1);
-
-		ILI9488_CLK_HIGH;
-		usleep(1);
-
-		readbyte <<= 1;
-
-		if (ILI9488_MISO_LOWHIGH == true)
-		{
-			readbyte |= 0x1;
-		}
-	}
-
+	spi_readn(SPIM, &readbyte, 1);
+	spi_close(SPIM, ILI9488_SEL);
 	ILI9488_CS_HIGH;
 	ILI9488_DCX_LOW;
 
@@ -202,49 +103,11 @@ uint8_t ILI9488_SPI_ReadN(uint8_t cmd, uint8_t numbytes, uint8_t *pbuffer)
 	ILI9488_DCX_LOW;
 	ILI9488_CS_LOW;
 	usleep(1);
-	for (i = 0; i < 8; i++)
-	{
-		ILI9488_CLK_LOW;
-		if (cmd & 0x80)
-		{
-			ILI9488_MOSI_HIGH;
-		}
-		else
-		{
-			ILI9488_MOSI_LOW;
-		}
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-		cmd <<= 1;
-	}
+	spi_open(SPIM, ILI9488_SEL);
+	spi_writen(SPIM, &cmd, 1);
 	ILI9488_DCX_HIGH;
-
-	for (j = 0; j < numbytes + 1; j++)
-	{
-		readbyte = 0;
-		for (i = 0; i < 8; i++)
-		{
-			if (i == 7)
-			{
-				ILI9488_DCX_HIGH;
-			}
-			ILI9488_CLK_LOW;
-			usleep(1);
-
-			ILI9488_CLK_HIGH;
-			usleep(1);
-
-			readbyte <<= 1;
-
-			if (ILI9488_MISO_LOWHIGH == true)
-			{
-				readbyte |= 0x1;
-			}
-		}
-		*pbuffer++ = readbyte;
-	}
-
+	spi_readn(SPIM, pbuffer, numbytes);
+	spi_close(SPIM, ILI9488_SEL);
 	ILI9488_CS_HIGH;
 	ILI9488_DCX_LOW;
 
@@ -260,44 +123,19 @@ uint32_t ILI9488_SPI_ReadRDDID(uint8_t cmd)
 	ILI9488_DCX_LOW;
 	ILI9488_CS_LOW;
 	usleep(1);
-
-	for (i = 0; i < 8; i++)
-	{
-		ILI9488_CLK_LOW;
-
-		if (cmd & 0x80)
-		{
-			ILI9488_MOSI_HIGH;
-		}
-		else
-		{
-			ILI9488_MOSI_LOW;
-		}
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-		cmd <<= 1;
-	}
+	spi_open(SPIM, ILI9488_SEL);
+	spi_writen(SPIM, &cmd, 1);
+#if 0
 	//extra clock cycle for dummy
 	ILI9488_CLK_LOW;
 	usleep(1);
 	ILI9488_CLK_HIGH;
 	usleep(1);
-
-	for (i = 0; i < 24; i++)
-	{
-		ILI9488_CLK_LOW;
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-
-		if (ILI9488_MISO_LOWHIGH)
-		{
-			readword |= 0x1;
-		}
-		readword <<= 1;
-	}
-
+#endif
+	ILI9488_DCX_HIGH;
+	//NOTE: for little-endian, this is fine
+	spi_readn(SPIM, &readword, 3);
+	spi_close(SPIM, ILI9488_SEL);
 	ILI9488_CS_HIGH;
 
 	return readword;
@@ -311,45 +149,19 @@ uint32_t ILI9488_SPI_ReadRDDST(uint8_t cmd)
 	ILI9488_DCX_LOW;
 	ILI9488_CS_LOW;
 	usleep(1);
-
-	for (i = 0; i < 8; i++)
-	{
-		ILI9488_CLK_LOW;
-
-		if (cmd & 0x80)
-		{
-			ILI9488_MOSI_HIGH;
-		}
-		else
-		{
-			ILI9488_MOSI_LOW;
-		}
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-		cmd <<= 1;
-	}
+	spi_open(SPIM, ILI9488_SEL);
+	spi_writen(SPIM, &cmd, 1);
+#if 0
 	//extra clock cycle for dummy
 	ILI9488_CLK_LOW;
 	usleep(1);
 	ILI9488_CLK_HIGH;
 	usleep(1);
+#endif
 
 	ILI9488_DCX_HIGH;
-	for (i = 0; i < 32; i++)
-	{
-		ILI9488_CLK_LOW;
-		usleep(1);
-		ILI9488_CLK_HIGH;
-		usleep(1);
-
-		readword <<= 1;
-		if (ILI9488_MISO_LOWHIGH)
-		{
-			readword |= 0x1;
-		}
-	}
-
+	spi_readn(SPIM, &readword, 4);
+	spi_close(SPIM, ILI9488_SEL);
 	ILI9488_CS_HIGH;
 	ILI9488_DCX_LOW;
 	return readword;
@@ -357,37 +169,34 @@ uint32_t ILI9488_SPI_ReadRDDST(uint8_t cmd)
 
 void EVE_ILI9488_bootup()
 {
+
 	/* ILI9488 driver - configure pins for bit bang */
-	gpio_function(27, pad_gpio27);
-	gpio_function(28, pad_gpio28);
-	gpio_function(29, pad_gpio29);
-	gpio_function(30, pad_gpio30);
-	gpio_function(34, pad_gpio34);
-	gpio_function(33, pad_gpio33);
+	gpio_function(GPIO_SPIM_CLK, pad_spim_sck);
+	gpio_function(GPIO_SPIM_SS0, pad_spim_ss0);
+	gpio_function(GPIO_SPIM_MOSI, pad_spim_mosi);
+	gpio_function(GPIO_SPIM_MISO, pad_spim_miso);
+	gpio_function(GPIO_ILI9488_DCX, pad_ili9488_dcx);
+	gpio_function(GPIO_ILI9488_CS1, pad_ili9488_cs1);
 
-	gpio_function(43, pad_gpio43);
+	gpio_function(GPIO_PWD, pad_pwd);
 
-	gpio_dir(27, pad_dir_output); //gpios for ili9488 - spim clock
-	gpio_dir(28, pad_dir_output);
-	gpio_dir(29, pad_dir_output); //gpios for ili9488 - spim mosi
-	gpio_dir(30, pad_dir_input); //gpios for ili9488 - spim miso
-	gpio_dir(34, pad_dir_output); //gpios for ili9488 - dcx
-	gpio_dir(33, pad_dir_output); //gpios for ili9488 - cs1#
+	gpio_dir(GPIO_ILI9488_DCX, pad_dir_output); //gpios for ili9488 - dcx
+	gpio_dir(GPIO_ILI9488_CS1, pad_dir_output); //gpios for ili9488 - cs1#
 
-	gpio_dir(43, pad_dir_output); //gpios for ili9488 - cs1#
+	gpio_dir(GPIO_PWD, pad_dir_output); //gpios for ili9488 - pwd#
 
-	gpio_write(34, 1);
-	gpio_write(28, 1);
-	gpio_write(33, 1);
-	/*gpio_write(34, 0);
-	gpio_write(29, 0);
-	gpio_write(27, 0);*/
-	gpio_write(43, 1);
-	gpio_write(34, 1);
-	gpio_write(28, 1);
-	gpio_write(43, 1);
-	gpio_write(33, 1);
-	gpio_write(33, 1);
+	gpio_write(GPIO_ILI9488_DCX, 1);
+	gpio_write(GPIO_SPIM_SS0, 1);
+	gpio_write(GPIO_ILI9488_CS1, 1);
+	gpio_write(GPIO_PWD, 1);
+
+	/* Enable the SPI Master device... */
+
+	sys_enable(sys_device_spi_master);
+	spi_init(SPIM, spi_dir_master, spi_mode_0, 64);
+	spi_option(SPIM, spi_option_fifo_size, 16);
+	spi_option(SPIM, spi_option_fifo, 1);
+	spi_option(SPIM, spi_option_bus_width, 1);
 
 	//display driver bring up
 	{
@@ -440,27 +249,6 @@ void EVE_ILI9488_bootup()
 
 		ILI9488_SPI_WriteCmd(ILI9488_CMD_DISPLAYON, 0);
 		ILI9488_SPI_WriteCmd(0x2c, 0xB0);
-
-#if 0 //enable for debugging
-		eve_printf_debug("ILI9488 id1 %x\n", ILI9488_SPI_Read(ILI9488_CMD_READ_ID1));
-		eve_printf_debug("ILI9488 id2 %x\n", ILI9488_SPI_Read(ILI9488_CMD_READ_ID2));
-		eve_printf_debug("ILI9488 id3 %x\n", ILI9488_SPI_Read(ILI9488_CMD_READ_ID3));
-		eve_printf_debug("ILI9488 id4 %x\n", ILI9488_SPI_ReadRDDST(ILI9488_CMD_READ_ID4));
-		eve_printf_debug("ILI9488 disp identy %x\n", ILI9488_SPI_Read(ILI9488_CMD_READ_DISPLAY_IDENTIFICATION));
-		eve_printf_debug("ILI9488 disp power mode %x\n", ILI9488_SPI_Read(ILI9488_CMD_READ_DISPLAY_POWERMODE));
-		eve_printf_debug("ILI9488 mad ctrl %x\n", ILI9488_SPI_Read(ILI9488_CMD_READ_MADCTRL));
-		eve_printf_debug("ILI9488 pixel format %x\n", ILI9488_SPI_Read(ILI9488_CMD_READ_PIXEL_FORMAT));
-		eve_printf_debug("ILI9488 disp signal mode %x\n", ILI9488_SPI_Read(ILI9488_READ_DISPLAY_SIGNALMODE));
-		//with dummy byte read
-		ILI9488_SPI_ReadN(ILI9488_CMD_READ_ID1, 1, arraytemp);
-		eve_printf_debug("ILI9488 id1 %x %x\n", arraytemp[0], arraytemp[1]);
-		ILI9488_SPI_ReadN(ILI9488_CMD_READ_DISPLAY_IDENTIFICATION, 3, arraytemp);
-		eve_printf_debug("ILI9488 id4 %x %x %x %x\n", arraytemp[0], arraytemp[1], arraytemp[2], arraytemp[3]);
-
-		eve_printf_debug("ILI9488 pixel format %x\n", ILI9488_SPI_Read(ILI9488_CMD_READ_PIXEL_FORMAT));
-		ILI9488_SPI_ReadN(ILI9488_CMD_READ_PIXEL_FORMAT, 1, arraytemp);
-		eve_printf_debug("ILI9488 pixel format n %x %x\n", arraytemp[0], arraytemp[1]);
-#endif
 	}
 }
 
