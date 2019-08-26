@@ -170,9 +170,10 @@ bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
+bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
 {
-	if (deviceIdx < 0 || deviceIdx >= s_NumDevsD2XX)
+	bool res = deviceIdx >= 0 && deviceIdx < s_NumDevsD2XX;
+	if (!res)
 	{
 		if (!s_NumDevsD2XX)
 			EVE_Hal_list();
@@ -182,14 +183,15 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, si
 		for (uint32_t i = 0; i < s_NumDevsD2XX; ++i)
 		{
 			FT_DEVICE_LIST_INFO_NODE devInfo;
-			if (FT_GetDeviceInfoDetail((DWORD)deviceIdx,
+			if (FT_GetDeviceInfoDetail((DWORD)i,
 			        &devInfo.Flags, &devInfo.Type, &devInfo.ID, &devInfo.LocId,
 			        devInfo.SerialNumber, devInfo.Description, &devInfo.ftHandle)
 			    != FT_OK)
 				continue;
-			if (!(devInfo.Flags & FT_FLAGS_OPENED))
+			if ((!(devInfo.Flags & FT_FLAGS_OPENED)) && (!strcmp(devInfo.Description, "FT4222 A")))
 			{
 				deviceIdx = i;
+				res = true;
 				break;
 			}
 		}
@@ -199,6 +201,7 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, si
 	parameters->PowerDownPin = GPIO_PORT0;
 	parameters->SpiCsPin = 1;
 	parameters->SpiClockrateKHz = 12000;
+	return res;
 }
 
 /***************************************************************************
@@ -311,14 +314,15 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	    devInfoA.SerialNumber, devInfoA.Description, &devInfoA.ftHandle);
 	if (status != FT_OK)
 	{
-		eve_printf_debug("FT_GetDeviceInfoDetail failed");
+		eve_printf_debug("FT_GetDeviceInfoDetail failed\n");
 		ret = false;
 	}
 	if (devInfoA.Flags & FT_FLAGS_OPENED)
 	{
-		eve_printf_debug("Device FT4222 A already opened");
+		eve_printf_debug("Device FT4222 A already opened\n");
 		ret = false;
 	}
+	eve_printf_debug("FT4222 open '%s'\n", devInfoA.Description);
 
 	if (ret)
 	{
@@ -335,12 +339,12 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		}
 		if (deviceIdxB >= s_NumDevsD2XX)
 		{
-			eve_printf_debug("FT4222 B not found");
+			eve_printf_debug("FT4222 B not found\n");
 			ret = false;
 		}
 		else if (devInfoB.Flags & FT_FLAGS_OPENED)
 		{
-			eve_printf_debug("Device FT4222 B already opened");
+			eve_printf_debug("Device FT4222 B already opened\n");
 			ret = false;
 		}
 	}

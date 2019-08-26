@@ -114,14 +114,15 @@ bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
+bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
 {
 	BT8XXEMU_EmulatorParameters *params = (void *)parameters->EmulatorParameters;
 	if (sizeof(BT8XXEMU_EmulatorParameters) > sizeof(parameters->EmulatorParameters))
-		return;
+		return false;
 
 	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, params, chipId);
 	params->Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
+	return true;
 }
 
 /* Opens a new HAL context using the specified parameters */

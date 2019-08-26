@@ -133,9 +133,10 @@ bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
+bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
 {
-	if (deviceIdx < 0 || deviceIdx >= s_NumChannels)
+	bool res = deviceIdx >= 0 && deviceIdx < s_NumChannels;
+	if (!res)
 	{
 		if (!s_NumChannels)
 			EVE_Hal_list();
@@ -145,11 +146,12 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, si
 		for (uint32_t i = 0; i < s_NumChannels; ++i)
 		{
 			FT_DEVICE_LIST_INFO_NODE chanInfo;
-			if (SPI_GetChannelInfo((uint32_t)deviceIdx, &chanInfo) != FT_OK)
+			if (SPI_GetChannelInfo((uint32_t)i, &chanInfo) != FT_OK)
 				continue;
 			if (!(chanInfo.Flags & FT_FLAGS_OPENED))
 			{ 
 				deviceIdx = i;
+				res = true;
 				break;
 			}
 		}
@@ -157,6 +159,7 @@ void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, si
 	parameters->MpsseChannelNo = deviceIdx & 0xFF;
 	parameters->PowerDownPin = 7;
 	parameters->SpiClockrateKHz = 12000; /* in KHz */
+	return res;
 }
 
 /* Opens a new HAL context using the specified parameters */

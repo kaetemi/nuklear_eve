@@ -27,7 +27,7 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 #else
 #define ESD_ROMFONT_CAP 32UL // Max, rom font handle, exclusive
 #endif
-#define ESD_ROMFONT_MAX ((EVE_CHIPID >= EVE_FT810) ? 35UL : 32UL)
+#define ESD_ROMFONT_MAX (phost ? ((EVE_CHIPID >= EVE_FT810) ? 35UL : 32UL) : ESD_ROMFONT_CAP)
 #define ESD_ROMFONT_MIN 16UL // Min, rom font handle, inclusive
 #define ESD_ROMFONT_NB (ESD_ROMFONT_CAP - ESD_ROMFONT_MIN)
 Esd_RomFontInfo Esd_RomFonts[ESD_ROMFONT_NB] = {

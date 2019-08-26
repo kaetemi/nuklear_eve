@@ -52,7 +52,7 @@ void EVE_HalImpl_initialize();
 void EVE_HalImpl_release();
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
+bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
 
 /* Opens a new HAL context using the specified parameters */
 bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters);

@@ -118,27 +118,35 @@ EVE_HAL_EXPORT bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_BT8XXEMU_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
-void EVE_HalImpl_FT4222_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
-void EVE_HalImpl_MPSSE_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
+bool EVE_HalImpl_BT8XXEMU_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
+bool EVE_HalImpl_FT4222_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
+bool EVE_HalImpl_MPSSE_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
+bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
 {
+	bool res;
 	if (deviceIdx < s_DeviceCountBT8XXEMU)
 	{
-		EVE_HalImpl_BT8XXEMU_defaults(parameters, chipId, deviceIdx);
+		res = EVE_HalImpl_BT8XXEMU_defaults(parameters, chipId, deviceIdx);
 		parameters->Host = EVE_HOST_BT8XXEMU;
 	}
 	else if (deviceIdx < s_DeviceCountBT8XXEMU + s_DeviceCountMPSSE)
 	{
-		EVE_HalImpl_MPSSE_defaults(parameters, chipId, deviceIdx - s_DeviceCountBT8XXEMU);
+		res = EVE_HalImpl_MPSSE_defaults(parameters, chipId, deviceIdx - s_DeviceCountBT8XXEMU);
 		parameters->Host = EVE_HOST_MPSSE;
+	}
+	else if (deviceIdx < s_DeviceCountBT8XXEMU + s_DeviceCountMPSSE + s_DeviceCountFT4222)
+	{
+		res = EVE_HalImpl_FT4222_defaults(parameters, chipId, deviceIdx - s_DeviceCountBT8XXEMU - s_DeviceCountMPSSE);
+		parameters->Host = EVE_HOST_FT4222;
 	}
 	else
 	{
-		EVE_HalImpl_FT4222_defaults(parameters, chipId, deviceIdx - s_DeviceCountBT8XXEMU - s_DeviceCountMPSSE);
-		parameters->Host = EVE_HOST_FT4222;
+		res = (EVE_HalImpl_FT4222_defaults(parameters, chipId, deviceIdx - s_DeviceCountBT8XXEMU - s_DeviceCountMPSSE) && (parameters->Host = EVE_HOST_FT4222))
+		    || (EVE_HalImpl_MPSSE_defaults(parameters, chipId, deviceIdx - s_DeviceCountBT8XXEMU) && (parameters->Host = EVE_HOST_MPSSE))
+		    || (EVE_HalImpl_BT8XXEMU_defaults(parameters, chipId, deviceIdx) && (parameters->Host = EVE_HOST_BT8XXEMU));
 	}
 	parameters->ChipId = chipId;
+	return res;
 }
 
 /* Opens a new HAL context using the specified parameters */

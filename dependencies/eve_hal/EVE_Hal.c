@@ -73,7 +73,7 @@ EVE_HAL_EXPORT void EVE_Hal_defaultsEx(EVE_HalParameters *parameters, EVE_CHIPID
 	eve_assert(chipId == EVE_SUPPORT_CHIPID);
 #endif
 
-	EVE_HalImpl_defaults(parameters, chipId, deviceIdx);
+	eve_assert_do(EVE_HalImpl_defaults(parameters, chipId, deviceIdx));
 }
 
 EVE_HAL_EXPORT bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters)

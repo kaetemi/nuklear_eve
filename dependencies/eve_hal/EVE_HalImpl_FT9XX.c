@@ -80,10 +80,11 @@ void EVE_HalImpl_release()
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
+bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
 {
 	parameters->PowerDownPin = FT800_PD_N;
 	parameters->SpiCsPin = (deviceIdx < 0) ? 0 : deviceIdx; // SS0
+	return true;
 }
 
 void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)

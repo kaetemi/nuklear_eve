@@ -104,7 +104,9 @@ bool cbCmdWait(struct EVE_HalContext *phost)
 	/* EVE_Hal_idle(&ec->HalContext); */ /* Already called by EVE HAL */
 	ec->SwapIdled = true;
 
-#if defined(BT8XXEMU_PLATFORM)
+#if defined(EVE_MULTI_TARGET)
+	return (phost->Host == EVE_HOST_BT8XXEMU) ? BT8XXEMU_isRunning(phost->Emulator) : true;
+#elif defined(BT8XXEMU_PLATFORM)
 	/* TODO: This may be handled by HAL idle function instead */
 	return BT8XXEMU_isRunning(phost->Emulator);
 #else
@@ -140,8 +142,9 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 	EVE_Hal_defaults(&parameters);
 	parameters.UserContext = ec;
 	parameters.CbCmdWait = cbCmdWait;
-	EVE_Hal_open(&ec->HalContext, &parameters); /* TODO: Handle result */
+	eve_assert_do(EVE_Hal_open(&ec->HalContext, &parameters));
 	eve_assert(ec->HalContext.UserContext == ec);
+	eve_assert(ec->HalContext.Parameters.UserContext == ec);
 
 	EVE_HalContext *phost = &ec->HalContext;
 	EVE_Util_bootupConfig(phost);
