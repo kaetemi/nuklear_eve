@@ -70,7 +70,7 @@ Main file to include the EVE HAL in your applications.
 	{              \
 	} while (false)
 
-#if _DEBUG
+#if defined(_DEBUG)
 #if defined(_MSC_VER)
 #define eve_debug_break() __debugbreak()
 #elif defined(__GCC__)

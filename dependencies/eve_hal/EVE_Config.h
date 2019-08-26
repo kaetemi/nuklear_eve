@@ -92,6 +92,7 @@ SupportedFlash = "\bW25Q\w*\b|\bMX25L\w*\b
 ESD_TARGET_GRAPHICS(ME810A_HV35R, DisplayName = "ME810A-HV35R", IntegratedDisplay = "ILI9488 (320x480)", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT810)\b")
 ESD_TARGET_GRAPHICS(ME812A_WH50R, DisplayName = "ME812A-WH50R", SupportedDisplays = "\b\w+WVGA\w*\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT812)\b")
 // ME813A_WV7C
+ESD_TARGET_GRAPHICS(PANL50, DisplayName = "PANL50", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "MM900EV1B", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
 ESD_TARGET_GRAPHICS(ME813AU_WH50C, DisplayName = "ME813AU-WH50C", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "FT4222", SupportedArchitectures = "\bFT4222\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
 // ESD_TARGET_GRAPHICS(PANL35, DisplayName = "PanL35", IntegratedDisplay = "KD2401 (320x480)", IntegratedPlatform = "FT903", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
 // ESD_TARGET_GRAPHICS(PANL70, DisplayName = "PanL70", IntegratedDisplay = "WVGA (800x480)", IntegratedPlatform = "FT930", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
@@ -122,9 +123,9 @@ ESD_TARGET_PLATFORM(MM900EV1B, SupportedArchitectures = "\bFT32\b")
 ESD_TARGET_PLATFORM(MM900EV2A, SupportedArchitectures = "\bFT32\b")
 ESD_TARGET_PLATFORM(MM900EV3A, SupportedArchitectures = "\bFT32\b")
 ESD_TARGET_PLATFORM(MM900EV_LITE, DisplayName = "MM900EV-Lite", SupportedArchitectures = "\bFT32\b")
-ESD_TARGET_PLATFORM(MM930MINI, DisplayName = "MM930Mini", SupportedArchitectures = "\bFT32\b")
-ESD_TARGET_PLATFORM(MM930LITE, DisplayName = "MM930Lite", SupportedArchitectures = "\bFT32\b")
-ESD_TARGET_PLATFORM(MM932LC, DisplayName = "MM932LC", SupportedArchitectures = "\bFT32\b")
+// ESD_TARGET_PLATFORM(MM930MINI, DisplayName = "MM930Mini", SupportedArchitectures = "\bFT32\b")
+// ESD_TARGET_PLATFORM(MM930LITE, DisplayName = "MM930Lite", SupportedArchitectures = "\bFT32\b")
+// ESD_TARGET_PLATFORM(MM932LC, DisplayName = "MM932LC", SupportedArchitectures = "\bFT32\b")
 ESD_TARGET_PLATFORM(EVE_PLATFORM_FT4222, DisplayName = "FT4222", Icon = ":/icons/terminal.png", SupportedArchitectures = "\bFT4222\b")
 ESD_TARGET_PLATFORM(EVE_PLATFORM_MPSSE, DisplayName = "MPSSE", Icon = ":/icons/terminal.png", SupportedArchitectures = "\bMPSSE\b")
 
@@ -141,10 +142,6 @@ ESD_TARGET_FLASH(EVE_FLASH_MX25L256, DisplayName = "MX25L256", FlashFirmware = "
 ESD_TARGET_FLASH(EVE_FLASH_MX25L512, DisplayName = "MX25L512", FlashFirmware = "mx25l.blob")
 ESD_TARGET_FLASH(EVE_FLASH_MX25L1024, DisplayName = "MX25L1024", FlashFirmware = "mx25l.blob")
 ESD_TARGET_FLASH(EVE_FLASH_MX25L2048, DisplayName = "MX25L2048", FlashFirmware = "mx25l.blob")
-
-// MM930Mini?
-// MM930Lite?
-// MM932LC?
 
 /*
 
@@ -415,6 +412,30 @@ It may also set platform, display, and flash values if none are configured.
 #define malloc pvPortMalloc
 #define calloc vPortCalloc
 #define free vPortFree
+#define PANL_HEAP_SIZE (20 * 1024)
+#define TINYPRINTF_OVERRIDE_LIBC (0)
+#endif
+
+#elif defined(PANL50)
+#define FT813_ENABLE
+#define ENABLE_SPI_QUAD
+
+#ifndef EVE_DISPLAY_AVAILABLE
+#define EVE_DISPLAY_AVAILABLE
+#define DISPLAY_RESOLUTION_WVGA
+#endif
+
+#ifndef EVE_PLATFORM_AVAILABLE
+#define EVE_PLATFORM_AVAILABLE
+#define PANL_APPLET
+#define FT900_PLATFORM
+#define EVE_MODULE_PANL
+#define malloc pvPortMalloc
+#define calloc vPortCalloc
+#define free vPortFree
+
+#define printf tfp_printf
+#define iprintf tfp_printf
 #define PANL_HEAP_SIZE (20 * 1024)
 #define TINYPRINTF_OVERRIDE_LIBC (0)
 #endif

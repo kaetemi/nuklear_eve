@@ -42,6 +42,7 @@ static FATFS s_FatFS;
 bool EVE_Util_loadSdCard(EVE_HalContext *phost)
 {
 #if defined(EVE_ENABLE_FATFS)
+#ifndef PANL_APPLET
 	SDHOST_STATUS status = sdhost_card_detect();
 	if (status == SDHOST_CARD_INSERTED)
 	{
@@ -66,6 +67,9 @@ bool EVE_Util_loadSdCard(EVE_HalContext *phost)
 			s_FatFSLoaded = false;
 		}
 	}
+#else
+	s_FatFSLoaded = true;
+#endif
 	return s_FatFSLoaded;
 #else
 	return false;
