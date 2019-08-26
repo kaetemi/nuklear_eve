@@ -111,6 +111,7 @@ typedef struct EVE_GpuDefs
 extern EVE_GpuDefs EVE_GpuDefs_FT80X;
 extern EVE_GpuDefs EVE_GpuDefs_FT81X;
 extern EVE_GpuDefs EVE_GpuDefs_BT81X;
+#endif
 
 typedef enum EVE_HOST_T
 {
@@ -130,7 +131,6 @@ typedef struct EVE_DeviceInfo
 	bool Opened;
 
 } EVE_DeviceInfo;
-#endif
 
 /* Hal parameters */
 typedef struct EVE_HalParameters
@@ -216,10 +216,8 @@ typedef struct EVE_HalContext
 #endif
 #endif
 
-#if (EVE_SUPPORT_CHIPID >= EVE_FT810) || defined(EVE_MULTI_TARGET)
 	EVE_SPI_CHANNELS_T SpiChannels; /* Variable to contain single/dual/quad channels */
 	uint8_t SpiDummyBytes; /* Number of dummy bytes as 1 or 2 for SPI read */
-#endif
 
 	/* Buffer cmd smaller than a full cmd command */
 	uint8_t CmdBuffer[4];

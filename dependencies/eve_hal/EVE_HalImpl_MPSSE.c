@@ -115,8 +115,10 @@ bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
 {
 	if (!phost)
 		return false;
+#if defined(EVE_MULTI_TARGET)
 	if (phost->Host != EVE_HOST_MPSSE)
 		return false;
+#endif
 	if (deviceIdx < 0 || deviceIdx >= s_NumChannels)
 		return false;
 
@@ -170,8 +172,8 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		phost->GpuDefs = &EVE_GpuDefs_FT81X;
 	else
 		phost->GpuDefs = &EVE_GpuDefs_FT80X;
-#endif
 	phost->ChipId = parameters->ChipId;
+#endif
 
 	/* configure the spi settings */
 	channelConf.ClockRate = phost->Parameters.SpiClockrateKHz * 1000;

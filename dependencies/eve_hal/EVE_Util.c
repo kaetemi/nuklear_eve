@@ -39,8 +39,9 @@ static eve_progmem_const uint8_t c_DlCodeBootup[12] = {
 	0, 0, 0, 0, //G PU instruction DISPLAY
 };
 
-#if !defined(BT8XXEMU_PLATFORM) || defined(EVE_MULTI_TARGET) /* TODO: Can the emulator handle this? */
-#if (EVE_SUPPORT_CHIPID == EVE_FT811) || (EVE_SUPPORT_CHIPID == EVE_FT813) || defined(EVE_MULTI_TARGET)
+/* VERIFY: Can the emulator handle this? */
+#if (!defined(BT8XXEMU_PLATFORM) || defined(EVE_MULTI_TARGET)) \
+&& ((EVE_SUPPORT_CHIPID == EVE_FT811) || (EVE_SUPPORT_CHIPID == EVE_FT813) || defined(EVE_MULTI_TARGET))
 #define TOUCH_DATA_LEN 1172
 static eve_progmem_const uint8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
 	26, 255, 255, 255, 32, 32, 48, 0, 4, 0, 0, 0, 2, 0, 0, 0, 34,
@@ -131,13 +132,17 @@ static eve_progmem_const uint8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
 };
 
 /* Download new touch firmware for FT811 and FT813 chip */
-static void uploadTouchFirmware(EVE_HalContext *phost)
+static inline void uploadTouchFirmware(EVE_HalContext *phost)
 {
 	/* bug fix pen up section */
 	eve_assert_do(EVE_Cmd_wrProgmem(phost, c_TouchDataU8, TOUCH_DATA_LEN));
 	eve_assert_do(EVE_Cmd_waitFlush(phost));
 }
-#endif
+#else
+static inline void uploadTouchFirmware(EVE_HalContext *phost)
+{
+	/* no-op */
+}
 #endif
 
 EVE_HAL_EXPORT void EVE_Util_clearScreen(EVE_HalContext *phost)
@@ -150,12 +155,13 @@ EVE_HAL_EXPORT void EVE_Util_bootupDefaults(EVE_HalContext *phost, EVE_BootupPar
 {
 	memset(parameters, 0, sizeof(EVE_BootupParameters));
 
-	uint32_t chipId = phost->ChipId;
+	uint32_t chipId = EVE_CHIPID;
 
 #if (!defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813AU_WH50C))
 	parameters->ExternalOsc = true;
 #endif
 
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810) || defined(EVE_MULTI_TARGET)
 #ifdef ENABLE_SPI_QUAD
 	parameters->SpiChannels = EVE_SPI_QUAD_CHANNEL;
 	parameters->SpiDummyBytes = 2;
@@ -165,6 +171,7 @@ EVE_HAL_EXPORT void EVE_Util_bootupDefaults(EVE_HalContext *phost, EVE_BootupPar
 #else
 	parameters->SpiChannels = EVE_SPI_SINGLE_CHANNEL;
 	parameters->SpiDummyBytes = 1;
+#endif
 #endif
 
 #if defined(DISPLAY_RESOLUTION_QVGA)
@@ -325,10 +332,16 @@ EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters 
 		chipId = ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8);
 	}
 
+#ifdef EVE_MULTI_TARGET
+	const uint32_t expectedChipId = phost->Parameters.ChipId;
+#else
+	const uint32_t expectedChipId = EVE_SUPPORT_CHIPID;
+#endif
+
 	/* Validate chip ID to ensure the correct HAL is used */
 	/* ROM_CHIPID is valid accross all EVE devices */
-	if (((chipId = EVE_Hal_rd32(phost, ROM_CHIPID)) & 0xFFFF) != (((phost->Parameters.ChipId >> 8) & 0xFF) | ((phost->Parameters.ChipId & 0xFF) << 8)))
-		eve_printf_debug("Mismatching EVE chip id %x, expect model %x\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), phost->Parameters.ChipId);
+	if (((chipId = EVE_Hal_rd32(phost, ROM_CHIPID)) & 0xFFFF) != (((expectedChipId >> 8) & 0xFF) | ((expectedChipId & 0xFF) << 8)))
+		eve_printf_debug("Mismatching EVE chip id %x, expect model %x\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), expectedChipId);
 	eve_printf_debug("EVE chip id %x %x.%x\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), ((chipId >> 16) & 0xFF), ((chipId >> 24) & 0xFF));
 
 	/* Switch to the proper chip ID if applicable */
@@ -499,10 +512,12 @@ EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters 
 	EVE_Hal_flush(phost);
 
 	/* Switch to configured default SPI channel mode */
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810) || defined(EVE_MULTI_TARGET)
 	if (EVE_CHIPID >= EVE_FT810)
 	{
 		EVE_Hal_setSPI(phost, parameters->SpiChannels, parameters->SpiDummyBytes);
 	}
+#endif
 
 	return true;
 }

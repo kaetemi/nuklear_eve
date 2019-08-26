@@ -175,7 +175,7 @@ typedef struct Fifo_t
 static inline bool Gpu_Hal_Init(Gpu_HalInit_t *halinit)
 {
 	EVE_HalPlatform *platform = EVE_Hal_initialize();
-	halinit->TotalChannelNum = platform->TotalDevices;
+	halinit->TotalChannelNum = EVE_Hal_list();
 	return !!platform;
 }
 

@@ -42,6 +42,8 @@
 
 #include <stdlib.h>
 
+#define EVE_MODEL EVE_SUPPORT_CHIPID
+
 #define FT_FALSE false
 #define FT_TRUE true
 
@@ -92,7 +94,7 @@ typedef unsigned char ft_uchar8_t;
 
 typedef struct
 {
-	ft_uint32_t TotalChannelNum; //< Total number channels for libmpsse
+	size_t TotalChannelNum; //< Total number channels for libmpsse
 } Ft_Gpu_HalInit_t;
 
 #define Ft_Gpu_Hal_Context_t EVE_HalContext
@@ -103,7 +105,7 @@ typedef struct
 static inline bool Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 {
 	EVE_HalPlatform *platform = EVE_Hal_initialize();
-	halinit->TotalChannelNum = platform->TotalDevices;
+	halinit->TotalChannelNum = EVE_Hal_list();
 	return !!platform;
 }
 

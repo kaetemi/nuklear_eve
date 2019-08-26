@@ -10,6 +10,7 @@
 
 extern EVE_HalContext *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
+extern int16_t ESD_DispWidth, ESD_DispHeight;
 
 // GPU state for the current display list
 #if ESD_DL_OPTIMIZE
@@ -43,8 +44,8 @@ void Esd_ResetGpuState() // Begin of frame
 	// Reset scissor state to display size
 	Ft_Esd_ScissorRect.X = 0;
 	Ft_Esd_ScissorRect.Y = 0;
-	Ft_Esd_ScissorRect.Width = Ft_Esd_Host->Parameters.Display.Width;
-	Ft_Esd_ScissorRect.Height = Ft_Esd_Host->Parameters.Display.Height;
+	Ft_Esd_ScissorRect.Width = ESD_DispWidth;
+	Ft_Esd_ScissorRect.Height = ESD_DispHeight;
 }
 
 void Esd_ResetCoState()

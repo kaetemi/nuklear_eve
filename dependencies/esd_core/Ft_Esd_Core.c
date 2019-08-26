@@ -143,10 +143,11 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 	EVE_Hal_open(&ec->HalContext, &parameters); /* TODO: Handle result */
 	eve_assert(ec->HalContext.UserContext == ec);
 
-	EVE_Util_bootupConfig(&ec->HalContext);
+	EVE_HalContext *phost = &ec->HalContext;
+	EVE_Util_bootupConfig(phost);
 
-	ESD_DispWidth = ec->HalContext.Parameters.Display.Width;
-	ESD_DispHeight = ec->HalContext.Parameters.Display.Height;
+	ESD_DispWidth = EVE_Hal_rd16(phost, REG_HSIZE);
+	ESD_DispHeight = EVE_Hal_rd16(phost, REG_VSIZE);
 
 #ifndef ESD_SIMULATION
 	// TODO: Store calibration somewhere!
@@ -299,7 +300,7 @@ void Esd_Render(Esd_Context *ec)
 	{
 		// Spinner used for switching longer loading pages with bitmaps etc
 		Ft_Esd_Dl_COLOR_RGB(~(ec->ClearColor));
-		Ft_Esd_CoCmd_Spinner(Esd_Update, Ft_Esd_Host->Parameters.Display.Width / 2, Ft_Esd_Host->Parameters.Display.Height / 2, 0, 0);
+		Ft_Esd_CoCmd_Spinner(Esd_Update, ESD_DispWidth >> 1, ESD_DispHeight >> 1, 0, 0);
 		ec->SpinnerPopup = FT_FALSE;
 		ec->SpinnerPopped = FT_TRUE;
 	}

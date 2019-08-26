@@ -66,7 +66,12 @@ EVE_HAL_EXPORT void EVE_Hal_defaultsEx(EVE_HalParameters *parameters, EVE_CHIPID
 {
 	memset(parameters, 0, sizeof(EVE_HalParameters));
 
+#if defined(EVE_MULTI_TARGET)
 	parameters->ChipId = chipId;
+#else
+	eve_assert(chipId == EVE_CHIPID);
+	eve_assert(chipId == EVE_SUPPORT_CHIPID);
+#endif
 
 	EVE_HalImpl_defaults(parameters, chipId, deviceIdx);
 }
