@@ -35,6 +35,10 @@ Main file to include the EVE HAL in your applications.
 
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef EVE_PLATFORM__H
 #define EVE_PLATFORM__H
 
@@ -70,7 +74,7 @@ Main file to include the EVE HAL in your applications.
 	{              \
 	} while (false)
 
-#if _DEBUG
+#if defined(_DEBUG)
 #if defined(_MSC_VER)
 #define eve_debug_break() __debugbreak()
 #elif defined(__GCC__)
@@ -144,7 +148,7 @@ Main file to include the EVE HAL in your applications.
 
 /* Scope */
 #ifndef scope
-#define scope ;
+#define scope if (true)
 #endif
 
 /* Breakable */
@@ -153,5 +157,9 @@ Main file to include the EVE HAL in your applications.
 #endif
 
 #endif /* #ifndef EVE_PLATFORM__H */
+
+#ifdef __cplusplus
+}
+#endif
 
 /* end of file */

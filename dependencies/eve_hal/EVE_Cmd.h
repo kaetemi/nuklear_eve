@@ -47,75 +47,75 @@
 
 /* Get the current read pointer.
 Safe to use during ongoing command transaction */
-uint16_t EVE_Cmd_rp(EVE_HalContext *phost);
+EVE_HAL_EXPORT uint16_t EVE_Cmd_rp(EVE_HalContext *phost);
 
 /* Get the current write pointer.
 Updates cached write pointer when CMDB is not supported.
 Safe to use during ongoing command transaction */
-uint16_t EVE_Cmd_wp(EVE_HalContext *phost);
+EVE_HAL_EXPORT uint16_t EVE_Cmd_wp(EVE_HalContext *phost);
 
 /* Get the currently available space.
 Updates cached available space.
 Safe to use during ongoing command transaction */
-uint16_t EVE_Cmd_space(EVE_HalContext *phost);
+EVE_HAL_EXPORT uint16_t EVE_Cmd_space(EVE_HalContext *phost);
 
 /* Begin writing a function, keeps the transfer open.
 While a command transaction is ongoing,
 HAL functions outside of EVE_Cmd_* must not be used. */
-void EVE_Cmd_startFunc(EVE_HalContext *phost);
+EVE_HAL_EXPORT void EVE_Cmd_startFunc(EVE_HalContext *phost);
 
 /* End writing a function, closes the transfer */
-void EVE_Cmd_endFunc(EVE_HalContext *phost);
+EVE_HAL_EXPORT void EVE_Cmd_endFunc(EVE_HalContext *phost);
 
 /* Write a buffer to the command buffer. 
 Waits if there is not enough space in the command buffer. 
 Returns false in case a coprocessor fault occurred */
-bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size);
+EVE_HAL_EXPORT bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size);
 
 /* Write a progmem buffer to the command buffer. 
 Waits if there is not enough space in the command buffer. 
 Returns false in case a coprocessor fault occurred */
-bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size);
+EVE_HAL_EXPORT bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size);
 
 /* Write a string to the command buffer, padded to 4 bytes. 
 Waits if there is not enough space in the command buffer. 
 Returns false in case a coprocessor fault occurred */
-uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength);
+EVE_HAL_EXPORT uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength);
 
 /* Write a 8-bit value to the command buffer. 
 Uses a cache to write 4 bytes at once. 
 Waits if there is not enough space in the command buffer. 
 Returns false in case a coprocessor fault occurred */
-bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value);
+EVE_HAL_EXPORT bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value);
 
 /* Write a 16-bit value to the command buffer. 
 Uses a cache to write 4 bytes at once. 
 Wire endianness is handled by the transfer. 
 Waits if there is not enough space in the command buffer. 
 Returns false in case a coprocessor fault occurred */
-bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value);
+EVE_HAL_EXPORT bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value);
 
 /* Write a value to the command buffer. 
 Wire endianness is handled by the transfer. 
 Waits if there is not enough space in the command buffer. 
 Returns false in case a coprocessor fault occurred */
-bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value);
+EVE_HAL_EXPORT bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value);
 
 /* Move the write pointer forward by the specified number of bytes. 
 Returns the previous write pointer */
-uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes);
+EVE_HAL_EXPORT uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes);
 
 /* Wait for the command buffer to fully empty. 
 Returns false in case a coprocessor fault occurred */
-bool EVE_Cmd_waitFlush(EVE_HalContext *phost);
+EVE_HAL_EXPORT bool EVE_Cmd_waitFlush(EVE_HalContext *phost);
 
 /* Wait for the command buffer to have at least the requested amount of free space. R
 eturns false in case a coprocessor fault occurred */
-bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size);
+EVE_HAL_EXPORT bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size);
 
 /* Wait for logo to finish displaying. 
 (Waits for both the read and write pointer to go to 0) */
-bool EVE_Cmd_waitLogo(EVE_HalContext *phost);
+EVE_HAL_EXPORT bool EVE_Cmd_waitLogo(EVE_HalContext *phost);
 
 #endif /* #ifndef EVE_HAL__H */
 

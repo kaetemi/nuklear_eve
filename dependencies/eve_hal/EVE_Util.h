@@ -39,13 +39,62 @@
 #define EVE_UTIL__H
 #include "EVE_Hal.h"
 
-bool EVE_Util_bootupConfig(EVE_HalContext *phost);
-void EVE_Util_clearScreen(EVE_HalContext *phost);
+
+typedef struct EVE_BootupParameters {
+	/* Display */
+	int16_t Width;
+	int16_t Height;
+	int16_t HCycle;
+	int16_t HOffset;
+	int16_t HSync0;
+	int16_t HSync1;
+	int16_t VCycle;
+	int16_t VOffset;
+	int16_t VSync0;
+	int16_t VSync1;
+	uint8_t PCLK;
+	int8_t Swizzle;
+	int8_t PCLKPol;
+	int8_t CSpread;
+	bool Dither;
+	// TODO: OutBits
+	// TODO: AdaptiveFramerate;
+
+	/* SPI */
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810) || defined(EVE_MULTI_TARGET)
+	EVE_SPI_CHANNELS_T SpiChannels; /* Variable to contain single/dual/quad channels */
+	uint8_t SpiDummyBytes; /* Number of dummy bytes as 1 or 2 for SPI read */
+#endif
+
+	/* Others */
+	bool ExternalOsc;
+
+} EVE_BootupParameters;
+
+
+/* Get the default bootup parameters. */
+EVE_HAL_EXPORT void EVE_Util_bootupDefaults(EVE_HalContext *phost, EVE_BootupParameters *parameters);
+
+/* Boot up the device. Configures the display, resets coprocessor state if necessary. */
+EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters *parameters);
+
+/* Complementary of bootup. Does not close the HAL context. */
+EVE_HAL_EXPORT void EVE_Util_shutdown(EVE_HalContext *phost);
+
+
+/* Sets the display list to a blank cleared screen. */
+EVE_HAL_EXPORT void EVE_Util_clearScreen(EVE_HalContext *phost);
 
 /* Resets the coprocessor.
 To be used after a coprocessor fault, or to exit CMD_LOGO. 
 After a reset, flash will be in attached state. */
-bool EVE_Util_resetCoprocessor(EVE_HalContext *phost);
+EVE_HAL_EXPORT bool EVE_Util_resetCoprocessor(EVE_HalContext *phost);
+
+
+/* Deprecated.
+Calls EVE_Util_bootup using the default config */
+EVE_HAL_EXPORT bool EVE_Util_bootupConfig(EVE_HalContext *phost);
+
 
 #endif /* #ifndef EVE_HAL__H */
 

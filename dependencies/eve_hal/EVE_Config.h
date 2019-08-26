@@ -152,14 +152,14 @@ The following values are set based on the input definitions.
 Do not set these values manually; instead, use the specific user definitions.
 
 Graphics target:
-- EVE_MODEL=EVE_FT800
-- EVE_MODEL=EVE_FT801
-- EVE_MODEL=EVE_FT810
-- EVE_MODEL=EVE_FT811
-- EVE_MODEL=EVE_FT812
-- EVE_MODEL=EVE_FT813
-- EVE_MODEL=EVE_BT815
-- EVE_MODEL=EVE_BT816
+- EVE_SUPPORT_CHIPID=EVE_FT800
+- EVE_SUPPORT_CHIPID=EVE_FT801
+- EVE_SUPPORT_CHIPID=EVE_FT810
+- EVE_SUPPORT_CHIPID=EVE_FT811
+- EVE_SUPPORT_CHIPID=EVE_FT812
+- EVE_SUPPORT_CHIPID=EVE_FT813
+- EVE_SUPPORT_CHIPID=EVE_BT815
+- EVE_SUPPORT_CHIPID=EVE_BT816
 
 Platform target:
 - BT8XXEMU_PLATFORM
@@ -184,8 +184,8 @@ Additionally, the following support flags are set:
 - EVE_SUPPORT_PNG
 - EVE_SUPPORT_VIDEO
 - EVE_SUPPORT_CMDB
-- EVE_SCREEN_CAPACITIVE
-- EVE_SCREEN_RESISTIVE
+- EVE_SUPPORT_CAPACITIVE
+- EVE_SUPPORT_RESISTIVE
 
 */
 
@@ -500,28 +500,28 @@ It may also set platform, display, and flash values if none are configured.
 /// Model numbered macro for versioning convenience.
 /// Matches the BT8XXEMU_EmulatorMode enum values.
 #if defined(FT800_ENABLE)
-#define EVE_MODEL EVE_FT800
+#define EVE_SUPPORT_CHIPID EVE_FT800
 #define FT_800_ENABLE
 #elif defined(FT801_ENABLE)
-#define EVE_MODEL EVE_FT801
+#define EVE_SUPPORT_CHIPID EVE_FT801
 #define FT_801_ENABLE
 #elif defined(FT810_ENABLE)
-#define EVE_MODEL EVE_FT810
+#define EVE_SUPPORT_CHIPID EVE_FT810
 #define FT_810_ENABLE
 #elif defined(FT811_ENABLE)
-#define EVE_MODEL EVE_FT811
+#define EVE_SUPPORT_CHIPID EVE_FT811
 #define FT_811_ENABLE
 #elif defined(FT812_ENABLE)
-#define EVE_MODEL EVE_FT812
+#define EVE_SUPPORT_CHIPID EVE_FT812
 #define FT_812_ENABLE
 #elif defined(FT813_ENABLE)
-#define EVE_MODEL EVE_FT813
+#define EVE_SUPPORT_CHIPID EVE_FT813
 #define FT_813_ENABLE
 #elif defined(BT815_ENABLE)
-#define EVE_MODEL EVE_BT815
+#define EVE_SUPPORT_CHIPID EVE_BT815
 #define BT_815_ENABLE
 #elif defined(BT816_ENABLE)
-#define EVE_MODEL EVE_BT816
+#define EVE_SUPPORT_CHIPID EVE_BT816
 #define BT_816_ENABLE
 #endif
 
@@ -531,24 +531,6 @@ It may also set platform, display, and flash values if none are configured.
 #define FT_81X_ENABLE
 #elif defined(BT81X_ENABLE)
 #define BT_81X_ENABLE
-#endif
-
-/// Feature support.
-/// Avoid hardcoding specific EVE models throughout the libraries.
-#if (EVE_MODEL >= EVE_BT815)
-#define EVE_SUPPORT_FLASH
-#define EVE_SUPPORT_UNICODE
-#define EVE_SUPPORT_ASTC
-#endif
-#if (EVE_MODEL >= EVE_FT810)
-#define EVE_SUPPORT_PNG
-#define EVE_SUPPORT_VIDEO
-#define EVE_SUPPORT_CMDB
-#endif
-#if ((EVE_MODEL & 0x01) == 0x01)
-#define EVE_SCREEN_CAPACITIVE
-#else
-#define EVE_SCREEN_RESISTIVE
 #endif
 
 ///////////////////////////////////////////////////////////////////////
@@ -629,6 +611,7 @@ These may only be set by one of the platform target definitions, and should not 
 #if defined(ESD_SIMULATION) || defined(EVE_PLATFORM_BT8XXEMU)
 
 #define BT8XXEMU_PLATFORM
+#define EVE_HOST EVE_HOST_BT8XXEMU
 
 #elif defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
 
@@ -642,8 +625,10 @@ These may only be set by one of the platform target definitions, and should not 
 
 #if defined(EVE_PLATFORM_FT4222)
 #define FT4222_PLATFORM
+#define EVE_HOST EVE_HOST_FT4222
 #else
 #define MPSSE_PLATFORM
+#define EVE_HOST EVE_HOST_MPSSE
 #endif
 
 #define MSVC_PLATFORM
@@ -653,6 +638,7 @@ These may only be set by one of the platform target definitions, and should not 
 #if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
 
 #define FT9XX_PLATFORM
+#define EVE_HOST EVE_HOST_FT9XX
 
 #endif
 
@@ -672,7 +658,7 @@ These may only be set by one of the platform target definitions, and should not 
 
 #if defined(WIN32)                      \
     && !defined(EVE_PLATFORM_AVAILABLE) \
-    && !defined(EVE_MODEL)
+    && !defined(EVE_SUPPORT_CHIPID)
 #define EVE_MULTI_TARGET
 #endif
 
@@ -707,9 +693,38 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_SUPPORT_PNG
 #define EVE_SUPPORT_VIDEO
 #define EVE_SUPPORT_CMDB
-#define EVE_SCREEN_CAPACITIVE
-#define EVE_SCREEN_RESISTIVE
+#define EVE_SUPPORT_CAPACITIVE
+#define EVE_SUPPORT_RESISTIVE
+#define EVE_SUPPORT_CHIPID EVE_BT816
 #define RESISTANCE_THRESHOLD (1800)
+#define EVE_CHIPID phost->ChipId
+#define EVE_HOST phost->Host
+#else
+#define EVE_CHIPID EVE_SUPPORT_CHIPID
+#endif
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+/// Feature support.
+/// Avoid hardcoding specific EVE models throughout the libraries.
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
+#define EVE_SUPPORT_FLASH
+#define EVE_SUPPORT_UNICODE
+#define EVE_SUPPORT_ASTC
+#endif
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+#define EVE_SUPPORT_PNG
+#define EVE_SUPPORT_VIDEO
+#define EVE_SUPPORT_CMDB
+#endif
+#ifndef EVE_MULTI_TARGET
+#if ((EVE_SUPPORT_CHIPID & 0x01) == 0x01)
+#define EVE_SUPPORT_CAPACITIVE
+#else
+#define EVE_SUPPORT_RESISTIVE
+#endif
 #endif
 
 ///////////////////////////////////////////////////////////////////////
@@ -750,8 +765,8 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 ///////////////////////////////////////////////////////////////////////
 
 /// Configuration sanity checks
-#if !defined(EVE_MODEL) && !defined(EVE_MULTI_TARGET)
-#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_MODEL: " \
+#if !defined(EVE_SUPPORT_CHIPID) && !defined(EVE_MULTI_TARGET)
+#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_SUPPORT_CHIPID: " \
                                                       "No EVE device model has been selected")
 #endif
 #if !defined(EVE_DISPLAY_AVAILABLE) && !defined(EVE_MULTI_TARGET)

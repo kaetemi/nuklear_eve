@@ -36,6 +36,9 @@
 #if defined(EVE_MULTI_TARGET)
 #define EVE_HalImpl_initialize EVE_HalImpl_FT4222_initialize
 #define EVE_HalImpl_release EVE_HalImpl_FT4222_release
+#define EVE_Hal_list EVE_Hal_FT4222_list
+#define EVE_Hal_info EVE_Hal_FT4222_info
+#define EVE_Hal_isDevice EVE_Hal_FT4222_isDevice
 #define EVE_HalImpl_defaults EVE_HalImpl_FT4222_defaults
 #define EVE_HalImpl_open EVE_HalImpl_FT4222_open
 #define EVE_HalImpl_close EVE_HalImpl_FT4222_close
@@ -66,10 +69,12 @@
 #define FT4222_LATENCY_TIME (2)
 
 EVE_HalPlatform g_HalPlatform;
+DWORD s_NumDevsD2XX;
 
 /* Initialize HAL platform */
 void EVE_HalImpl_initialize()
 {
+#if 0
 	FT_DEVICE_LIST_INFO_NODE devList;
 	FT_STATUS status;
 	uint32_t numdevs;
@@ -78,7 +83,7 @@ void EVE_HalImpl_initialize()
 	if (FT_OK == status)
 	{
 		eve_printf_debug("Number of D2xx devices connected = %d\n", numdevs);
-		g_HalPlatform.TotalDevices = numdevs;
+		// TODO: g_HalPlatform.TotalDevices = numdevs;
 
 		FT_GetDeviceInfoDetail(0, &devList.Flags, &devList.Type, &devList.ID,
 		    &devList.LocId,
@@ -95,12 +100,13 @@ void EVE_HalImpl_initialize()
 	eve_printf_debug("Information on channel number %d:\n", 0);
 	/* print the dev info */
 	eve_printf_debug(" Flags=0x%x\n", devList.Flags);
-	eve_printf_debug(" Type=0x%x\n", devList.Type);
+	eve_printf_debug(" Type=0x%x\n", devList.Host);
 	eve_printf_debug(" ID=0x%x\n", devList.ID);
 	eve_printf_debug(" LocId=0x%x\n", devList.LocId);
 	eve_printf_debug(" SerialNumber=%s\n", devList.SerialNumber);
 	eve_printf_debug(" Description=%s\n", devList.Description);
 	eve_printf_debug(" ftHandle=0x%p\n", devList.ftHandle); /*is 0 unless open*/
+#endif
 }
 
 /* Release HAL platform */
@@ -109,9 +115,85 @@ void EVE_HalImpl_release()
 	/* no-op */
 }
 
-/* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters, uint32_t model, EVE_DeviceInfo *device)
+/* List the available devices */
+size_t EVE_Hal_list()
 {
+	s_NumDevsD2XX = 0;
+	FT_CreateDeviceInfoList(&s_NumDevsD2XX);
+	return s_NumDevsD2XX;
+}
+
+/* Get info of the specified device */
+void EVE_Hal_info(EVE_DeviceInfo *deviceInfo, size_t deviceIdx)
+{
+	memset(deviceInfo, 0, sizeof(EVE_DeviceInfo));
+	if (deviceIdx < 0 || deviceIdx >= s_NumDevsD2XX)
+		return;
+
+	FT_DEVICE_LIST_INFO_NODE devInfo = { 0 };
+	if (FT_GetDeviceInfoDetail((DWORD)deviceIdx,
+	        &devInfo.Flags, &devInfo.Type, &devInfo.ID, &devInfo.LocId,
+	        devInfo.SerialNumber, devInfo.Description, &devInfo.ftHandle)
+	    != FT_OK)
+		return;
+
+	strcpy(deviceInfo->SerialNumber, devInfo.SerialNumber);
+	strcpy(deviceInfo->DisplayName, devInfo.Description);
+	if (!strcmp(devInfo.Description, "FT4222 A"))
+		deviceInfo->Host = EVE_HOST_FT4222;
+	deviceInfo->Opened = devInfo.Flags & FT_FLAGS_OPENED;
+}
+
+/* Check whether the context is the specified device */
+bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
+{
+	if (!phost)
+		return false;
+	if (phost->Host != EVE_HOST_FT4222)
+		return false;
+	if (deviceIdx < 0 || deviceIdx >= s_NumDevsD2XX)
+		return false;
+
+	if (!phost->SpiHandle)
+		return false;
+
+	FT_DEVICE_LIST_INFO_NODE devInfo = { 0 };
+	if (FT_GetDeviceInfoDetail((DWORD)deviceIdx,
+	        &devInfo.Flags, &devInfo.Type, &devInfo.ID, &devInfo.LocId,
+	        devInfo.SerialNumber, devInfo.Description, &devInfo.ftHandle)
+	    != FT_OK)
+		return false;
+
+	return phost->SpiHandle == devInfo.ftHandle;
+}
+
+/* Get the default configuration parameters */
+void EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
+{
+	if (deviceIdx < 0 || deviceIdx >= s_NumDevsD2XX)
+	{
+		if (!s_NumDevsD2XX)
+			EVE_Hal_list();
+
+		// Select first open device
+		deviceIdx = 0;
+		for (uint32_t i = 0; i < s_NumDevsD2XX; ++i)
+		{
+			FT_DEVICE_LIST_INFO_NODE devInfo;
+			if (FT_GetDeviceInfoDetail((DWORD)deviceIdx,
+			        &devInfo.Flags, &devInfo.Type, &devInfo.ID, &devInfo.LocId,
+			        devInfo.SerialNumber, devInfo.Description, &devInfo.ftHandle)
+			    != FT_OK)
+				continue;
+			if (!(devInfo.Flags & FT_FLAGS_OPENED))
+			{
+				deviceIdx = i;
+				break;
+			}
+		}
+	}
+
+	parameters->DeviceIdx = (uint32_t)deviceIdx;
 	parameters->PowerDownPin = GPIO_PORT0;
 	parameters->SpiCsPin = 1;
 	parameters->SpiClockrateKHz = 12000;
@@ -194,10 +276,6 @@ bool computeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock
 bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
 	FT_STATUS status;
-	//ulong_t numdevs;
-	uint32_t numdevs;
-	uint32_t index;
-	FT_HANDLE fthandle;
 	FT4222_Version pversion;
 	FT4222_ClockRate ftclk = 0;
 	uint16_t max_size = 0;
@@ -206,89 +284,86 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	/* GPIO0         , GPIO1      , GPIO2       , GPIO3         } */
 	GPIO_Dir gpio_dir[4] = { GPIO_OUTPUT, GPIO_INPUT, GPIO_INPUT, GPIO_INPUT };
 
+	DWORD deviceIdxA = parameters->DeviceIdx;
+	FT_DEVICE_LIST_INFO_NODE devInfoA;
+	DWORD deviceIdxB;
+	FT_DEVICE_LIST_INFO_NODE devInfoB;
+
 	bool ret = true;
 
 	phost->SpiHandle = phost->GpioHandle = NULL;
 
-	status = FT_CreateDeviceInfoList(&numdevs);
+#ifdef EVE_MULTI_TARGET
+	if (parameters->ChipId >= EVE_BT815)
+		phost->GpuDefs = &EVE_GpuDefs_BT81X;
+	else if (parameters->ChipId >= EVE_FT810)
+		phost->GpuDefs = &EVE_GpuDefs_FT81X;
+	else
+		phost->GpuDefs = &EVE_GpuDefs_FT80X;
+	phost->ChipId = parameters->ChipId;
+#endif
+
+	memset(&devInfoA, 0, sizeof(devInfoA));
+	status = FT_GetDeviceInfoDetail(deviceIdxA,
+	    &devInfoA.Flags, &devInfoA.Type, &devInfoA.ID, &devInfoA.LocId,
+	    devInfoA.SerialNumber, devInfoA.Description, &devInfoA.ftHandle);
 	if (status != FT_OK)
 	{
-		eve_printf_debug("FT_CreateDeviceInfoList failed");
+		eve_printf_debug("FT_GetDeviceInfoDetail failed");
 		ret = false;
 	}
-
-	status = FT_ListDevices(&numdevs, NULL, FT_LIST_NUMBER_ONLY);
-	if (status != FT_OK)
+	if (devInfoA.Flags & FT_FLAGS_OPENED)
 	{
-		eve_printf_debug("FT_ListDevices failed");
+		eve_printf_debug("Device FT4222 A already opened");
 		ret = false;
 	}
 
 	if (ret)
 	{
-		for (index = 0; (index < numdevs) && ret; index++)
+		for (deviceIdxB = deviceIdxA + 1; deviceIdxB < s_NumDevsD2XX; ++deviceIdxB)
 		{
-			FT_DEVICE_LIST_INFO_NODE devInfo;
-			memset(&devInfo, 0, sizeof(devInfo));
-
-			status = FT_GetDeviceInfoDetail(index,
-			    &devInfo.Flags, &devInfo.Type, &devInfo.ID, &devInfo.LocId,
-			    devInfo.SerialNumber, devInfo.Description, &devInfo.ftHandle);
-			if (FT_OK == status)
-			{
-				eve_printf_debug("Dev %d:\n", index);
-				eve_printf_debug(" Flags= 0x%x, (%s) (%s)\n", devInfo.Flags,
-				    ((devInfo.Flags & 0x01) ? "DEVICE_OPEN" : "DEVICE_CLOSED"), ((devInfo.Flags & 0x02) ? "High-speed USB" : "Full-speed USB"));
-				eve_printf_debug(" Type= 0x%x\n", devInfo.Type);
-				eve_printf_debug(" ID= 0x%x\n", devInfo.ID);
-				eve_printf_debug(" LocId= 0x%x\n", devInfo.LocId);
-				eve_printf_debug(" SerialNumber= %s\n", devInfo.SerialNumber);
-				eve_printf_debug(" Description= %s\n", devInfo.Description);
-				eve_printf_debug(" ftHandle= %p\n", devInfo.ftHandle);
-			}
-			else
-				ret = false;
-
-			if (ret && !(devInfo.Flags & 0x01) && ((!strcmp(devInfo.Description, "FT4222 A") && (phost->SpiHandle == NULL)) || (!strcmp(devInfo.Description, "FT4222 B") && (phost->GpioHandle == NULL))))
-			{
-				/* obtain handle for the first discovered "FT4222 A" and first "FT4222 B" */
-				status = FT_OpenEx(devInfo.Description, FT_OPEN_BY_DESCRIPTION, &fthandle);
-				if (status != FT_OK)
-				{
-					eve_printf_debug("FT_OpenEx failed %d\n", status);
-					ret = false;
-				}
-				else
-				{
-					if (!strcmp(devInfo.Description, "FT4222 A"))
-					{
-						//is SPI
-						phost->SpiHandle = fthandle; //SPI communication handle
-						eve_printf_debug("[%d]th of total connected devices is FT4222 A (SPI) : phost->hal_hanlde = %p\n", index + 1, phost->SpiHandle);
-					}
-					else if (!strcmp(devInfo.Description, "FT4222 B"))
-					{
-						//is GPIO
-						phost->GpioHandle = fthandle; //GPIO communication handle
-						eve_printf_debug("[%d]th of total connected devices is FT4222 B (GPIO) : phost->hal_hanlde = %p\n", index + 1, phost->SpiHandle);
-					}
-					else
-					{
-						eve_printf_debug("Error in FT4222 configuration\n");
-					}
-				}
-			}
-			else
-			{
-				if (
-				    (!strcmp(devInfo.Description, "FT4222 A") && phost->SpiHandle != NULL) || (!strcmp(devInfo.Description, "FT4222 B") && phost->GpioHandle != NULL))
-					eve_printf_debug("[%d]th of total connected devices is not the first %s detected. Hence skipping.\n", index + 1, devInfo.Description);
-				else if (devInfo.Flags & 0x01)
-					eve_printf_debug("[%d]th of total connected devices is already open in another context. Hence skipping.\n", index + 1);
-				else
-					eve_printf_debug("[%d]th of total connected devices is not FT4222 but is %s. Hence skipping.\n", index + 1, devInfo.Description);
+			memset(&devInfoB, 0, sizeof(devInfoB));
+			status = FT_GetDeviceInfoDetail(deviceIdxB,
+			    &devInfoB.Flags, &devInfoB.Type, &devInfoB.ID, &devInfoB.LocId,
+			    devInfoB.SerialNumber, devInfoB.Description, &devInfoB.ftHandle);
+			if (status != FT_OK)
 				continue;
-			}
+			if (!strcmp(devInfoB.Description, "FT4222 B"))
+				break;
+		}
+		if (deviceIdxB >= s_NumDevsD2XX)
+		{
+			eve_printf_debug("FT4222 B not found");
+			ret = false;
+		}
+		else if (devInfoB.Flags & FT_FLAGS_OPENED)
+		{
+			eve_printf_debug("Device FT4222 B already opened");
+			ret = false;
+		}
+	}
+
+	if (ret)
+	{
+		status = FT_Open(deviceIdxA, &phost->SpiHandle);
+		if (status != FT_OK)
+		{
+			eve_printf_debug("FT_Open FT4222 A failed %d\n", status);
+			phost->SpiHandle = NULL;
+			ret = false;
+		}
+	}
+
+	if (ret)
+	{
+		status = FT_Open(deviceIdxB, &phost->GpioHandle);
+		if (status != FT_OK)
+		{
+			eve_printf_debug("FT_Open FT4222 B failed %d\n", status);
+			FT_Close(phost->SpiHandle);
+			phost->GpioHandle = NULL;
+			phost->SpiHandle = NULL;
+			ret = false;
 		}
 	}
 
@@ -436,17 +511,11 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 ** TRANSFER **
 *************/
 
-#if defined(BUFFER_OPTIMIZATION)
 static bool flush(EVE_HalContext *phost);
-#endif
 
 static inline uint32_t incrementRamGAddr(EVE_HalContext *phost, uint32_t addr, uint32_t inc)
 {
-#ifdef EVE_SUPPORT_CMDB
-	if (addr != REG_CMDB_WRITE)
-#else
-	scope
-#endif
+	if (!EVE_Hal_supportCmdB(phost) || (addr != REG_CMDB_WRITE))
 	{
 		bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
 		addr += inc;
@@ -542,11 +611,7 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 			size -= sizeTransferred;
 		}
 
-#ifdef EVE_SUPPORT_CMDB
-		if (addr != REG_CMDB_WRITE)
-#else
-		scope
-#endif
+		if (!EVE_Hal_supportCmdB(phost) || (addr != REG_CMDB_WRITE))
 		{
 			bool wrapCmdAddr = (addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE));
 			addr += sizeTransferred;
@@ -667,10 +732,10 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 				{
 					eve_assert_ex((sizeTransferred - FT4222_WRITE_HEADER_SIZE) <= (int32_t)size, "Cannot have transferred more than size\n");
 					size -= sizeTransferred - FT4222_WRITE_HEADER_SIZE;
-					eve_assert_ex(!(buffer && size), "Cannot have space left after flushing buffer\n");
+					// eve_assert_ex(!(buffer && size), "Cannot have space left after flushing buffer\n");
 				}
 
-				addr = incrementRamGAddr(phost, addr, sizeTransferred);
+				addr = incrementRamGAddr(phost, addr, (sizeTransferred - FT4222_WRITE_HEADER_SIZE));
 				phost->SpiRamGAddr = addr;
 			}
 		}
@@ -683,15 +748,12 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 {
 	eve_assert(phost->Status == EVE_STATUS_OPENED);
 
-#if !defined(EVE_SUPPORT_CMDB)
-	if (addr == REG_CMD_WRITE && rw == EVE_TRANSFER_WRITE)
+	if (!EVE_Hal_supportCmdB(phost) && addr == REG_CMD_WRITE && rw == EVE_TRANSFER_WRITE)
 	{
 		/* Bypass fifo write pointer write */
 		phost->SpiWpWriting = true;
 	}
-	else
-#endif
-	    if (addr != incrementRamGAddr(phost, phost->SpiRamGAddr, phost->SpiWrBufIndex) || rw == EVE_TRANSFER_READ)
+	else if (addr != incrementRamGAddr(phost, phost->SpiRamGAddr, phost->SpiWrBufIndex) || rw == EVE_TRANSFER_READ)
 	{
 		/* Close any write transfer that was left open, if the address changed */
 		flush(phost);
@@ -712,18 +774,15 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 
 	/* Transfers to FIFO are kept open */
 	addr = phost->SpiRamGAddr;
-#ifdef EVE_SUPPORT_CMDB
-	if (addr != REG_CMDB_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
-#else
-	if (addr != REG_CMD_WRITE && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
-#endif
+	if (addr != (EVE_Hal_supportCmdB(phost) ? REG_CMDB_WRITE : REG_CMD_WRITE) && !((addr >= RAM_CMD) && (addr < (addr + EVE_CMD_FIFO_SIZE))))
 	{
 		flush(phost);
 	}
 
-#if !defined(EVE_SUPPORT_CMDB)
-	phost->SpiWpWriting = false;
-#endif
+	if (!EVE_Hal_supportCmdB(phost))
+	{
+		phost->SpiWpWriting = false;
+	}
 	phost->Status = EVE_STATUS_OPENED;
 }
 
@@ -735,18 +794,19 @@ static bool flush(EVE_HalContext *phost)
 		res = wrBuffer(phost, NULL, 0);
 	}
 	eve_assert(!phost->SpiWrBufIndex);
-#if !defined(EVE_SUPPORT_CMDB)
-	if (phost->SpiWpWritten)
+	if (!EVE_Hal_supportCmdB(phost))
 	{
-		phost->SpiWpWritten = false;
-		phost->SpiRamGAddr = REG_CMD_WRITE;
-		phost->SpiWrBufIndex = 2;
-		phost->SpiWrBuf[FT4222_WRITE_HEADER_SIZE + 0] = phost->SpiWpWrite & 0xFF;
-		phost->SpiWrBuf[FT4222_WRITE_HEADER_SIZE + 1] = phost->SpiWpWrite >> 8;
-		res = wrBuffer(phost, NULL, 0);
+		if (phost->SpiWpWritten)
+		{
+			phost->SpiWpWritten = false;
+			phost->SpiRamGAddr = REG_CMD_WRITE;
+			phost->SpiWrBufIndex = 2;
+			phost->SpiWrBuf[FT4222_WRITE_HEADER_SIZE + 0] = phost->SpiWpWrite & 0xFF;
+			phost->SpiWrBuf[FT4222_WRITE_HEADER_SIZE + 1] = phost->SpiWpWrite >> 8;
+			res = wrBuffer(phost, NULL, 0);
+		}
+		eve_assert(!phost->SpiWrBufIndex);
 	}
-	eve_assert(!phost->SpiWrBufIndex);
-#endif
 	return res;
 }
 
@@ -758,8 +818,11 @@ void EVE_Hal_flush(EVE_HalContext *phost)
 
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 {
-#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
-	eve_assert(!phost->SpiWpWriting);
+#if defined(BUFFER_OPTIMIZATION)
+	if (!EVE_Hal_supportCmdB(phost))
+	{
+		eve_assert(!phost->SpiWpWriting);
+	}
 #endif
 	if (phost->Status == EVE_STATUS_READING)
 	{
@@ -775,12 +838,15 @@ uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 {
-#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
-	if (phost->SpiWpWriting)
+#if defined(BUFFER_OPTIMIZATION)
+	if (!EVE_Hal_supportCmdB(phost))
 	{
-		phost->SpiWpWrite = value;
-		phost->SpiWpWritten = true;
-		return 0;
+		if (phost->SpiWpWriting)
+		{
+			phost->SpiWpWrite = value;
+			phost->SpiWpWritten = true;
+			return 0;
+		}
 	}
 #endif
 	uint8_t buffer[2];
@@ -801,8 +867,11 @@ uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 {
-#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
-	eve_assert(!phost->SpiWpWriting);
+#if defined(BUFFER_OPTIMIZATION)
+	if (!EVE_Hal_supportCmdB(phost))
+	{
+		eve_assert(!phost->SpiWpWriting);
+	}
 #endif
 	uint8_t buffer[4];
 	if (phost->Status == EVE_STATUS_READING)
@@ -829,8 +898,11 @@ void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *
 	if (!size)
 		return;
 
-#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
-	eve_assert(!phost->SpiWpWriting);
+#if defined(BUFFER_OPTIMIZATION)
+	if (!EVE_Hal_supportCmdB(phost))
+	{
+		eve_assert(!phost->SpiWpWriting);
+	}
 #endif
 
 	if (result && buffer)
@@ -853,8 +925,11 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 	if (!size)
 		return;
 
-#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
-	eve_assert(!phost->SpiWpWriting);
+#if defined(BUFFER_OPTIMIZATION)
+	if (!EVE_Hal_supportCmdB(phost))
+	{
+		eve_assert(!phost->SpiWpWriting);
+	}
 #endif
 
 	if (result && buffer)
@@ -882,8 +957,11 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		return 4;
 	}
 
-#if defined(BUFFER_OPTIMIZATION) && !defined(EVE_SUPPORT_CMDB)
-	eve_assert(!phost->SpiWpWriting);
+#if defined(BUFFER_OPTIMIZATION)
+	if (!EVE_Hal_supportCmdB(phost))
+	{
+		eve_assert(!phost->SpiWpWriting);
+	}
 #endif
 	eve_assert(size <= EVE_CMD_STRING_MAX);
 	uint32_t transferred = 0;
@@ -1084,9 +1162,9 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
 {
 	flush(phost);
-#if (EVE_MODEL < EVE_FT810)
-	return;
-#else
+	if (EVE_CHIPID < EVE_FT810)
+		return;
+
 	uint8_t writebyte = 0;
 
 	if ((numchnls > EVE_SPI_QUAD_CHANNEL) || (numdummy > 2) || (numdummy < 1))
@@ -1100,7 +1178,6 @@ void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t 
 
 	/* Switch FT4222 to multi channel SPI mode */
 	setSPI(phost, numchnls, numdummy);
-#endif
 }
 
 /*********

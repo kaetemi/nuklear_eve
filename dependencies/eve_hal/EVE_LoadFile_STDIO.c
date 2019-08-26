@@ -35,13 +35,17 @@
 
 #include <stdio.h>
 
-bool EVE_Util_loadSdCard(EVE_HalContext *phost)
+EVE_HAL_EXPORT bool EVE_Util_loadSdCard(EVE_HalContext *phost)
 {
 	/* no-op */
 	return true;
 }
 
-bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename)
+#ifdef WIN32
+static bool loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename, const wchar_t *filenameW)
+#else
+EVE_HAL_EXPORT bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename)
+#endif
 {
 	FILE *afile;
 	uint32_t ftsize = 0;
@@ -51,7 +55,11 @@ bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *f
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
-	afile = fopen(filename, "rb");
+#ifdef WIN32
+	afile = filename ? fopen(filename, "rb") : _wfopen(filenameW, L"rb");
+#else
+	afile = fopen(filename, "rb"); // read Binary (rb)
+#endif
 #pragma warning(pop)
 	if (afile == NULL)
 	{
@@ -74,7 +82,25 @@ bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *f
 	return true;
 }
 
-bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename)
+#ifdef WIN32
+
+EVE_HAL_EXPORT bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename)
+{
+	return loadRawFile(phost, address, filename, NULL);
+}
+
+EVE_HAL_EXPORT bool EVE_Util_loadRawFileW(EVE_HalContext *phost, uint32_t address, const wchar_t *filename)
+{
+	return loadRawFile(phost, address, NULL, filename);
+}
+
+#endif
+
+#ifdef WIN32
+static bool loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename, const wchar_t *filenameW)
+#else
+EVE_HAL_EXPORT bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename)
+#endif
 {
 	FILE *afile;
 	uint32_t ftsize = 0;
@@ -86,7 +112,11 @@ bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const cha
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
+#ifdef WIN32
+	afile = filename ? fopen(filename, "rb") : _wfopen(filenameW, L"rb");
+#else
 	afile = fopen(filename, "rb"); // read Binary (rb)
+#endif
 #pragma warning(pop)
 	if (afile == NULL)
 	{
@@ -113,7 +143,25 @@ bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const cha
 	return EVE_Cmd_waitFlush(phost);
 }
 
-bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, uint32_t *format)
+#ifdef WIN32
+
+EVE_HAL_EXPORT bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename)
+{
+	return loadInflateFile(phost, address, filename, NULL);
+}
+
+EVE_HAL_EXPORT bool EVE_Util_loadInflateFileW(EVE_HalContext *phost, uint32_t address, const wchar_t *filename)
+{
+	return loadInflateFile(phost, address, NULL, filename);
+}
+
+#endif
+
+#ifdef WIN32
+static bool loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, const wchar_t *filenameW, uint32_t *format)
+#else
+EVE_HAL_EXPORT bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, uint32_t *format)
+#endif
 {
 	FILE *afile;
 	uint32_t ftsize = 0;
@@ -122,7 +170,11 @@ bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char 
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
+#ifdef WIN32
+	afile = filename ? fopen(filename, "rb") : _wfopen(filenameW, L"rb");
+#else
 	afile = fopen(filename, "rb"); // read Binary (rb)
+#endif
 #pragma warning(pop)
 	if (afile == NULL)
 	{
@@ -161,6 +213,20 @@ bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char 
 
 	return true;
 }
+
+#ifdef WIN32
+
+EVE_HAL_EXPORT bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, uint32_t *format)
+{
+	return loadImageFile(phost, address, filename, NULL, format);
+}
+
+EVE_HAL_EXPORT bool EVE_Util_loadImageFileW(EVE_HalContext *phost, uint32_t address, const wchar_t *filename, uint32_t *format)
+{
+	return loadImageFile(phost, address, NULL, filename, format);
+}
+
+#endif
 
 #endif
 
