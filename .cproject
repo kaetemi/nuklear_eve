@@ -102,7 +102,7 @@
 						</tool>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="dependencies/bt8xxemu|dependencies/nuklear/src|dependencies/nuklear/extra_font|dependencies/nuklear/example|dependencies/nuklear/doc|dependencies/nuklear/demo|dependencies/mpsse_spi|dependencies/ftd2xx|dependencies/ft4222|build_*|Debug|Release|CMake" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry excluding="dependencies/bt8xxemu|dependencies/nuklear/src|dependencies/nuklear/extra_font|dependencies/nuklear/example|dependencies/nuklear/doc|dependencies/nuklear/demo|dependencies/mpsse_spi|dependencies/ftd2xx|dependencies/ft4222|build_*|Debug|Release|CMake|samples" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
