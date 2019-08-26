@@ -41,7 +41,7 @@ static eve_progmem_const uint8_t c_DlCodeBootup[12] = {
 
 /* VERIFY: Can the emulator handle this? */
 #if (!defined(BT8XXEMU_PLATFORM) || defined(EVE_MULTI_TARGET)) \
-&& ((EVE_SUPPORT_CHIPID == EVE_FT811) || (EVE_SUPPORT_CHIPID == EVE_FT813) || defined(EVE_MULTI_TARGET))
+    && ((EVE_SUPPORT_CHIPID == EVE_FT811) || (EVE_SUPPORT_CHIPID == EVE_FT813) || defined(EVE_MULTI_TARGET))
 #define TOUCH_DATA_LEN 1172
 static eve_progmem_const uint8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
 	26, 255, 255, 255, 32, 32, 48, 0, 4, 0, 0, 0, 2, 0, 0, 0, 34,
