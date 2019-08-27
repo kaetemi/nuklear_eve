@@ -14,8 +14,10 @@
 extern EVE_HalContext *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
 
+#if defined(EVE_FLASH_AVAILABLE)
 #ifndef NDEBUG
 static ft_uint32_t s_FlashErrorLast = ~0;
+#endif
 #endif
 
 //A function to enable spinner when frame is rendered.
@@ -177,7 +179,7 @@ ft_bool_t Esd_Calibrate()
 
 	// Print the configured values
 	Ft_Gpu_Hal_RdMem(phost, REG_TOUCH_TRANSFORM_A, (ft_uint8_t *)transMatrix, 4 * 6); //read all the 6 coefficients
-	eve_printf_debug("Touch screen transform values are A 0x%x,B 0x%x,C 0x%x,D 0x%x,E 0x%x, F 0x%x\n",
+	eve_printf_debug("Touch screen transform values are A 0x%lx,B 0x%lx,C 0x%lx,D 0x%lx,E 0x%lx, F 0x%lx\n",
 	    transMatrix[0], transMatrix[1], transMatrix[2], transMatrix[3], transMatrix[4], transMatrix[5]);
 
 	return result != 0;

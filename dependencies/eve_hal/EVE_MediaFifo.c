@@ -255,7 +255,7 @@ static bool checkWait(EVE_HalContext *phost, uint32_t rpOrSpace)
 #if defined(_DEBUG)
 		if (EVE_CHIPID >= EVE_BT815)
 		{
-			EVE_Hal_rdMem(phost, err, RAM_ERR_REPORT, 128);
+			EVE_Hal_rdMem(phost, (uint8_t *)err, RAM_ERR_REPORT, 128);
 			eve_printf_debug("%s\n", err);
 			EVE_Hal_displayMessage(phost, err, 128);
 		}

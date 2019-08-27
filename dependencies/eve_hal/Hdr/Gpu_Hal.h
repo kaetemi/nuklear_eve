@@ -652,14 +652,14 @@ void Set_GpuClock(Gpu_Hal_Context_t *phost);
 uint32_t Get_GpuClock(Gpu_Hal_Context_t *phost);
 #endif
 
-static int32_t Gpu_Hal_Dec2Ascii(char8_t *pSrc, int32_t value)
+inline static int32_t Gpu_Hal_Dec2Ascii(char8_t *pSrc, int32_t value)
 {
 	int16_t Length;
 	char8_t *pdst, charval;
 	int32_t CurrVal = value, tmpval, i;
 	char8_t tmparray[16], idx = 0;
 
-	Length = (int16_t)strlen(pSrc);
+	Length = (int16_t)strlen((char *)pSrc);
 	pdst = pSrc + Length;
 
 	if (0 == value)
@@ -693,23 +693,23 @@ static int32_t Gpu_Hal_Dec2Ascii(char8_t *pSrc, int32_t value)
 	return 0;
 }
 
-static void Gpu_Hal_LoadImageToMemory(Gpu_Hal_Context_t *phost, char8_t *fileName, uint32_t destination, uint8_t type)
+inline static void Gpu_Hal_LoadImageToMemory(Gpu_Hal_Context_t *phost, char8_t *fileName, uint32_t destination, uint8_t type)
 {
 	if (type == LOADIMAGE)
 	{
-		EVE_Util_loadImageFile(phost, destination, fileName, NULL);
+		EVE_Util_loadImageFile(phost, destination, (char *)fileName, NULL);
 	}
 	else if (type == INFLATE)
 	{
-		EVE_Util_loadInflateFile(phost, destination, fileName);
+		EVE_Util_loadInflateFile(phost, destination, (char *)fileName);
 	}
 	else if (type == LOAD)
 	{
-		EVE_Util_loadRawFile(phost, destination, fileName);
+		EVE_Util_loadRawFile(phost, destination, (char *)fileName);
 	}
 }
 
-static void Gpu_Hal_ResetCmdFifo(Gpu_Hal_Context_t *phost)
+inline static void Gpu_Hal_ResetCmdFifo(Gpu_Hal_Context_t *phost)
 {
 	EVE_Cmd_rp(phost);
 	EVE_Cmd_wp(phost);

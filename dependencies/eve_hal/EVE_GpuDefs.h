@@ -70,7 +70,7 @@ to be defined. If not, multi target compilation is assumed.
 
 #define RAM_G 0UL
 #define ROM_CHIPID 786432UL
-#define RAM_ERR_REPORT 0x309800
+#define RAM_ERR_REPORT 0x309800UL
 
 #if defined(EVE_MULTI_TARGET)
 

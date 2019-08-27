@@ -15,7 +15,7 @@ typedef struct Ft_Esd_BitmapInfo
 	ft_int32_t Width;
 	ft_int32_t Height;
 	ft_int32_t Stride;
-	ft_int32_t Format;
+	ft_uint32_t Format;
 	ft_int32_t Size;
 	union
 	{

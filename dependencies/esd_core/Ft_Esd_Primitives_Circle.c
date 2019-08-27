@@ -19,8 +19,6 @@ ft_void_t Esd_Render_Circle_Stroke(
 
 	switch (stroke)
 	{
-	case ESD_STROKE_NONE:
-		return;
 	case ESD_STROKE_INNER:
 		innerRadius = r - border;
 		outerRadius = r;
@@ -33,6 +31,8 @@ ft_void_t Esd_Render_Circle_Stroke(
 		innerRadius = r - (border >> 1);
 		outerRadius = innerRadius + border;
 		break;
+	default:
+		return;
 	}
 
 	if (border < 16)

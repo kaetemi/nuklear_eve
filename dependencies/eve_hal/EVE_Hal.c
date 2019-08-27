@@ -269,7 +269,7 @@ void EVE_Hal_displayMessage(EVE_HalContext *phost, char *str, uint16_t size)
 
 	/* Abuse back of RAM_G to store error */
 	/* May invalidate user data... */
-	EVE_Hal_wrMem(phost, addr, str, size);
+	EVE_Hal_wrMem(phost, addr, (uint8_t *)str, size);
 
 	/* Generate bluescreen */
 	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR_COLOR_RGB(0x00, 0x20, 0x40));

@@ -9,7 +9,7 @@
 #include <math.h>
 
 extern EVE_HalContext *Ft_Esd_Host;
-extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
+/* extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc; */
 extern int16_t ESD_DispWidth, ESD_DispHeight;
 
 // GPU state for the current display list

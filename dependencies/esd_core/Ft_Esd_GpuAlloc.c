@@ -294,11 +294,11 @@ void Ft_Esd_GpuAlloc_Print(Ft_Esd_GpuAlloc *ga)
 	eve_printf_debug("GpuAlloc:\n");
 	for (idx = 0; idx < ga->NbAllocEntries; ++idx)
 	{
-		eve_printf_debug("%i: id: %i, addr: %i, len: %i, flags: %i\n",
-		    idx,
+		eve_printf_debug("%i: id: %i, addr: %li, len: %li, flags: %i\n",
+			(int)idx,
 		    (int)ga->AllocEntries[idx].Id,
-		    (int)ga->AllocEntries[idx].Address,
-		    (int)ga->AllocEntries[idx].Length,
+		    (long int)ga->AllocEntries[idx].Address,
+		    (long int)ga->AllocEntries[idx].Length,
 		    (int)ga->AllocEntries[idx].Flags);
 	}
 }

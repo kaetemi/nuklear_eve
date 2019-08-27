@@ -153,9 +153,10 @@ EVE_HAL_EXPORT void EVE_Util_clearScreen(EVE_HalContext *phost)
 
 EVE_HAL_EXPORT void EVE_Util_bootupDefaults(EVE_HalContext *phost, EVE_BootupParameters *parameters)
 {
-	memset(parameters, 0, sizeof(EVE_BootupParameters));
-
 	uint32_t chipId = EVE_CHIPID;
+	(void)chipId;
+
+	memset(parameters, 0, sizeof(EVE_BootupParameters));
 
 #if !defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813A_WH50C)
 	parameters->ExternalOsc = true;
@@ -321,7 +322,7 @@ EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters 
 	chipId = ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8);
 	while (chipId < EVE_FT800 || chipId > EVE_BT816)
 	{
-		eve_printf_debug("EVE ROM_CHIPID after wake up %x\n", chipId);
+		eve_printf_debug("EVE ROM_CHIPID after wake up %lx\n", chipId);
 
 		EVE_sleep(20);
 		if (phost->Parameters.CbCmdWait)
@@ -339,10 +340,10 @@ EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters 
 #endif
 
 	/* Validate chip ID to ensure the correct HAL is used */
-	/* ROM_CHIPID is valid accross all EVE devices */
+	/* ROM_CHIPID is valid across all EVE devices */
 	if (((chipId = EVE_Hal_rd32(phost, ROM_CHIPID)) & 0xFFFF) != (((expectedChipId >> 8) & 0xFF) | ((expectedChipId & 0xFF) << 8)))
-		eve_printf_debug("Mismatching EVE chip id %x, expect model %x\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), expectedChipId);
-	eve_printf_debug("EVE chip id %x %x.%x\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), ((chipId >> 16) & 0xFF), ((chipId >> 24) & 0xFF));
+		eve_printf_debug("Mismatching EVE chip id %lx, expect model %lx\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), expectedChipId);
+	eve_printf_debug("EVE chip id %lx %lx.%lx\n", ((chipId >> 8) & 0xFF) | ((chipId & 0xFF) << 8), ((chipId >> 16) & 0xFF), ((chipId >> 24) & 0xFF));
 
 	/* Switch to the proper chip ID if applicable */
 #ifdef EVE_MULTI_TARGET
@@ -356,9 +357,9 @@ EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters 
 #endif
 
 	/* Read Register ID to check if EVE is ready. */
-	while (id = EVE_Hal_rd8(phost, REG_ID) != 0x7C)
+	while ((id = EVE_Hal_rd8(phost, REG_ID)) != 0x7C)
 	{
-		eve_printf_debug("EVE register ID after wake up %x\n", id);
+		eve_printf_debug("EVE register ID after wake up %x\n", (unsigned int)id);
 
 		EVE_sleep(20);
 		if (phost->Parameters.CbCmdWait)
