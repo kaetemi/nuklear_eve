@@ -29,6 +29,7 @@ uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, ft_uint32_t *imageForm
 	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_uint32_t addr;
 	bool loaded;
+	(void)phost;
 
 	if (!resourceInfo)
 	{

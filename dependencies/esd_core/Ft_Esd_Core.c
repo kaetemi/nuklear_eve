@@ -186,6 +186,7 @@ void Esd_Loop(Esd_Context *ec)
 {
 	Esd_SetCurrent(ec);
 	EVE_HalContext *phost = &ec->HalContext;
+	(void)phost;
 
 	if (!Ft_Main__Running__ESD() || ec->RequestStop)
 		return;
@@ -330,6 +331,7 @@ bool Esd_WaitSwap(Esd_Context *ec)
 {
 	Esd_SetCurrent(ec);
 	EVE_HalContext *phost = &ec->HalContext;
+	(void)phost;
 
 	ec->SwapIdled = FT_FALSE;
 	EVE_Cmd_waitFlush(&ec->HalContext);

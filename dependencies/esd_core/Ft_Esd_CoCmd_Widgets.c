@@ -96,12 +96,14 @@ void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font
 	uint8_t i, num;
 #endif
 	va_start(args, s);
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
 	{
 		//l = GetFormatStringList(s, args);
 		num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set
 		    //printf("num = %d %d\n",num, (len + 1 + 3) & ~3);
 	}
+#endif
 
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_TEXT);
@@ -110,11 +112,13 @@ void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font
 	EVE_Cmd_wr16(phost, font);
 	EVE_Cmd_wr16(phost, options);
 	EVE_Cmd_wrString(phost, s, EVE_CMD_STRING_MAX);
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815)
 	{
 		for (i = 0; i < num; i++)
 			EVE_Cmd_wr32(phost, (uint32_t)va_arg(args, uint32_t));
 	}
+#endif
 	EVE_Cmd_endFunc(phost);
 	va_end(args);
 
@@ -220,10 +224,12 @@ void Gpu_CoCmd_Toggle(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w,
 	uint8_t i, num;
 #endif
 	va_start(args, s);
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
 	{
 		num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set
 	}
+#endif
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_TOGGLE);
 	EVE_Cmd_wr16(phost, x);
@@ -233,11 +239,13 @@ void Gpu_CoCmd_Toggle(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w,
 	EVE_Cmd_wr16(phost, options);
 	EVE_Cmd_wr16(phost, state);
 	EVE_Cmd_wrString(phost, s, EVE_CMD_STRING_MAX);
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815)
 	{
 		for (i = 0; i < num; i++)
 			EVE_Cmd_wr32(phost, (uint32_t)va_arg(args, uint32_t));
 	}
+#endif
 	EVE_Cmd_endFunc(phost);
 	va_end(args);
 
@@ -287,21 +295,25 @@ void Gpu_CoCmd_Button(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w,
 #endif
 
 	va_start(args, s);
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
 	{
 		num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set
 	}
+#endif
 	EVE_Cmd_startFunc(phost);
 	Gpu_Copro_SendCmd(phost, CMD_BUTTON);
 	Gpu_Copro_SendCmd(phost, (((uint32_t)y << 16) | (x & 0xffff)));
 	Gpu_Copro_SendCmd(phost, (((uint32_t)h << 16) | (w & 0xffff)));
 	Gpu_Copro_SendCmd(phost, (((uint32_t)options << 16) | (font & 0xffff)));
 	Gpu_CoCmd_SendStr(phost, s);
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815)
 	{
 		for (i = 0; i < num; i++)
 			Gpu_Copro_SendCmd(phost, (uint32_t)va_arg(args, uint32_t));
 	}
+#endif
 	EVE_Cmd_endFunc(phost);
 	va_end(args);
 

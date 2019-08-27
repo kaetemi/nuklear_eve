@@ -5,6 +5,7 @@
 ft_void_t Ft_Esd_CoCmd_Spinner(void *owner, ft_int16_t x, ft_int16_t y, ft_uint16_t style, ft_uint16_t scale)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
 	Esd_CurrentContext->CmdOwner = owner;
 	if (EVE_CHIPID >= EVE_FT810)
 		Ft_Esd_Dl_VERTEX_FORMAT(4);

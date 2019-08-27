@@ -356,6 +356,7 @@ ESD_PARAMETER(y, Type = ft_int16_f4_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_4(ft_int16_f4_t x, ft_int16_f4_t y)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
 	if (EVE_CHIPID >= EVE_FT810)
 		Esd_Dl_VERTEX_FORMAT(4);
 	Eve_CoCmd_SendCmd(Ft_Esd_Host, VERTEX2F(x, y));
@@ -368,6 +369,7 @@ ESD_PARAMETER(y, Type = ft_int16_f2_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_2(ft_int16_f2_t x, ft_int16_f2_t y)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
 	if (EVE_CHIPID >= EVE_FT810)
 	{
 		Esd_Dl_VERTEX_FORMAT(2);
@@ -387,6 +389,7 @@ ESD_PARAMETER(y, Type = ft_uint16_t)
 inline static ft_void_t Esd_Dl_VERTEX2F_0(ft_uint16_t x, ft_uint16_t y)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
 	if (EVE_CHIPID >= EVE_FT810)
 	{
 		Esd_Dl_VERTEX_FORMAT(0);

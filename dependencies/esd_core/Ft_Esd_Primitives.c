@@ -266,6 +266,7 @@ ft_void_t Ft_Esd_Render_BitmapRotate_Scaled(Ft_Esd_BitmapCell bitmapCell, ft_arg
 	ft_uint16_t cell;
 	ft_uint8_t handle;
 	ft_int32_t translate_pixels;
+	(void)phost;
 
 	if (!bitmapCell.Info)
 		return;
@@ -316,6 +317,7 @@ ft_void_t Ft_Esd_Render_BitmapRotate(Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c
 	ft_uint16_t cell;
 	ft_uint8_t handle;
 	ft_int32_t translate_pixels;
+	(void)phost;
 
 	if (!bitmapCell.Info)
 		return;

@@ -137,8 +137,8 @@ void EVE_Hal_info(EVE_DeviceInfo *deviceInfo, size_t deviceIdx)
 	    != FT_OK)
 		return;
 
-	strcpy(deviceInfo->SerialNumber, devInfo.SerialNumber);
-	strcpy(deviceInfo->DisplayName, devInfo.Description);
+	strcpy_s(deviceInfo->SerialNumber, sizeof(deviceInfo->SerialNumber), devInfo.SerialNumber);
+	strcpy_s(deviceInfo->DisplayName, sizeof(deviceInfo->DisplayName), devInfo.Description);
 	if (!strcmp(devInfo.Description, "FT4222 A"))
 		deviceInfo->Host = EVE_HOST_FT4222;
 	deviceInfo->Opened = devInfo.Flags & FT_FLAGS_OPENED;

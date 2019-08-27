@@ -59,6 +59,7 @@ void Esd_InitRomFontHeight()
 	int i;
 	EVE_HalContext *phost = Ft_Esd_Host;
 	uint32_t ft = Ft_Gpu_Hal_Rd32(Ft_Esd_Host, ROMFONT_TABLEADDRESS);
+	(void)phost;
 
 	for (i = 0; i < ESD_ROMFONT_NB; ++i)
 	{
@@ -99,6 +100,7 @@ void Esd_BitmapHandle_Initialize()
 void Esd_BitmapHandle_FrameStart(Esd_HandleState *handleState)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
 	for (uint32_t i = 0; i < FT_ESD_BITMAPHANDLE_NB; ++i)
 	{
 		// 2: In use last frame
@@ -124,6 +126,7 @@ uint32_t Ft_Esd_BitmapHandle_GetTotalUsed()
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
 	uint32_t total = 0;
+	(void)phost;
 	for (uint32_t i = 0; i < FT_ESD_BITMAPHANDLE_NB; ++i)
 	{
 		if ((i != FT_ESD_SCRATCHHANDLE) && (Esd_CurrentContext->HandleState.Use[i] > 0))
@@ -137,6 +140,7 @@ uint32_t Ft_Esd_BitmapHandle_GetTotalUsed()
 uint32_t Ft_Esd_BitmapHandle_GetTotal()
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
 	return FT_ESD_BITMAPHANDLE_NB - 1; // NB minus one used for scratch
 }
 
@@ -181,6 +185,7 @@ uint8_t Ft_Esd_Dl_Bitmap_Setup(Ft_Esd_BitmapInfo *bitmapInfo)
 	// Get bitmap address
 	EVE_HalContext *phost = Ft_Esd_Host;
 	uint32_t addr = Ft_Esd_LoadBitmap(bitmapInfo);
+	(void)phost;
 	if (addr == GA_INVALID)
 		return FT_ESD_BITMAPHANDLE_INVALID; // Bitmap not loaded (out of memory or file not found)
 
@@ -235,6 +240,7 @@ uint8_t Ft_Esd_Dl_Bitmap_Setup(Ft_Esd_BitmapInfo *bitmapInfo)
 		else
 			eve_assert_ex(false, "No support yet in ESD for bitmaps for FT800 target");
 
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 		if (EVE_CHIPID >= EVE_BT815)
 		{
 			// Important. Bitmap swizzle not reset by SETBITMAP
@@ -243,6 +249,7 @@ uint8_t Ft_Esd_Dl_Bitmap_Setup(Ft_Esd_BitmapInfo *bitmapInfo)
 			else
 				Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, BITMAP_SWIZZLE(RED, GREEN, BLUE, ALPHA));
 		}
+#endif
 
 		Esd_CurrentContext->HandleState.Resized[handle] = 0;
 		Esd_CurrentContext->HandleState.Page[handle] = 0;

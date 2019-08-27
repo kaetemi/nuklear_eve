@@ -17,6 +17,7 @@ ft_uint32_t s_MultiGradient_Cell;
 ft_void_t Esd_Render_MultiGradient(ft_int16_t x, ft_int16_t y, ft_int16_t width, ft_int16_t height, ft_argb32_t topLeft, ft_argb32_t topRight, ft_argb32_t bottomLeft, ft_argb32_t bottomRight)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
 
 	// Don't render empty
 	if (width == 0 || height == 0)

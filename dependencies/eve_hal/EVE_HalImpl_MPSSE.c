@@ -104,8 +104,8 @@ void EVE_Hal_info(EVE_DeviceInfo *deviceInfo, size_t deviceIdx)
 	FT_DEVICE_LIST_INFO_NODE chanInfo = { 0 };
 	SPI_GetChannelInfo((uint32_t)deviceIdx, &chanInfo);
 
-	strcpy(deviceInfo->SerialNumber, chanInfo.SerialNumber);
-	strcpy(deviceInfo->DisplayName, chanInfo.Description);
+	strcpy_s(deviceInfo->SerialNumber, sizeof(deviceInfo->SerialNumber), chanInfo.SerialNumber);
+	strcpy_s(deviceInfo->DisplayName, sizeof(deviceInfo->DisplayName), chanInfo.Description);
 	deviceInfo->Host = EVE_HOST_MPSSE;
 	deviceInfo->Opened = chanInfo.Flags & FT_FLAGS_OPENED;
 }

@@ -20,15 +20,19 @@ This C source file demonstrates the Nuklear EVE implementation.
 
 #include "nuklear_eve.h"
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4996)
 #pragma warning(disable : 4477)
 #pragma warning(disable : 4244)
+#endif
 /*#include "demo/style.c"*/
 #include "demo/calculator.c"
 #include "demo/overview.c"
 #include "demo/node_editor.c"
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 #include "Ft_Esd_Utility.h"
 

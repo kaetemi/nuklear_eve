@@ -95,10 +95,8 @@ size_t EVE_Hal_list()
 void EVE_Hal_info(EVE_DeviceInfo *deviceInfo, size_t deviceIdx)
 {
 	memset(deviceInfo, 0, sizeof(EVE_DeviceInfo));
-	strcpy_s(deviceInfo->DisplayName,
-	    sizeof(deviceInfo->DisplayName), "BT8XX Emulator");
-	strcpy_s(deviceInfo->SerialNumber,
-	    sizeof(deviceInfo->SerialNumber), "BT8XXEMU");
+	strcpy_s(deviceInfo->DisplayName, sizeof(deviceInfo->DisplayName), "BT8XX Emulator");
+	strcpy_s(deviceInfo->SerialNumber, sizeof(deviceInfo->SerialNumber), "BT8XXEMU");
 	deviceInfo->Opened = false;
 	deviceInfo->Host = EVE_HOST_BT8XXEMU;
 }

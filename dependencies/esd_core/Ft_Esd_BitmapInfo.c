@@ -39,8 +39,9 @@ static ft_bool_t Ft_Esd_LoadFromFlash(ft_uint32_t *imageFormat, ft_bool_t deflat
 
 ft_uint32_t Ft_Esd_LoadBitmap(Ft_Esd_BitmapInfo *bitmapInfo)
 {
-	ft_uint32_t addr;
 	EVE_HalContext *phost = Ft_Esd_Host;
+	ft_uint32_t addr;
+	(void)phost;
 
 	if (!bitmapInfo)
 	{
@@ -160,6 +161,7 @@ ft_uint32_t Ft_Esd_LoadPalette(Ft_Esd_BitmapInfo *bitmapInfo)
 {
 	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_uint32_t addr;
+	(void)phost;
 
 	if (!bitmapInfo)
 	{

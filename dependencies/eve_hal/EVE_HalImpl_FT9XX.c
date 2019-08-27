@@ -64,8 +64,6 @@ EVE_HalPlatform g_HalPlatform;
 /* Initialize HAL platform */
 void EVE_HalImpl_initialize()
 {
-	g_HalPlatform.TotalDevices = 1;
-
 #if defined(PANL70) || defined(PANL70PLUS)
 	gpio_function(GOODIXGPIO, pad_goodixgpio);
 	gpio_dir(GOODIXGPIO, pad_dir_output);
@@ -77,6 +75,27 @@ void EVE_HalImpl_initialize()
 void EVE_HalImpl_release()
 {
 	spi_uninit(SPIM);
+}
+
+/* List the available devices */
+EVE_HAL_EXPORT size_t EVE_Hal_list()
+{
+	return 1;
+}
+
+/* Get info of the specified device. Devices of type EVE_HOST_UNKNOWN should be ignored */
+EVE_HAL_EXPORT void EVE_Hal_info(EVE_DeviceInfo *deviceInfo, size_t deviceIdx)
+{
+	memset(deviceInfo, 0, sizeof(EVE_DeviceInfo));
+	strcpy_s(deviceInfo->DisplayName, sizeof(deviceInfo->DisplayName), "FT9XX");
+	strcpy_s(deviceInfo->SerialNumber, sizeof(deviceInfo->SerialNumber), "FT9XX");
+	deviceInfo->Host = EVE_HOST_FT9XX;
+}
+
+/* Check whether the context is the specified device */
+EVE_HAL_EXPORT bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
+{
+	return true;
 }
 
 /* Get the default configuration parameters */
@@ -153,8 +172,8 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		phost->GpuDefs = &EVE_GpuDefs_FT81X;
 	else
 		phost->GpuDefs = &EVE_GpuDefs_FT80X;
-#endif
 	phost->ChipId = parameters->ChipId;
+#endif
 
 	sys_enable(sys_device_spi_master);
 	gpio_function(GPIO_SPIM_CLK, pad_spim_sck); /* GPIO27 to SPIM_CLK */
@@ -383,7 +402,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 	{
 		transferred += (uint32_t)strnlen(str, size) + 1;
 		eve_assert(str[transferred - 1] == '\0');
-		wrBuffer(phost, str, transferred);
+		wrBuffer(phost, (uint8_t *)str, transferred);
 		if (transferred & padMask)
 		{
 			uint32_t pad = 4 - (transferred & padMask);
