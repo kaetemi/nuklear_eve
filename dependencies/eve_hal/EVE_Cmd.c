@@ -329,60 +329,36 @@ EVE_HAL_EXPORT uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
 	return prevWp;
 }
 
-#if defined(_DEBUG) && (EVE_SUPPORT_CHIPID >= EVE_BT815)
-#if 0 // TODO
-static void displayError(EVE_HalContext *phost, char *err)
-{
-	uint32_t addr = RAM_G + RAM_G_SIZE - 128;
-	uint32_t dl = 0;
-
-	/* Abuse back of RAM_G to store error */
-	/* May invalidate user data... */
-	EVE_Hal_wrMem(phost, addr, err, 128);
-
-	/* Generate bluescreen */
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR_COLOR_RGB(0x00, 0x20, 0x40));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR(1, 1, 1));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_HANDLE(15)); /* Scratch handle will reset anyway after reset */
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SOURCE(addr));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SIZE_H(0, 0));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SIZE(NEAREST, BORDER, BORDER, 256, 32));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_LAYOUT_H(0, 0));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_LAYOUT(TEXT8X8, 32, 32));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BEGIN(BITMAPS));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), VERTEX2II(32, 32, 15, 0));
-	/* EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SOURCE(RAM_ERR_REPORT)); */
-	/* EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), VERTEX2II(32, 96, 15, 0)); */
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), DISPLAY());
-	EVE_Hal_wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
-}
-#endif
-#endif
-
 static bool checkWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 {
 	/* Check for coprocessor fault */
 	if (EVE_CMD_FAULT(rpOrSpace))
 	{
-#if defined(_DEBUG) && (EVE_SUPPORT_CHIPID >= EVE_BT815)
-#if 0 // TODO
 		char err[128];
-#endif
-#endif
+		(void)err;
 		/* Coprocessor fault */
 		phost->CmdWaiting = false;
 		eve_printf_debug("Coprocessor fault\n");
-#if defined(_DEBUG) && (EVE_SUPPORT_CHIPID >= EVE_BT815)
-#if 0 // TODO
+#if defined(_DEBUG)
 		if (EVE_CHIPID >= EVE_BT815)
 		{
 			EVE_Hal_rdMem(phost, err, RAM_ERR_REPORT, 128);
 			eve_printf_debug("%s\n", err);
-			displayError(phost, err);
+			EVE_Hal_displayMessage(phost, err, 128);
+		}
+		else
+		{
+			EVE_Hal_displayMessage(phost, "Coprocessor fault ", sizeof("Coprocessor fault "));
 		}
 #endif
-#endif
 		/* eve_debug_break(); */
+		return false;
+	}
+
+	if (phost->Status == EVE_STATUS_ERROR)
+	{
+		phost->CmdWaiting = false;
+		eve_printf_debug("Host error\n");
 		return false;
 	}
 
@@ -430,35 +406,38 @@ bool EVE_Cmd_waitFlush(EVE_HalContext *phost)
 	return true;
 }
 
-EVE_HAL_EXPORT bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size)
+EVE_HAL_EXPORT uint32_t EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size)
 {
 	uint16_t space;
 
 	if (size > (EVE_CMD_FIFO_SIZE - 4))
 	{
 		eve_printf_debug("Requested free space exceeds coprocessor FIFO\n");
-		return false;
+		return 0;
 	}
 
 	eve_assert(!phost->CmdWaiting);
 	phost->CmdWaiting = true;
 
 	space = phost->CmdSpace;
+
+#if 1
 	if (space < size)
 		space = EVE_Cmd_space(phost);
 	if (!checkWait(phost, space))
-		return false;
+		return 0;
+#endif
 
 	while (space < size)
 	{
-		if (!handleWait(phost, space))
-			return false;
 		space = EVE_Cmd_space(phost);
+		if (!handleWait(phost, space))
+			return 0;
 	}
 
 	/* Sufficient space */
 	phost->CmdWaiting = false;
-	return true;
+	return space;
 }
 
 EVE_HAL_EXPORT bool EVE_Cmd_waitLogo(EVE_HalContext *phost)

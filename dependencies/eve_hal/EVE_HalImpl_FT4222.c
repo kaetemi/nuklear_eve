@@ -770,10 +770,13 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 		phost->SpiRamGAddr = addr;
 	}
 
-	if (rw == EVE_TRANSFER_READ)
-		phost->Status = EVE_STATUS_READING;
-	else
-		phost->Status = EVE_STATUS_WRITING;
+	if (phost->Status != EVE_STATUS_ERROR)
+	{
+		if (rw == EVE_TRANSFER_READ)
+			phost->Status = EVE_STATUS_READING;
+		else
+			phost->Status = EVE_STATUS_WRITING;
+	}
 }
 
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
@@ -795,7 +798,9 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 		phost->SpiWpWriting = false;
 	}
 #endif
-	phost->Status = EVE_STATUS_OPENED;
+
+	if (phost->Status != EVE_STATUS_ERROR)
+		phost->Status = EVE_STATUS_OPENED;
 }
 
 static bool flush(EVE_HalContext *phost)

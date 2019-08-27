@@ -62,6 +62,7 @@ extern "C" {
 #include "EVE_GpuTypes.h"
 #include "EVE_Hal.h"
 #include "EVE_Cmd.h"
+#include "EVE_MediaFifo.h"
 #include "EVE_GpuDefs.h"
 #if defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT)
 #include "EVE_ILI9488.h"

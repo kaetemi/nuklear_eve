@@ -445,12 +445,14 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 
 		SPI_Write((FT_HANDLE)phost->SpiHandle, transferArray, 3 + phost->SpiDummyBytes, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
 
-		phost->Status = EVE_STATUS_READING;
+		if (phost->Status != EVE_STATUS_ERROR)
+			phost->Status = EVE_STATUS_READING;
 	}
 	else
 	{
 #if defined(BUFFER_OPTIMIZATION)
-		phost->Status = EVE_STATUS_WRITING;
+		if (phost->Status != EVE_STATUS_ERROR)
+			phost->Status = EVE_STATUS_WRITING;
 #else
 		uint8_t transferArray[3];
 		uint32_t sizeTransferred;
@@ -462,7 +464,8 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 
 		SPI_Write((FT_HANDLE)phost->SpiHandle, transferArray, 3, &sizeTransferred, SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES | SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
 
-		phost->Status = EVE_STATUS_WRITING;
+		if (phost->Status != EVE_STATUS_ERROR)
+			phost->Status = EVE_STATUS_WRITING;
 #endif
 	}
 }
@@ -508,10 +511,13 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 	/* just disable the CS */
 	status = SPI_ToggleCS((FT_HANDLE)phost->SpiHandle, FALSE);
 
-	if (status != FT_OK)
-		phost->Status = EVE_STATUS_ERROR;
-	else
-		phost->Status = EVE_STATUS_OPENED;
+	if (phost->Status != EVE_STATUS_ERROR)
+	{
+		if (status != FT_OK)
+			phost->Status = EVE_STATUS_ERROR;
+		else
+			phost->Status = EVE_STATUS_OPENED;
+	}
 #endif
 }
 

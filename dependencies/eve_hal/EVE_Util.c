@@ -487,6 +487,8 @@ EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters 
 	uint16_t wp = EVE_Cmd_wp(phost);
 	uint16_t rp = EVE_Cmd_rp(phost);
 	EVE_Cmd_space(phost);
+	phost->MediaFifoAddress = 0;
+	phost->MediaFifoSize = 0;
 
 	/* Coprocessor needs a reset */
 	if (wp || rp)
@@ -600,6 +602,8 @@ EVE_HAL_EXPORT bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	EVE_Cmd_rp(phost);
 	EVE_Cmd_space(phost);
 	EVE_Cmd_waitFlush(phost);
+	phost->MediaFifoAddress = 0;
+	phost->MediaFifoSize = 0;
 
 	if (EVE_Util_hasOTP(phost))
 	{

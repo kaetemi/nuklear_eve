@@ -228,6 +228,11 @@ typedef struct EVE_HalContext
 	uint16_t CmdWp; /* Write pointer */
 #endif
 
+#if defined(EVE_SUPPORT_MEDIAFIFO)
+	uint32_t MediaFifoAddress;
+	uint32_t MediaFifoSize;
+#endif
+
 	bool CmdFunc; /* Flagged while transfer to cmd is kept open */
 	bool CmdFault; /* Flagged when coprocessor is in fault mode and needs to be reset */
 	bool CmdWaiting; /* Flagged while waiting for CMD write (to check during any function that may be called by CbCmdWait) */
@@ -339,6 +344,15 @@ static inline bool EVE_Hal_supportCmdB(EVE_HalContext *phost)
 #endif
 }
 
+static inline bool EVE_Hal_supportMediaFifo(EVE_HalContext *phost)
+{
+#ifdef EVE_SUPPORT_MEDIAFIFO
+	return EVE_CHIPID >= EVE_FT810;
+#else
+	return false;
+#endif
+}
+
 /************
 ** UTILITY **
 ************/
@@ -391,6 +405,14 @@ and the system will exit reset and behave as after POR,
 settings done through SPI commands will not be affected. */
 EVE_HAL_EXPORT void EVE_Host_resetRemoval(EVE_HalContext *phost);
 #endif
+
+/**********
+** DEBUG **
+**********/
+
+/* Display a fullscreen debug message using TEXT8X8.
+Uses the back of RAM_G. */
+EVE_HAL_EXPORT void EVE_Hal_displayMessage(EVE_HalContext *phost, char *str, uint16_t size);
 
 /*********
 ** MISC **

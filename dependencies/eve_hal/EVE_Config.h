@@ -183,6 +183,7 @@ Additionally, the following support flags are set:
 - EVE_SUPPORT_PNG
 - EVE_SUPPORT_VIDEO
 - EVE_SUPPORT_CMDB
+- EVE_SUPPORT_MEDIAFIFO
 - EVE_SUPPORT_CAPACITIVE
 - EVE_SUPPORT_RESISTIVE
 
@@ -782,6 +783,7 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_SUPPORT_PNG
 #define EVE_SUPPORT_VIDEO
 #define EVE_SUPPORT_CMDB
+#define EVE_SUPPORT_MEDIAFIFO
 #endif
 #ifndef EVE_MULTI_TARGET
 #if ((EVE_SUPPORT_CHIPID & 0x01) == 0x01)
