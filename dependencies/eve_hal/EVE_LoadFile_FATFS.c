@@ -229,7 +229,7 @@ bool EVE_Util_loadCmdFile(EVE_HalContext *phost, const char *filename, uint32_t 
 #endif
 }
 
-bool EVE_Util_loadMediaFile(EVE_HalContext *phost, const char *filename)
+bool EVE_Util_loadMediaFile(EVE_HalContext *phost, const char *filename, uint32_t *transfered)
 {
 #if defined(EVE_ENABLE_FATFS)
 	FRESULT fResult;
