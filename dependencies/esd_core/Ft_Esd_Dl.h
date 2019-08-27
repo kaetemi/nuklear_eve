@@ -243,6 +243,8 @@ inline static ft_void_t Ft_Esd_Dl_VERTEX_FORMAT(ft_uint8_t frac)
 	}
 #endif
 }
+#else
+#define Ft_Esd_Dl_VERTEX_FORMAT(frac) eve_assert(false)
 #endif
 
 #if (EVE_SUPPORT_CHIPID >= EVE_FT810)
@@ -261,6 +263,8 @@ inline static ft_void_t Ft_Esd_Dl_PALETTE_SOURCE(ft_uint32_t addr)
 	}
 #endif
 }
+#else
+#define Ft_Esd_Dl_PALETTE_SOURCE(addr) eve_assert(false)
 #endif
 
 ESD_FUNCTION(Ft_Esd_Dl_LINE_WIDTH, Type = ft_void_t, Category = EveRenderFunctions, Inline)

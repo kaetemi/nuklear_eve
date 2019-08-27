@@ -62,3 +62,7 @@ deployment/*
 deployment_*
 /Debug/
 /Release/
+/FT900_Debug/
+/FT900_Release/
+/FT930_Debug/
+/FT930_Release/

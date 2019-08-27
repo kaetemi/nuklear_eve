@@ -113,6 +113,8 @@ void Ft_Esd_Dl_Bitmap_Vertex_PALETTED8(ft_int16_t x, ft_int16_t y, ft_uint8_t ha
 	Ft_Esd_Dl_PALETTE_SOURCE(paletteAddr);
 	Ft_Esd_Dl_Bitmap_Vertex(x, y, handle, cell);
 }
+#else
+#define Ft_Esd_Dl_Bitmap_Vertex_PALETTED8(x, y, handle, cell, paletteAddr) eve_assert(false)
 #endif
 
 void Ft_Esd_Render_Bitmap(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c)

@@ -459,9 +459,14 @@ inline static ft_int16_t Gpu_Hal_TransferString_S(EVE_HalContext *phost, const f
 #define Gpu_CoCmd_AnimDraw Ft_Gpu_CoCmd_AnimDraw
 #define Gpu_CoCmd_AnimFrame Ft_Gpu_CoCmd_AnimFrame
 
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+void Gpu_CoCmd_SetFont2(Gpu_Hal_Context_t *phost, uint32_t font, uint32_t ptr, uint32_t firstchar);
+void Gpu_CoCmd_SetBase(Gpu_Hal_Context_t *phost, uint32_t base);
 void Gpu_CoCmd_SetBitmap(Gpu_Hal_Context_t *phost, uint32_t source, uint16_t fmt, uint16_t w, uint16_t h);
 void Gpu_CoCmd_SetScratch(Gpu_Hal_Context_t *phost, uint32_t handle);
 void Gpu_CoCmd_RomFont(Gpu_Hal_Context_t *phost, uint32_t font, uint32_t romslot);
+#endif
+
 void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char *s, ...);
 void Gpu_CoCmd_Number(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t font, uint16_t options, int32_t n);
 void Gpu_CoCmd_LoadIdentity(Gpu_Hal_Context_t *phost);
@@ -478,7 +483,6 @@ void Gpu_CoCmd_Swap(Gpu_Hal_Context_t *phost);
 void Gpu_CoCmd_Inflate(Gpu_Hal_Context_t *phost, uint32_t ptr);
 void Gpu_CoCmd_Translate(Gpu_Hal_Context_t *phost, int32_t tx, int32_t ty);
 void Gpu_CoCmd_Stop(Gpu_Hal_Context_t *phost);
-void Gpu_CoCmd_SetBase(Gpu_Hal_Context_t *phost, uint32_t base);
 void Gpu_CoCmd_Slider(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t options, uint16_t val, uint16_t range);
 void Gpu_CoCmd_Nop(Gpu_Hal_Context_t *phost);
 void Gpu_CoCmd_VideoFrame(Gpu_Hal_Context_t *phost, uint32_t dst, uint32_t ptr);
@@ -514,7 +518,6 @@ void Gpu_CoCmd_Keys(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t w, i
 void Gpu_CoCmd_Dial(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, int16_t r, uint16_t options, uint16_t val);
 void Gpu_CoCmd_Snapshot2(Gpu_Hal_Context_t *phost, uint32_t fmt, uint32_t ptr, int16_t x, int16_t y, int16_t w, int16_t h);
 void Gpu_CoCmd_LoadImage(Gpu_Hal_Context_t *phost, uint32_t ptr, uint32_t options);
-void Gpu_CoCmd_SetFont2(Gpu_Hal_Context_t *phost, uint32_t font, uint32_t ptr, uint32_t firstchar);
 void Gpu_CoCmd_SetRotate(Gpu_Hal_Context_t *phost, uint32_t r);
 void Gpu_CoCmd_Dlstart(Gpu_Hal_Context_t *phost);
 void Gpu_CoCmd_Snapshot(Gpu_Hal_Context_t *phost, uint32_t ptr);

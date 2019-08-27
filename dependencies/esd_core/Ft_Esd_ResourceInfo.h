@@ -93,7 +93,7 @@ ESD_UPDATE(Esd_ResourcePersist, DisplayName = "Persist Resource", Category = Esd
 ESD_PARAMETER(resourceInfo, Type = Esd_ResourceInfo *)
 void Esd_ResourcePersist(Esd_ResourceInfo *resourceInfo);
 
-// Number of available bitmap handles
+/// Number of available bitmap handles
 #define FT_ESD_BITMAPHANDLE_NB (EVE_CHIPID >= EVE_FT810 ? 32UL : 16UL)
 #if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 #define FT_ESD_BITMAPHANDLE_CAP (32UL)
@@ -101,13 +101,12 @@ void Esd_ResourcePersist(Esd_ResourceInfo *resourceInfo);
 #define FT_ESD_BITMAPHANDLE_CAP (16UL)
 #endif
 
-// An invalid bitmap handle
+/// An invalid bitmap handle
 #define FT_ESD_BITMAPHANDLE_INVALID 0x3F
 #define FT_ESD_BITMAPHANDLE_VALID(bitmapHandle) (bitmapHandle < FT_ESD_BITMAPHANDLE_NB)
 
-#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
+/// Check if a format is an ASTC format
 #define ESD_IS_FORMAT_ASTC(format) ((format & 0xFFF0) == 0x93B0)
-#endif
 
 #endif /* #ifndef ESD_FONTINFO_H */
 

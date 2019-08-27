@@ -157,7 +157,7 @@ EVE_HAL_EXPORT void EVE_Util_bootupDefaults(EVE_HalContext *phost, EVE_BootupPar
 
 	uint32_t chipId = EVE_CHIPID;
 
-#if (!defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813AU_WH50C))
+#if !defined(ME810A_HV35R) && !defined(ME812A_WH50R) && !defined(ME813A_WH50C)
 	parameters->ExternalOsc = true;
 #endif
 

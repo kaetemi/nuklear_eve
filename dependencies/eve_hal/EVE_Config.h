@@ -91,10 +91,12 @@ SupportedFlash = "\bW25Q\w*\b|\bMX25L\w*\b
 
 ESD_TARGET_GRAPHICS(ME810A_HV35R, DisplayName = "ME810A-HV35R", IntegratedDisplay = "ILI9488 (320x480)", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT810)\b")
 ESD_TARGET_GRAPHICS(ME812A_WH50R, DisplayName = "ME812A-WH50R", SupportedDisplays = "\b\w+WVGA\w*\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT812)\b")
-// ME813A_WV7C
-ESD_TARGET_GRAPHICS(PANL50, DisplayName = "PANL50", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "MM900EV1B", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
-ESD_TARGET_GRAPHICS(ME813AU_WH50C, DisplayName = "ME813AU-WH50C", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "FT4222", SupportedArchitectures = "\bFT4222\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
+ESD_TARGET_GRAPHICS(ME813A_WH50C, DisplayName = "ME813A-WH50C", SupportedDisplays = "\b\w+WVGA\w*\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
+// ESD_TARGET_GRAPHICS(ME810AU_HV35R, DisplayName = "ME810AU-HV35R", IntegratedDisplay = "ILI9488 (320x480)", IntegratedPlatform = "FT4222", SupportedArchitectures = "\bFT4222\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT810)\b")
+// ESD_TARGET_GRAPHICS(ME812AU_WH50R, DisplayName = "ME812AU-WH50R", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "FT4222", SupportedArchitectures = "\bFT4222\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT812)\b")
+// ESD_TARGET_GRAPHICS(ME813AU_WH50C, DisplayName = "ME813AU-WH50C", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "FT4222", SupportedArchitectures = "\bFT4222\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
 // ESD_TARGET_GRAPHICS(PANL35, DisplayName = "PanL35", IntegratedDisplay = "KD2401 (320x480)", IntegratedPlatform = "FT903", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
+ESD_TARGET_GRAPHICS(PANL50, DisplayName = "PanL50", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "MM900EV1B", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
 // ESD_TARGET_GRAPHICS(PANL70, DisplayName = "PanL70", IntegratedDisplay = "WVGA (800x480)", IntegratedPlatform = "FT930", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
 // ESD_TARGET_GRAPHICS(PANL70PLUS, DisplayName = "PanL70 Plus", IntegratedDisplay = "WVGA (800x480)", IntegratedPlatform = "FT930", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
 ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM800C, DisplayName = "VM800C", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT80X|FT800)\b")
@@ -192,16 +194,35 @@ Additionally, the following support flags are set:
 
 /*
 
+Remap options.
+
+*/
+
+#ifdef ME810AU_HV35R
+#define ME810A_HV35R
+#endif
+#ifdef ME812AU_WH50R
+#define ME812A_WH50R
+#endif
+#ifdef ME813AU_WV7C
+#define ME813A_WV7C
+#endif
+#ifdef ME813AU_WH50C
+#define ME813A_WH50C
+#endif
+
+/*
+
 Validate the configured options.
 
 */
 
-#if defined(ME810A_HV35R) || defined(ME812A_WH50R) || defined(ME813A_WV7C) || defined(ME813AU_WH50C) \
-    || defined(EVE_MODULE_PANL)                                                                      \
-    || defined(EVE_GRAPHICS_VM810C) || defined(EVE_GRAPHICS_VM816C)                                  \
-    || defined(EVE_GRAPHICS_FT800) || defined(EVE_GRAPHICS_FT801)                                    \
-    || defined(EVE_GRAPHICS_FT810) || defined(EVE_GRAPHICS_FT811)                                    \
-    || defined(EVE_GRAPHICS_FT812) || defined(EVE_GRAPHICS_FT813)                                    \
+#if defined(ME810A_HV35R) || defined(ME812A_WH50R) || defined(ME813A_WV7C) || defined(ME813A_WH50C) \
+    || defined(EVE_MODULE_PANL) || defined(PANL50)                                                  \
+    || defined(EVE_GRAPHICS_VM800C) || defined(EVE_GRAPHICS_VM810C) || defined(EVE_GRAPHICS_VM816C) \
+    || defined(EVE_GRAPHICS_FT800) || defined(EVE_GRAPHICS_FT801)                                   \
+    || defined(EVE_GRAPHICS_FT810) || defined(EVE_GRAPHICS_FT811)                                   \
+    || defined(EVE_GRAPHICS_FT812) || defined(EVE_GRAPHICS_FT813)                                   \
     || defined(EVE_GRAPHICS_BT816) || defined(EVE_GRAPHICS_BT815)
 #define EVE_GRAPHICS_AVAILABLE
 #endif
@@ -263,6 +284,13 @@ It may also set platform, display, and flash values if none are configured.
 #define ENABLE_ILI9488_HVGA_PORTRAIT
 #endif
 
+#ifdef ME810AU_HV35R
+#ifndef EVE_PLATFORM_AVAILABLE
+#define EVE_PLATFORM_AVAILABLE
+#define FT4222_PLATFORM
+#endif
+#endif
+
 #elif defined(ME812A_WH50R)
 
 #define FT812_ENABLE
@@ -272,6 +300,13 @@ It may also set platform, display, and flash values if none are configured.
 #ifndef EVE_DISPLAY_AVAILABLE
 #define EVE_DISPLAY_AVAILABLE
 #define DISPLAY_RESOLUTION_WVGA
+#endif
+
+#ifdef ME812AU_WH50R
+#ifndef EVE_PLATFORM_AVAILABLE
+#define EVE_PLATFORM_AVAILABLE
+#define FT4222_PLATFORM
+#endif
 #endif
 
 #elif defined(ME813A_WV7C)
@@ -284,7 +319,14 @@ It may also set platform, display, and flash values if none are configured.
 #define DISPLAY_RESOLUTION_WVGA
 #endif
 
-#elif defined(ME813AU_WH50C)
+#ifdef ME813AU_WV7C
+#ifndef EVE_PLATFORM_AVAILABLE
+#define EVE_PLATFORM_AVAILABLE
+#define FT4222_PLATFORM
+#endif
+#endif
+
+#elif defined(ME813A_WH50C)
 
 #define FT813_ENABLE
 #define ENABLE_SPI_QUAD
@@ -294,9 +336,11 @@ It may also set platform, display, and flash values if none are configured.
 #define DISPLAY_RESOLUTION_WVGA
 #endif
 
+#ifdef ME813AU_WH50C
 #ifndef EVE_PLATFORM_AVAILABLE
 #define EVE_PLATFORM_AVAILABLE
 #define FT4222_PLATFORM
+#endif
 #endif
 
 #elif defined(EVE_GRAPHICS_VM816C)
@@ -765,7 +809,7 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 
 #ifndef _MSC_VER
 /* strcpy_s is not available in GCC */
-#define strcpy_s(dst, sz, src)  strcpy(dst, src)
+#define strcpy_s(dst, sz, src) strcpy(dst, src)
 #endif
 
 ///////////////////////////////////////////////////////////////////////
