@@ -128,12 +128,13 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 	if (size <= phost->MediaFifoSize - 4)
 	{
 		uint32_t wp;
+		int32_t overflow;
 
 		if (!EVE_MediaFifo_waitSpace(phost, size))
 			return false;
 
 		wp = EVE_Hal_rd32(phost, REG_MEDIAFIFO_WRITE);
-		int32_t overflow = (int32_t)(wp + size) - (int32_t)(phost->MediaFifoSize);
+		overflow = (int32_t)(wp + size) - (int32_t)(phost->MediaFifoSize);
 		if (overflow > 0)
 		{
 			EVE_Hal_wrMem(phost, phost->MediaFifoAddress + wp, buffer, size - overflow);
@@ -164,10 +165,11 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 		while (remaining)
 		{
 			uint32_t transfer = min(halfSize, remaining);
+			int32_t overflow;
 			if (!EVE_MediaFifo_waitSpace(phost, transfer))
 				return false;
 
-			int32_t overflow = (int32_t)(wp + transfer) - (int32_t)(phost->MediaFifoSize);
+			overflow = (int32_t)(wp + transfer) - (int32_t)(phost->MediaFifoSize);
 			if (overflow > 0)
 			{
 				EVE_Hal_wrMem(phost, phost->MediaFifoAddress + wp, &buffer[done], transfer - overflow);
@@ -288,9 +290,9 @@ static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 	EVE_Hal_idle(phost);
 
 	/* Process user idling */
-	if (phost->Parameters.CbCmdWait)
+	if (phost->CbCmdWait)
 	{
-		if (!phost->Parameters.CbCmdWait(phost))
+		if (!phost->CbCmdWait(phost))
 		{
 			/* Wait aborted */
 			phost->CmdWaiting = false;

@@ -65,8 +65,8 @@ Revision History:
 #define GPIO_ILI9488_DCX (34)
 #define GPIO_PWD (43)
 
-#define pad_ili9488_dcx (pad_gpio34)
-#define pad_ili9488_cs1 (pad_gpio33)
+#define pad_ili9488_dcx (pad_func_0)
+#define pad_ili9488_cs1 (pad_func_0)
 #define pad_pwd (pad_func_0)
 
 #define GPIO_SD_CLK (19)
@@ -84,7 +84,7 @@ Revision History:
 #define GPIO_UART0_RX (22)
 
 #define GPIO_SPIM_CLK (34)
-#define GPIO_SPIM_SS0 (30)
+#define GPIO30_SPIM_SS0 (30)
 #define GPIO_SPIM_MOSI (36)
 #define GPIO_SPIM_MISO (35)
 
@@ -99,9 +99,9 @@ Revision History:
 #define GPIO_ILI9488_DCX (8)
 #define GPIO_PWD (15)
 
-#define pad_ili9488_dcx (pad_gpio8)
-#define pad_ili9488_cs1 (pad_gpio31)
-#define pad_pwd (pad_gpio15)
+#define pad_ili9488_dcx (pad_func_0)
+#define pad_ili9488_cs1 (pad_func_0)
+#define pad_pwd (pad_func_0)
 
 #define GPIO_SD_CLK (0)
 #define GPIO_SD_CMD (1)

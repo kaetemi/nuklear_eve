@@ -37,7 +37,7 @@
 
 #ifndef EVE_MEDIAFIFO__H
 #define EVE_MEDIAFIFO__H
-#include "EVE_Hal.h"
+#include "EVE_HalDefs.h"
 
 /**************************
 ** COPROCESSOR MEDIAFIFO **
@@ -87,6 +87,6 @@ EVE_HAL_EXPORT uint32_t EVE_MediaFifo_waitSpace(EVE_HalContext *phost, uint32_t 
 
 #endif
 
-#endif /* #ifndef EVE_HAL__H */
+#endif /* #ifndef EVE_HAL_INCL__H */
 
 /* end of file */

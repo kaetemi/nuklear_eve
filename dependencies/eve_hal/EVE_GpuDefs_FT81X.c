@@ -31,7 +31,7 @@
 
 #include "EVE_Config.h"
 #ifdef EVE_MULTI_TARGET
-#include "EVE_Hal.h"
+#include "EVE_HalDefs.h"
 
 #undef EVE_MULTI_TARGET
 #undef EVE_SUPPORT_CHIPID

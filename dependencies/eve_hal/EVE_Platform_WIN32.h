@@ -42,12 +42,13 @@
 
 /* Sane options for Windows header */
 #ifndef NOMINMAX
+#define EVE_NOMINMAX
 #define NOMINMAX
 #endif
 #if !defined(NTDDI_VERSION) && !defined(_WIN32_WINNT) && !defined(WINVER)
-#define NTDDI_VERSION 0x05010000 /* NTDDI_WINXP */
-#define _WIN32_WINNT 0x0501 /* _WIN32_WINNT_WINXP */
-#define WINVER 0x0501 /* _WIN32_WINNT_WINXP */
+#define NTDDI_VERSION 0x06000000 /* NTDDI_VISTA */
+#define _WIN32_WINNT 0x0600 /* _WIN32_WINNT_VISTA */
+#define WINVER 0x0600 /* _WIN32_WINNT_VISTA */
 #endif
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -74,6 +75,11 @@
 #include <direct.h>
 #include <time.h>
 #include <io.h>
+
+#ifdef EVE_NOMINMAX
+#undef EVE_NOMINMAX
+#undef NOMINMAX
+#endif
 
 #endif
 #endif /* #ifndef EVE_PLATFORM_WIN32__H */

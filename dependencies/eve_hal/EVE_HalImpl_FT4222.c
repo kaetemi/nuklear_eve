@@ -71,7 +71,10 @@
 EVE_HalPlatform g_HalPlatform;
 DWORD s_NumDevsD2XX;
 
-/* Initialize HAL platform */
+/**
+ * @brief Initialize HAL platform
+ * 
+ */
 void EVE_HalImpl_initialize()
 {
 #if 0
@@ -109,7 +112,10 @@ void EVE_HalImpl_initialize()
 #endif
 }
 
-/* Release HAL platform */
+/**
+ * @brief Release HAL platform
+ * 
+ */
 void EVE_HalImpl_release()
 {
 	/* no-op */
@@ -126,11 +132,12 @@ size_t EVE_Hal_list()
 /* Get info of the specified device */
 void EVE_Hal_info(EVE_DeviceInfo *deviceInfo, size_t deviceIdx)
 {
+	FT_DEVICE_LIST_INFO_NODE devInfo = { 0 };
+
 	memset(deviceInfo, 0, sizeof(EVE_DeviceInfo));
-	if (deviceIdx < 0 || deviceIdx >= s_NumDevsD2XX)
+	if (deviceIdx >= s_NumDevsD2XX)
 		return;
 
-	FT_DEVICE_LIST_INFO_NODE devInfo = { 0 };
 	if (FT_GetDeviceInfoDetail((DWORD)deviceIdx,
 	        &devInfo.Flags, &devInfo.Type, &devInfo.ID, &devInfo.LocId,
 	        devInfo.SerialNumber, devInfo.Description, &devInfo.ftHandle)
@@ -147,19 +154,18 @@ void EVE_Hal_info(EVE_DeviceInfo *deviceInfo, size_t deviceIdx)
 /* Check whether the context is the specified device */
 bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
 {
+	FT_DEVICE_LIST_INFO_NODE devInfo = { 0 };
+
 	if (!phost)
 		return false;
-#if defined(EVE_MULTI_TARGET)
-	if (phost->Host != EVE_HOST_FT4222)
+	if (EVE_HOST != EVE_HOST_FT4222)
 		return false;
-#endif
-	if (deviceIdx < 0 || deviceIdx >= s_NumDevsD2XX)
+	if (deviceIdx >= s_NumDevsD2XX)
 		return false;
 
 	if (!phost->SpiHandle)
 		return false;
 
-	FT_DEVICE_LIST_INFO_NODE devInfo = { 0 };
 	if (FT_GetDeviceInfoDetail((DWORD)deviceIdx,
 	        &devInfo.Flags, &devInfo.Type, &devInfo.ID, &devInfo.LocId,
 	        devInfo.SerialNumber, devInfo.Description, &devInfo.ftHandle)
@@ -169,18 +175,24 @@ bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
 	return phost->SpiHandle == devInfo.ftHandle;
 }
 
-/* Get the default configuration parameters */
-bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
+/**
+ * @brief Get the default configuration parameters
+ * 
+ * @param parameters EVE_Hal framework's parameters
+ */
+bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, size_t deviceIdx)
 {
 	bool res = deviceIdx >= 0 && deviceIdx < s_NumDevsD2XX;
 	if (!res)
 	{
+		uint32_t i;
+
 		if (!s_NumDevsD2XX)
 			EVE_Hal_list();
 
 		// Select first open device
 		deviceIdx = 0;
-		for (uint32_t i = 0; i < s_NumDevsD2XX; ++i)
+		for (i = 0; i < s_NumDevsD2XX; ++i)
 		{
 			FT_DEVICE_LIST_INFO_NODE devInfo;
 			if (FT_GetDeviceInfoDetail((DWORD)i,
@@ -230,9 +242,8 @@ bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, si
 *                               10000KHz
 *                               15000KHz
 *                               20000KHz
-*                               25000KHz
 *                               30000KHz
-*                            Global variable phost->Parameters.SpiClockrateKHz is
+*                            Global variable phost->SpiClockrateKHz is
 *                            updated accodingly
 * Return Value             : bool_t
 *                               TRUE : Supported by FT4222
@@ -240,45 +251,71 @@ bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, si
 *
 * Author                   :
 ****************************************************************************/
-bool computeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *sysdivisor)
+
+/**
+ * @brief Compute the system clock and SPI clock
+ * 
+ * @param phost Pointer to Hal context
+ * @param sysclk System clock
+ * @param sysdivisor SPI clock divisor
+ * @return true True if ok
+ * @return false False if error
+ */
+bool computeCLK(EVE_HalContext *phost, FT4222_ClockRate *sysclk, FT4222_SPIClock *sysdivisor, const EVE_HalParameters *parameters)
 {
 	/* phost->Parameters.SpiClockrateKHz is the user requested SPI communication clock */
 
-	if (phost->Parameters.SpiClockrateKHz <= 5000)
+	if (parameters->SpiClockrateKHz <= 5000)
 	{
 		/* set to 5000 KHz */
 		*sysclk = SYS_CLK_80;
 		*sysdivisor = CLK_DIV_16;
 		phost->SpiClockrateKHz = 5000;
 	}
-	else if (phost->Parameters.SpiClockrateKHz > 5000 && phost->Parameters.SpiClockrateKHz <= 10000)
+	else if (parameters->SpiClockrateKHz <= 10000)
 	{
 		/* set to 10000 KHz */
 		*sysclk = SYS_CLK_80;
 		*sysdivisor = CLK_DIV_8;
 		phost->SpiClockrateKHz = 10000;
 	}
-	else if (phost->Parameters.SpiClockrateKHz > 10000 && phost->Parameters.SpiClockrateKHz <= 15000)
+	else if (parameters->SpiClockrateKHz <= 15000)
 	{
+		/* This is the default */
 		/* set to 15000 KHz */
 		*sysclk = SYS_CLK_60;
 		*sysdivisor = CLK_DIV_4;
 		phost->SpiClockrateKHz = 15000;
 	}
-	else
+	else if (parameters->SpiClockrateKHz <= 20000)
 	{
-		/* set to 20000 KHz : Maximum throughput is obeserved with this clock combination */
+		/* set to 20000 KHz */
 		*sysclk = SYS_CLK_80;
 		*sysdivisor = CLK_DIV_4;
 		phost->SpiClockrateKHz = 20000;
 	}
-	eve_printf_debug("User Selected SPI clk : %d KHz\n", phost->Parameters.SpiClockrateKHz);
-	eve_printf_debug("Configured clk :  Ft4222 sys clk enum = %d , divisor enum = %d\n", *sysclk, *sysdivisor);
+	else
+	{
+		/* 30MHz with Quad SPI seems to work reliably on BT816 */
+		/* set to 30000 KHz */
+		*sysclk = SYS_CLK_60;
+		*sysdivisor = CLK_DIV_2;
+		phost->SpiClockrateKHz = 30000;
+	}
+	eve_printf_debug("User Selected SPI clk : %d KHz\n", (int)parameters->SpiClockrateKHz);
+	eve_printf_debug("Configured clk : %d KHz, Ft4222 sys clk enum = %d , divisor enum = %d\n", (int)phost->SpiClockrateKHz, *sysclk, *sysdivisor);
 	return true;
 }
 
-/* Opens a new HAL context using the specified parameters */
-bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
+/**
+ * @brief Opens a new HAL context using the specified parameters
+ * 
+ * @param phost Pointer to Hal context
+ * @param parameters EVE_Hal framework's parameters
+ * @return true True if ok
+ * @return false False if error
+ */
+bool EVE_HalImpl_open(EVE_HalContext *phost, const EVE_HalParameters *parameters)
 {
 	FT_STATUS status;
 	FT4222_Version pversion;
@@ -299,13 +336,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	phost->SpiHandle = phost->GpioHandle = NULL;
 
 #ifdef EVE_MULTI_TARGET
-	if (parameters->ChipId >= EVE_BT815)
-		phost->GpuDefs = &EVE_GpuDefs_BT81X;
-	else if (parameters->ChipId >= EVE_FT810)
-		phost->GpuDefs = &EVE_GpuDefs_FT81X;
-	else
-		phost->GpuDefs = &EVE_GpuDefs_FT80X;
-	phost->ChipId = parameters->ChipId;
+	phost->GpuDefs = &EVE_GpuDefs_FT80X;
 #endif
 
 	memset(&devInfoA, 0, sizeof(devInfoA));
@@ -406,9 +437,9 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 
 	if (ret)
 	{
-		if (!computeCLK(phost, &selclk, &seldiv))
+		if (!computeCLK(phost, &selclk, &seldiv, parameters))
 		{
-			eve_printf_debug("Requested clock %d KHz is not supported in FT4222\n", phost->Parameters.SpiClockrateKHz);
+			eve_printf_debug("Requested clock %d KHz is not supported in FT4222\n", parameters->SpiClockrateKHz);
 			ret = false;
 		}
 	}
@@ -439,12 +470,14 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 		    seldiv,
 		    CLK_IDLE_LOW, //,CLK_IDLE_HIGH
 		    CLK_LEADING, // CLK_LEADING CLK_TRAILING
-		    phost->Parameters.SpiCsPin); /* slave selection output pins */
+			parameters->SpiCsPin); /* slave selection output pins */
 		if (status != FT4222_OK)
 		{
 			eve_printf_debug("Init FT4222 as SPI master device failed!\n");
 			ret = false;
 		}
+		phost->SpiCsPin = parameters->SpiCsPin;
+		phost->PowerDownPin = parameters->PowerDownPin;
 
 		status = FT4222_SPI_SetDrivingStrength(phost->SpiHandle, DS_4MA, DS_4MA, DS_4MA);
 		if (status != FT4222_OK)
@@ -487,7 +520,11 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 	return ret;
 }
 
-/* Close a HAL context */
+/**
+ * @brief Close a HAL context
+ * 
+ * @param phost Pointer to Hal context
+ */
 void EVE_HalImpl_close(EVE_HalContext *phost)
 {
 	FT4222_STATUS status;
@@ -507,7 +544,11 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 		eve_printf_debug("CLOSE failed %d\n", status);
 }
 
-/* Idle. Call regularly to update frequently changing internal state */
+/**
+ * @brief Idle. Call regularly to update frequently changing internal state
+ * 
+ * @param phost Pointer to Hal context
+ */
 void EVE_HalImpl_idle(EVE_HalContext *phost)
 {
 	/* no-op */
@@ -519,6 +560,13 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 
 static bool flush(EVE_HalContext *phost);
 
+/**
+ * @brief Increase RAM_G adress
+ * 
+ * @param addr Address offset
+ * @param inc Number of bytes to increase
+ * @return uint32_t New address in RAM_G
+ */
 static inline uint32_t incrementRamGAddr(EVE_HalContext *phost, uint32_t addr, uint32_t inc)
 {
 	if (!EVE_Hal_supportCmdB(phost) || (addr != REG_CMDB_WRITE))
@@ -531,6 +579,13 @@ static inline uint32_t incrementRamGAddr(EVE_HalContext *phost, uint32_t addr, u
 	return addr;
 }
 
+/**
+ * @brief Read a block data from Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param buffer Buffer to get result
+ * @param size Number of bytes to read
+ */
 static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t size)
 {
 	FT4222_STATUS status;
@@ -630,6 +685,13 @@ static inline bool rdBuffer(EVE_HalContext *phost, uint8_t *buffer, uint32_t siz
 	return true;
 }
 
+/**
+ * @brief Write a block data to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param buffer Data buffer to write
+ * @param size Size of buffer
+ */
 static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
 {
 	FT4222_STATUS status;
@@ -750,6 +812,13 @@ static inline bool wrBuffer(EVE_HalContext *phost, const uint8_t *buffer, uint32
 	}
 }
 
+/**
+ * @brief Start data transfer to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param rw Read or Write
+ * @param addr Address to read/write
+ */
 void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr)
 {
 	eve_assert(phost->Status == EVE_STATUS_OPENED);
@@ -779,6 +848,11 @@ void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t ad
 	}
 }
 
+/**
+ * @brief End data transfer
+ * 
+ * @param phost Pointer to Hal context
+ */
 void EVE_Hal_endTransfer(EVE_HalContext *phost)
 {
 	uint32_t addr;
@@ -803,6 +877,11 @@ void EVE_Hal_endTransfer(EVE_HalContext *phost)
 		phost->Status = EVE_STATUS_OPENED;
 }
 
+/**
+ * @brief Flush data to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ */
 static bool flush(EVE_HalContext *phost)
 {
 	bool res = true;
@@ -829,15 +908,27 @@ static bool flush(EVE_HalContext *phost)
 	return res;
 }
 
+/**
+ * @brief Flush data to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ */
 void EVE_Hal_flush(EVE_HalContext *phost)
 {
 	eve_assert(phost->Status == EVE_STATUS_OPENED);
 	flush(phost);
 }
 
+/**
+ * @brief Write 8 bits to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param value Value to write
+ * @return uint8_t Number of bytes transfered
+ */
 uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 {
-#if defined(BUFFER_OPTIMIZATION)
+#if defined(EVE_BUFFER_WRITES)
 #if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_TARGET)
 	if (!EVE_Hal_supportCmdB(phost))
 	{
@@ -857,9 +948,17 @@ uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 	}
 }
 
+/**
+ * @brief Write 2 bytes to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param value Value to write
+ * @return uint16_t Number of bytes transfered
+ */
 uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 {
-#if defined(BUFFER_OPTIMIZATION)
+	uint8_t buffer[2];
+#if defined(EVE_BUFFER_WRITES)
 #if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_TARGET)
 	if (!EVE_Hal_supportCmdB(phost))
 	{
@@ -872,7 +971,6 @@ uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 	}
 #endif
 #endif
-	uint8_t buffer[2];
 	if (phost->Status == EVE_STATUS_READING)
 	{
 		rdBuffer(phost, buffer, 2);
@@ -888,9 +986,17 @@ uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value)
 	}
 }
 
+/**
+ * @brief Write 4 bytes to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param value Value to write
+ * @return uint32_t Number of bytes transfered
+ */
 uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 {
-#if defined(BUFFER_OPTIMIZATION)
+	uint8_t buffer[4];
+#if defined(EVE_BUFFER_WRITES)
 #if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_TARGET)
 	if (!EVE_Hal_supportCmdB(phost))
 	{
@@ -898,7 +1004,6 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 	}
 #endif
 #endif
-	uint8_t buffer[4];
 	if (phost->Status == EVE_STATUS_READING)
 	{
 		rdBuffer(phost, buffer, 4);
@@ -918,12 +1023,20 @@ uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value)
 	}
 }
 
+/**
+ * @brief Transfer (read/write) a block data to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param result Buffer to get data transfered, NULL when write
+ * @param buffer Buffer where data is transfered, NULL when read
+ * @param size Size of buffer
+ */
 void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size)
 {
 	if (!size)
 		return;
 
-#if defined(BUFFER_OPTIMIZATION)
+#if defined(EVE_BUFFER_WRITES)
 #if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_TARGET)
 	if (!EVE_Hal_supportCmdB(phost))
 	{
@@ -947,12 +1060,20 @@ void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *
 	}
 }
 
+/**
+ * @brief Transfer a block data in Progmem to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param result Buffer to get data transfered, NULL when write
+ * @param buffer Buffer where data is transfered, NULL when read
+ * @param size Size of buffer
+ */
 void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
 	if (!size)
 		return;
 
-#if defined(BUFFER_OPTIMIZATION)
+#if defined(EVE_BUFFER_WRITES)
 #if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_TARGET)
 	if (!EVE_Hal_supportCmdB(phost))
 	{
@@ -976,8 +1097,20 @@ void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem
 	}
 }
 
+/**
+ * @brief Transfer a string to Ever platform
+ * 
+ * @param phost Pointer to Hal context
+ * @param str String to transfer
+ * @param index Start position in the string
+ * @param size Size of string
+ * @param padMask Padding mask
+ * @return uint32_t Numer of bytes transfered
+ */
 uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
+	uint32_t transferred;
+
 	if (!size)
 	{
 		/* TODO: Support different padding options */
@@ -986,7 +1119,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 		return 4;
 	}
 
-#if defined(BUFFER_OPTIMIZATION)
+#if defined(EVE_BUFFER_WRITES)
 #if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_TARGET)
 	if (!EVE_Hal_supportCmdB(phost))
 	{
@@ -995,7 +1128,7 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 #endif
 #endif
 	eve_assert(size <= EVE_CMD_STRING_MAX);
-	uint32_t transferred = 0;
+	transferred = 0;
 	if (phost->Status == EVE_STATUS_WRITING)
 	{
 		uint8_t buffer[EVE_CMD_STRING_MAX + 1];
@@ -1038,6 +1171,12 @@ uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t
 ** UTILITY **
 ************/
 
+/**
+ * @brief Send a host command to Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @param cmd Command to send
+ */
 void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 {
 	FT4222_STATUS status;
@@ -1086,6 +1225,12 @@ void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 	}
 }
 
+/**
+ * @brief This API sends a 3byte command to the phost
+ * 
+ * @param phost Pointer to Hal context
+ * @param cmd Command to send
+ */
 void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 {
 	FT4222_STATUS status;
@@ -1133,6 +1278,13 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 	}
 }
 
+/**
+ * @brief Set number of SPI channel
+ * 
+ * @param phost Pointer to Hal context
+ * @param numchnls Number of channel
+ * @param numdummy Number of dummy bytes
+ */
 void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
 {
 	FT4222_STATUS ftstatus;
@@ -1157,6 +1309,12 @@ void setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy
 	phost->SpiDummyBytes = numdummy;
 }
 
+/**
+ * @brief Toggle PD_N pin of FT800 board for a power cycle
+ * 
+ * @param phost Pointer to Hal context
+ * @param up Up or Down
+ */
 void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 {
 	flush(phost);
@@ -1165,11 +1323,11 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 	{
 		FT4222_STATUS status = FT4222_OTHER_ERROR;
 
-		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 0)))
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->PowerDownPin, 0)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		EVE_sleep(20);
 
-		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 1)))
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->PowerDownPin, 1)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		EVE_sleep(20);
 	}
@@ -1177,11 +1335,11 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 	{
 		FT4222_STATUS status = FT4222_OTHER_ERROR;
 
-		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 1)))
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->PowerDownPin, 1)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		EVE_sleep(20);
 
-		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->Parameters.PowerDownPin, 0)))
+		if (FT4222_OK != (status = FT4222_GPIO_Write(phost->GpioHandle, phost->PowerDownPin, 0)))
 			eve_printf_debug("FT4222_GPIO_Write error = %d\n", status);
 		EVE_sleep(20);
 	}
@@ -1190,13 +1348,22 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 	setSPI(phost, EVE_SPI_SINGLE_CHANNEL, 1);
 }
 
+/**
+ * @brief Set number of SPI channel
+ * 
+ * @param phost Pointer to Hal context
+ * @param numchnls Number of channel
+ * @param numdummy Number of dummy bytes
+ */
 void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy)
 {
+	uint8_t writebyte;
+
 	flush(phost);
 	if (EVE_CHIPID < EVE_FT810)
 		return;
 
-	uint8_t writebyte = 0;
+	writebyte = 0;
 
 	if ((numchnls > EVE_SPI_QUAD_CHANNEL) || (numdummy > 2) || (numdummy < 1))
 		return; // error
@@ -1214,7 +1381,13 @@ void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t 
 /*********
 ** MISC **
 *********/
-
+/**
+ * @brief Display GPIO pins
+ * 
+ * @param phost Pointer to Hal context
+ * @return true True if Ok
+ * @return false False if error
+ */
 bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost)
 {
 	/* no-op */

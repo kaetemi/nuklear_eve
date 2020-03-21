@@ -37,7 +37,7 @@
 
 #ifndef EVE_CMD__H
 #define EVE_CMD__H
-#include "EVE_Hal.h"
+#include "EVE_HalDefs.h"
 
 /********************
 ** COPROCESSOR CMD **
@@ -79,6 +79,7 @@ EVE_HAL_EXPORT bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const u
 
 /* Write a string to the command buffer, padded to 4 bytes. 
 Waits if there is not enough space in the command buffer. 
+Parameter `maxLength` can be set up to `EVE_CMD_STRING_MAX`.
 Returns false in case a coprocessor fault occurred */
 EVE_HAL_EXPORT uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength);
 
@@ -117,6 +118,6 @@ EVE_HAL_EXPORT uint32_t EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size);
 (Waits for both the read and write pointer to go to 0) */
 EVE_HAL_EXPORT bool EVE_Cmd_waitLogo(EVE_HalContext *phost);
 
-#endif /* #ifndef EVE_HAL__H */
+#endif /* #ifndef EVE_HAL_INCL__H */
 
 /* end of file */

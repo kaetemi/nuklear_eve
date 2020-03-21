@@ -29,12 +29,6 @@
 * has no liability in relation to those amendments.
 */
 
-/*
-
-Main file to include the EVE HAL in your applications.
-
-*/
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -60,7 +54,7 @@ extern "C" {
 #include "EVE_Platform_FT9XX.h"
 #endif
 #include "EVE_GpuTypes.h"
-#include "EVE_Hal.h"
+#include "EVE_HalDefs.h"
 #include "EVE_Cmd.h"
 #include "EVE_MediaFifo.h"
 #include "EVE_GpuDefs.h"
@@ -85,6 +79,16 @@ extern "C" {
 #endif
 #else
 #define eve_debug_break() eve_noop()
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define eve_deprecated(message) __attribute__((deprecated(message)))
+#elif defined(_MSC_VER)
+#define eve_deprecated(message) __declspec(deprecated(message))
+#elif (__cplusplus >= 201402L)
+#define eve_deprecated(message) [[deprecated(message)]]
+#else
+#define eve_deprecated(message)
 #endif
 
 #ifndef eve_printf
@@ -139,22 +143,18 @@ extern "C" {
 #define eve_trace(cond) eve_noop()
 #endif
 
+#ifndef NOMINMAX
 #ifndef max
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #endif
-
 #ifndef min
 #define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
 #endif
 
 /* Scope */
 #ifndef scope
 #define scope if (true)
-#endif
-
-/* Breakable */
-#ifndef breakable
-#define breakable for (int eve__scope = 0; eve__scope < 1; ++eve__scope)
 #endif
 
 #endif /* #ifndef EVE_PLATFORM__H */

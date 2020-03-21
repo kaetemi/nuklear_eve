@@ -49,6 +49,14 @@ void LogError__ESD(const char *str);
 
 void Esd_SetFlashFirmware__ESD(const wchar_t *path);
 
+/**
+ * @brief Log a message
+ * 
+ * @param sender Pointer to BT8XXEMU_Emulator sender
+ * @param context unused
+ * @param type Type of message
+ * @param message Message to log
+ */
 static void emulatorLog(BT8XXEMU_Emulator *sender, void *context, BT8XXEMU_LogType type, const char *message)
 {
 	if (type == BT8XXEMU_LogMessage)
@@ -59,6 +67,14 @@ static void emulatorLog(BT8XXEMU_Emulator *sender, void *context, BT8XXEMU_LogTy
 		LogError__ESD(message);
 }
 
+/**
+ * @brief Log a message on flash
+ * 
+ * @param sender Pointer to BT8XXEMU_Emulator sender
+ * @param context unused
+ * @param type Type of message
+ * @param message Message to log
+ */
 static void flashLog(BT8XXEMU_Flash *sender, void *context, BT8XXEMU_LogType type, const char *message)
 {
 	if (type == BT8XXEMU_LogMessage)
@@ -73,11 +89,24 @@ static void flashLog(BT8XXEMU_Flash *sender, void *context, BT8XXEMU_LogType typ
 
 void EVE_emuMain(int argc, char *argv[]);
 
+/**
+ * @brief Main function of the application
+ * 
+ * @param sender Pointer to BT8XXEMU_Emulator sender
+ * @param context Unused
+ */
 void emulatorMain(BT8XXEMU_Emulator *sender, void *context)
 {
 	EVE_emuMain(s_ArgC, s_ArgV);
 }
 
+/**
+ * @brief Main function
+ * 
+ * @param argc number of arguments
+ * @param argv Argument array
+ * @return int Exit code
+ */
 int main(int argc, char *argv[])
 {
 #if defined(EVE_FLASH_AVAILABLE)

@@ -8,6 +8,12 @@ The EVE Hardware Abstraction Layer included with EVE Screen Designer consists of
 
 # Usage
 
+## Include
+
+```
+#include <EVE_Hal.h>
+```
+
 ## Initialization
 
 ```
@@ -29,7 +35,7 @@ EVE_Hal_defaultsEx(&params, EVE_BT816, -1);
 
 /* Open the specified device */
 EVE_HalContext host = { 0 };
-EVE_HalContext *phost = host;
+EVE_HalContext *phost = &host;
 if (!EVE_Hal_open(phost, &params))
 	return false;
 

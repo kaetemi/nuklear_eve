@@ -39,6 +39,13 @@ static bool s_FatFSLoaded = false;
 static FATFS s_FatFS;
 #endif
 
+/**
+ * @brief Mount the SDcard
+ * 
+ * @param phost Pointer to Hal context
+ * @return true True if ok
+ * @return false False if error
+ */
 bool EVE_Util_loadSdCard(EVE_HalContext *phost)
 {
 #if defined(EVE_ENABLE_FATFS)
@@ -76,6 +83,15 @@ bool EVE_Util_loadSdCard(EVE_HalContext *phost)
 #endif
 }
 
+/**
+ * @brief Load a raw file into RAM_G
+ * 
+ * @param phost  Pointer to Hal context
+ * @param address Address in RAM_G
+ * @param filename File to load
+ * @return true True if ok
+ * @return false False if error
+ */
 bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename)
 {
 #if defined(EVE_ENABLE_FATFS)
@@ -111,6 +127,15 @@ bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *f
 #endif
 }
 
+/**
+ * @brief Load file into RAM_G by CMD_INFLATE
+ * 
+ * @param phost  Pointer to Hal context
+ * @param address Address to write
+ * @param filename File to load
+ * @return true True if ok
+ * @return false False if error
+ */
 bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename)
 {
 #if defined(EVE_ENABLE_FATFS)
@@ -149,6 +174,16 @@ bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const cha
 #endif
 }
 
+/**
+ * @brief Load image into RAM_G
+ * 
+ * @param phost  Pointer to Hal context
+ * @param address Address in RAM_G
+ * @param filename File to load
+ * @param format Target format of image
+ * @return true True if ok
+ * @return false False if error
+ */
 bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, uint32_t *format)
 {
 #if defined(EVE_ENABLE_FATFS)

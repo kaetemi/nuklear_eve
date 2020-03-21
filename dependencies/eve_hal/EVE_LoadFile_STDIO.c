@@ -35,12 +35,27 @@
 
 #include <stdio.h>
 
+/**
+ * @brief Mount the SDcard
+ * 
+ * @param phost  Pointer to Hal context
+ * @return true True if ok
+ * @return false False if error
+ */
 EVE_HAL_EXPORT bool EVE_Util_loadSdCard(EVE_HalContext *phost)
 {
 	/* no-op */
 	return true;
 }
-
+/**
+ * @brief Load a raw file into RAM_G
+ * 
+ * @param phost  Pointer to Hal context
+ * @param address Address in RAM_G
+ * @param filename File to load
+ * @return true True if ok
+ * @return false False if error
+ */
 #ifdef WIN32
 static bool loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename, const wchar_t *filenameW)
 #else
@@ -96,6 +111,15 @@ EVE_HAL_EXPORT bool EVE_Util_loadRawFileW(EVE_HalContext *phost, uint32_t addres
 
 #endif
 
+/**
+ * @brief Load file into RAM_G by CMD_INFLATE
+ * 
+ * @param phost  Pointer to Hal context
+ * @param address Address to write
+ * @param filename File to load
+ * @return true True if ok
+ * @return false False if error
+ */
 #ifdef WIN32
 static bool loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename, const wchar_t *filenameW)
 #else
@@ -159,6 +183,16 @@ EVE_HAL_EXPORT bool EVE_Util_loadInflateFileW(EVE_HalContext *phost, uint32_t ad
 
 #endif
 
+/**
+ * @brief Load image into RAM_G
+ * 
+ * @param phost  Pointer to Hal context
+ * @param address Address in RAM_G
+ * @param filename File to load
+ * @param format Target format of image
+ * @return true True if ok
+ * @return false False if error
+ */
 #ifdef WIN32
 static bool loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, const wchar_t *filenameW, uint32_t *format)
 #else
@@ -298,7 +332,10 @@ EVE_HAL_EXPORT bool EVE_Util_loadMediaFile(EVE_HalContext *phost, const char *fi
 	FILE *afile;
 	uint32_t ftsize = 0;
 	uint32_t blockSize = ((phost->MediaFifoSize >> 3) << 2) - 4;
+#pragma warning(push)
+#pragma warning(disable : 6255)
 	uint8_t *pbuff = (uint8_t *)_alloca(blockSize);
+#pragma warning(pop)
 	uint16_t blocklen;
 
 #pragma warning(push)

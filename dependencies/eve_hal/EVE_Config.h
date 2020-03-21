@@ -58,6 +58,8 @@ the available list of which is specified further below for ESD using these macro
 #define EVE_FT813 0x0813
 #define EVE_BT815 0x0815
 #define EVE_BT816 0x0816
+#define EVE_BT817 0x0817
+#define EVE_BT818 0x0818
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -113,7 +115,7 @@ ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM816C, DisplayName = "VM816C", IntegratedFlash
 // ESD_TARGET_GRAPHICS(EVE_GRAPHICS_BT816, DisplayName = "BT816 (Generic)", LibraryTargets="\b(BT81X|BT816)\b")
 
 ESD_TARGET_DISPLAY(EVE_DISPLAY_QVGA, DisplayName = "QVGA (320x240)")
-ESD_TARGET_DISPLAY(EVE_DISPLAY_WQVGA, DisplayName = "WQVGA (400x240)")
+ESD_TARGET_DISPLAY(EVE_DISPLAY_WQVGA, DisplayName = "WQVGA (480x272)")
 ESD_TARGET_DISPLAY(EVE_DISPLAY_WVGA, DisplayName = "WVGA (800x480)")
 // ESD_TARGET_DISPLAY(EVE_DISPLAY_AT043B35, DisplayName = "AT043B35 (480x272)")
 // ESD_TARGET_DISPLAY(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT, DisplayName = "ILI9488 (320x480)")
@@ -159,6 +161,8 @@ Graphics target:
 - EVE_SUPPORT_CHIPID=EVE_FT813
 - EVE_SUPPORT_CHIPID=EVE_BT815
 - EVE_SUPPORT_CHIPID=EVE_BT816
+- EVE_SUPPORT_CHIPID=EVE_BT817
+- EVE_SUPPORT_CHIPID=EVE_BT818
 
 Platform target:
 - BT8XXEMU_PLATFORM
@@ -171,6 +175,7 @@ Display resolution:
 - DISPLAY_RESOLUTION_WVGA
 - DISPLAY_RESOLUTION_QVGA
 - DISPLAY_RESOLUTION_WQVGA
+- DISPLAY_RESOLUTION_1280x120
 
 Flash, with size in megabytes:
 - EVE_FLASH_AVAILABLE
@@ -224,7 +229,8 @@ Validate the configured options.
     || defined(EVE_GRAPHICS_FT800) || defined(EVE_GRAPHICS_FT801)                                   \
     || defined(EVE_GRAPHICS_FT810) || defined(EVE_GRAPHICS_FT811)                                   \
     || defined(EVE_GRAPHICS_FT812) || defined(EVE_GRAPHICS_FT813)                                   \
-    || defined(EVE_GRAPHICS_BT816) || defined(EVE_GRAPHICS_BT815)
+    || defined(EVE_GRAPHICS_BT815) || defined(EVE_GRAPHICS_BT816)                                   \
+    || defined(EVE_GRAPHICS_BT817) || defined(EVE_GRAPHICS_BT818)
 #define EVE_GRAPHICS_AVAILABLE
 #endif
 
@@ -268,6 +274,8 @@ The selected graphics module must set one of the following options.
 - FT813_ENABLE
 - BT815_ENABLE
 - BT816_ENABLE
+- BT817_ENABLE
+- BT818_ENABLE
 
 It may also set platform, display, and flash values if none are configured.
 
@@ -546,6 +554,38 @@ It may also set platform, display, and flash values if none are configured.
 #define EVE_FLASH_MX25L128
 #endif
 
+#elif defined(EVE_GRAPHICS_BT817)
+
+#define BT817_ENABLE
+#define ENABLE_SPI_QUAD
+
+#ifndef EVE_DISPLAY_AVAILABLE
+#define EVE_DISPLAY_AVAILABLE
+// #define DISPLAY_RESOLUTION_WVGA
+#define DISPLAY_RESOLUTION_1280x800
+#endif
+
+#ifndef EVE_FLASH_AVAILABLE
+#define EVE_FLASH_AVAILABLE
+#define EVE_FLASH_MX25L128
+#endif
+
+#elif defined(EVE_GRAPHICS_BT818)
+
+#define BT818_ENABLE
+#define ENABLE_SPI_QUAD
+#define RESISTANCE_THRESHOLD (1800)
+
+#ifndef EVE_DISPLAY_AVAILABLE
+#define EVE_DISPLAY_AVAILABLE
+#define DISPLAY_RESOLUTION_WVGA
+#endif
+
+#ifndef EVE_FLASH_AVAILABLE
+#define EVE_FLASH_AVAILABLE
+#define EVE_FLASH_MX25L128
+#endif
+
 #endif
 
 /// Re-Mapping FT800 Series to FT80X
@@ -558,9 +598,14 @@ It may also set platform, display, and flash values if none are configured.
 #define FT81X_ENABLE
 #endif
 
-/// Re-Mapping BT810 Series to BT81X
+/// Re-Mapping BT815 Series to BT81X
 #if defined(BT815_ENABLE) || defined(BT816_ENABLE)
 #define BT81X_ENABLE
+#endif
+
+/// Re-Mapping BT817 Series to BT81XA
+#if defined(BT817_ENABLE) || defined(BT818_ENABLE)
+#define BT81XA_ENABLE
 #endif
 
 /// Model numbered macro for versioning convenience.
@@ -589,6 +634,12 @@ It may also set platform, display, and flash values if none are configured.
 #elif defined(BT816_ENABLE)
 #define EVE_SUPPORT_CHIPID EVE_BT816
 #define BT_816_ENABLE
+#elif defined(BT817_ENABLE)
+#define EVE_SUPPORT_CHIPID EVE_BT817
+#define BT_817_ENABLE
+#elif defined(BT818_ENABLE)
+#define EVE_SUPPORT_CHIPID EVE_BT818
+#define BT_818_ENABLE
 #endif
 
 #if defined(FT80X_ENABLE)
@@ -597,6 +648,8 @@ It may also set platform, display, and flash values if none are configured.
 #define FT_81X_ENABLE
 #elif defined(BT81X_ENABLE)
 #define BT_81X_ENABLE
+#elif defined(BT81XA_ENABLE)
+#define BT_81XA_ENABLE
 #endif
 
 ///////////////////////////////////////////////////////////////////////
@@ -667,7 +720,7 @@ It may also set platform, display, and flash values if none are configured.
 
 Ultimately, the platform selection must set one of the following internal platform flags.
 - BT8XXEMU_PLATFORM
-- FT900_PLATFORM
+- FT9XX_PLATFORM
 - FT4222_PLATFORM
 - MPSSE_PLATFORM
 These may only be set by one of the platform target definitions, and should not be set manually by the user.
@@ -679,11 +732,11 @@ These may only be set by one of the platform target definitions, and should not 
 #define BT8XXEMU_PLATFORM
 #define EVE_HOST EVE_HOST_BT8XXEMU
 
-#elif defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
+#elif defined(__FT900__) || defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
 
 #define FT900_PLATFORM
 
-#elif defined(MM930MINI) || defined(MM930LITE) || defined(MM932LC)
+#elif defined(__FT930__) || defined(MM930MINI) || defined(MM930LITE) || defined(MM932LC)
 
 #define FT93X_PLATFORM
 
@@ -752,6 +805,7 @@ These may only be set by one of the platform target definitions, and should not 
 #define MPSSE_PLATFORM
 #define BT8XXEMU_PLATFORM
 #define EVE_FLASH_AVAILABLE
+#define EVE_SUPPORT_HSF
 #define EVE_SUPPORT_FLASH
 #define EVE_SUPPORT_UNICODE
 #define EVE_SUPPORT_ASTC
@@ -760,7 +814,7 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_SUPPORT_CMDB
 #define EVE_SUPPORT_CAPACITIVE
 #define EVE_SUPPORT_RESISTIVE
-#define EVE_SUPPORT_CHIPID EVE_BT816
+#define EVE_SUPPORT_CHIPID EVE_BT818
 #define RESISTANCE_THRESHOLD (1800)
 #define EVE_CHIPID phost->ChipId
 #define EVE_HOST phost->Host
@@ -774,6 +828,10 @@ These may only be set by one of the platform target definitions, and should not 
 
 /// Feature support.
 /// Avoid hardcoding specific EVE models throughout the libraries.
+/// Allows disabling specific features for debugging purposes.
+#if (EVE_SUPPORT_CHIPID >= EVE_BT817)
+#define EVE_SUPPORT_HSF
+#endif
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 #define EVE_SUPPORT_FLASH
 #define EVE_SUPPORT_UNICODE
@@ -820,7 +878,7 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 
 /* Set implementation options */
 #if defined(FT4222_PLATFORM) || defined(MPSSE_PLATFORM)
-#define BUFFER_OPTIMIZATION
+#define EVE_BUFFER_WRITES
 #endif
 
 /* Disable unsupported options */
@@ -836,6 +894,10 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 ///////////////////////////////////////////////////////////////////////
 
 /// Configuration sanity checks
+#if defined(PANL_APPLET) && defined(EVE_MULTI_TARGET)
+#pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error PANL_APPLET: " \
+                                                      "Cannot target PANL_APPLET with EVE_MULTI_TARGET")
+#endif
 #if !defined(EVE_SUPPORT_CHIPID) && !defined(EVE_MULTI_TARGET)
 #pragma message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_SUPPORT_CHIPID: " \
                                                       "No EVE device model has been selected")

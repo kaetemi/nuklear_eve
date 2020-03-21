@@ -80,6 +80,7 @@ typedef enum EVE_POWER_MODE_T
 typedef enum EVE_81X_PLL_FREQ_T
 {
 	EVE_SYSCLK_DEFAULT = 0x00, // default 60mhz
+	EVE_SYSCLK_84M = 0x07,
 	EVE_SYSCLK_72M = 0x06,
 	EVE_SYSCLK_60M = 0x05,
 	EVE_SYSCLK_48M = 0x04,

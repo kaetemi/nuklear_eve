@@ -29,6 +29,11 @@
 * has no liability in relation to those amendments.
 */
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 28159) // Use GetTickCount64 instead of GetTickCount
+#endif
+
 #include "EVE_HalImpl.h"
 #include "EVE_Platform.h"
 #if defined(_WIN32)
@@ -37,6 +42,12 @@
 ** UTILITY **
 ************/
 
+/**
+ * @brief Get current system clock of Coprocessor
+ * 
+ * @param phost Pointer to Hal context
+ * @return uint32_t Frequency of Coprocessor
+ */
 uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 {
 	uint32_t t0, t1;
@@ -55,11 +66,19 @@ uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 ** MISC **
 *********/
 
+/**
+ * @brief Init host MCU
+ * 
+ */
 void EVE_Mcu_initialize()
 {
 	/* no-op */
 }
 
+/**
+ * @brief Release host MCU
+ * 
+ */
 void EVE_Mcu_release()
 {
 	/* no-op */
@@ -70,27 +89,58 @@ void EVE_Mcu_release()
 *********/
 
 static DWORD s_Millis_Start;
+static ULONGLONG s_Millis64_Start;
 
+/**
+ * @brief Init timer
+ * 
+ */
 void EVE_Millis_initialize()
 {
 	s_Millis_Start = GetTickCount();
+	s_Millis64_Start = GetTickCount64();
 }
 
+/**
+ * @brief Release timer
+ * 
+ */
 void EVE_Millis_release()
 {
 	/* no-op */
 }
 
-/* global counter to loopback after ~49.71 days */
+/**
+ * @brief Get clock in miliseond
+ * 
+ * global counter to loopback after ~49.71 days
+ * 
+ * @return uint32_t Clock number
+ */
 uint32_t EVE_millis()
 {
 	return GetTickCount() - s_Millis_Start;
+}
+
+/**
+* @brief Get clock in miliseond
+* 
+* @return uint64_t Clock number
+*/
+uint64_t EVE_millis64()
+{
+	return GetTickCount64() - s_Millis64_Start;
 }
 
 #if defined(ESD_SIMULATION)
 int Ft_Sleep__ESD(int ms);
 #endif
 
+/**
+ * @brief Sleep in milisecond
+ * 
+ * @param ms Milisecond
+ */
 void EVE_sleep(uint32_t ms)
 {
 #if defined(ESD_SIMULATION)
@@ -100,6 +150,10 @@ void EVE_sleep(uint32_t ms)
 #endif
 }
 
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
 #endif
 
 /* end of file */
