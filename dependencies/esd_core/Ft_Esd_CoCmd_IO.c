@@ -107,7 +107,7 @@ ft_void_t Ft_Gpu_CoCmd_Inflate(EVE_HalContext *phost, ft_uint32_t ptr)
 	EVE_Cmd_endFunc(phost);
 }
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_MediaFifo(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t size)
 {
 	EVE_Cmd_startFunc(phost);
@@ -126,7 +126,7 @@ ft_void_t Ft_Gpu_CoCmd_Snapshot(EVE_HalContext *phost, ft_uint32_t ptr)
 	EVE_Cmd_endFunc(phost);
 }
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 ft_void_t Ft_Gpu_CoCmd_Snapshot2(EVE_HalContext *phost, ft_uint32_t fmt, ft_uint32_t ptr, ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h)
 {
 	EVE_Cmd_startFunc(phost);

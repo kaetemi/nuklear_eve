@@ -48,7 +48,7 @@ typedef struct Ft_Esd_BitmapInfo
 	// Number of cells usable by the user. There may be additional internally used cells after this
 	ft_uint16_t Cells;
 
-#if (EVE_MODEL >= EVE_BT815)
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	// BT815 bitmap swizzle
 	ft_uint16_t SwizzleB : 3;
 	ft_uint16_t SwizzleG : 3;
@@ -116,7 +116,7 @@ ESD_IDENTIFIER(PALETTED8)
 #define DXT1 0x81
 #define JPEG 0x91
 #define PNG 0x92
-#if (EVE_MODEL >= EVE_BT815)
+#if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 ESD_IDENTIFIER(COMPRESSED_RGBA_ASTC_4x4_KHR)
 ESD_IDENTIFIER(COMPRESSED_RGBA_ASTC_5x4_KHR)
 ESD_IDENTIFIER(COMPRESSED_RGBA_ASTC_5x5_KHR)

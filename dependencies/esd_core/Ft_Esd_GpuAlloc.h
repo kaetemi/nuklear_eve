@@ -75,6 +75,8 @@ typedef struct
 	Ft_Esd_GpuAllocEntry AllocEntries[MAX_NUM_ALLOCATIONS];
 	/// Number of valid alloc entries
 	uint32_t NbAllocEntries;
+	/// RAM_G size usable by the allocator. Reset GpuAlloc after modifying
+	uint32_t RamGSize;
 
 } Ft_Esd_GpuAlloc;
 

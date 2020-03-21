@@ -40,16 +40,15 @@
 ** INIT **
 *********/
 
-EVE_HalPlatform *EVE_Hal_initialize()
+EVE_HAL_EXPORT EVE_HalPlatform *EVE_Hal_initialize()
 {
-	eve_assert_ex(g_HalPlatform.TotalDevices == 0, "HAL platform already initialized\n");
 	EVE_Mcu_initialize();
 	EVE_Millis_initialize();
 	EVE_HalImpl_initialize();
 	return &g_HalPlatform;
 }
 
-void EVE_Hal_release()
+EVE_HAL_EXPORT void EVE_Hal_release()
 {
 	eve_assert_ex(g_HalPlatform.OpenedDevices == 0, "HAL context still open\n");
 	EVE_HalImpl_release();
@@ -58,100 +57,33 @@ void EVE_Hal_release()
 	memset(&g_HalPlatform, 0, sizeof(EVE_HalPlatform));
 }
 
-void EVE_Hal_defaults(EVE_HalParameters *parameters)
+EVE_HAL_EXPORT void EVE_Hal_defaults(EVE_HalParameters *parameters)
 {
-	memset(parameters, 0, sizeof(EVE_HalParameters));
-#if defined(DISPLAY_RESOLUTION_QVGA)
-	/* Values specific to QVGA LCD display */
-	parameters->Display.Width = 320;
-	parameters->Display.Height = 240;
-	parameters->Display.HCycle = 408;
-	parameters->Display.HOffset = 70;
-	parameters->Display.HSync0 = 0;
-	parameters->Display.HSync1 = 10;
-	parameters->Display.VCycle = 263;
-	parameters->Display.VOffset = 13;
-	parameters->Display.VSync0 = 0;
-	parameters->Display.VSync1 = 2;
-	parameters->Display.PCLK = 8;
-	parameters->Display.Swizzle = 2;
-	parameters->Display.PCLKPol = 0;
-	parameters->Display.CSpread = 1;
-	parameters->Display.Dither = 1;
-#elif defined(DISPLAY_RESOLUTION_WVGA)
-	/* Values specific to QVGA LCD display */
-	parameters->Display.Width = 800;
-	parameters->Display.Height = 480;
-	parameters->Display.HCycle = 928;
-	parameters->Display.HOffset = 88;
-	parameters->Display.HSync0 = 0;
-	parameters->Display.HSync1 = 48;
-	parameters->Display.VCycle = 525;
-	parameters->Display.VOffset = 32;
-	parameters->Display.VSync0 = 0;
-	parameters->Display.VSync1 = 3;
-	parameters->Display.PCLK = 2;
-	parameters->Display.Swizzle = 0;
-	parameters->Display.PCLKPol = 1;
-	parameters->Display.CSpread = 0;
-	parameters->Display.Dither = 1;
-#elif defined(DISPLAY_RESOLUTION_HVGA_PORTRAIT)
-	/* Values specific to HVGA LCD display */
-	parameters->Display.Width = 320;
-	parameters->Display.Height = 480;
-	parameters->Display.HCycle = 400;
-	parameters->Display.HOffset = 40;
-	parameters->Display.HSync0 = 0;
-	parameters->Display.HSync1 = 10;
-	parameters->Display.VCycle = 500;
-	parameters->Display.VOffset = 10;
-	parameters->Display.VSync0 = 0;
-	parameters->Display.VSync1 = 5;
-	parameters->Display.PCLK = 4;
-#ifdef ENABLE_ILI9488_HVGA_PORTRAIT
-	parameters->Display.Swizzle = 2;
-	parameters->Display.PCLKPol = 1;
-#endif
-#ifdef ENABLE_KD2401_HVGA_PORTRAIT
-	parameters->Display.Swizzle = 0;
-	parameters->Display.PCLKPol = 0;
-	parameters->Display.PCLK = 5;
-#endif
-	parameters->Display.CSpread = 1;
-	parameters->Display.Dither = 1;
-#ifdef ME810A_HV35R
-	parameters->Display.PCLK = 5;
-#endif
-#else
-	/* Default is WQVGA - 480x272 */
-	parameters->Display.Width = 480;
-	parameters->Display.Height = 272;
-	parameters->Display.HCycle = 548;
-	parameters->Display.HOffset = 43;
-	parameters->Display.HSync0 = 0;
-	parameters->Display.HSync1 = 41;
-	parameters->Display.VCycle = 292;
-	parameters->Display.VOffset = 12;
-	parameters->Display.VSync0 = 0;
-	parameters->Display.VSync1 = 10;
-	parameters->Display.PCLK = 5;
-	parameters->Display.Swizzle = 0;
-	parameters->Display.PCLKPol = 1;
-	parameters->Display.CSpread = 1;
-	parameters->Display.Dither = 1;
-#endif
-
-	EVE_HalImpl_defaults(parameters);
+	EVE_Hal_defaultsEx(parameters, EVE_SUPPORT_CHIPID, -1);
 }
 
-bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
+EVE_HAL_EXPORT void EVE_Hal_defaultsEx(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
+{
+	memset(parameters, 0, sizeof(EVE_HalParameters));
+
+#if defined(EVE_MULTI_TARGET)
+	parameters->ChipId = chipId;
+#else
+	eve_assert(chipId == EVE_CHIPID);
+	eve_assert(chipId == EVE_SUPPORT_CHIPID);
+#endif
+
+	eve_assert_do(EVE_HalImpl_defaults(parameters, chipId, deviceIdx));
+}
+
+EVE_HAL_EXPORT bool EVE_Hal_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
 	memset(phost, 0, sizeof(EVE_HalContext));
 	memcpy(&phost->Parameters, parameters, sizeof(EVE_HalParameters));
 	return EVE_HalImpl_open(phost, parameters);
 }
 
-void EVE_Hal_close(EVE_HalContext *phost)
+EVE_HAL_EXPORT void EVE_Hal_close(EVE_HalContext *phost)
 {
 	if (phost->Status == EVE_STATUS_CLOSED)
 	{
@@ -163,7 +95,7 @@ void EVE_Hal_close(EVE_HalContext *phost)
 	memset(phost, 0, sizeof(EVE_HalContext));
 }
 
-void EVE_Hal_idle(EVE_HalContext *phost)
+EVE_HAL_EXPORT void EVE_Hal_idle(EVE_HalContext *phost)
 {
 	EVE_HalImpl_idle(phost);
 }
@@ -172,7 +104,7 @@ void EVE_Hal_idle(EVE_HalContext *phost)
 ** TRANSFER HELPERS **
 *********************/
 
-uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr)
+EVE_HAL_EXPORT uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr)
 {
 	uint8_t value;
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
@@ -181,7 +113,7 @@ uint8_t EVE_Hal_rd8(EVE_HalContext *phost, uint32_t addr)
 	return value;
 }
 
-uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr)
+EVE_HAL_EXPORT uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr)
 {
 	uint16_t value;
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
@@ -190,7 +122,7 @@ uint16_t EVE_Hal_rd16(EVE_HalContext *phost, uint32_t addr)
 	return value;
 }
 
-uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr)
+EVE_HAL_EXPORT uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr)
 {
 	uint32_t value;
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
@@ -199,49 +131,49 @@ uint32_t EVE_Hal_rd32(EVE_HalContext *phost, uint32_t addr)
 	return value;
 }
 
-void EVE_Hal_rdMem(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size)
+EVE_HAL_EXPORT void EVE_Hal_rdMem(EVE_HalContext *phost, uint8_t *result, uint32_t addr, uint32_t size)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_READ, addr);
 	EVE_Hal_transferMem(phost, result, NULL, size);
 	EVE_Hal_endTransfer(phost);
 }
 
-void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v)
+EVE_HAL_EXPORT void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transfer8(phost, v);
 	EVE_Hal_endTransfer(phost);
 }
 
-void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v)
+EVE_HAL_EXPORT void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transfer16(phost, v);
 	EVE_Hal_endTransfer(phost);
 }
 
-void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v)
+EVE_HAL_EXPORT void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transfer32(phost, v);
 	EVE_Hal_endTransfer(phost);
 }
 
-void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size)
+EVE_HAL_EXPORT void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transferMem(phost, NULL, buffer, size);
 	EVE_Hal_endTransfer(phost);
 }
 
-void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size)
+EVE_HAL_EXPORT void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transferProgmem(phost, NULL, buffer, size);
 	EVE_Hal_endTransfer(phost);
 }
 
-void EVE_Hal_wrString(EVE_HalContext *phost, uint32_t addr, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
+EVE_HAL_EXPORT void EVE_Hal_wrString(EVE_HalContext *phost, uint32_t addr, const char *str, uint32_t index, uint32_t size, uint32_t padMask)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
 	EVE_Hal_transferString(phost, str, index, size, padMask);
@@ -252,7 +184,7 @@ void EVE_Hal_wrString(EVE_HalContext *phost, uint32_t addr, const char *str, uin
 ** UTILITY **
 ************/
 
-int32_t EVE_Hal_clockTrimming(EVE_HalContext *phost, uint32_t lowFreq)
+EVE_HAL_EXPORT int32_t EVE_Hal_clockTrimming(EVE_HalContext *phost, uint32_t lowFreq)
 {
 	uint32_t f;
 	uint8_t i;
@@ -271,28 +203,28 @@ int32_t EVE_Hal_clockTrimming(EVE_HalContext *phost, uint32_t lowFreq)
 ** HOST **
 *********/
 
-void EVE_Host_clockSelect(EVE_HalContext *phost, EVE_PLL_SOURCE_T pllsource)
+EVE_HAL_EXPORT void EVE_Host_clockSelect(EVE_HalContext *phost, EVE_PLL_SOURCE_T pllsource)
 {
 	EVE_Hal_hostCommand(phost, pllsource);
 }
 
-void EVE_Host_pllFreqSelect(EVE_HalContext *phost, EVE_PLL_FREQ_T freq)
+EVE_HAL_EXPORT void EVE_Host_pllFreqSelect(EVE_HalContext *phost, EVE_PLL_FREQ_T freq)
 {
 	EVE_Hal_hostCommand(phost, freq);
 }
 
-void EVE_Host_powerModeSwitch(EVE_HalContext *phost, EVE_POWER_MODE_T pwrmode)
+EVE_HAL_EXPORT void EVE_Host_powerModeSwitch(EVE_HalContext *phost, EVE_POWER_MODE_T pwrmode)
 {
 	EVE_Hal_hostCommand(phost, pwrmode);
 }
 
-void EVE_Host_coreReset(EVE_HalContext *phost)
+EVE_HAL_EXPORT void EVE_Host_coreReset(EVE_HalContext *phost)
 {
 	EVE_Hal_hostCommand(phost, EVE_CORE_RESET);
 }
 
-#if (EVE_MODEL >= EVE_FT810)
-void EVE_Host_selectSysClk(EVE_HalContext *phost, EVE_81X_PLL_FREQ_T freq)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+EVE_HAL_EXPORT void EVE_Host_selectSysClk(EVE_HalContext *phost, EVE_81X_PLL_FREQ_T freq)
 {
 	if (EVE_SYSCLK_72M == freq)
 		EVE_Hal_hostCommandExt3(phost, (uint32_t)0x61 | (0x40 << 8) | (0x06 << 8));
@@ -308,25 +240,52 @@ void EVE_Host_selectSysClk(EVE_HalContext *phost, EVE_81X_PLL_FREQ_T freq)
 		EVE_Hal_hostCommandExt3(phost, 0x61);
 }
 
-void EVE_Host_powerOffComponents(EVE_HalContext *phost, uint8_t val)
+EVE_HAL_EXPORT void EVE_Host_powerOffComponents(EVE_HalContext *phost, uint8_t val)
 {
 	EVE_Hal_hostCommandExt3(phost, (uint32_t)0x49 | (val << 8));
 }
 
-void EVE_Host_padDriveStrength(EVE_HalContext *phost, EVE_81X_GPIO_DRIVE_STRENGTH_T strength, EVE_81X_GPIO_GROUP_T group)
+EVE_HAL_EXPORT void EVE_Host_padDriveStrength(EVE_HalContext *phost, EVE_81X_GPIO_DRIVE_STRENGTH_T strength, EVE_81X_GPIO_GROUP_T group)
 {
 	EVE_Hal_hostCommandExt3(phost, (uint32_t)0x70 | (group << 8) | (strength << 8));
 }
 
-void EVE_Host_resetActive(EVE_HalContext *phost)
+EVE_HAL_EXPORT void EVE_Host_resetActive(EVE_HalContext *phost)
 {
 	EVE_Hal_hostCommandExt3(phost, EVE_81X_RESET_ACTIVE);
 }
 
-void EVE_Host_resetRemoval(EVE_HalContext *phost)
+EVE_HAL_EXPORT void EVE_Host_resetRemoval(EVE_HalContext *phost)
 {
 	EVE_Hal_hostCommandExt3(phost, EVE_81X_RESET_REMOVAL);
 }
 #endif
+
+void EVE_Hal_displayMessage(EVE_HalContext *phost, char *str, uint16_t size)
+{
+	uint32_t round = ((size + 31U) & ~31U);
+	uint32_t addr = RAM_G + RAM_G_SIZE - round;
+	uint32_t dl = 0;
+
+	/* Abuse back of RAM_G to store error */
+	/* May invalidate user data... */
+	EVE_Hal_wrMem(phost, addr, str, size);
+
+	/* Generate bluescreen */
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR_COLOR_RGB(0x00, 0x20, 0x40));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR(1, 1, 1));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_HANDLE(15)); /* Scratch handle will reset anyway after reset */
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SOURCE(addr));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SIZE_H(0, 0));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SIZE(NEAREST, BORDER, BORDER, 256, (round >> 2)));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_LAYOUT_H(0, 0));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_LAYOUT(TEXT8X8, 32, (round >> 2)));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BEGIN(BITMAPS));
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), VERTEX2II(32, 32, 15, 0));
+	/* EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SOURCE(RAM_ERR_REPORT)); */
+	/* EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), VERTEX2II(32, 96, 15, 0)); */
+	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), DISPLAY());
+	EVE_Hal_wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
+}
 
 /* end of file */

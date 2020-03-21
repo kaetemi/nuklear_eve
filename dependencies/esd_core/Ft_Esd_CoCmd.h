@@ -52,6 +52,15 @@ void Gpu_CoCmd_Text(EVE_HalContext *phost, int16_t x, int16_t y, int16_t font, u
 void Gpu_CoCmd_Toggle(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char *s, ...);
 void Gpu_CoCmd_Button(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char *s, ...);
 
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+// Not exposed directly to logic editor
+ft_void_t Ft_Gpu_CoCmd_SetFont2(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t ptr, ft_uint32_t firstchar);
+
+ESD_FUNCTION(Ft_Gpu_CoCmd_SetBase, Type = ft_void_t, Category = _GroupHidden)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(base, Type = ft_int32_t, Default = 0)
+ft_void_t Ft_Gpu_CoCmd_SetBase(EVE_HalContext *phost, ft_uint32_t base);
+
 // ESD_FUNCTION(Ft_Gpu_CoCmd_SetBitmap, Type = ft_void_t, Category = _GroupHidden)
 // ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
 // ESD_PARAMETER(source, Type = ft_uint32_t, Default = 0) // MEMORY_ADDRESS
@@ -70,6 +79,13 @@ ft_void_t Ft_Gpu_CoCmd_SetScratch(EVE_HalContext *phost, ft_uint32_t handle);
 // ESD_PARAMETER(font, Type = ft_uint32_t, Default = 0, Min = 0, Max = 31) // BITMAP_HANDLE
 // ESD_PARAMETER(romslot, Type = ft_uint32_t, Default = 16, Min = 16, Max = 34)
 ft_void_t Ft_Gpu_CoCmd_RomFont(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t romslot);
+#else
+#define Ft_Gpu_CoCmd_SetFont2(phost, font, ptr, firstchar) eve_assert(false)
+#define Ft_Gpu_CoCmd_SetBase(phost, base) eve_assert(false)
+#define Ft_Gpu_CoCmd_SetBitmap(phost, source, fmt, w, h) eve_assert(false)
+#define Ft_Gpu_CoCmd_SetScratch(phost, handle) eve_assert(false)
+#define Ft_Gpu_CoCmd_RomFont(phost, font, romslot) eve_assert(false)
+#endif
 
 ESD_RENDER(Ft_Gpu_CoCmd_Text, Type = ft_void_t, Category = _GroupHidden)
 ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
@@ -177,11 +193,6 @@ ft_void_t Ft_Gpu_CoCmd_Translate(EVE_HalContext *phost, ft_int32_t tx, ft_int32_
 /* ESD_FUNCTION(Ft_Gpu_CoCmd_Stop, Type = ft_void_t, Include = "FT_Esd_CoPro_Cmds.h")
 ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST */
 ft_void_t Ft_Gpu_CoCmd_Stop(EVE_HalContext *phost);
-
-ESD_FUNCTION(Ft_Gpu_CoCmd_SetBase, Type = ft_void_t, Category = _GroupHidden)
-ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
-ESD_PARAMETER(base, Type = ft_int32_t, Default = 0)
-ft_void_t Ft_Gpu_CoCmd_SetBase(EVE_HalContext *phost, ft_uint32_t base);
 
 ESD_RENDER(Ft_Gpu_CoCmd_Slider, Type = ft_void_t, Category = _GroupHidden)
 ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = Ft_Esd_GetHost, Hidden, Internal, Static) // PHOST
@@ -397,9 +408,6 @@ ft_void_t Ft_Gpu_CoCmd_Snapshot2(EVE_HalContext *phost, ft_uint32_t fmt, ft_uint
 
 // Not exposed directly to logic editor
 ft_void_t Ft_Gpu_CoCmd_LoadImage(EVE_HalContext *phost, ft_uint32_t ptr, ft_uint32_t options);
-
-// Not exposed directly to logic editor
-ft_void_t Ft_Gpu_CoCmd_SetFont2(EVE_HalContext *phost, ft_uint32_t font, ft_uint32_t ptr, ft_uint32_t firstchar);
 
 // Not exposed directly to logic editor
 ft_void_t Ft_Gpu_CoCmd_SetRotate(EVE_HalContext *phost, ft_uint32_t r);

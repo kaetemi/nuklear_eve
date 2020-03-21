@@ -43,8 +43,9 @@ extern void Esd_SetFlashSize__ESD(int size);
 void Esd_AttachFlashFast()
 {
 	// Wait for flash status to move on from FLASH_STATUS_INIT
+	EVE_HalContext *phost = Ft_Esd_Host;
 	uint32_t flashStatus;
-	while (!(flashStatus = Ft_Gpu_Hal_Rd32(Ft_Esd_Host, REG_FLASH_STATUS)))
+	while (!(flashStatus = Ft_Gpu_Hal_Rd32(phost, REG_FLASH_STATUS)))
 	{
 #ifndef NDEBUG
 		eve_printf_debug("Waiting for REG_FLASH_STATUS (%u)\n", flashStatus);
@@ -58,11 +59,11 @@ void Esd_AttachFlashFast()
 
 		Esd_SetFlashStatus__ESD(flashStatus);
 
-		flashStatus = Ft_Gpu_CoCmd_FlashAttach(Ft_Esd_Host);
+		flashStatus = Ft_Gpu_CoCmd_FlashAttach(phost);
 		Esd_SetFlashStatus__ESD(flashStatus);
-		Esd_SetFlashSize__ESD(Ft_Gpu_Hal_Rd32(Ft_Esd_Host, REG_FLASH_SIZE));
+		Esd_SetFlashSize__ESD(Ft_Gpu_Hal_Rd32(phost, REG_FLASH_SIZE));
 
-		flashStatus = Ft_Gpu_CoCmd_FlashFast(Ft_Esd_Host, &error);
+		flashStatus = Ft_Gpu_CoCmd_FlashFast(phost, &error);
 		Esd_SetFlashStatus__ESD(flashStatus);
 
 #ifndef NDEBUG
@@ -102,30 +103,31 @@ void Esd_AttachFlashFast()
 
 void Esd_BeginLogo()
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
 	Ft_Esd_GpuAlloc_Reset(Ft_Esd_GAlloc);
 	Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GAlloc, RAM_G_SIZE, 0); // Block allocation
-	Ft_Gpu_CoCmd_StartFrame(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_DlStart(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, CLEAR_COLOR_RGB(255, 255, 255));
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, CLEAR(1, 0, 0));
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, DISPLAY());
-	Ft_Gpu_CoCmd_Swap(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_DlStart(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, CLEAR_COLOR_RGB(255, 255, 255));
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, CLEAR(1, 0, 0));
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, DISPLAY());
-	Ft_Gpu_CoCmd_Swap(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_DlStart(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, CLEAR_COLOR_RGB(255, 255, 255));
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, CLEAR(1, 0, 0));
-	Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, DISPLAY());
-	// Ft_Gpu_CoCmd_MemSet(Ft_Esd_Host, 0, 0xFF, RAM_G_SIZE);
-	Ft_Gpu_CoCmd_EndFrame(Ft_Esd_Host);
-	Ft_Gpu_Hal_WaitCmdFifoEmpty(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_StartFrame(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_Logo(Ft_Esd_Host);
-	Ft_Gpu_CoCmd_EndFrame(Ft_Esd_Host);
-	Ft_Gpu_Hal_WaitLogo_Finish(Ft_Esd_Host);
+	Ft_Gpu_CoCmd_StartFrame(phost);
+	Ft_Gpu_CoCmd_DlStart(phost);
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_COLOR_RGB(255, 255, 255));
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 0, 0));
+	Ft_Gpu_CoCmd_SendCmd(phost, DISPLAY());
+	Ft_Gpu_CoCmd_Swap(phost);
+	Ft_Gpu_CoCmd_DlStart(phost);
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_COLOR_RGB(255, 255, 255));
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 0, 0));
+	Ft_Gpu_CoCmd_SendCmd(phost, DISPLAY());
+	Ft_Gpu_CoCmd_Swap(phost);
+	Ft_Gpu_CoCmd_DlStart(phost);
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR_COLOR_RGB(255, 255, 255));
+	Ft_Gpu_CoCmd_SendCmd(phost, CLEAR(1, 0, 0));
+	Ft_Gpu_CoCmd_SendCmd(phost, DISPLAY());
+	// Ft_Gpu_CoCmd_MemSet(phost, 0, 0xFF, RAM_G_SIZE);
+	Ft_Gpu_CoCmd_EndFrame(phost);
+	Ft_Gpu_Hal_WaitCmdFifoEmpty(phost);
+	Ft_Gpu_CoCmd_StartFrame(phost);
+	Ft_Gpu_CoCmd_Logo(phost);
+	Ft_Gpu_CoCmd_EndFrame(phost);
+	Ft_Gpu_Hal_WaitLogo_Finish(phost);
 	EVE_sleep(3000);
 }
 

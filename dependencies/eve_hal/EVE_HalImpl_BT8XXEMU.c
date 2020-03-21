@@ -33,6 +33,32 @@
 #include "EVE_Platform.h"
 #if defined(BT8XXEMU_PLATFORM)
 
+#if defined(EVE_MULTI_TARGET)
+#define EVE_HalImpl_initialize EVE_HalImpl_BT8XXEMU_initialize
+#define EVE_HalImpl_release EVE_HalImpl_BT8XXEMU_release
+#define EVE_Hal_list EVE_Hal_BT8XXEMU_list
+#define EVE_Hal_info EVE_Hal_BT8XXEMU_info
+#define EVE_Hal_isDevice EVE_Hal_BT8XXEMU_isDevice
+#define EVE_HalImpl_defaults EVE_HalImpl_BT8XXEMU_defaults
+#define EVE_HalImpl_open EVE_HalImpl_BT8XXEMU_open
+#define EVE_HalImpl_close EVE_HalImpl_BT8XXEMU_close
+#define EVE_HalImpl_idle EVE_HalImpl_BT8XXEMU_idle
+#define EVE_Hal_flush EVE_Hal_BT8XXEMU_flush
+#define EVE_Hal_startTransfer EVE_Hal_BT8XXEMU_startTransfer
+#define EVE_Hal_endTransfer EVE_Hal_BT8XXEMU_endTransfer
+#define EVE_Hal_transfer8 EVE_Hal_BT8XXEMU_transfer8
+#define EVE_Hal_transfer16 EVE_Hal_BT8XXEMU_transfer16
+#define EVE_Hal_transfer32 EVE_Hal_BT8XXEMU_transfer32
+#define EVE_Hal_transferMem EVE_Hal_BT8XXEMU_transferMem
+#define EVE_Hal_transferProgmem EVE_Hal_BT8XXEMU_transferProgmem
+#define EVE_Hal_transferString EVE_Hal_BT8XXEMU_transferString
+#define EVE_Hal_hostCommand EVE_Hal_BT8XXEMU_hostCommand
+#define EVE_Hal_hostCommandExt3 EVE_Hal_BT8XXEMU_hostCommandExt3
+#define EVE_Hal_powerCycle EVE_Hal_BT8XXEMU_powerCycle
+#define EVE_UtilImpl_bootupDisplayGpio EVE_UtilImpl_BT8XXEMU_bootupDisplayGpio
+#define EVE_Hal_setSPI EVE_Hal_BT8XXEMU_setSPI
+#endif
+
 #include <bt8xxemu.h>
 
 /*********
@@ -48,35 +74,83 @@ EVE_HalPlatform g_HalPlatform;
 /* Initialize HAL platform */
 void EVE_HalImpl_initialize()
 {
-	g_HalPlatform.TotalDevices = 1;
+	// TODO: g_HalPlatform.TotalDevices = 1;
 }
 
 /* Release HAL platform */
 void EVE_HalImpl_release()
 {
 	/* no-op */
+	// sizeof(BT8XXEMU_EmulatorParameters) == 1640
+	// sizeof(BT8XXEMU_FlashParameters) == 1144
+}
+
+/* List the available devices */
+size_t EVE_Hal_list()
+{
+	return 1;
+}
+
+/* Get info of the specified device */
+void EVE_Hal_info(EVE_DeviceInfo *deviceInfo, size_t deviceIdx)
+{
+	memset(deviceInfo, 0, sizeof(EVE_DeviceInfo));
+	strcpy_s(deviceInfo->DisplayName, sizeof(deviceInfo->DisplayName), "BT8XX Emulator");
+	strcpy_s(deviceInfo->SerialNumber, sizeof(deviceInfo->SerialNumber), "BT8XXEMU");
+	deviceInfo->Opened = false;
+	deviceInfo->Host = EVE_HOST_BT8XXEMU;
+}
+
+/* Check whether the context is the specified device */
+bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
+{
+	if (!phost)
+		return false;
+	if (phost->Host != EVE_HOST_BT8XXEMU)
+		return false;
+	return true;
 }
 
 /* Get the default configuration parameters */
-void EVE_HalImpl_defaults(EVE_HalParameters *parameters)
+bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx)
 {
-	/* no-op */
+	BT8XXEMU_EmulatorParameters *params = (void *)parameters->EmulatorParameters;
+	if (sizeof(BT8XXEMU_EmulatorParameters) > sizeof(parameters->EmulatorParameters))
+		return false;
+
+	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, params, chipId);
+	params->Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
+	return true;
 }
 
 /* Opens a new HAL context using the specified parameters */
 bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters)
 {
 	bool ret;
+	BT8XXEMU_EmulatorParameters *params;
+
+	if (sizeof(BT8XXEMU_EmulatorParameters) > sizeof(parameters->EmulatorParameters))
+		return false;
+
+	params = (void *)parameters->EmulatorParameters;
+	if (!params->Mode)
+		return false;
+
+#ifdef EVE_MULTI_TARGET
+	if (params->Mode >= BT8XXEMU_EmulatorBT815)
+		phost->GpuDefs = &EVE_GpuDefs_BT81X;
+	else if (params->Mode >= BT8XXEMU_EmulatorFT810)
+		phost->GpuDefs = &EVE_GpuDefs_FT81X;
+	else
+		phost->GpuDefs = &EVE_GpuDefs_FT80X;
+#endif
+	phost->ChipId = parameters->ChipId;
 
 #if defined(EVE_EMULATOR_MAIN)
 	phost->Emulator = EVE_GpuEmu;
 	phost->EmulatorFlash = EVE_EmuFlash;
 #else
-	BT8XXEMU_EmulatorParameters params;
-	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
-
-	params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
-	BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
+	BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, params);
 #endif
 
 #if defined(ESD_SIMULATION)
@@ -357,6 +431,8 @@ void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 {
 #if !defined(EVE_EMULATOR_MAIN)
+	BT8XXEMU_EmulatorParameters *params;
+
 	// ESD would need to call MainReady__ESD again...
 	// TODO: Implement powercycle in BT8XXEMU
 	if (up)
@@ -368,23 +444,15 @@ void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 			phost->Emulator = NULL;
 		}
 
-		BT8XXEMU_EmulatorParameters params;
-
-		BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
-
-		params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
-		BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
+		params = (void *)phost->Parameters.EmulatorParameters;
+		BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, params);
 	}
 	else
 	{
 		if (!phost->Emulator)
 		{
-			BT8XXEMU_EmulatorParameters params;
-
-			BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, EVE_MODEL);
-
-			params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
-			BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, &params);
+			params = (void *)phost->Parameters.EmulatorParameters;
+			BT8XXEMU_run(BT8XXEMU_VERSION_API, &phost->Emulator, params);
 		}
 
 		BT8XXEMU_stop(phost->Emulator);

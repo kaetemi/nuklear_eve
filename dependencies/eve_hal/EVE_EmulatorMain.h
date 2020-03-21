@@ -39,7 +39,7 @@
 #include "bt8xxemu.h"
 
 // FIXME (2018 OCT 13): Currently the ESD simulation requires the main function override mechanism
-#if (1) // defined(ESD_SIMULATION)
+#if !defined(EVE_MULTI_TARGET) // defined(ESD_SIMULATION)
 #define EVE_EMULATOR_MAIN (1)
 
 // Override main function with wrapper for initializing the emulator

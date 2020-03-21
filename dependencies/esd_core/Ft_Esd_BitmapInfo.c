@@ -39,7 +39,9 @@ static ft_bool_t Ft_Esd_LoadFromFlash(ft_uint32_t *imageFormat, ft_bool_t deflat
 
 ft_uint32_t Ft_Esd_LoadBitmap(Ft_Esd_BitmapInfo *bitmapInfo)
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_uint32_t addr;
+	(void)phost;
 
 	if (!bitmapInfo)
 	{
@@ -157,7 +159,9 @@ ft_uint32_t Ft_Esd_LoadBitmap(Ft_Esd_BitmapInfo *bitmapInfo)
 
 ft_uint32_t Ft_Esd_LoadPalette(Ft_Esd_BitmapInfo *bitmapInfo)
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
 	ft_uint32_t addr;
+	(void)phost;
 
 	if (!bitmapInfo)
 	{
@@ -177,75 +181,74 @@ ft_uint32_t Ft_Esd_LoadPalette(Ft_Esd_BitmapInfo *bitmapInfo)
 	}
 #endif
 
-#if (EVE_MODEL >= EVE_FT810)
-
-	// Get palette address of specified handle
-	addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, bitmapInfo->PaletteGpuHandle);
-	if (addr == GA_INVALID)
+	if (EVE_CHIPID >= EVE_FT810)
 	{
-		ft_uint32_t size;
-
-		if (bitmapInfo->Flash ? (bitmapInfo->PaletteFlashAddress == FA_INVALID) : (!bitmapInfo->PaletteFile))
-		{
-#ifdef ESD_BITMAPINFO_DEBUG
-			// eve_printf_debug("Bitmap info palette file name is NULL, cannot auto-load\n");
-#endif
-			return GA_INVALID;
-		}
-
-		switch (bitmapInfo->Format)
-		{
-		case PALETTED8:
-			size = 256 * 4;
-			break;
-		case PALETTED4444:
-			size = 256 * 2;
-			break;
-		case PALETTED565:
-			size = 256 * 2;
-			break;
-		default:
-			eve_printf_debug("Unknown palette format, cannot load\n");
-			return GA_INVALID;
-		}
-
-		// Not loaded, load this bitmap palette
-		bitmapInfo->PaletteGpuHandle = Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GAlloc, size, bitmapInfo->Persistent ? 0 : GA_GC_FLAG);
+		// Get palette address of specified handle
 		addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, bitmapInfo->PaletteGpuHandle);
-		if (addr != GA_INVALID)
+		if (addr == GA_INVALID)
 		{
-#ifdef ESD_BITMAPINFO_DEBUG
-			eve_printf_debug("Allocated space for bitmap palette\n");
-#endif
-			// Allocation space OK
-			if (
-#ifdef EVE_FLASH_AVAILABLE
-			    bitmapInfo->Flash ? !Ft_Gpu_CoCmd_FlashRead(Ft_Esd_Host, addr, bitmapInfo->PaletteFlashAddress, size) :
-#endif
-			                      !Ft_Hal_LoadRawFile(Ft_Esd_Host, addr, bitmapInfo->PaletteFile))
+			ft_uint32_t size;
+
+			if (bitmapInfo->Flash ? (bitmapInfo->PaletteFlashAddress == FA_INVALID) : (!bitmapInfo->PaletteFile))
 			{
 #ifdef ESD_BITMAPINFO_DEBUG
-				eve_printf_debug(bitmapInfo->Flash ? "Failed to load palette from flash\n" : "Failed to load palette from file\n");
+				// eve_printf_debug("Bitmap info palette file name is NULL, cannot auto-load\n");
 #endif
-				// Failed to load from file
-				Ft_Esd_GpuAlloc_Free(Ft_Esd_GAlloc, bitmapInfo->PaletteGpuHandle);
-				addr = GA_INVALID;
+				return GA_INVALID;
+			}
+
+			switch (bitmapInfo->Format)
+			{
+			case PALETTED8:
+				size = 256 * 4;
+				break;
+			case PALETTED4444:
+				size = 256 * 2;
+				break;
+			case PALETTED565:
+				size = 256 * 2;
+				break;
+			default:
+				eve_printf_debug("Unknown palette format, cannot load\n");
+				return GA_INVALID;
+			}
+
+			// Not loaded, load this bitmap palette
+			bitmapInfo->PaletteGpuHandle = Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GAlloc, size, bitmapInfo->Persistent ? 0 : GA_GC_FLAG);
+			addr = Ft_Esd_GpuAlloc_Get(Ft_Esd_GAlloc, bitmapInfo->PaletteGpuHandle);
+			if (addr != GA_INVALID)
+			{
+#ifdef ESD_BITMAPINFO_DEBUG
+				eve_printf_debug("Allocated space for bitmap palette\n");
+#endif
+				// Allocation space OK
+				if (
+#ifdef EVE_FLASH_AVAILABLE
+				    bitmapInfo->Flash ? !Ft_Gpu_CoCmd_FlashRead(Ft_Esd_Host, addr, bitmapInfo->PaletteFlashAddress, size) :
+#endif
+				                      !Ft_Hal_LoadRawFile(Ft_Esd_Host, addr, bitmapInfo->PaletteFile))
+				{
+#ifdef ESD_BITMAPINFO_DEBUG
+					eve_printf_debug(bitmapInfo->Flash ? "Failed to load palette from flash\n" : "Failed to load palette from file\n");
+#endif
+					// Failed to load from file
+					Ft_Esd_GpuAlloc_Free(Ft_Esd_GAlloc, bitmapInfo->PaletteGpuHandle);
+					addr = GA_INVALID;
+				}
+			}
+			else
+			{
+#ifdef ESD_BITMAPINFO_DEBUG
+				eve_printf_debug("Unable to allocate space for bitmap palette\n");
+#endif
 			}
 		}
-		else
-		{
-#ifdef ESD_BITMAPINFO_DEBUG
-			eve_printf_debug("Unable to allocate space for bitmap palette\n");
-#endif
-		}
 	}
-
-#else // FT_80X_ENABLE
-
-	eve_printf_debug("Palette not yet implemented for FT80x\n");
-	addr = GA_INVALID;
-
-#endif
+	else // FT_80X_ENABLE
+	{
+		eve_printf_debug("Palette not yet implemented for FT80x\n");
+		addr = GA_INVALID;
+	}
 
 	if (addr != GA_INVALID)
 	{

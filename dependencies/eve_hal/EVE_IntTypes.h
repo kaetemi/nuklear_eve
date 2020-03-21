@@ -49,6 +49,7 @@
 /* Include C99 headers */
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #endif
 

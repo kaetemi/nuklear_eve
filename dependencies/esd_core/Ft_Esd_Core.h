@@ -66,7 +66,7 @@ typedef struct
 	ft_uint32_t CoFgColor; //< Current coprocessor foreground color
 	ft_uint32_t CoBgColor; //< Current coprocessor background color
 #endif
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 	ft_uint8_t CoScratchHandle; //< Current coprocessor scratch handle (reset 15)
 #endif
 
@@ -99,8 +99,8 @@ extern Esd_Context *Esd_CurrentContext; //< Pointer to current ESD context
 extern EVE_HalContext *Ft_Esd_Host; //< Pointer to current EVE hal context
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc; //< Pointer to current allocator
 
-#if (EVE_MODEL >= EVE_FT810)
-#define ESD_CO_SCRATCH_HANDLE (Esd_CurrentContext->CoScratchHandle)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+#define ESD_CO_SCRATCH_HANDLE (EVE_CHIPID >= EVE_FT810 ? Esd_CurrentContext->CoScratchHandle : 15)
 #else
 #define ESD_CO_SCRATCH_HANDLE (15)
 #endif

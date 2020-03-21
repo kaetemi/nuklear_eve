@@ -189,10 +189,6 @@ Revision History:
 #include "ft900.h"
 #include "ft900_delay.h"
 
-#if defined(EVE_MODULE_PANL)
-#include "panl.h"
-#endif
-
 #define eve_printf(fmt, ...) iprintf(fmt, ##__VA_ARGS__)
 #define eve_sprintf(str, fmt, ...) siprintf(str, fmt, ##__VA_ARGS__)
 

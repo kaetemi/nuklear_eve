@@ -6,13 +6,61 @@ The EVE Hardware Abstraction Layer included with EVE Screen Designer consists of
 * **EVE_Cmd**: Handles writing to the coprocessor command queue, also ensuring coprocessor fault reports are detected.
 * **EVE_Util**: Utilities for bootup, reset, and other common management.
 
+# Usage
+
+## Initialization
+
+```
+/* Initialize HAL */
+EVE_Hal_initialize();
+
+/* List the devices */
+size_t deviceCount = EVE_Hal_list();
+for (size_t i = 0; i < deviceCount; ++i)
+{
+	EVE_DeviceInfo info;
+	EVE_Hal_info(&info, i);
+}
+
+/* Fetch the default parameters for a device.
+Pass the device index, or -1 to select the first device */
+EVE_HalParameters params = { 0 };
+EVE_Hal_defaultsEx(&params, EVE_BT816, -1);
+
+/* Open the specified device */
+EVE_HalContext host = { 0 };
+EVE_HalContext *phost = host;
+if (!EVE_Hal_open(phost, &params))
+	return false;
+
+/* Get the default bootup parameters for the device.
+Change display resolution in the parameters if needed. */
+EVE_BootupParameters bootupParams;
+EVE_Util_bootupDefaults(phost, &bootupParams);
+
+/* Boot up the device */
+if (!EVE_Util_bootup(phost, &bootupParams))
+	return false;
+
+/* Show a blank screen */
+EVE_Util_clearScreen(phost);
+```
+
+## Cleanup
+
+```
+EVE_Util_shutdown(phost);
+EVE_Hal_close(phost);
+EVE_Hal_release();
+```
+
 #  EVE Hal
 
 ## Initialization functions
 
 * EVE_Hal_initialize
 * EVE_Hal_release
-* EVE_Hal_defaults
+* EVE_Hal_defaultsEx
 * EVE_Hal_open
 * EVE_Hal_close
 * EVE_Hal_idle
@@ -152,6 +200,7 @@ Wait for logo to finish displaying. Waits for both the read and write pointer to
 
 # EVE Util
 
-* EVE_Util_bootupConfig
+* EVE_Util_bootup
+* EVE_Util_shutdown
 * EVE_Util_clearScreen
 * EVE_Util_resetCoprocessor

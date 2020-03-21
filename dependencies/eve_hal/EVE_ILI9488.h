@@ -35,16 +35,16 @@
 
 /* Macros for ILI driver */
 
-#define ILI9488_CS_LOW (gpio_write(33, 0))
-#define ILI9488_CS_HIGH (gpio_write(33, 1))
-#define ILI9488_CLK_LOW (gpio_write(27, 0))
-#define ILI9488_CLK_HIGH (gpio_write(27, 1))
-#define ILI9488_MOSI_LOW (gpio_write(29, 0))
-#define ILI9488_MOSI_HIGH (gpio_write(29, 1))
-#define ILI9488_DCX_LOW (gpio_write(34, 0))
-#define ILI9488_DCX_HIGH (gpio_write(34, 1))
+#define ILI9488_CS_LOW (gpio_write(GPIO_ILI9488_CS1, 0))
+#define ILI9488_CS_HIGH (gpio_write(GPIO_ILI9488_CS1, 1))
+#define ILI9488_CLK_LOW (gpio_write(GPIO_SPIM_CLK, 0))
+#define ILI9488_CLK_HIGH (gpio_write(GPIO_SPIM_CLK, 1))
+#define ILI9488_MOSI_LOW (gpio_write(GPIO_SPIM_MOSI, 0))
+#define ILI9488_MOSI_HIGH (gpio_write(GPIO_SPIM_MOSI, 1))
+#define ILI9488_DCX_LOW (gpio_write(GPIO_ILI9488_DCX, 0))
+#define ILI9488_DCX_HIGH (gpio_write(GPIO_ILI9488_DCX, 1))
 
-#define ILI9488_MISO_LOWHIGH (gpio_read(30))
+#define ILI9488_MISO_LOWHIGH (gpio_read(GPIO_SPIM_MISO))
 
 //ILI9488 commands
 #define ILI9488_CMD_SOFTWARE_RESET (0x01) //next new command only after 5ms and sleep commands only after 120ms

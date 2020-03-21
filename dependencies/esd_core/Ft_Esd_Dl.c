@@ -10,6 +10,7 @@
 
 extern EVE_HalContext *Ft_Esd_Host;
 extern Ft_Esd_GpuAlloc *Ft_Esd_GAlloc;
+extern int16_t ESD_DispWidth, ESD_DispHeight;
 
 // GPU state for the current display list
 #if ESD_DL_OPTIMIZE
@@ -32,7 +33,7 @@ void Esd_ResetGpuState() // Begin of frame
 		.ColorRGB = 0xFFFFFF,
 		.ColorA = 0xFF,
 		.Handle = FT_ESD_BITMAPHANDLE_INVALID,
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 		.VertexFormat = 4,
 #endif
 	};
@@ -43,8 +44,8 @@ void Esd_ResetGpuState() // Begin of frame
 	// Reset scissor state to display size
 	Ft_Esd_ScissorRect.X = 0;
 	Ft_Esd_ScissorRect.Y = 0;
-	Ft_Esd_ScissorRect.Width = Ft_Esd_Host->Parameters.Display.Width;
-	Ft_Esd_ScissorRect.Height = Ft_Esd_Host->Parameters.Display.Height;
+	Ft_Esd_ScissorRect.Width = ESD_DispWidth;
+	Ft_Esd_ScissorRect.Height = ESD_DispHeight;
 }
 
 void Esd_ResetCoState()
@@ -54,7 +55,7 @@ void Esd_ResetCoState()
 	Esd_CurrentContext->CoBgColor = 0x002040;
 #endif
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 	Esd_CurrentContext->CoScratchHandle = 15;
 #endif
 }
@@ -73,6 +74,9 @@ Ft_Esd_Rect16 Ft_Esd_Dl_Scissor_Set(Ft_Esd_Rect16 rect)
 
 void Ft_Esd_Dl_Scissor_Adjust(Ft_Esd_Rect16 rect, Ft_Esd_Rect16 state)
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
+
 	ft_int16_t x1diff;
 	ft_int16_t y1diff;
 	ft_int16_t x2diff;
@@ -112,6 +116,8 @@ void Ft_Esd_Dl_Scissor_Adjust(Ft_Esd_Rect16 rect, Ft_Esd_Rect16 state)
 void Ft_Esd_Dl_Scissor_Reset(Ft_Esd_Rect16 state)
 {
 	// Ft_Gpu_CoCmd_StartFunc(Ft_Esd_Host, FT_CMD_SIZE * 2);
+	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
 	if (Ft_Esd_ScissorRect.X != state.X || Ft_Esd_ScissorRect.Y != state.Y)
 		Ft_Gpu_CoCmd_SendCmd(Ft_Esd_Host, SCISSOR_XY(state.X, state.Y));
 	if (Ft_Esd_ScissorRect.Width != state.Width || Ft_Esd_ScissorRect.Height != state.Height)
@@ -125,6 +131,9 @@ void Ft_Esd_Dl_Scissor_Reset(Ft_Esd_Rect16 state)
 // Deprecated
 void FT_Esd_Render_Rect_Grad(ft_int16_t x, ft_int16_t y, ft_int16_t w, ft_int16_t h, ft_argb32_t color1, ft_argb32_t color2, ft_int16_t direction)
 {
+	EVE_HalContext *phost = Ft_Esd_Host;
+	(void)phost;
+
 	// FIXME: Use rect for parameters
 	Ft_Esd_Rect16 rect = {
 		.X = x,

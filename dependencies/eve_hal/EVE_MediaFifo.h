@@ -35,60 +35,58 @@
 *
 */
 
-#ifndef EVE_HAL_IMPL__H
-#define EVE_HAL_IMPL__H
+#ifndef EVE_MEDIAFIFO__H
+#define EVE_MEDIAFIFO__H
 #include "EVE_Hal.h"
 
-extern EVE_HalPlatform g_HalPlatform;
+/**************************
+** COPROCESSOR MEDIAFIFO **
+***************************/
 
-/*********
-** INIT **
-*********/
+#ifdef EVE_SUPPORT_MEDIAFIFO
 
-/* Initialize HAL platform */
-void EVE_HalImpl_initialize();
+/* Set the media FIFO. 
+Returns false in case a coprocessor fault occurred */
+EVE_HAL_EXPORT bool EVE_MediaFifo_set(EVE_HalContext *phost, uint32_t address, uint32_t size);
 
-/* Release HAL platform */
-void EVE_HalImpl_release();
+/* Get the current read pointer. */
+EVE_HAL_EXPORT uint32_t EVE_MediaFifo_rp(EVE_HalContext *phost);
 
-/* Get the default configuration parameters */
-bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, EVE_CHIPID_T chipId, size_t deviceIdx);
+/* Get the current write pointer. */
+EVE_HAL_EXPORT uint32_t EVE_MediaFifo_wp(EVE_HalContext *phost);
 
-/* Opens a new HAL context using the specified parameters */
-bool EVE_HalImpl_open(EVE_HalContext *phost, EVE_HalParameters *parameters);
+/* Get the currently available space. */
+EVE_HAL_EXPORT uint32_t EVE_MediaFifo_space(EVE_HalContext *phost);
 
-/* Close a HAL context */
-void EVE_HalImpl_close(EVE_HalContext *phost);
+/* Write a buffer to the media FIFO. 
+Waits if there is not enough space in the media FIFO. 
+Returns false in case a coprocessor fault occurred.
+If the transfered pointer is set, the write may exit early 
+if the coprocessor function has finished, and the
+transfered amount will be set. */
+EVE_HAL_EXPORT bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size, uint32_t *transfered);
 
-/* Idle. Call regularly to update frequently changing internal state */
-void EVE_HalImpl_idle(EVE_HalContext *phost);
+/* Wait for the media FIFO to fully empty. 
+When checking if a file is fully processed, EVE_Cmd_waitFlush must be called.
+Returns false in case a coprocessor fault occurred */
+EVE_HAL_EXPORT bool EVE_MediaFifo_waitFlush(EVE_HalContext *phost);
 
-/*************
-** TRANSFER **
-*************/
+/* Wait for the media FIFO to have at least the requested amount of free space.
+Returns 0 in case a coprocessor fault occurred */
+EVE_HAL_EXPORT uint32_t EVE_MediaFifo_waitSpace(EVE_HalContext *phost, uint32_t size);
 
-void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr);
-void EVE_Hal_endTransfer(EVE_HalContext *phost);
+#else
 
-uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
-uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
-uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
+#define EVE_MediaFifo_set(phost, address, size) (false)
+#define EVE_MediaFifo_rp(phost) (0)
+#define EVE_MediaFifo_wp(phost) (0)
+#define EVE_MediaFifo_space(phost) (~0)
+#define EVE_MediaFifo_wrMem(phost, buffer, size) (false)
+#define EVE_MediaFifo_waitFlush(phost) (false)
+#define EVE_MediaFifo_waitSpace(phost, size) (false)
 
-void EVE_Hal_flush(EVE_HalContext *phost);
+#endif
 
-/*********
-** MISC **
-*********/
-
-void EVE_Mcu_initialize();
-void EVE_Mcu_release();
-
-void EVE_Millis_initialize();
-void EVE_Millis_release();
-uint32_t EVE_millis();
-
-bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost);
-
-#endif /* #ifndef EVE_HAL_IMPL__H */
+#endif /* #ifndef EVE_HAL__H */
 
 /* end of file */

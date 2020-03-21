@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 	flash = BT8XXEMU_Flash_create(BT8XXEMU_VERSION_API, &flashParams);
 #endif
 
-	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, (BT8XXEMU_EmulatorMode)EVE_MODEL);
+	BT8XXEMU_defaults(BT8XXEMU_VERSION_API, &params, (BT8XXEMU_EmulatorMode)EVE_SUPPORT_CHIPID);
 
 	params.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
 	params.Main = emulatorMain;

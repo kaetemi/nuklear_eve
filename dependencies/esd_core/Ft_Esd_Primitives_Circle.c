@@ -59,9 +59,8 @@ ft_void_t Esd_Render_Circle_Stroke(
 	// Use local rendering context, bypass ESD display list functions.
 	Esd_Dl_BEGIN(POINTS);
 	Esd_Dl_COLOR_ARGB(color);
-#if (EVE_MODEL >= EVE_FT810)
-	Esd_Dl_VERTEX_FORMAT(4);
-#endif
+	if (EVE_CHIPID >= EVE_FT810)
+		Esd_Dl_VERTEX_FORMAT(4);
 	Eve_CoCmd_SendCmd(phost, SAVE_CONTEXT());
 
 	// Outer reset
