@@ -69,9 +69,7 @@ struct nk_evefont
     union
     {
         EVE_Gpu_Fonts *font_block;
-#ifdef EVE_SUPPORT_UNICODE
-        EVE_Gpu_FontsExt *font_ext_block;
-#endif
+        //EVE_Gpu_FontsExt *font_ext_block;
     };
 };
 

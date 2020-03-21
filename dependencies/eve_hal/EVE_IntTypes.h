@@ -32,6 +32,9 @@
 #ifndef EVE_INT_TYPES__H
 #define EVE_INT_TYPES__H
 
+#include <stdlib.h>
+#include <stdarg.h>
+
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
 
 /* Compatibility for legacy MSVC versions */

@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project>
-	<configuration id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.debug.1866498756" name="Debug">
+	<configuration id="com.ftdichip.managedbuild.config.gnu.cross.ft900debug.base.1477298086" name="FT900_Debug">
 		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
 			<provider copy-of="extension" id="org.eclipse.cdt.ui.UserLanguageSettingsProvider"/>
 			<provider-reference id="org.eclipse.cdt.core.ReferencedProjectsLanguageSettingsProvider" ref="shared-provider"/>
 			<provider-reference id="org.eclipse.cdt.managedbuilder.core.MBSLanguageSettingsProvider" ref="shared-provider"/>
-			<provider class="com.ftdichip.ft90x.build.gcc.FT90xCrossGCCBuiltinSpecsDetector" console="false" env-hash="33085354097325080" id="com.ftdichip.managedbuild.gnu.cross.ft90x.CrossGCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT GCC Built-in Compiler Settings Cross FT9xx" parameter="${COMMAND} ${FLAGS} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
+			<provider class="com.ftdichip.ft90x.build.gcc.FT90xCrossGCCBuiltinSpecsDetector" console="false" env-hash="-1493219657323276021" id="com.ftdichip.managedbuild.gnu.cross.ft90x.CrossGCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT GCC Built-in Compiler Settings Cross FT9xx" parameter="${COMMAND} ${FLAGS} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
 				<language-scope id="org.eclipse.cdt.core.gcc"/>
 				<language-scope id="org.eclipse.cdt.core.g++"/>
 			</provider>
 		</extension>
 	</configuration>
-	<configuration id="com.ftdichip.managedbuild.config.gnu.cross.ft90x.exe.release.2037371586" name="Release">
+	<configuration id="com.ftdichip.managedbuild.config.gnu.cross.ft900release.base.587375766" name="FT900_Release">
 		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
 			<provider copy-of="extension" id="org.eclipse.cdt.ui.UserLanguageSettingsProvider"/>
 			<provider-reference id="org.eclipse.cdt.core.ReferencedProjectsLanguageSettingsProvider" ref="shared-provider"/>
 			<provider-reference id="org.eclipse.cdt.managedbuilder.core.MBSLanguageSettingsProvider" ref="shared-provider"/>
-			<provider class="com.ftdichip.ft90x.build.gcc.FT90xCrossGCCBuiltinSpecsDetector" console="false" env-hash="33085354097325080" id="com.ftdichip.managedbuild.gnu.cross.ft90x.CrossGCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT GCC Built-in Compiler Settings Cross FT9xx" parameter="${COMMAND} ${FLAGS} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
+			<provider class="com.ftdichip.ft90x.build.gcc.FT90xCrossGCCBuiltinSpecsDetector" console="false" env-hash="-1511237606265199704" id="com.ftdichip.managedbuild.gnu.cross.ft90x.CrossGCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT GCC Built-in Compiler Settings Cross FT9xx" parameter="${COMMAND} ${FLAGS} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
+				<language-scope id="org.eclipse.cdt.core.gcc"/>
+				<language-scope id="org.eclipse.cdt.core.g++"/>
+			</provider>
+		</extension>
+	</configuration>
+	<configuration id="com.ftdichip.managedbuild.config.gnu.cross.ft930debug.base.95403192" name="FT930_Debug">
+		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
+			<provider copy-of="extension" id="org.eclipse.cdt.ui.UserLanguageSettingsProvider"/>
+			<provider-reference id="org.eclipse.cdt.core.ReferencedProjectsLanguageSettingsProvider" ref="shared-provider"/>
+			<provider-reference id="org.eclipse.cdt.managedbuilder.core.MBSLanguageSettingsProvider" ref="shared-provider"/>
+			<provider class="com.ftdichip.ft90x.build.gcc.FT90xCrossGCCBuiltinSpecsDetector" console="false" env-hash="-1511237606265199704" id="com.ftdichip.managedbuild.gnu.cross.ft90x.CrossGCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT GCC Built-in Compiler Settings Cross FT9xx" parameter="${COMMAND} ${FLAGS} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
+				<language-scope id="org.eclipse.cdt.core.gcc"/>
+				<language-scope id="org.eclipse.cdt.core.g++"/>
+			</provider>
+		</extension>
+	</configuration>
+	<configuration id="com.ftdichip.managedbuild.config.gnu.cross.ft930release.base.804322127" name="FT930_Release">
+		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
+			<provider copy-of="extension" id="org.eclipse.cdt.ui.UserLanguageSettingsProvider"/>
+			<provider-reference id="org.eclipse.cdt.core.ReferencedProjectsLanguageSettingsProvider" ref="shared-provider"/>
+			<provider-reference id="org.eclipse.cdt.managedbuilder.core.MBSLanguageSettingsProvider" ref="shared-provider"/>
+			<provider class="com.ftdichip.ft90x.build.gcc.FT90xCrossGCCBuiltinSpecsDetector" console="false" env-hash="-1511237606265199704" id="com.ftdichip.managedbuild.gnu.cross.ft90x.CrossGCCBuiltinSpecsDetector" keep-relative-paths="false" name="CDT GCC Built-in Compiler Settings Cross FT9xx" parameter="${COMMAND} ${FLAGS} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
 				<language-scope id="org.eclipse.cdt.core.gcc"/>
 				<language-scope id="org.eclipse.cdt.core.g++"/>
 			</provider>
