@@ -123,6 +123,7 @@ void Ft_Esd_Render_Bitmap(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCell bitmapCe
 	ft_uint16_t cell;
 	EVE_HalContext *phost;
 	ft_uint8_t handle;
+	(void)phost;
 
 	if (!bitmapCell.Info)
 		return;
@@ -175,6 +176,7 @@ ft_void_t Ft_Esd_Render_BitmapScaled(ft_int16_t x, ft_int16_t y, Ft_Esd_BitmapCe
 	ft_uint16_t cell;
 	EVE_HalContext *phost;
 	ft_uint8_t handle;
+	(void)phost;
 
 	if (!bitmapCell.Info)
 		return;
@@ -267,7 +269,6 @@ ft_void_t Ft_Esd_Render_BitmapRotate_Scaled(Ft_Esd_BitmapCell bitmapCell, ft_arg
 	Ft_Esd_BitmapInfo *bitmapInfo;
 	ft_uint16_t cell;
 	ft_uint8_t handle;
-	ft_int32_t translate_pixels;
 	(void)phost;
 
 	if (!bitmapCell.Info)
@@ -277,12 +278,8 @@ ft_void_t Ft_Esd_Render_BitmapRotate_Scaled(Ft_Esd_BitmapCell bitmapCell, ft_arg
 	cell = bitmapCell.Cell;
 	handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
 
-	translate_pixels = 2 * bitmapInfo->Width * 65536;
-
 	if (FT_ESD_BITMAPHANDLE_VALID(handle))
 	{
-		ft_int16_t radius = bitmapInfo->Width / 2;
-
 		ft_int16_t x_center = bitmapInfo->Width / 2;
 		ft_int16_t y_center = bitmapInfo->Height / 2;
 		ft_int16_t x = globalRect.X; // + x_center;
@@ -318,7 +315,6 @@ ft_void_t Ft_Esd_Render_BitmapRotate(Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c
 	Ft_Esd_BitmapInfo *bitmapInfo;
 	ft_uint16_t cell;
 	ft_uint8_t handle;
-	ft_int32_t translate_pixels;
 	(void)phost;
 
 	if (!bitmapCell.Info)
@@ -328,16 +324,14 @@ ft_void_t Ft_Esd_Render_BitmapRotate(Ft_Esd_BitmapCell bitmapCell, ft_argb32_t c
 	cell = bitmapCell.Cell;
 	handle = Ft_Esd_Dl_Bitmap_Setup(bitmapInfo);
 
-	translate_pixels = 2 * bitmapInfo->Width * 65536;
-
 	if (FT_ESD_BITMAPHANDLE_VALID(handle))
 	{
-		ft_int16_t radius = bitmapInfo->Width / 2;
-
 		ft_int16_t x_center = bitmapInfo->Width / 2;
 		ft_int16_t y_center = bitmapInfo->Height / 2;
 		ft_int16_t x = globalRect.X + x_center;
 		ft_int16_t y = globalRect.Y + y_center;
+
+		ft_int16_t radius = bitmapInfo->Width / 2;
 
 		//eve_printf_debug("x=%d,y=%d,x_center_x=%d,certer_y = %d, radius = %d\n",x,y,x_center,y_center,radius);
 

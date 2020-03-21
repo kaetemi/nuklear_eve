@@ -73,6 +73,7 @@ int main(void)
         if (nk_begin(ctx, "Nuklear EVE", nk_rect(50, 50, 300, 400),
                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
         {
+        	/*
             enum
             {
                 EASY,
@@ -80,6 +81,7 @@ int main(void)
             };
             static int op = EASY;
             static int property = 20;
+            */
 
             nk_layout_row_static(ctx, 30, 200, 1);
             nk_checkbox_label(ctx, "Show Calculator", &show_calculator);

@@ -142,11 +142,11 @@ ft_void_t Ft_Gpu_CoCmd_Text(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y, f
 	EVE_Cmd_wr16(phost, y);
 	EVE_Cmd_wr16(phost, font);
 	EVE_Cmd_wr16(phost, options);
-	uint16_t transfered = EVE_Cmd_wrString(phost, s, EVE_CMD_STRING_MAX);
+	/* uint16_t transfered = */ EVE_Cmd_wrString(phost, s, EVE_CMD_STRING_MAX);
 	EVE_Cmd_endFunc(phost);
-	// eve_printf_debug(" -- strlen: %i, transfered: %i\n", (int)strlen(s), (int)transfered);
+	/* eve_printf_debug(" -- strlen: %i, transfered: %i\n", (int)strlen(s), (int)transfered); */
 
-	// eve_cmd_assert_flush(phost);
+	/* eve_cmd_assert_flush(phost); */
 
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;
@@ -173,12 +173,12 @@ ft_void_t Ft_Gpu_CoCmd_Text_S(EVE_HalContext *phost, ft_int16_t x, ft_int16_t y,
 	// eve_printf_debug("wp: %i\n", EVE_Cmd_wp(phost));
 	EVE_Cmd_wr16(phost, options);
 	// eve_printf_debug("wp: %i\n", EVE_Cmd_wp(phost));
-	uint16_t transfered = EVE_Cmd_wrString(phost, s, length);
+	/* uint16_t transfered = */ EVE_Cmd_wrString(phost, s, length);
 	EVE_Cmd_endFunc(phost);
-	// eve_printf_debug("wp: %i\n", EVE_Cmd_wp(phost));
-	// eve_printf_debug(" -- strlen: %i, length: %i, transfered: %i\n", (int)strlen(s), (int)length, (int)transfered);
+	/* eve_printf_debug("wp: %i\n", EVE_Cmd_wp(phost)); */
+	/* eve_printf_debug(" -- strlen: %i, length: %i, transfered: %i\n", (int)strlen(s), (int)length, (int)transfered); */
 
-	// eve_cmd_assert_flush(phost);
+	/* eve_cmd_assert_flush(phost); */
 
 #if ESD_DL_OPTIMIZE
 	Ft_Esd_Primitive = 0;

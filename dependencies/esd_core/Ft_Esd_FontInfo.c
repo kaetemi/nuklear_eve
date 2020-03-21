@@ -63,6 +63,7 @@ uint32_t Esd_LoadFont(Esd_FontInfo *fontInfo)
 		{
 			// Rewrite glyph address in the font block
 			uint32_t format;
+			(void)format;
 			switch (fontInfo->Type)
 			{
 			case ESD_FONT_LEGACY:
