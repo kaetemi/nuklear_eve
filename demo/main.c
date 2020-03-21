@@ -12,6 +12,7 @@ This C source file demonstrates the Nuklear EVE implementation.
 #include <string.h>
 #include <time.h>
 #include <limits.h>
+#include <math.h>
 
 #ifndef NK_ASSERT
 #include <assert.h>

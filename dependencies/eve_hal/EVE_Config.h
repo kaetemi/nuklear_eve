@@ -615,11 +615,11 @@ These may only be set by one of the platform target definitions, and should not 
 
 #define BT8XXEMU_PLATFORM
 
-#elif defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
+#elif defined(__FT900__) || defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
 
 #define FT900_PLATFORM
 
-#elif defined(MM930EV_LITE)
+#elif defined(__FT930__) || defined(MM930EV_LITE)
 
 #define FT93X_PLATFORM
 
