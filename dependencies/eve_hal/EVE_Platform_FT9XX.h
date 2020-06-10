@@ -63,11 +63,12 @@ Revision History:
 
 #define GPIO_ILI9488_CS1 (33)
 #define GPIO_ILI9488_DCX (34)
-#define GPIO_PWD (43)
+
+#define GPIO_FT800_INT (42)
+#define GPIO_FT800_PWD (43)
 
 #define pad_ili9488_dcx (pad_func_0)
 #define pad_ili9488_cs1 (pad_func_0)
-#define pad_pwd (pad_func_0)
 
 #define GPIO_SD_CLK (19)
 #define GPIO_SD_CMD (20)
@@ -97,11 +98,12 @@ Revision History:
 
 #define GPIO_ILI9488_CS1 (31)
 #define GPIO_ILI9488_DCX (8)
-#define GPIO_PWD (15)
+
+#define GPIO_FT800_INT (14)
+#define GPIO_FT800_PWD (15)
 
 #define pad_ili9488_dcx (pad_func_0)
 #define pad_ili9488_cs1 (pad_func_0)
-#define pad_pwd (pad_func_0)
 
 #define GPIO_SD_CLK (0)
 #define GPIO_SD_CMD (1)
@@ -121,44 +123,44 @@ Revision History:
 #define FT900_TIMER_OVERFLOW_VALUE (1000)
 
 /* Hardware or Module specific macros for gpio line numbers  */
-#if defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
+#if defined(CLEO35)
 
-#define FT800_PD_N (GPIO_PWD)
-
-#elif defined(MM930MINI) || defined(MM930LITE) || defined(MM932LC)
-
-#define FT800_PD_N (GPIO_PWD)
-
-#elif defined(CLEO35)
-
-#define FT800_PD_N (66) //for cleo35 module
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_PWD (66) //for cleo35 module
 
 #elif defined(CLEO50)
 
-#define FT800_PD_N (0) //for cleo50 module
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_PWD (0) //for cleo50 module
 
 #elif defined(FT900DEMOBOARD)
 
-#define FT800_PD_N (32)
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_PWD (32)
 
 #elif defined(PANL35)
 
-#define FT800_PD_N (1)
-#define FT800_INT (0)
+#undef GPIO_FT800_INT
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_INT (0)
+#define GPIO_FT800_PWD (1)
 
 #elif defined(PANL70)
 
-#define FT800_PD_N (1)
-#define FT800_INT (0)
-#define GOODIXGPIO (33)
-#define pad_pwd (pad_gpio15)
+#undef GPIO_FT800_INT
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_INT (0)
+#define GPIO_FT800_PWD (1)
+#define GPIO_GOODIX (33)
 
 #elif defined(PANL70PLUS)
 
-#define FT800_PD_N (1)
-#define FT800_INT (0)
-#define GOODIXGPIO (33)
-#define pad_goodixgpio (pad_gpio33)
+#undef GPIO_FT800_INT
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_INT (0)
+#define GPIO_FT800_PWD (1)
+#define GPIO_GOODIX (33)
+#define pad_gpio_goodix (pad_func_0)
 
 #endif
 

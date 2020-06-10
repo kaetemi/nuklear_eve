@@ -29,27 +29,46 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef EVE_EMULATOR_MAIN__H
-#define EVE_EMULATOR_MAIN__H
+#include "EVE_Platform.h"
 
-#include "EVE_Config.h"
-#if defined(BT8XXEMU_PLATFORM)
+EVE_HAL_EXPORT bool EVE_CoCmd_bitmapTransform(EVE_HalContext *phost, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t tx0, int32_t ty0, int32_t tx1, int32_t ty1, int32_t tx2, int32_t ty2, uint16_t *result)
+{
+	uint16_t resAddr;
 
-#include "EVE_Platform_WIN32.h"
-#include "bt8xxemu.h"
+#if EVE_CMD_HOOKS
+	if (phost->CoCmdHook && phost->CoCmdHook(phost, CMD_BITMAP_TRANSFORM, 0))
+		return false;
+#endif
 
-// FIXME (2018 OCT 13): Currently the ESD simulation requires the main function override mechanism
-#if 0 // !defined(EVE_MULTI_TARGET) // defined(ESD_SIMULATION)
-#define EVE_EMULATOR_MAIN (1)
+	EVE_Cmd_startFunc(phost);
+	EVE_Cmd_wr32(phost, CMD_BITMAP_TRANSFORM);
+	EVE_Cmd_wr32(phost, x0);
+	EVE_Cmd_wr32(phost, y0);
+	EVE_Cmd_wr32(phost, x1);
+	EVE_Cmd_wr32(phost, y1);
+	EVE_Cmd_wr32(phost, x2);
+	EVE_Cmd_wr32(phost, y2);
+	EVE_Cmd_wr32(phost, tx0);
+	EVE_Cmd_wr32(phost, ty0);
+	EVE_Cmd_wr32(phost, tx1);
+	EVE_Cmd_wr32(phost, ty1);
+	EVE_Cmd_wr32(phost, tx2);
+	EVE_Cmd_wr32(phost, ty2);
+	resAddr = EVE_Cmd_moveWp(phost, 4);
+	EVE_Cmd_endFunc(phost);
 
-// Override main function with wrapper for initializing the emulator
-#define main EVE_emuMain
+#if EVE_DL_OPTIMIZE
+	EVE_DL_STATE.BitmapTransform = true;
+#endif
 
-extern BT8XXEMU_Emulator *EVE_GpuEmu;
-extern BT8XXEMU_Flash *EVE_EmuFlash;
-
-#endif /* #if defined(ESD_SIMULATION) */
-#endif /* #if defined(BT8XXEMU_PLATFORM) || defined(ESD_SIMULATION) */
-#endif /* #ifndef EVE_EMULATOR_MAIN__H */
+	/* Read result */
+	if (result)
+	{
+		if (!EVE_Cmd_waitFlush(phost))
+			return false;
+		*result = EVE_Hal_rd16(phost, RAM_CMD + resAddr);
+	}
+	return true;
+}
 
 /* end of file */

@@ -40,9 +40,8 @@
 
 #include "EVE_Platform.h"
 
-#include <stdlib.h>
-
-#define EVE_MODEL EVE_SUPPORT_CHIPID
+#include <stdio.h>
+#include <stdbool.h>
 
 #define FT_FALSE false
 #define FT_TRUE true
@@ -55,8 +54,10 @@ typedef unsigned char ft_uchar8_t;
 #define ft_uint8_t uint8_t
 #define ft_int16_t int16_t
 #define ft_uint16_t uint16_t
+
 #define ft_uint32_t uint32_t
 #define ft_int32_t int32_t
+
 #define ft_void_t void
 #define ft_int64_t int64_t
 #define ft_uint64_t uint64_t
@@ -94,7 +95,7 @@ typedef unsigned char ft_uchar8_t;
 
 typedef struct
 {
-	size_t TotalChannelNum; //< Total number channels for libmpsse
+	ft_uint32_t TotalChannelNum; //< Total number channels for libmpsse
 } Ft_Gpu_HalInit_t;
 
 #define Ft_Gpu_Hal_Context_t EVE_HalContext
@@ -102,14 +103,14 @@ typedef struct
 /*******************************************************************************/
 /*******************************************************************************/
 /* The basic APIs Level 1 */
-static inline bool Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
+static inline eve_deprecated("Use `EVE_Hal_initialize`") bool Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 {
 	EVE_HalPlatform *platform = EVE_Hal_initialize();
 	halinit->TotalChannelNum = EVE_Hal_list();
 	return !!platform;
 }
 
-static inline bool Ft_Gpu_Hal_Open(EVE_HalContext *phost)
+static inline eve_deprecated("Use `EVE_Hal_open`") bool Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 {
 	EVE_HalParameters parameters;
 	EVE_Hal_defaults(&parameters);
@@ -135,9 +136,9 @@ static inline bool Ft_Gpu_Hal_Open(EVE_HalContext *phost)
 #define Ft_Gpu_Hal_Wr32 EVE_Hal_wr32
 
 #define Ft_Gpu_Hal_WrMem EVE_Hal_wrMem
-#define Ft_Gpu_Hal_WrMem_ProgMem EVE_Hal_wrProgmem
+#define Ft_Gpu_Hal_WrMem_ProgMem EVE_Hal_wrProgMem
 
-static inline ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
+static inline eve_deprecated("Use `EVE_Hal_rdMem` (note: buffer and addr are swapped)") ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
 {
 	EVE_Hal_rdMem(phost, buffer, addr, length);
 }
@@ -149,7 +150,7 @@ static inline ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr
 
 /// Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FT_FALSE in case a coprocessor fault occurred
 #define Ft_Gpu_Hal_WrCmdBuf EVE_Cmd_wrMem
-#define Ft_Gpu_Hal_WrCmdBuf_ProgMem EVE_Cmd_wrProgmem
+#define Ft_Gpu_Hal_WrCmdBuf_ProgMem EVE_Cmd_wrProgMem
 
 /// Wait for the command buffer to fully empty. Returns FT_FALSE in case a coprocessor fault occurred
 #define Ft_Gpu_Hal_WaitCmdFifoEmpty EVE_Cmd_waitFlush
@@ -169,9 +170,20 @@ static inline ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t 
 /*******************************************************************************/
 /*******************************************************************************/
 
+#ifdef _MSC_VER
+#pragma deprecated(Ft_Gpu_CoCmd_SendCmd) /* Use EVE_Cmd_wr32 */
+#pragma deprecated(Eve_CoCmd_SendCmd) /* Use EVE_Cmd_wr32 */
+#pragma deprecated(Ft_Gpu_Copro_SendCmd) /* Use EVE_Cmd_wr32 */
+#pragma deprecated(Eve_CoCmd_StartFrame) /* Remove */
+#pragma deprecated(Eve_CoCmd_EndFrame) /* Remove */
+#pragma deprecated(Ft_Gpu_CoCmd_StartFrame) /* Remove */
+#pragma deprecated(Ft_Gpu_CoCmd_EndFrame) /* Remove */
+#endif
+
 #define Ft_Gpu_CoCmd_SendCmd EVE_Cmd_wr32
-inline static ft_void_t Ft_Gpu_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
+inline static ft_void_t eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`, and `EVE_Cmd_endFunc`") Ft_Gpu_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32_t *cmd, ft_size_t nb)
 {
+	/* This is not valid behaviour on big endian CPU */
 	EVE_Cmd_wrMem(phost, (uint8_t *)cmd, (uint32_t)nb * 4);
 }
 #define Ft_Gpu_CoCmd_SendStr(phost, str) EVE_Cmd_wrString(phost, str, EVE_CMD_STRING_MAX)
@@ -212,7 +224,7 @@ inline static ft_void_t Ft_Gpu_CoCmd_SendCmdArr(EVE_HalContext *phost, ft_uint32
 #define FT_GPU_POWERDOWN_M EVE_POWERDOWN_M
 #define FT_GPU_POWER_MODE_T EVE_POWER_MODE_T
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 #define FT_GPU_SYSCLK_DEFAULT EVE_SYSCLK_DEFAULT
 #define FT_GPU_SYSCLK_72M EVE_SYSCLK_72M
 #define FT_GPU_SYSCLK_60M EVE_SYSCLK_60M
@@ -307,7 +319,7 @@ inline static ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, cons
 #define Ft_Gpu_PowerModeSwitch EVE_Host_powerModeSwitch
 #define Ft_Gpu_CoreReset EVE_Host_coreReset
 
-#if (EVE_MODEL >= EVE_FT810)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 #define Ft_Gpu_81X_SelectSysCLK EVE_Host_selectSysClk
 #define Ft_GPU_81X_PowerOffComponents EVE_Host_powerOffComponents
 #define Ft_GPU_81X_PadDriveStrength EVE_Host_padDriveStrength

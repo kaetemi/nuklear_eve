@@ -96,7 +96,7 @@ EVE_HAL_EXPORT bool EVE_Hal_isDevice(EVE_HalContext *phost, size_t deviceIdx)
  */
 bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, size_t deviceIdx)
 {
-	parameters->PowerDownPin = GPIO_PWD;
+	parameters->PowerDownPin = GPIO_FT800_PWD;
 	parameters->SpiCsPin = deviceIdx < GPIO_SS_NB ? deviceIdx : 0; // SS0-3
 	return true;
 }
@@ -180,7 +180,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, const EVE_HalParameters *parameters
 	phost->GpuDefs = &EVE_GpuDefs_FT80X;
 #endif
 
-	gpio_function(phost->PowerDownPin, pad_pwd);
+	gpio_function(phost->PowerDownPin, pad_func_0);
 	gpio_dir(phost->PowerDownPin, pad_dir_output);
 	gpio_write(phost->PowerDownPin, 0);
 
@@ -423,14 +423,14 @@ void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *
 }
 
 /**
- * @brief Transfer a block data in Progmem to Coprocessor
+ * @brief Transfer a block data from program memory
  * 
  * @param phost Pointer to Hal context
  * @param result Buffer to get data transfered, NULL when write
  * @param buffer Buffer where data is transfered, NULL when read
  * @param size Size of buffer
  */
-void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
+void EVE_Hal_transferProgMem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
 	if (!size)
 		return;
@@ -692,13 +692,13 @@ void EVE_Mcu_initialize()
 	gpio_dir(GPIO_SPIM_SS0, pad_dir_output);
 	gpio_write(GPIO_SPIM_SS0, 1);
 
-	gpio_function(GPIO_PWD, pad_pwd);
-	gpio_dir(GPIO_PWD, pad_dir_output);
-	gpio_write(GPIO_PWD, 1);
+	gpio_function(GPIO_FT800_PWD, pad_func_0); /* FIXME: This needs to be done at open, not init */
+	gpio_dir(GPIO_FT800_PWD, pad_dir_output);
+	gpio_write(GPIO_FT800_PWD, 1);
 
 	gpio_write(GPIO_ILI9488_DCX, 1);
 	gpio_write(GPIO_SPIM_SS0, 1);
-	gpio_write(GPIO_PWD, 1);
+	gpio_write(GPIO_FT800_PWD, 1);
 	gpio_write(GPIO_ILI9488_CS1, 1);
 #endif
 

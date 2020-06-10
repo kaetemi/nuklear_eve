@@ -33,6 +33,8 @@
 #include "EVE_Platform.h"
 #include "EVE_HalImpl.h"
 
+EVE_HAL_EXPORT void EVE_CoDlImpl_resetCoState(EVE_HalContext *phost);
+
 static eve_progmem_const uint8_t c_DlCodeBootup[12] = {
 	0, 0, 0, 2, // GPU instruction CLEAR_COLOR_RGB
 	7, 0, 0, 38, // GPU instruction CLEAR
@@ -212,7 +214,7 @@ static eve_progmem_const uint8_t c_TouchDataU8[TOUCH_DATA_LEN] = {
 static inline void uploadTouchFirmware(EVE_HalContext *phost)
 {
 	/* bug fix pen up section */
-	eve_assert_do(EVE_Cmd_wrProgmem(phost, c_TouchDataU8, TOUCH_DATA_LEN));
+	eve_assert_do(EVE_Cmd_wrProgMem(phost, c_TouchDataU8, TOUCH_DATA_LEN));
 	eve_assert_do(EVE_Cmd_waitFlush(phost));
 }
 #else
@@ -229,7 +231,7 @@ static inline void uploadTouchFirmware(EVE_HalContext *phost)
  */
 EVE_HAL_EXPORT void EVE_Util_clearScreen(EVE_HalContext *phost)
 {
-	EVE_Hal_wrProgmem(phost, RAM_DL, c_DlCodeBootup, sizeof(c_DlCodeBootup));
+	EVE_Hal_wrProgMem(phost, RAM_DL, c_DlCodeBootup, sizeof(c_DlCodeBootup));
 	EVE_Hal_wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
 }
 
@@ -595,6 +597,8 @@ EVE_HAL_EXPORT void EVE_Util_configDefaults(EVE_HalContext *phost, EVE_ConfigPar
 
 EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters *bootup)
 {
+	/* IMPORTANT: Do not use EVE_CoCmd functions here, as they can be overridden by hooks */
+
 	const uint32_t expectedChipId = EVE_CHIPID;
 	uint8_t engineStatus;
 	uint32_t chipId;
@@ -791,6 +795,8 @@ EVE_HAL_EXPORT bool EVE_Util_bootup(EVE_HalContext *phost, EVE_BootupParameters 
 
 EVE_HAL_EXPORT bool EVE_Util_config(EVE_HalContext *phost, EVE_ConfigParameters *config)
 {
+	/* IMPORTANT: Do not use EVE_CoCmd functions here, as they can be overridden by hooks */
+
 	const bool swapXY = EVE_CHIPID >= EVE_FT810 ? EVE_Hal_rd8(phost, REG_ROTATE) & 0x2 : false;
 	uint16_t wp, rp;
 
@@ -904,6 +910,8 @@ EVE_HAL_EXPORT bool EVE_Util_config(EVE_HalContext *phost, EVE_ConfigParameters 
 			EVE_Cmd_wr32(phost, CMD_FLASHATTACH);
 		}
 #endif
+
+		EVE_CoDlImpl_resetCoState(phost);
 	}
 
 #ifdef EVE_SUPPORT_HSF
@@ -979,7 +987,7 @@ EVE_HAL_EXPORT void EVE_Util_shutdown(EVE_HalContext *phost)
 Patch: OTP needs to be reactivated when the coprocessor is reset during CMD_LOGO
 Applicable to: FT81X-series
 */
-#define EVE_SUBPATCH_PTR 0x7ffeU
+#define EVE_SUBPATCH_PTR 0x7ffeU /* NOTE: This address is only valid for FT81X */
 static inline bool EVE_Util_needsSubPatch(EVE_HalContext *phost)
 {
 	return (EVE_CHIPID >= EVE_FT810) && (EVE_CHIPID <= EVE_FT813);
@@ -995,6 +1003,28 @@ static inline bool EVE_Util_needsVideoPatch(EVE_HalContext *phost)
 	return (EVE_CHIPID >= EVE_BT815) && (EVE_CHIPID <= EVE_BT816);
 }
 
+#ifdef _DEBUG
+static bool s_DebugBackupDone = false;
+static uint8_t s_DebugBackup[128];
+/* Backup the last 128 bytes of RAM_G, which may be used for an error message */
+void debugBackupRamG(EVE_HalContext *phost)
+{
+	if (!s_DebugBackupDone)
+	{
+		EVE_Hal_rdMem(phost, s_DebugBackup, RAM_G + RAM_G_SIZE - sizeof(s_DebugBackup), sizeof(s_DebugBackup));
+		s_DebugBackupDone = true;
+	}
+}
+static void debugRestoreRamG(EVE_HalContext *phost)
+{
+	if (s_DebugBackupDone)
+	{
+		EVE_Hal_wrMem(phost, RAM_G + RAM_G_SIZE - sizeof(s_DebugBackup), s_DebugBackup, sizeof(s_DebugBackup));
+		s_DebugBackupDone = false;
+	}
+}
+#endif
+
 /**
  * @brief Reset Coprocessor
  * 
@@ -1004,6 +1034,8 @@ static inline bool EVE_Util_needsVideoPatch(EVE_HalContext *phost)
  */
 EVE_HAL_EXPORT bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 {
+	/* IMPORTANT: Do not use EVE_CoCmd functions here, as they can be overridden by hooks */
+
 	const bool needsVideoPatch = EVE_Util_needsVideoPatch(phost);
 	uint16_t videoPatchVector;
 	bool ready;
@@ -1127,6 +1159,9 @@ EVE_HAL_EXPORT bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	ready = EVE_Cmd_waitFlush(phost);
 	if (phost->CbCoprocessorReset) /* Notify */
 		phost->CbCoprocessorReset(phost, !ready);
+
+	debugRestoreRamG(phost);
+	EVE_CoDlImpl_resetCoState(phost);
 	return ready;
 }
 
@@ -1258,6 +1293,8 @@ SelectDisplay:
 
 #endif
 
+#pragma warning(push)
+#pragma warning(disable : 6262) // Large stack due to buffer
 EVE_HAL_EXPORT bool EVE_Util_openDeviceInteractive(EVE_HalContext *phost, wchar_t *flashFile)
 {
 	EVE_CHIPID_T chipId;
@@ -1587,6 +1624,7 @@ SelectFlash:
 
 	return true;
 }
+#pragma warning(pop)
 
 /* Calls EVE_Util_bootup and EVE_Util_config using the default parameters.
 Falls back to no interactivity on FT9XX platform */

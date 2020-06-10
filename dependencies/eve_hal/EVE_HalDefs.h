@@ -180,6 +180,33 @@ typedef struct EVE_HalParameters
 
 } EVE_HalParameters;
 
+#if (EVE_DL_OPTIMIZE) || (EVE_SUPPORT_CHIPID < EVE_FT810) || defined(EVE_MULTI_TARGET)
+#define EVE_DL_STATE phost->DlState[phost->DlStateIndex]
+typedef struct EVE_HalDlState
+{
+	// Keep to a minimum
+#if (EVE_DL_OPTIMIZE)
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+	uint32_t PaletteSource;
+#endif
+	uint32_t ColorRGB;
+	int16_t LineWidth;
+	int16_t PointSize;
+#if (EVE_SUPPORT_CHIPID < EVE_FT810) || defined(EVE_MULTI_TARGET)
+	int16_t VertexTranslateX;
+	int16_t VertexTranslateY;
+#endif
+	uint8_t ColorA;
+	uint8_t Handle; // Current handle
+	uint8_t Cell; // Current cell
+#endif
+	uint8_t VertexFormat; // Current vertex format
+#if (EVE_DL_OPTIMIZE)
+	bool BitmapTransform; // BitmapTransform other than default is set
+#endif
+} EVE_HalDlState;
+#endif
+
 typedef struct EVE_HalContext
 {
 	/* Pointer to user context */
@@ -190,10 +217,13 @@ typedef struct EVE_HalContext
 
 	/* Called anytime the code is waiting during CMD write. Return false to abort wait */
 	EVE_Callback CbCmdWait; 
-	/* Hook into coprocessor commands. Return 1 to abort the command. Useful for an optimization routine */
+	/* Callback hook called anytime the coprocessor is reset through the EVE_Util interface */
 	EVE_ResetCallback CbCoprocessorReset;
-	/* Hook into coprocessor reset */
+
+#if EVE_CMD_HOOKS
+	/* Hook into coprocessor commands. Called when EVE_CoCmd interface is used. Return 1 to abort the command. Useful for an optimization routine */
 	EVE_CoCmdHook CoCmdHook;
+#endif
 
 	EVE_STATUS_T Status;
 
@@ -270,6 +300,21 @@ typedef struct EVE_HalContext
 	uint32_t MediaFifoSize;
 #endif
 
+	/* Display list optimization and compatibility caches */
+#if (EVE_DL_OPTIMIZE) || (EVE_SUPPORT_CHIPID < EVE_FT810) || defined(EVE_MULTI_TARGET)
+	EVE_HalDlState DlState[EVE_DL_STATE_STACK_SIZE];
+	uint8_t DlStateIndex;
+#endif
+#if (EVE_DL_OPTIMIZE)
+	uint8_t DlPrimitive;
+	uint32_t CoFgColor;
+	uint32_t CoBgColor;
+	bool CoBitmapTransform; /* BitmapTransform other than identity is set on the coprocessor */
+#endif
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+	uint8_t CoScratchHandle;
+#endif
+
 	/* Status flags */
 	bool CmdFunc; /* Flagged while transfer to cmd is kept open */
 	bool CmdFault; /* Flagged when coprocessor is in fault mode and needs to be reset */
@@ -328,7 +373,7 @@ EVE_HAL_EXPORT uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value);
 EVE_HAL_EXPORT uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value);
 EVE_HAL_EXPORT uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value);
 EVE_HAL_EXPORT void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *buffer, uint32_t size);
-EVE_HAL_EXPORT void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size);
+EVE_HAL_EXPORT void EVE_Hal_transferProgMem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size);
 EVE_HAL_EXPORT uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char *str, uint32_t index, uint32_t size, uint32_t padMask);
 EVE_HAL_EXPORT void EVE_Hal_endTransfer(EVE_HalContext *phost);
 
@@ -348,7 +393,7 @@ EVE_HAL_EXPORT void EVE_Hal_wr8(EVE_HalContext *phost, uint32_t addr, uint8_t v)
 EVE_HAL_EXPORT void EVE_Hal_wr16(EVE_HalContext *phost, uint32_t addr, uint16_t v);
 EVE_HAL_EXPORT void EVE_Hal_wr32(EVE_HalContext *phost, uint32_t addr, uint32_t v);
 EVE_HAL_EXPORT void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const uint8_t *buffer, uint32_t size);
-EVE_HAL_EXPORT void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size);
+EVE_HAL_EXPORT void EVE_Hal_wrProgMem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size);
 EVE_HAL_EXPORT void EVE_Hal_wrString(EVE_HalContext *phost, uint32_t addr, const char *str, uint32_t index, uint32_t size, uint32_t padMask);
 
 /*********

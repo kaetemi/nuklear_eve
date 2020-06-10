@@ -33,6 +33,8 @@
 #include "EVE_Platform.h"
 #if defined(FT9XX_PLATFORM)
 
+#define EVE_ENABLE_FATFS 1
+
 #if defined(EVE_ENABLE_FATFS)
 #include "ff.h"
 static bool s_FatFSLoaded = false;
@@ -304,7 +306,7 @@ bool EVE_Util_loadMediaFile(EVE_HalContext *phost, const char *filename, uint32_
 			}
 			else
 			{
-				if (!EVE_MediaFifo_wrMem(phost, pbuff, blocklen, NULL)) /* copy data continuously into media fifo memory */
+				if (!EVE_MediaFifo_wrMem(phost, buffer, blocklen, NULL)) /* copy data continuously into media fifo memory */
 					break; /* Coprocessor fault */
 			}
 		}

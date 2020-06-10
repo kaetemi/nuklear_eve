@@ -75,7 +75,7 @@ EVE_HAL_EXPORT bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, 
 /* Write a progmem buffer to the command buffer. 
 Waits if there is not enough space in the command buffer. 
 Returns false in case a coprocessor fault occurred */
-EVE_HAL_EXPORT bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size);
+EVE_HAL_EXPORT bool EVE_Cmd_wrProgMem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size);
 
 /* Write a string to the command buffer, padded to 4 bytes. 
 Waits if there is not enough space in the command buffer. 
@@ -117,6 +117,10 @@ EVE_HAL_EXPORT uint32_t EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size);
 /* Wait for logo to finish displaying. 
 (Waits for both the read and write pointer to go to 0) */
 EVE_HAL_EXPORT bool EVE_Cmd_waitLogo(EVE_HalContext *phost);
+
+/* Restore the internal state of EVE_Cmd.
+Call this after manually writing the the coprocessor buffer */
+EVE_HAL_EXPORT void EVE_Cmd_restore(EVE_HalContext *phost);
 
 #endif /* #ifndef EVE_HAL_INCL__H */
 

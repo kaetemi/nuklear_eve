@@ -28,8 +28,8 @@
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
 */
-#ifndef EVE_ILI9488_H
-#define EVE_ILI9488_H
+#ifndef EVE_ILI9488__H
+#define EVE_ILI9488__H
 
 #if defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT)
 
@@ -111,6 +111,6 @@ void EVE_ILI9488_bootup();
 
 #endif /* ENABLE_ILI9488_HVGA_PORTRAIT */
 
-#endif /* EVE_ILI9488_H */
+#endif /* EVE_ILI9488__H */
 
 /* end of file */

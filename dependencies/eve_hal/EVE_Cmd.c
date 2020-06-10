@@ -127,7 +127,7 @@ EVE_HAL_EXPORT uint16_t EVE_Cmd_space(EVE_HalContext *phost)
  * @param phost Pointer to Hal context
  * @param buffer Data pointer
  * @param size Size to write
- * @param progmem True if Progmem 
+ * @param progmem True if ProgMem 
  * @param string True is string
  * @return uint32_t Byte transfered
  */
@@ -184,7 +184,7 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			}
 			else if (progmem)
 			{
-				EVE_Hal_transferProgmem(phost, NULL, (eve_progmem_const uint8_t *)(uintptr_t)(&((uint8_t *)buffer)[transfered]), transfer);
+				EVE_Hal_transferProgMem(phost, NULL, (eve_progmem_const uint8_t *)(uintptr_t)(&((uint8_t *)buffer)[transfered]), transfer);
 			}
 			else
 			{
@@ -264,7 +264,7 @@ EVE_HAL_EXPORT bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, 
 }
 
 /**
- * @brief Write buffer in Progmem to Coprocessor's comand fifo
+ * @brief Write buffer in ProgMem to Coprocessor's comand fifo
  * 
  * @param phost Pointer to Hal context
  * @param uint8_t Data buffer
@@ -272,7 +272,7 @@ EVE_HAL_EXPORT bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, 
  * @return true True if ok
  * @return false False if error
  */
-EVE_HAL_EXPORT bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size)
+EVE_HAL_EXPORT bool EVE_Cmd_wrProgMem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
@@ -427,6 +427,10 @@ EVE_HAL_EXPORT uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
 	return prevWp;
 }
 
+#ifdef _DEBUG
+void debugBackupRamG(EVE_HalContext *phost);
+#endif
+
 /**
  * @brief Check for coprocessor fault
  * 
@@ -446,6 +450,7 @@ static bool checkWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 		phost->CmdWaiting = false;
 		eve_printf_debug("Coprocessor fault\n");
 #if defined(_DEBUG)
+		debugBackupRamG(phost);
 		if (EVE_CHIPID >= EVE_BT815)
 		{
 			EVE_Hal_rdMem(phost, (uint8_t *)err, RAM_ERR_REPORT, 128);
@@ -598,6 +603,15 @@ EVE_HAL_EXPORT bool EVE_Cmd_waitLogo(EVE_HalContext *phost)
 
 	phost->CmdWaiting = false;
 	return true;
+}
+
+/* Restore the internal state of EVE_Cmd.
+Call this after manually writing the the coprocessor buffer */
+EVE_HAL_EXPORT void EVE_Cmd_restore(EVE_HalContext *phost)
+{
+	EVE_Cmd_rp(phost);
+	EVE_Cmd_wp(phost);
+	EVE_Cmd_space(phost);
 }
 
 /* end of file */

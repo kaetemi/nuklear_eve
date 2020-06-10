@@ -37,7 +37,14 @@
 #if (defined(FT9XX_PLATFORM)) \
     && (defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT))
 #define ILI9488_SEL 1
-//only write command
+
+/**
+ * @brief Write commandto SPI
+ * 
+ * @param cmd Command to write
+ * @param data Data of the command
+ * @return int16_t Always 0
+ */
 int16_t ILI9488_SPI_WriteCmd(uint8_t cmd, uint8_t data)
 {
 	uint8_t i;
@@ -57,7 +64,14 @@ int16_t ILI9488_SPI_WriteCmd(uint8_t cmd, uint8_t data)
 	return 0;
 }
 
-//write N number of bytes
+/**
+ * @brief Write N number of bytes
+ * 
+ * @param cmd Command to write
+ * @param bytecount Number of bytes in buffer
+ * @param pbuff Data on the command
+ * @return int16_t Always 0
+ */
 int16_t ILI9488_SPI_WriteCmdN(uint8_t cmd, uint8_t bytecount, uint8_t *pbuff)
 {
 	uint8_t i, j, transbit;
@@ -77,7 +91,12 @@ int16_t ILI9488_SPI_WriteCmdN(uint8_t cmd, uint8_t bytecount, uint8_t *pbuff)
 	return 0;
 }
 
-//read/write data with cs being toggled
+/**
+ * @brief Read/write data with chip select pin being toggled
+ * 
+ * @param cmd Command to write
+ * @return uint8_t Number of bytes read
+ */
 uint8_t ILI9488_SPI_Read(uint8_t cmd)
 {
 	uint8_t i, readbyte = 0;
@@ -96,6 +115,14 @@ uint8_t ILI9488_SPI_Read(uint8_t cmd)
 	return readbyte;
 }
 
+/**
+ * @brief Read/write N bytes with chip select pin being toggled
+ * 
+ * @param cmd Command to write
+ * @param numbytes Number of bytes to read
+ * @param pbuffer Buffer to get result
+ * @return uint8_t Number of bytes read
+ */
 uint8_t ILI9488_SPI_ReadN(uint8_t cmd, uint8_t numbytes, uint8_t *pbuffer)
 {
 	uint8_t i, readbyte = 0, j;
@@ -114,7 +141,12 @@ uint8_t ILI9488_SPI_ReadN(uint8_t cmd, uint8_t numbytes, uint8_t *pbuffer)
 	return readbyte;
 }
 
-//read 24 bits
+/**
+ * @brief Read 24 bits
+ * 
+ * @param cmd Command to write
+ * @return uint32_t Number of bytes read
+ */
 uint32_t ILI9488_SPI_ReadRDDID(uint8_t cmd)
 {
 	uint8_t i;
@@ -140,7 +172,13 @@ uint32_t ILI9488_SPI_ReadRDDID(uint8_t cmd)
 
 	return readword;
 }
-//read 32 bits
+
+/**
+ * @brief Read 32 bits
+ * 
+ * @param cmd Command to write
+ * @return uint32_t Number of bytes read
+ */
 uint32_t ILI9488_SPI_ReadRDDST(uint8_t cmd)
 {
 	uint8_t i;
@@ -167,6 +205,10 @@ uint32_t ILI9488_SPI_ReadRDDST(uint8_t cmd)
 	return readword;
 }
 
+/**
+ * @brief ILI9488 bootup
+ * 
+ */
 void EVE_ILI9488_bootup()
 {
 

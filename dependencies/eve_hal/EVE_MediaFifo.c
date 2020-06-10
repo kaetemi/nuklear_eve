@@ -245,6 +245,10 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 #endif
 }
 
+#ifdef _DEBUG
+void debugBackupRamG(EVE_HalContext *phost);
+#endif
+
 static bool checkWait(EVE_HalContext *phost, uint32_t rpOrSpace)
 {
 	if (EVE_CMD_FAULT(rpOrSpace))
@@ -255,6 +259,7 @@ static bool checkWait(EVE_HalContext *phost, uint32_t rpOrSpace)
 		phost->CmdWaiting = false;
 		eve_printf_debug("Coprocessor fault in processing media FIFO\n");
 #if defined(_DEBUG)
+		debugBackupRamG(phost);
 		if (EVE_CHIPID >= EVE_BT815)
 		{
 			EVE_Hal_rdMem(phost, (uint8_t *)err, RAM_ERR_REPORT, 128);

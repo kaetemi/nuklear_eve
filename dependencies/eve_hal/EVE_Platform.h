@@ -57,6 +57,8 @@ extern "C" {
 #include "EVE_HalDefs.h"
 #include "EVE_Cmd.h"
 #include "EVE_MediaFifo.h"
+#include "EVE_CoCmd.h"
+#include "EVE_CoDl.h"
 #include "EVE_GpuDefs.h"
 #if defined(ENABLE_ILI9488_HVGA_PORTRAIT) || defined(ENABLE_KD2401_HVGA_PORTRAIT)
 #include "EVE_ILI9488.h"
@@ -82,13 +84,13 @@ extern "C" {
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#define eve_deprecated(message) __attribute__((deprecated(message)))
+#define eve_deprecated(msg) __attribute__((deprecated(msg)))
 #elif defined(_MSC_VER)
-#define eve_deprecated(message) __declspec(deprecated(message))
+#define eve_deprecated(msg) __declspec(deprecated(msg))
 #elif (__cplusplus >= 201402L)
-#define eve_deprecated(message) [[deprecated(message)]]
+#define eve_deprecated(msg) [[deprecated(msg)]]
 #else
-#define eve_deprecated(message)
+#define eve_deprecated(msg)
 #endif
 
 #ifndef eve_printf

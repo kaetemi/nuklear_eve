@@ -254,17 +254,17 @@ EVE_HAL_EXPORT void EVE_Hal_wrMem(EVE_HalContext *phost, uint32_t addr, const ui
 }
 
 /**
- * @brief Write a buffer in Progmem to Coprocessor's memory
+ * @brief Write a buffer in ProgMem to Coprocessor's memory
  * 
  * @param phost Pointer to Hal context
  * @param addr Address to be write
  * @param uint8_t Data to be write
  * @param size Size of buffer
  */
-EVE_HAL_EXPORT void EVE_Hal_wrProgmem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size)
+EVE_HAL_EXPORT void EVE_Hal_wrProgMem(EVE_HalContext *phost, uint32_t addr, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
 	EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, addr);
-	EVE_Hal_transferProgmem(phost, NULL, buffer, size);
+	EVE_Hal_transferProgMem(phost, NULL, buffer, size);
 	EVE_Hal_endTransfer(phost);
 }
 

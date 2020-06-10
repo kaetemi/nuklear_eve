@@ -50,7 +50,7 @@
 #define EVE_Hal_transfer16 EVE_Hal_BT8XXEMU_transfer16
 #define EVE_Hal_transfer32 EVE_Hal_BT8XXEMU_transfer32
 #define EVE_Hal_transferMem EVE_Hal_BT8XXEMU_transferMem
-#define EVE_Hal_transferProgmem EVE_Hal_BT8XXEMU_transferProgmem
+#define EVE_Hal_transferProgMem EVE_Hal_BT8XXEMU_transferProgMem
 #define EVE_Hal_transferString EVE_Hal_BT8XXEMU_transferString
 #define EVE_Hal_hostCommand EVE_Hal_BT8XXEMU_hostCommand
 #define EVE_Hal_hostCommandExt3 EVE_Hal_BT8XXEMU_hostCommandExt3
@@ -66,7 +66,7 @@
 *********/
 
 #if defined(ESD_SIMULATION)
-void Ft_MainReady__ESD(BT8XXEMU_Emulator *emulator);
+void ESD_MainReady__ESD(BT8XXEMU_Emulator *emulator);
 #endif
 
 EVE_HalPlatform g_HalPlatform;
@@ -194,7 +194,7 @@ bool EVE_HalImpl_open(EVE_HalContext *phost, const EVE_HalParameters *parameters
 #endif
 
 #if defined(ESD_SIMULATION)
-	Ft_MainReady__ESD(phost->Emulator);
+	ESD_MainReady__ESD(phost->Emulator);
 #endif
 
 	ret = !!phost->Emulator;
@@ -402,14 +402,14 @@ void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *
 }
 
 /**
- * @brief Transfer a block data in Progmem to Coprocessor
+ * @brief Transfer a block data from program memory
  * 
  * @param phost Pointer to Hal context
  * @param result Buffer to get data transfered, NULL when write
  * @param buffer Buffer where data is transfered, NULL when read
  * @param size Size of buffer
  */
-void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
+void EVE_Hal_transferProgMem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
 	uint32_t i;
 	if (result && buffer)

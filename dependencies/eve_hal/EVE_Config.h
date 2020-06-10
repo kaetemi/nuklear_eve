@@ -29,8 +29,8 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef EVE_CONFIG_H
-#define EVE_CONFIG_H
+#ifndef EVE_CONFIG__H
+#define EVE_CONFIG__H
 
 #include "EVE_IntTypes.h"
 
@@ -561,7 +561,6 @@ It may also set platform, display, and flash values if none are configured.
 
 #ifndef EVE_DISPLAY_AVAILABLE
 #define EVE_DISPLAY_AVAILABLE
-// #define DISPLAY_RESOLUTION_WVGA
 #define DISPLAY_RESOLUTION_1280x800
 #endif
 
@@ -855,6 +854,18 @@ These may only be set by one of the platform target definitions, and should not 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
+/// Other options
+#define EVE_DL_OPTIMIZE 1 /* Keep cache of displaylist values that don't often change but are generally set by every widget to reduce display list size */
+#define EVE_DL_END_PRIMITIVE 0 /* Whether the END command is sent */
+#define EVE_DL_STATE_STACK_SIZE 4
+#define EVE_DL_STATE_STACK_MASK 3
+
+#define EVE_CMD_HOOKS 0 /* Allow adding a callback hook into EVE_CoCmd calls using CoCmdHook in EVE_HalContext */
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
 #if defined(FT900_PLATFORM) || defined(FT93X_PLATFORM)
 #define eve_progmem __flash__ const
 #define eve_progmem_const __flash__ const
@@ -870,6 +881,26 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
 #ifndef _MSC_VER
 /* strcpy_s is not available in GCC */
 #define strcpy_s(dst, sz, src) strcpy(dst, src)
+#endif
+
+#ifdef _MSC_VER
+#define inline __inline
+#endif
+
+#if defined(__GNUC__)
+#define eve_pragma_warning(msg) _Pragma("GCC warning \"" msg "\"")
+#elif defined(_MSC_VER)
+#define eve_pragma_warning(msg) __pragma(message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): warning EVE_Hal: " msg))
+#else
+#define eve_pragma_warning(msg)
+#endif
+
+#if defined(__GNUC__)
+#define eve_pragma_error(msg) _Pragma("GCC error \"" msg "\"")
+#elif defined(_MSC_VER)
+#define eve_pragma_error(msg) __pragma(message(__FILE__ "(" EVE_CONFIG_STR(__LINE__) "): error EVE_Hal: " msg))
+#else
+#define eve_pragma_error(msg)
 #endif
 
 ///////////////////////////////////////////////////////////////////////
@@ -926,6 +957,6 @@ typedef eve_progmem uint16_t eve_prog_uint16_t;
                                                       "No platform was selected")
 #endif
 
-#endif /* EVE_CONFIG_H */
+#endif /* EVE_CONFIG__H */
 
 /* end of file */

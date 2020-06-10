@@ -47,7 +47,7 @@ void LogMessage__ESD(const char *str);
 void LogWarning__ESD(const char *str);
 void LogError__ESD(const char *str);
 
-void Esd_SetFlashFirmware__ESD(const wchar_t *path);
+void ESD_SetFlashFirmware__ESD(const wchar_t *path);
 
 /**
  * @brief Log a message
@@ -149,15 +149,15 @@ int main(int argc, char *argv[])
 	wcscpy(flashParams.DeviceType, L"mx25lemu");
 #if defined(ESD_SIMULATION)
 #if defined(EVE_FLASH_SIZE) && (EVE_FLASH_SIZE >= 32)
-	Esd_SetFlashFirmware__ESD(L"mx25l.blob");
+	ESD_SetFlashFirmware__ESD(L"mx25l.blob");
 #else
-	Esd_SetFlashFirmware__ESD(L"unified.blob");
+	ESD_SetFlashFirmware__ESD(L"unified.blob");
 #endif
 #endif
 #else
 	// Fallback emulation
 	wcscpy(flashParams.DeviceType, L"mx25lemu");
-	Esd_SetFlashFirmware__ESD(L"unified.blob");
+	ESD_SetFlashFirmware__ESD(L"unified.blob");
 #endif
 #endif
 	// The flash image will be loaded as a memory mapped file.

@@ -50,7 +50,7 @@
 #define EVE_Hal_transfer16 EVE_Hal_FT4222_transfer16
 #define EVE_Hal_transfer32 EVE_Hal_FT4222_transfer32
 #define EVE_Hal_transferMem EVE_Hal_FT4222_transferMem
-#define EVE_Hal_transferProgmem EVE_Hal_FT4222_transferProgmem
+#define EVE_Hal_transferProgMem EVE_Hal_FT4222_transferProgMem
 #define EVE_Hal_transferString EVE_Hal_FT4222_transferString
 #define EVE_Hal_hostCommand EVE_Hal_FT4222_hostCommand
 #define EVE_Hal_hostCommandExt3 EVE_Hal_FT4222_hostCommandExt3
@@ -1061,14 +1061,14 @@ void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, const uint8_t *
 }
 
 /**
- * @brief Transfer a block data in Progmem to Coprocessor
+ * @brief Transfer a block data from program memory
  * 
  * @param phost Pointer to Hal context
  * @param result Buffer to get data transfered, NULL when write
  * @param buffer Buffer where data is transfered, NULL when read
  * @param size Size of buffer
  */
-void EVE_Hal_transferProgmem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
+void EVE_Hal_transferProgMem(EVE_HalContext *phost, uint8_t *result, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
 	if (!size)
 		return;
