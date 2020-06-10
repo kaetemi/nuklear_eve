@@ -1,3 +1,5 @@
+#include <stddef.h>
+#include <wchar.h>
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
 #ifndef _STDINT
 
@@ -140,7 +142,6 @@ typedef unsigned long long uintmax_t;
 #else
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #endif
 #if defined(_MSC_VER) && (_MSC_VER >= 1900)
 #ifdef __cplusplus
@@ -158,8 +159,8 @@ typedef uint32_t argb8888;
 #ifndef BT8XXEMU_INTTYPES_DEFINED_FORCEINLINE
 #define BT8XXEMU_INTTYPES_DEFINED_FORCEINLINE
 #ifdef _MSC_VER
-#	define BT8XXEMU_FORCE_INLINE __forceinline
+#define BT8XXEMU_FORCE_INLINE __forceinline
 #else
-#	define BT8XXEMU_FORCE_INLINE inline __attribute__((always_inline))
+#define BT8XXEMU_FORCE_INLINE inline __attribute__((always_inline))
 #endif
 #endif

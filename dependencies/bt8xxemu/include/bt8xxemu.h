@@ -1,49 +1,54 @@
 /*
 BT8XX Emulator Library
 Copyright (C) 2013-2016  Future Technology Devices International Ltd
-Copyright (C) 2016-2018  Bridgetek Pte Lte
-Author: Jan Boon <jan@no-break.space>
+Copyright (C) 2016-2020  Bridgetek Pte Lte
+Author: Jan Boon <jan.boon@kaetemi.be>
 */
 
 #ifndef BT8XXEMU_H
 #define BT8XXEMU_H
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26812) // Unscoped enum
+#endif
+
 #include "bt8xxemu_inttypes.h"
 
 // API version is increased whenever BT8XXEMU_EmulatorParameters format changes or functions are modified
-#define BT8XXEMU_VERSION_API 11
+#define BT8XXEMU_VERSION_API 12
 
 #ifdef BT8XXEMU_REMOTE
-#	ifndef WIN32
-#		undef BT8XXEMU_REMOTE /* Not yet supported */
-#	else
-#		define BT8XXEMU_STATIC
-#	endif
+#ifndef WIN32
+#undef BT8XXEMU_REMOTE /* Not yet supported */
+#else
+#define BT8XXEMU_STATIC
+#endif
 #endif
 
 #ifndef BT8XXEMU_STATIC
-#	ifdef BT8XXEMU_EXPORT_DYNAMIC
-#		ifdef WIN32
-#			define BT8XXEMU_API __declspec(dllexport)
-#		else
-#			define BT8XXEMU_API
-#		endif
-#	else
-#		ifdef WIN32
-#			define BT8XXEMU_API __declspec(dllimport)
-#		else
-#			define BT8XXEMU_API
-#		endif
-#	endif
+#ifdef BT8XXEMU_EXPORT_DYNAMIC
+#ifdef WIN32
+#define BT8XXEMU_API __declspec(dllexport)
 #else
-#	define BT8XXEMU_API
+#define BT8XXEMU_API
+#endif
+#else
+#ifdef WIN32
+#define BT8XXEMU_API __declspec(dllimport)
+#else
+#define BT8XXEMU_API
+#endif
+#endif
+#else
+#define BT8XXEMU_API
 #endif
 
 #ifdef __cplusplus
 
 namespace BT8XXEMU {
-	class Emulator;
-	class Flash;
+class Emulator;
+class Flash;
 }
 
 typedef BT8XXEMU::Emulator BT8XXEMU_Emulator;
@@ -78,6 +83,8 @@ typedef enum
 	BT8XXEMU_EmulatorFT813 = 0x0813,
 	BT8XXEMU_EmulatorBT815 = 0x0815,
 	BT8XXEMU_EmulatorBT816 = 0x0816,
+	BT8XXEMU_EmulatorBT817 = 0x0817,
+	BT8XXEMU_EmulatorBT818 = 0x0818,
 } BT8XXEMU_EmulatorMode;
 
 typedef enum
@@ -108,6 +115,8 @@ typedef enum
 	BT8XXEMU_EmulatorEnableBackgroundPerformance = 0x800,
 	// enable performance adjustments for the main MCU thread (default: on)
 	BT8XXEMU_EmulatorEnableMainPerformance = 0x1000,
+	// enable HSF preview (default: on for bt817 and up, off otherwise)
+	BT8XXEMU_EmulatorEnableHSFPreview = 0x2000,
 
 } BT8XXEMU_EmulatorFlags;
 
@@ -147,7 +156,7 @@ typedef enum
 typedef struct
 {
 	// Microcontroller main function. This will be run on a new thread managed by the emulator. When not provided the calling thread is assumed to be the MCU thread
-	void(*Main)(BT8XXEMU_Emulator *sender, void *context);
+	void (*Main)(BT8XXEMU_Emulator *sender, void *context);
 	// See EmulatorFlags.
 	int Flags;
 	// Emulator mode
@@ -164,7 +173,7 @@ typedef struct
 	uint32_t ReduceGraphicsThreads;
 
 	// Sleep function for MCU thread usage throttle. Defaults to generic system sleep
-	void(*MCUSleep)(BT8XXEMU_Emulator *sender, void *context, int ms);
+	void (*MCUSleep)(BT8XXEMU_Emulator *sender, void *context, int ms);
 
 	// Replaces the default builtin ROM with a custom ROM from a file.
 	// NOTE: String is copied and may be deallocated after call to run(...)
@@ -188,16 +197,16 @@ typedef struct
 	// The contents of the buffer pointer are undefined after this
 	// function returns. Create a copy to use it on another thread.
 	// Return false (0) when the application must exit, otherwise return true (1).
-	int(*Graphics)(BT8XXEMU_Emulator *sender, void *context, int output, const argb8888 *buffer, uint32_t hsize, uint32_t vsize, BT8XXEMU_FrameFlags flags);
+	int (*Graphics)(BT8XXEMU_Emulator *sender, void *context, int output, const argb8888 *buffer, uint32_t hsize, uint32_t vsize, BT8XXEMU_FrameFlags flags);
 
 	// Interrupt handler
 	// void (*Interrupt)(void *sender, void *context);
 
 	// Log callback
-	void(*Log)(BT8XXEMU_Emulator *sender, void *context, BT8XXEMU_LogType type, const char *message);
+	void (*Log)(BT8XXEMU_Emulator *sender, void *context, BT8XXEMU_LogType type, const char *message);
 
 	// Safe exit. Called when the emulator window is closed
-	void(*Close)(BT8XXEMU_Emulator *sender, void *context);
+	void (*Close)(BT8XXEMU_Emulator *sender, void *context);
 
 	// User context that will be passed along to callbacks
 	void *UserContext;
@@ -236,7 +245,7 @@ typedef struct
 	size_t DataSizeBytes;
 
 	// Log callback
-	void(*Log)(BT8XXEMU_Flash *sender, void *context, BT8XXEMU_LogType type, const char *message);
+	void (*Log)(BT8XXEMU_Flash *sender, void *context, BT8XXEMU_LogType type, const char *message);
 
 	// User context that will be passed along to callbacks
 	void *UserContext;
@@ -292,6 +301,9 @@ BT8XXEMU_API extern void BT8XXEMU_touchSetXY(BT8XXEMU_Emulator *emulator, int id
 // Reset touch XY. Call once no longer touching when using custom graphics output
 BT8XXEMU_API extern void BT8XXEMU_touchResetXY(BT8XXEMU_Emulator *emulator, int idx);
 
+// Set a single emulation flag on or off. Only PWM and HSF options can be changed at runtime. Returns the value of the flag after the operation
+BT8XXEMU_API extern int BT8XXEMU_setFlag(BT8XXEMU_Emulator *emulator, BT8XXEMU_EmulatorFlags flag, int value);
+
 ///////////
 // FLASH //
 ///////////
@@ -312,8 +324,12 @@ BT8XXEMU_API extern uint8_t BT8XXEMU_Flash_transferSpi4(BT8XXEMU_Flash *flash, u
 
 #endif
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 } /* extern "C" */
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
 #endif
 
 #endif /* #ifndef BT8XXEMU_H */

@@ -12,7 +12,14 @@ This implements the communication channel with the separated process.
 The "bt8xxemus" process provides a graphical debugging user interface.
 */
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26812) // Unscoped enum
+#pragma warning(disable : 6262) // Large stack
+#endif
+
 #include <bt8xxemu.h>
+#include <stdlib.h>
 
 #ifdef BT8XXEMU_REMOTE
 
@@ -85,8 +92,8 @@ typedef struct
 	uint64_t sizeBytes;
 	wchar_t dataFilePath[260];
 	wchar_t statusFilePath[260];
-	bool persistent;
-	bool stdOut;
+	int persistent;
+	int stdOut;
 	int64_t userContext;
 } BT8XXEMUC_RemoteFlashParameters;
 typedef union
@@ -176,6 +183,7 @@ static void BT8XXEMUC_writeFlashParams(BT8XXEMUC_RemoteFlashParameters *remoteFl
 static LONG s_AtomicLock = 0;
 static LONG s_RefCount = 0;
 static HANDLE s_Process = INVALID_HANDLE_VALUE;
+static HANDLE s_ProcessThread = INVALID_HANDLE_VALUE;
 static HANDLE s_Pipe = INVALID_HANDLE_VALUE;
 static BT8XXEMUC_Data s_VersionData;
 static int s_PipeNb = 0;
@@ -224,13 +232,17 @@ static bool BT8XXEMUC_openProcess()
 		}
 
 		s_Process = pi.hProcess;
+		s_ProcessThread = pi.hThread;
 
 		if (!ConnectNamedPipe(s_Pipe, NULL))
 		{
 			CloseHandle(s_Pipe);
 			s_Pipe = INVALID_HANDLE_VALUE;
 			TerminateProcess(s_Process, EXIT_FAILURE);
+			CloseHandle(s_Process);
 			s_Process = INVALID_HANDLE_VALUE;
+			CloseHandle(s_ProcessThread);
+			s_ProcessThread = INVALID_HANDLE_VALUE;
 			BT8XXEMUC_unlockProcessPipe();
 			return false;
 		}
@@ -261,7 +273,10 @@ static void BT8XXEMUC_closeProcess()
 			CloseHandle(s_Pipe);
 			s_Pipe = INVALID_HANDLE_VALUE;
 			TerminateProcess(s_Process, EXIT_FAILURE);
+			CloseHandle(s_Process);
 			s_Process = INVALID_HANDLE_VALUE;
+			CloseHandle(s_ProcessThread);
+			s_ProcessThread = INVALID_HANDLE_VALUE;
 			BT8XXEMUC_unlockProcessPipe();
 			return;
 		}
@@ -270,6 +285,10 @@ static void BT8XXEMUC_closeProcess()
 		s_Pipe = INVALID_HANDLE_VALUE;
 
 		WaitForSingleObject(s_Process, INFINITE);
+		CloseHandle(s_Process);
+		s_Process = INVALID_HANDLE_VALUE;
+		CloseHandle(s_ProcessThread);
+		s_ProcessThread = INVALID_HANDLE_VALUE;
 	}
 
 	BT8XXEMUC_unlockProcessPipe();
@@ -431,6 +450,11 @@ void BT8XXEMU_run(uint32_t versionApi, BT8XXEMU_Emulator **emulator, const BT8XX
 	if (BT8XXEMUC_openProcess())
 	{
 		*emulator = malloc(sizeof(BT8XXEMU_Emulator));
+		if (!*emulator)
+		{
+			BT8XXEMUC_closeProcess();
+			return;
+		}
 		memset(*emulator, 0, sizeof(BT8XXEMU_Emulator));
 		(*emulator)->pipe = BT8XXEMUC_openPipe(); // Create a separate pipe for each emulator instance
 
@@ -655,6 +679,7 @@ BT8XXEMU_Flash *BT8XXEMU_Flash_create(uint32_t versionApi, const BT8XXEMU_FlashP
 	if (BT8XXEMUC_openProcess())
 	{
 		BT8XXEMU_Flash *flash = malloc(sizeof(BT8XXEMU_Flash));
+		if (!flash) return NULL;
 		memset(flash, 0, sizeof(BT8XXEMU_Flash));
 		flash->pipe = BT8XXEMUC_openPipe(); // Create a separate pipe for each emulator instance
 
@@ -740,6 +765,10 @@ uint8_t BT8XXEMU_Flash_transferSpi4(BT8XXEMU_Flash *flash, uint8_t signal)
 	return data.data;
 }
 
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
 #endif
 
 /* end of file */
