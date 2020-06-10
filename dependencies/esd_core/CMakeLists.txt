@@ -1,6 +1,6 @@
 
 FILE(GLOB SRCS *.c)
-FILE(GLOB HDRS *.h)
+FILE(GLOB HDRS *.h Compatibility/*.h)
 SOURCE_GROUP("" FILES ${SRCS} ${HDRS})
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/dependencies/eve_hal")

@@ -1,54 +1,66 @@
 
-#include "Ft_Esd_TouchTag.h"
-#include "Ft_Gpu_Hal.h"
+#include "ESD_TouchTag.h"
+#include "ESD_Context.h"
 
-#include "Ft_Esd_Core.h"
-
-extern void Ft_Esd_Noop(void *context);
-
-extern EVE_HalContext *Ft_Esd_Host;
-
-static ft_uint32_t s_LastTagFrame = ~0;
-static Ft_Esd_TouchTag s_NullTag = {
-	.Down = Ft_Esd_Noop,
-	.Up = Ft_Esd_Noop,
-	.Tap = Ft_Esd_Noop,
-	.Tag = 0,
-	.Set = FT_FALSE
+static uint32_t s_LastTagFrame = ~0;
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
+/* Designated initializers not supported in older Visual Studio versions */
+static ESD_TouchTag s_NullTag = {
+	NULL,
+	ESD_Noop,
+	ESD_Noop,
+	ESD_Noop,
+	0,
+	false
 };
-static ft_bool_t s_SuppressCurrentTags = 0;
-static ft_uint8_t s_GpuRegTouchTag = 0;
-static ft_uint8_t s_TagDown = 0;
-static ft_uint8_t s_TagUp = 0;
+#else
+static ESD_TouchTag s_NullTag = {
+	.Down = ESD_Noop,
+	.Up = ESD_Noop,
+	.Tap = ESD_Noop,
+	.Tag = 0,
+	.Set = false
+};
+#endif
+static bool s_SuppressCurrentTags = 0;
+static uint8_t s_GpuRegTouchTag = 0;
+static uint8_t s_TagDown = 0;
+static uint8_t s_TagUp = 0;
 typedef union
 {
-	ft_uint32_t XY;
+	uint32_t XY;
 	struct
 	{
-		ft_int16_t Y;
-		ft_int16_t X;
+		int16_t Y;
+		int16_t X;
 	};
-} Ft_Esd_TouchPos_t;
-static Ft_Esd_TouchPos_t s_TouchPos = { 0 };
-ft_int16_t s_TouchPosXDelta = 0;
-ft_int16_t s_TouchPosYDelta = 0;
+} ESD_TouchPos_t;
+static ESD_TouchPos_t s_TouchPos = { 0 };
+int16_t s_TouchPosXDelta = 0;
+int16_t s_TouchPosYDelta = 0;
 
-static Ft_Esd_TouchTag *s_TagHandlers[256] = {
-	[0] = &s_NullTag,
-	[255] = &s_NullTag
+static ESD_TouchTag *s_TagHandlers[256] = {
+	&s_NullTag, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, &s_NullTag
 };
 
-void Ft_Esd_TouchTag__Initializer(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT void ESD_TouchTag__Initializer(ESD_TouchTag *context)
 {
 	*context = s_NullTag;
 }
 
-void Ft_Esd_TouchTag_Start(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT void ESD_TouchTag_Start(ESD_TouchTag *context)
 {
 	int i;
 
 #ifdef ESD_SIMULATION
-	if (s_LastTagFrame > Esd_CurrentContext->Frame && (s_LastTagFrame != ~0))
+	if (s_LastTagFrame > ESD_CurrentContext->Frame && (s_LastTagFrame != ~0))
 	{
 		// Reset static
 		s_LastTagFrame = ~0;
@@ -67,7 +79,7 @@ void Ft_Esd_TouchTag_Start(Ft_Esd_TouchTag *context)
 
 	if (context->Tag)
 	{
-		Ft_Esd_TouchTag_End(context);
+		ESD_TouchTag_End(context);
 	}
 
 	// Allocate tag
@@ -82,21 +94,20 @@ void Ft_Esd_TouchTag_Start(Ft_Esd_TouchTag *context)
 	}
 }
 
-void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT void ESD_TouchTag_Update(ESD_TouchTag *context)
 {
-	EVE_HalContext *phost = Ft_Esd_Host;
+	EVE_HalContext *phost = ESD_GetHost();
 	(void)phost;
-
-	if (s_LastTagFrame != Esd_CurrentContext->Frame)
+	if (s_LastTagFrame != ESD_CurrentContext->Frame)
 	{
-		ft_uint32_t regTouchXY;
-		ft_uint8_t regTouchTag;
+		uint32_t regTouchXY;
+		uint8_t regTouchTag;
 
 		// Global tag update
-		s_LastTagFrame = Esd_CurrentContext->Frame;
+		s_LastTagFrame = ESD_CurrentContext->Frame;
 
 		// Read registers
-		regTouchXY = Ft_Gpu_Hal_Rd32(Ft_Esd_Host, REG_TOUCH_TAG_XY);
+		regTouchXY = EVE_Hal_rd32(ESD_Host, REG_TOUCH_TAG_XY);
 		if (regTouchXY & 0x80008000)
 		{
 			// No touch
@@ -106,8 +117,8 @@ void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
 		}
 		else
 		{
-			Ft_Esd_TouchPos_t prevPos;
-			regTouchTag = Ft_Gpu_Hal_Rd8(Ft_Esd_Host, REG_TOUCH_TAG);
+			ESD_TouchPos_t prevPos;
+			regTouchTag = EVE_Hal_rd8(ESD_Host, REG_TOUCH_TAG);
 			if (!regTouchTag)
 			{
 				// Fallback when touching but touch tag 0 reported, stick to the last recorded tag
@@ -151,7 +162,7 @@ void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
 	{
 		// Tag was forced taken over by another widget (CMD_KEYS for example), need to get a new tag...
 		context->Tag = 0;
-		Ft_Esd_TouchTag_Start(context);
+		ESD_TouchTag_Start(context);
 	}
 
 	if (!context->Tag)
@@ -163,7 +174,7 @@ void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
 		// Tag unset
 		if (s_TagDown != context->Tag)
 		{
-			context->Set = FT_FALSE;
+			context->Set = false;
 			context->Up(context->Owner);
 			if (s_TagUp == context->Tag)
 			{
@@ -177,17 +188,17 @@ void Ft_Esd_TouchTag_Update(Ft_Esd_TouchTag *context)
 		// Tag set
 		if (s_TagDown == context->Tag)
 		{
-			context->Set = FT_TRUE;
+			context->Set = true;
 			context->Down(context->Owner);
 		}
 	}
 }
 
-void Ft_Esd_TouchTag_End(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT void ESD_TouchTag_End(ESD_TouchTag *context)
 {
 	if (context->Set)
 	{
-		context->Set = FT_FALSE;
+		context->Set = false;
 		// NOTE: Not necessarily a safe thing to call Up from End, but necessary when tags change
 		context->Up(context->Owner);
 	}
@@ -202,22 +213,22 @@ void Ft_Esd_TouchTag_End(Ft_Esd_TouchTag *context)
 	}
 }
 
-ft_bool_t Ft_Esd_TouchTag_Touching(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT bool ESD_TouchTag_Touching(ESD_TouchTag *context)
 {
 	return context->Tag && (s_TagDown == context->Tag);
 }
 
-ft_bool_t Ft_Esd_TouchTag_Inside(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT bool ESD_TouchTag_Inside(ESD_TouchTag *context)
 {
 	return context->Tag && (s_TagDown == context->Tag) && (s_GpuRegTouchTag == context->Tag);
 }
 
-ft_bool_t Ft_Esd_TouchTag_Hover(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT bool ESD_TouchTag_Hover(ESD_TouchTag *context)
 {
 	return context->Tag && (s_GpuRegTouchTag == context->Tag);
 }
 
-ft_uint8_t Ft_Esd_TouchTag_Tag(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT uint8_t ESD_TouchTag_Tag(ESD_TouchTag *context)
 {
 	if (context->Tag)
 		return context->Tag;
@@ -225,34 +236,34 @@ ft_uint8_t Ft_Esd_TouchTag_Tag(Ft_Esd_TouchTag *context)
 		return 255; // Always return non-tag value if no tag
 }
 
-ft_uint8_t Ft_Esd_TouchTag_CurrentTag(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT uint8_t ESD_TouchTag_CurrentTag(ESD_TouchTag *context)
 {
 	return s_GpuRegTouchTag;
 }
 
-ft_int16_t Ft_Esd_TouchTag_TouchX(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT int16_t ESD_TouchTag_TouchX(ESD_TouchTag *context)
 {
 	return s_TouchPos.X;
 }
 
-ft_int16_t Ft_Esd_TouchTag_TouchY(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT int16_t ESD_TouchTag_TouchY(ESD_TouchTag *context)
 {
 	return s_TouchPos.Y;
 }
 
-ft_int16_t Ft_Esd_TouchTag_TouchXDelta(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT int16_t ESD_TouchTag_TouchXDelta(ESD_TouchTag *context)
 {
 	return s_TouchPosXDelta;
 }
 
-ft_int16_t Ft_Esd_TouchTag_TouchYDelta(Ft_Esd_TouchTag *context)
+ESD_CORE_EXPORT int16_t ESD_TouchTag_TouchYDelta(ESD_TouchTag *context)
 {
 	return s_TouchPosYDelta;
 }
 
-void Ft_Esd_TouchTag_SuppressCurrentTags()
+ESD_CORE_EXPORT void ESD_TouchTag_SuppressCurrentTags()
 {
 	s_SuppressCurrentTags = 1;
 }
 
-/* Nothing beyond this */
+/* end of file */
