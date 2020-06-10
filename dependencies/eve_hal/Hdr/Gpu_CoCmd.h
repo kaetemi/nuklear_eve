@@ -33,6 +33,9 @@ GPU_DLSwap
 
 */
 
+#ifndef EVE_COMPAT_COCMD__H
+#define EVE_COMPAT_COCMD__H
+
 #define Cmd_Getimage EVE_CoCmd_getImage
 #define Gpu_CoCmd_Getimage EVE_CoCmd_getImage
 
@@ -91,7 +94,12 @@ GPU_DLSwap
 #define Ft_Gpu_CoCmd_FlashDetach EVE_CoCmd_flashDetach
 #define Ft_Gpu_CoCmd_FlashErase EVE_CoCmd_flashErase
 #define Ft_Gpu_CoCmd_FlashFast EVE_CoCmd_flashFast
-#define Ft_Gpu_CoCmd_FlashRead EVE_CoCmd_flashRead
+// #define Ft_Gpu_CoCmd_FlashRead EVE_CoCmd_flashRead
+static inline bool Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, uint32_t dest, uint32_t src, uint32_t num)
+{
+	EVE_CoCmd_flashRead(phost, dest, src, num);
+	return EVE_Cmd_waitFlush(phost);
+}
 #define Ft_Gpu_CoCmd_FlashSource EVE_CoCmd_flashSource
 #define Ft_Gpu_CoCmd_FlashSpiDesel EVE_CoCmd_flashSpiDesel
 #define Ft_Gpu_CoCmd_FlashSpiRx EVE_CoCmd_flashSpiRx
@@ -244,5 +252,7 @@ GPU_DLSwap
 
 #define Gpu_CoCmd_AppendF EVE_CoCmd_appendF
 // #define Gpu_CoCmd_GetPoint EVE_CoCmd_getPoint
+
+#endif /* EVE_COMPAT_COCMD__H */
 
 /* end of file */

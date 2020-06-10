@@ -144,7 +144,6 @@ void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 	parameters.CbCmdWait = cbCmdWait;
 	eve_assert_do(EVE_Hal_open(&ec->HalContext, &parameters));
 	eve_assert(ec->HalContext.UserContext == ec);
-	eve_assert(ec->HalContext.Parameters.UserContext == ec);
 
 	EVE_HalContext *phost = &ec->HalContext;
 	EVE_Util_bootupConfig(phost);
@@ -305,13 +304,13 @@ void Esd_Render(Esd_Context *ec)
 	{
 		// Spinner used for switching longer loading pages with bitmaps etc
 		Ft_Esd_Dl_COLOR_RGB(~(ec->ClearColor));
-		Ft_Esd_CoCmd_Spinner(Esd_Update, ESD_DispWidth >> 1, ESD_DispHeight >> 1, 0, 0);
+		// Ft_Esd_CoCmd_Spinner(Esd_Update, ESD_DispWidth >> 1, ESD_DispHeight >> 1, 0, 0);
 		ec->SpinnerPopup = FT_FALSE;
 		ec->SpinnerPopped = FT_TRUE;
 	}
 	else if (ec->SpinnerPopped)
 	{
-		Ft_Esd_CoCmd_Stop(Esd_Update);
+		// Ft_Esd_CoCmd_Stop(Esd_Update);
 		ec->SpinnerPopped = FT_FALSE;
 	}
 

@@ -18,7 +18,7 @@ ESD_CATEGORY(EveRenderFunctions, DisplayName = "Display List", Category = EsdRen
 ESD_TYPE(EVE_HalContext *, Native = Pointer, Edit = Library)
 
 // Keep cache of displaylist values that don't often change but are generally set by every widget to reduce display list size
-#define ESD_DL_OPTIMIZE 1
+#define ESD_DL_OPTIMIZE 0
 #define ESD_DL_STATE_STACK_SIZE 5
 
 // Whether the END command is sent
