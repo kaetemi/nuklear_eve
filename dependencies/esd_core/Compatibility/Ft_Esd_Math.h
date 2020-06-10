@@ -28,8 +28,8 @@
 * have additional licence terms that apply to those amendments. However, Bridgetek
 * has no liability in relation to those amendments.
 */
-#ifndef FT_ESD_MATH_H
-#define FT_ESD_MATH_H
+#ifndef FT_ESD_COMPATIBILITY_MATH_H
+#define FT_ESD_COMPATIBILITY_MATH_H
 
 #include "Ft_Esd.h"
 

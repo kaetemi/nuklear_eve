@@ -1,6 +1,6 @@
 
-#ifndef FT_ESD_TOUCHTAG_H
-#define FT_ESD_TOUCHTAG_H
+#ifndef FT_ESD_COMPATIBILITY_TOUCHTAG_H
+#define FT_ESD_COMPATIBILITY_TOUCHTAG_H
 
 #include "Ft_Esd.h"
 

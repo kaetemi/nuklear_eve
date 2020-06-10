@@ -8,8 +8,8 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 Resource info structure
 */
 
-#ifndef ESD_RESOURCEINFO_H
-#define ESD_RESOURCEINFO_H
+#ifndef ESD_COMPATIBILITY_RESOURCEINFO_H
+#define ESD_COMPATIBILITY_RESOURCEINFO_H
 
 #include "Ft_Esd.h"
 #include "Ft_Esd_GpuAlloc.h"

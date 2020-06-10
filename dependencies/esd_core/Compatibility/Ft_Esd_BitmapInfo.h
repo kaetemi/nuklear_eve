@@ -2,8 +2,8 @@
 Bitmap info structure
 */
 
-#ifndef FT_ESD_BITMAPINFO_H
-#define FT_ESD_BITMAPINFO_H
+#ifndef FT_ESD_COMPATIBILITY_BITMAPINFO_H
+#define FT_ESD_COMPATIBILITY_BITMAPINFO_H
 
 #include "Ft_Esd.h"
 #include "Ft_Esd_GpuAlloc.h"

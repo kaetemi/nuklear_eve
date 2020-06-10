@@ -29,8 +29,8 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_H
-#define FT_ESD_H
+#ifndef FT_COMPATIBILITY_ESD_H
+#define FT_COMPATIBILITY_ESD_H
 
 /*
 Type definition

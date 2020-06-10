@@ -1,6 +1,6 @@
 
-#ifndef FT_ESD_PRIMITIVES_H
-#define FT_ESD_PRIMITIVES_H
+#ifndef FT_ESD_COMPATIBILITY_PRIMITIVES_H
+#define FT_ESD_COMPATIBILITY_PRIMITIVES_H
 
 #include "Ft_Esd.h"
 #include "Ft_Esd_Dl.h"

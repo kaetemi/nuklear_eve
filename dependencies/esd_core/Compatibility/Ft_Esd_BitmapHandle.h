@@ -4,8 +4,8 @@ Copyright (C) 2018  Bridgetek Pte Lte
 Author: Jan Boon <jan.boon@kaetemi.be>
 */
 
-#ifndef ESD_BITMAPHANDLE_H
-#define ESD_BITMAPHANDLE_H
+#ifndef ESD_COMPATIBILITY_BITMAPHANDLE_H
+#define ESD_COMPATIBILITY_BITMAPHANDLE_H
 
 #include "Ft_Esd.h"
 #include "Ft_Esd_BitmapInfo.h"

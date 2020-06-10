@@ -29,8 +29,8 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_UTILITY_H
-#define FT_ESD_UTILITY_H
+#ifndef FT_ESD_COMPATIBILITY_UTILITY_H
+#define FT_ESD_COMPATIBILITY_UTILITY_H
 
 #include <FT_Platform.h>
 #include "Ft_Esd.h"

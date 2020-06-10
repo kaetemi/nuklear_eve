@@ -1,6 +1,6 @@
 
 FILE(GLOB SRCS *.c)
-FILE(GLOB HDRS *.h Hdr/*.h)
+FILE(GLOB HDRS *.h)
 FILE(GLOB COMP Hdr/*.h)
 SOURCE_GROUP("" FILES ${SRCS} ${HDRS})
 SOURCE_GROUP("Compatibility" FILES ${COMP})

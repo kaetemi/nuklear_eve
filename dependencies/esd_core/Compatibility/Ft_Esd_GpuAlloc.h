@@ -19,8 +19,8 @@ Either allocation option does not guarantee that memory will remain persistently
 
 */
 
-#ifndef FT_ESD_GPUALLOC_H
-#define FT_ESD_GPUALLOC_H
+#ifndef FT_ESD_COMPATIBILITY_GPUALLOC_H
+#define FT_ESD_COMPATIBILITY_GPUALLOC_H
 
 #include "EVE_IntTypes.h"
 
