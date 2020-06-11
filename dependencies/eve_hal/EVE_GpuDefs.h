@@ -96,8 +96,10 @@ to be defined. If not, multi target compilation is assumed.
 #define LOW_FREQ_BOUND (phost->GpuDefs->LowFreqBound)
 
 #define BITMAP_ADDR_MASK (phost->GpuDefs->BitmapAddrMask)
-#define SCISSOR_XY_MASK (phost->GpuDefs->ScissorXYMask)
-#define SCISSOR_SIZE_MASK (phost->GpuDefs->ScissorSizeMask)
+#define SCISSOR_XY_SHIFT (phost->GpuDefs->ScissorSizeShift - 1)
+#define SCISSOR_XY_MASK (((1UL << phost->GpuDefs->ScissorSizeShift) - 1UL) >> 1)
+#define SCISSOR_SIZE_SHIFT (phost->GpuDefs->ScissorSizeShift)
+#define SCISSOR_SIZE_MASK ((1UL << phost->GpuDefs->ScissorSizeShift) - 1UL)
 
 #else
 
@@ -121,7 +123,9 @@ to be defined. If not, multi target compilation is assumed.
 #define RAM_G_SIZE (1024 * 1024L)
 #define LOW_FREQ_BOUND 58800000L //98% of 60Mhz
 
+#define SCISSOR_XY_SHIFT 11
 #define SCISSOR_XY_MASK 2047UL
+#define SCISSOR_SIZE_SHIFT 12
 #define SCISSOR_SIZE_MASK 4095UL
 
 #endif
@@ -155,7 +159,9 @@ to be defined. If not, multi target compilation is assumed.
 #define LOW_FREQ_BOUND 47040000L // 98% of 48Mhz
 
 #define BITMAP_ADDR_MASK 1048575UL
+#define SCISSOR_XY_SHIFT 9
 #define SCISSOR_XY_MASK 511UL
+#define SCISSOR_SIZE_SHIFT 10
 #define SCISSOR_SIZE_MASK 1023UL
 
 #endif
@@ -388,8 +394,7 @@ to be defined. If not, multi target compilation is assumed.
 	                          RAM_G_SIZE,            \
 	                          LOW_FREQ_BOUND,        \
 	                          BITMAP_ADDR_MASK,      \
-	                          SCISSOR_XY_MASK,       \
-	                          SCISSOR_SIZE_MASK
+	                          SCISSOR_SIZE_SHIFT
 
 /*************
 ** Commands **
