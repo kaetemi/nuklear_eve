@@ -39,11 +39,11 @@
 
 #define Esd_AttachFlashFast ESD_AttachFlashFast
 
-#define Esd_ShowLogo ESD_AttachFlashFast
-#define Esd_BeginLogo ESD_AttachFlashFast
-#define Esd_EndLogo ESD_AttachFlashFast
+#define Esd_ShowLogo ESD_ShowLogo
+#define Esd_BeginLogo ESD_BeginLogo
+#define Esd_EndLogo ESD_EndLogo
 
-#define Esd_Calibrate ESD_AttachFlashFast
+#define Esd_Calibrate ESD_Calibrate
 
 #endif /* #ifndef FT_ESD_UTILITY_H */
 

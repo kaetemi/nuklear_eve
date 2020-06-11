@@ -46,9 +46,9 @@
 #define FT_FALSE false
 #define FT_TRUE true
 
-typedef char ft_char8_t;
-typedef signed char ft_schar8_t;
-typedef unsigned char ft_uchar8_t;
+#define ft_char8_t char
+#define ft_schar8_t signed char
+#define ft_uchar8_t unsigned char
 
 #define ft_int8_t int8_t
 #define ft_uint8_t uint8_t

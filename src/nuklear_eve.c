@@ -214,6 +214,10 @@ nk_eve_placeholder(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
     nk_eve_color_rgba(phost, col);
+    /* 
+    EVE_CoDl_colorRgb(phost, 255, 127, 0);
+    EVE_CoDl_colorA(phost, 255);
+    */
     Esd_Dl_LINE_WIDTH(8);
     Esd_Dl_BEGIN(LINE_STRIP);
     EVE_CoDl_vertexFormat(phost, 0);
@@ -247,6 +251,7 @@ static void
 nk_eve_stroke_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, unsigned short r, unsigned short line_thickness, struct nk_color col)
 {
+    /* return nk_eve_placeholder(phost, x, y, w, h, col); */
     int offset = (line_thickness & 1) ? 0 : 8;
     Esd_Render_Rect_Stroke(
         ((int)x << 4) - offset, ((int)y << 4) - offset,
@@ -520,10 +525,12 @@ nk_eve_draw_text(EVE_HalContext *phost, short x, short y, unsigned short w, unsi
         return;
 
     y = y - evefont->font_info->BaseLine + evefont->font_info->CapsHeight;
-    Esd_Dl_COLOR_RGB((((cfg.r) & 255UL) << 16) | (((cfg.g) & 255UL) << 8) | ((cfg.b) & 255UL));
-    Esd_Dl_COLOR_A(cfg.a);
-    Ft_Gpu_CoCmd_Text_S(phost, x, y, handle, 0, text, len);
+    // Esd_Dl_COLOR_RGB((((cfg.r) & 255UL) << 16) | (((cfg.g) & 255UL) << 8) | ((cfg.b) & 255UL));
+    // Esd_Dl_COLOR_A(cfg.a);
+    // Ft_Gpu_CoCmd_Text_S(phost, x, y, handle, 0, text, len);
     // Ft_Gpu_CoCmd_Text(phost, x, y, handle, 0, text);
+    nk_eve_color_rgba(phost, cfg);
+    EVE_CoCmd_text_s(phost, x, y, handle, 0, text, len);
 }
 
 static void
@@ -759,7 +766,8 @@ nk_eve_init(struct nk_evefont *evefont)
     ep.Render = nk_eve_cb_render;
     ep.Idle = nk_eve_cb_idle;
     ep.End = nk_eve_cb_end;
-    Esd_Initialize(&eve.ec, &ep);
+    ESD_Initialize();
+    ESD_Open(&eve.ec, &ep);
     Esd_Start(&eve.ec);
     eve_assert_do(nk_evefont_setup(evefont));
     // eve.ctx.clip.copy = nk_eve_clipboard_copy;

@@ -54,6 +54,11 @@ Compatibility:
 
 */
 
+#define EVE_VERTEX2F_MIN -16384L
+#define EVE_VERTEX2F_MAX 16383L
+#define EVE_VERTEX2II_MIN 0UL
+#define EVE_VERTEX2II_MAX 511UL
+
 EVE_HAL_EXPORT void EVE_CoDlImpl_resetDlState(EVE_HalContext *phost);
 EVE_HAL_EXPORT void EVE_CoDlImpl_resetCoState(EVE_HalContext *phost);
 
@@ -171,7 +176,7 @@ inline static void EVE_CoDl_colorRgb_ex(EVE_HalContext *phost, uint32_t c)
 	if (rgb != EVE_DL_STATE.ColorRGB)
 	{
 #endif
-		EVE_CoCmd_dl(phost, CLEAR_COLOR_RGB(0, 0, 0) | (c & 0xFFFFFF));
+		EVE_CoCmd_dl(phost, COLOR_RGB(0, 0, 0) | (c & 0xFFFFFF));
 #if EVE_DL_OPTIMIZE
 		EVE_DL_STATE.ColorRGB = rgb;
 	}
@@ -194,7 +199,7 @@ inline static void EVE_CoDl_colorA(EVE_HalContext *phost, uint8_t alpha)
 	if (alpha != EVE_DL_STATE.ColorA)
 	{
 #endif
-		EVE_CoCmd_dl(phost, CLEAR_COLOR_A(alpha));
+		EVE_CoCmd_dl(phost, COLOR_A(alpha));
 #if EVE_DL_OPTIMIZE
 		EVE_DL_STATE.ColorA = alpha;
 	}

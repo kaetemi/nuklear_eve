@@ -855,8 +855,8 @@ These may only be set by one of the platform target definitions, and should not 
 ///////////////////////////////////////////////////////////////////////
 
 /// Other options
-#define EVE_DL_OPTIMIZE 1 /* Keep cache of displaylist values that don't often change but are generally set by every widget to reduce display list size */
-#define EVE_DL_END_PRIMITIVE 0 /* Whether the END command is sent */
+#define EVE_DL_OPTIMIZE 0 /* Keep cache of displaylist values that don't often change but are generally set by every widget to reduce display list size */
+#define EVE_DL_END_PRIMITIVE 1 /* Whether the END command is sent */
 #define EVE_DL_STATE_STACK_SIZE 4
 #define EVE_DL_STATE_STACK_MASK 3
 
