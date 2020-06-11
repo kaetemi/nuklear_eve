@@ -1228,9 +1228,17 @@ SelectDevice:
 			goto SelectDevice;
 		printf("\n");
 	}
+	else if (deviceCount > 0)
+	{
+		EVE_Hal_info(&info, 0);
+		printf("%s (%s, %s)\n", info.DisplayName, s_HostDisplayNames[info.Host], info.SerialNumber);
+		*deviceIdx = 0;
+	}
 	else
 	{
 		*deviceIdx = -1;
+		*chipId = EVE_SUPPORT_CHIPID;
+		return;
 	}
 
 #ifdef EVE_MULTI_TARGET

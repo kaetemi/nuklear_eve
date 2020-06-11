@@ -198,8 +198,6 @@ nk_eve_color_rgba(EVE_HalContext *phost, struct nk_color col)
     Esd_Dl_COLOR_A(col.a);
 }
 
-#define nk_eve_vertex(x, y) (EVE_CHIPID >= EVE_FT810 ? Esd_Dl_VERTEX2F((x), (y)) : Esd_Dl_VERTEX2F((x) << 4, (y) << 4))
-
 static void
 nk_eve_scissor(EVE_HalContext *phost, float x, float y, float w, float h)
 {
@@ -218,18 +216,17 @@ nk_eve_placeholder(EVE_HalContext *phost, short x, short y, unsigned short w,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(8);
     Esd_Dl_BEGIN(LINE_STRIP);
-    if (EVE_CHIPID >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(0);
-    nk_eve_vertex(x, y);
-    nk_eve_vertex(x, y + h);
-    nk_eve_vertex(x + w, y + h);
-    nk_eve_vertex(x + w, y);
-    nk_eve_vertex(x, y);
-    nk_eve_vertex(x + w, y + h);
+    EVE_CoDl_vertexFormat(phost, 0);
+    EVE_CoDl_vertex2f(phost, x, y);
+    EVE_CoDl_vertex2f(phost, x, y + h);
+    EVE_CoDl_vertex2f(phost, x + w, y + h);
+    EVE_CoDl_vertex2f(phost, x + w, y);
+    EVE_CoDl_vertex2f(phost, x, y);
+    EVE_CoDl_vertex2f(phost, x + w, y + h);
     Esd_Dl_END();
     Esd_Dl_BEGIN(LINES);
-    nk_eve_vertex(x, y + h);
-    nk_eve_vertex(x + w, y);
+    EVE_CoDl_vertex2f(phost, x, y + h);
+    EVE_CoDl_vertex2f(phost, x + w, y);
     Esd_Dl_END();
 }
 
@@ -240,10 +237,9 @@ nk_eve_stroke_line(EVE_HalContext *phost, short x0, short y0, short x1,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINES);
-    if (EVE_CHIPID >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(0);
-    nk_eve_vertex(x0, y0);
-    nk_eve_vertex(x1, y1);
+    EVE_CoDl_vertexFormat(phost, 0);
+    EVE_CoDl_vertex2f(phost, x0, y0);
+    EVE_CoDl_vertex2f(phost, x1, y1);
     Esd_Dl_END();
 }
 
@@ -277,10 +273,9 @@ nk_eve_fill_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
         nk_eve_color_rgba(phost, col);
         Esd_Dl_LINE_WIDTH(width);
         Esd_Dl_BEGIN(RECTS);
-        if (EVE_CHIPID >= EVE_FT810)
-            Esd_Dl_VERTEX_FORMAT(0);
-        nk_eve_vertex(x0, y0);
-        nk_eve_vertex(x1, y1);
+        EVE_CoDl_vertexFormat(phost, 0);
+        EVE_CoDl_vertex2f(phost, x0, y0);
+        EVE_CoDl_vertex2f(phost, x1, y1);
         Esd_Dl_END();
     }
 }
@@ -331,8 +326,7 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     scissor = Esd_Dl_Scissor_Set(boundary);
 
     /* Prepare state */
-    if (EVE_CHIPID >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(0);
+    EVE_CoDl_vertexFormat(phost, 0);
     Esd_Dl_SAVE_CONTEXT();
     Esd_Dl_CLEAR(0, 1, 0);
 
@@ -343,7 +337,7 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     Esd_Dl_BEGIN(EDGE_STRIP_B);
     for (i = 0; i < count; ++i)
     {
-        nk_eve_vertex(pnts[i].x, pnts[i].y);
+        EVE_CoDl_vertex2f(phost, pnts[i].x, pnts[i].y);
     }
     Esd_Dl_END();
 
@@ -351,8 +345,8 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     Eve_CoCmd_SendCmd(phost, COLOR_MASK(1, 1, 1, 1));
     Eve_CoCmd_SendCmd(phost, STENCIL_FUNC(EQUAL, 255, 255));
     Esd_Dl_BEGIN(RECTS);
-    nk_eve_vertex(xmin, ymin);
-    nk_eve_vertex(xmax, ymax);
+    EVE_CoDl_vertex2f(phost, xmin, ymin);
+    EVE_CoDl_vertex2f(phost, xmax, ymax);
     Esd_Dl_END();
 
     /* Restore state */
@@ -379,12 +373,11 @@ nk_eve_fill_triangle(EVE_HalContext *phost, short x0, short y0, short x1,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(8);
     Esd_Dl_BEGIN(LINE_STRIP);
-    if (EVE_CHIPID >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(0);
-    nk_eve_vertex(x0, y0);
-    nk_eve_vertex(x1, y1);
-    nk_eve_vertex(x2, y2);
-    nk_eve_vertex(x0, y0);
+    Esd_Dl_VERTEX_FORMAT(0);
+    EVE_CoDl_vertex2f(phost, x0, y0);
+    EVE_CoDl_vertex2f(phost, x1, y1);
+    EVE_CoDl_vertex2f(phost, x2, y2);
+    EVE_CoDl_vertex2f(phost, x0, y0);
     Esd_Dl_END();
     */
 }
@@ -401,11 +394,10 @@ nk_eve_stroke_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int co
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
-    if (EVE_CHIPID >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(0);
+    Esd_Dl_VERTEX_FORMAT(0);
     for (i = 0; i < count; ++i)
     {
-        nk_eve_vertex(pnts[i].x, pnts[i].y);
+        EVE_CoDl_vertex2f(phost, pnts[i].x, pnts[i].y);
     }
     // TODO: Validate if it's necessary to close the polygon
     // nk_eve_vertex(pnts[0].x, pnts[0].x);
@@ -425,11 +417,10 @@ nk_eve_stroke_polyline(EVE_HalContext *phost, const struct nk_vec2i *pnts,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
-    if (EVE_CHIPID >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(0);
+    Esd_Dl_VERTEX_FORMAT(0);
     for (i = 0; i < count; ++i)
     {
-        nk_eve_vertex(pnts[i].x, pnts[i].y);
+        EVE_CoDl_vertex2f(phost, pnts[i].x, pnts[i].y);
     }
     // TODO: Validate if it's necessary to close the polygon
     // nk_eve_vertex(pnts[0].x, pnts[0].x));
@@ -443,12 +434,11 @@ nk_eve_stroke_triangle(EVE_HalContext *phost, short x0, short y0, short x1,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
-    if (EVE_CHIPID >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(0);
-    nk_eve_vertex(x0, y0);
-    nk_eve_vertex(x1, y1);
-    nk_eve_vertex(x2, y2);
-    nk_eve_vertex(x0, y0);
+    Esd_Dl_VERTEX_FORMAT(0);
+    EVE_CoDl_vertex2f(phost, x0, y0);
+    EVE_CoDl_vertex2f(phost, x1, y1);
+    EVE_CoDl_vertex2f(phost, x2, y2);
+    EVE_CoDl_vertex2f(phost, x0, y0);
     Esd_Dl_END();
 }
 
@@ -463,15 +453,8 @@ nk_eve_fill_circle(EVE_HalContext *phost, short x, short y, unsigned short w,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_POINT_SIZE(r);
     Esd_Dl_BEGIN(POINTS);
-    if (EVE_CHIPID >= EVE_FT810)
-    {
-        Esd_Dl_VERTEX_FORMAT(1);
-        Esd_Dl_VERTEX2F(xc, yc);
-    }
-    else
-    {
-        Esd_Dl_VERTEX2F(xc << 3, yc << 3);
-    }
+    Esd_Dl_VERTEX_FORMAT(1);
+    Esd_Dl_VERTEX2F(xc, yc);
     Esd_Dl_END();
 }
 
@@ -504,8 +487,7 @@ nk_eve_stroke_curve(EVE_HalContext *phost,
 
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
-    if (EVE_CHIPID >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(4);
+    Esd_Dl_VERTEX_FORMAT(4);
 
     Esd_Dl_BEGIN(LINE_STRIP);
     Esd_Dl_VERTEX2F(p1.x << 4, p1.y << 4);
