@@ -70,15 +70,15 @@ ESD_PARAMETER(s, Type = ft_uint8_t, DisplayName = "Tag", Default = 255, Min = 0,
 
 ESD_FUNCTION(Ft_Esd_Dl_COLOR_RGB, Type = ft_void_t, Category = _GroupHidden, Macro)
 ESD_PARAMETER(c, Type = ft_rgb32_t, DisplayName = "Color")
-#define Ft_Esd_Dl_COLOR_RGB(c) EVE_CoDl_colorRgb_ex(ESD_GetHost(), s)
+#define Ft_Esd_Dl_COLOR_RGB(c) EVE_CoDl_colorRgb_ex(ESD_GetHost(), c)
 
 ESD_FUNCTION(Ft_Esd_Dl_COLOR_A, Type = ft_void_t, Category = _GroupHidden, Macro)
 ESD_PARAMETER(alpha, Type = ft_uint8_t, Default = 255, Min = 0, Max = 255)
-#define Ft_Esd_Dl_COLOR_A(alpha) EVE_CoDl_colorA(ESD_GetHost(), s)
+#define Ft_Esd_Dl_COLOR_A(alpha) EVE_CoDl_colorA(ESD_GetHost(), alpha)
 
 ESD_FUNCTION(Ft_Esd_Dl_COLOR_ARGB, Type = ft_void_t, Category = _GroupHidden, Macro)
 ESD_PARAMETER(c, Type = ft_argb32_t, DisplayName = "Color")
-#define Ft_Esd_Dl_COLOR_ARGB(c) EVE_CoDl_colorArgb_ex(ESD_GetHost(), s)
+#define Ft_Esd_Dl_COLOR_ARGB(c) EVE_CoDl_colorArgb_ex(ESD_GetHost(), c)
 
 ESD_FUNCTION(Ft_Esd_Dl_BITMAP_HANDLE, Type = ft_void_t, Category = _GroupHidden, Macro)
 ESD_PARAMETER(handle, Type = ft_uint8_t, Min = 0, Max = 31)
