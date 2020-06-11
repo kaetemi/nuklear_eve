@@ -31,93 +31,60 @@
 #ifndef FT_ESD_COMPATIBILITY_MATH_H
 #define FT_ESD_COMPATIBILITY_MATH_H
 
+#include "ESD_Core.h"
 #include "Ft_Esd.h"
 
 ESD_TYPE(Ft_Esd_Point16, Native = Struct) // TODO: Struct support, expose values
-typedef struct
-{
-	ft_int16_t X, Y;
-} Ft_Esd_Point16;
+#define Ft_Esd_Point16 ESD_Point16
 
 ESD_TYPE(Ft_Esd_Size16, Native = Struct) // TODO: Struct support, expose values
-typedef struct
-{
-	ft_int16_t Width, Height;
-} Ft_Esd_Size16;
+#define Ft_Esd_Size16 ESD_Size16
 
 ESD_TYPE(Ft_Esd_Rect16, Native = Struct) // TODO: Struct support, expose values
-typedef struct
-{
-	union
-	{
-		Ft_Esd_Point16 Position;
-		struct
-		{
-			ft_int16_t X, Y;
-		};
-	};
-	union
-	{
-		Ft_Esd_Size16 Size;
-		struct
-		{
-			ft_int16_t Width, Height;
-		};
-	};
-} Ft_Esd_Rect16;
-
+#define Ft_Esd_Rect16 ESD_Rect16
 ESD_TYPE(Ft_Esd_URect16, Native = Struct) // TODO: Struct support, expose values
-typedef struct
-{
-	ft_uint16_t X, Y, Width, Height;
-} Ft_Esd_URect16;
+#define Ft_Esd_URect16 ESD_URect16
 ESD_TYPE(Ft_Esd_Rect32, Native = Struct) // TODO: Struct support, expose values
-typedef struct
-{
-	ft_int32_t X, Y, Width, Height;
-} Ft_Esd_Rect32;
+#define Ft_Esd_Rect32 ESD_Rect32
 ESD_TYPE(Ft_Esd_URect32, Native = Struct) // TODO: Struct support, expose values
-typedef struct
-{
-	ft_uint32_t X, Y, Width, Height;
-} Ft_Esd_URect32;
+#define Ft_Esd_URect32 ESD_URect32
 
-ft_bool_t Ft_Esd_Rect16_Intersects(Ft_Esd_Rect16 a, Ft_Esd_Rect16 b);
-ft_bool_t Ft_Esd_Rect16_IsInside(Ft_Esd_Rect16 subrect, Ft_Esd_Rect16 rect);
-ft_bool_t Ft_Esd_Rect16_IsInsideHorizontal(Ft_Esd_Rect16 subrect, Ft_Esd_Rect16 rect);
-ft_bool_t Ft_Esd_Rect16_IsInsideVertical(Ft_Esd_Rect16 subrect, Ft_Esd_Rect16 rect);
+#define Ft_Esd_Rect16_Intersects ESD_Rect16_Intersects
+#define Ft_Esd_Rect16_IsInside ESD_Rect16_IsInside
+#define Ft_Esd_Rect16_IsInsideHorizontal ESD_Rect16_IsInsideHorizontal
+#define Ft_Esd_Rect16_IsInsideVertical ESD_Rect16_IsInsideVertical
 
-Ft_Esd_Rect16 Ft_Esd_Rect16_Crop(Ft_Esd_Rect16 rect, Ft_Esd_Rect16 crop);
+#define Ft_Esd_Rect16_Crop ESD_Rect16_Crop
 
-ESD_FUNCTION(Ft_Esd_Int16_ClampedValue, Type = ft_int16_t, DisplayName = "Clamp Int16", Category = EsdUtilities, Macro)
+ESD_FUNCTION(Ft_Esd_Int16_ClampedValue, Type = ft_int16_t, DisplayName = "Clamp Int16", Category = _GroupHidden, Macro)
 ESD_PARAMETER(value, Type = ft_int16_t, Default = 0)
 ESD_PARAMETER(min, Type = ft_int16_t, Default = 0)
 ESD_PARAMETER(max, Type = ft_int16_t, Default = 100)
-#define Ft_Esd_Int16_ClampedValue(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+#define Ft_Esd_Int16_ClampedValue ESD_Int16_ClampedValue
 
-ESD_FUNCTION(Ft_Esd_UInt16_ClampedValue, Type = ft_uint16_t, DisplayName = "Clamp UInt16", Category = EsdUtilities, Macro)
+ESD_FUNCTION(Ft_Esd_UInt16_ClampedValue, Type = ft_uint16_t, DisplayName = "Clamp UInt16", Category = _GroupHidden, Macro)
 ESD_PARAMETER(value, Type = ft_uint16_t, Default = 0)
 ESD_PARAMETER(min, Type = ft_uint16_t, Default = 0)
 ESD_PARAMETER(max, Type = ft_uint16_t, Default = 100)
-#define Ft_Esd_UInt16_ClampedValue(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+#define Ft_Esd_UInt16_ClampedValue ESD_UInt16_ClampedValue
 
-ESD_FUNCTION(Ft_Esd_Int32_ClampedValue, Type = ft_int32_t, DisplayName = "Clamp Int32", Category = EsdUtilities, Macro)
+ESD_FUNCTION(Ft_Esd_Int32_ClampedValue, Type = ft_int32_t, DisplayName = "Clamp Int32", Category = _GroupHidden, Macro)
 ESD_PARAMETER(value, Type = ft_int32_t, Default = 0)
 ESD_PARAMETER(min, Type = ft_int32_t, Default = 0)
 ESD_PARAMETER(max, Type = ft_int32_t, Default = 100)
-#define Ft_Esd_Int32_ClampedValue(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+#define Ft_Esd_Int32_ClampedValue ESD_Int32_ClampedValue
 
-ESD_FUNCTION(Ft_Esd_UInt32_ClampedValue, Type = ft_uint32_t, DisplayName = "Clamp UInt32", Category = EsdUtilities, Macro)
+ESD_FUNCTION(Ft_Esd_UInt32_ClampedValue, Type = ft_uint32_t, DisplayName = "Clamp UInt32", Category = _GroupHidden, Macro)
 ESD_PARAMETER(value, Type = ft_uint32_t, Default = 0)
 ESD_PARAMETER(min, Type = ft_uint32_t, Default = 0)
 ESD_PARAMETER(max, Type = ft_uint32_t, Default = 100)
-#define Ft_Esd_UInt32_ClampedValue(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+#define Ft_Esd_UInt32_ClampedValue ESD_UInt32_ClampedValue
 
-ESD_FUNCTION(Ft_Esd_Float_ClampedValue, Type = float, DisplayName = "Clamp Float", Category = EsdUtilities, Macro)
+ESD_FUNCTION(Ft_Esd_Float_ClampedValue, Type = float, DisplayName = "Clamp Float", Category = _GroupHidden, Macro)
 ESD_PARAMETER(value, Type = float, Default = 0)
 ESD_PARAMETER(min, Type = float, Default = 0)
 ESD_PARAMETER(max, Type = float, Default = 100)
-#define Ft_Esd_Float_ClampedValue(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+#define Ft_Esd_Float_ClampedValue ESD_Float_ClampedValue
 
 #endif /* FT_ESD_MATH_H */
 

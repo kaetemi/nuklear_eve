@@ -7,43 +7,10 @@
 #include "Ft_Esd_BitmapInfo.h"
 #include "Ft_Esd_Math.h"
 
-// Ft_Esd_Render_Rectangle
-// Ft_Esd_Render_Line
-// Ft_Esd_Render_Point
-// Ft_Esd_Render_Bitmap
-// Ft_Esd_Render_LineStrip
-// Ft_Esd_Render_EdgeStrip
-
-ESD_CATEGORY(EsdElements, DisplayName = "Elements", Category = EsdRenderable)
-ESD_CATEGORY(EsdPrimitives, DisplayName = "Primitives", Category = EsdRenderable)
-
-ESD_CATEGORY(EsdBasicWidegts, DisplayName = "Basics", Category = EsdWidgets)
-
-// A function to combine RGB channel with 8 bit Alpha channel data into 32 bit integer data
-ESD_FUNCTION(Ft_Esd_ColorARGB_Combine, Type = ft_argb32_t, DisplayName = "Color A+RGB Combine", Category = EsdUtilities, Inline)
+ESD_FUNCTION(Ft_Esd_ColorARGB_Combine, Type = ft_argb32_t, DisplayName = "Color A+RGB Combine", Category = EsdUtilities, Macro)
 ESD_PARAMETER(rgb, Type = ft_rgb32_t, Default = #FFFFFF)
 ESD_PARAMETER(a, Type = ft_uint8_t, Default = 255)
-static inline ft_argb32_t Ft_Esd_ColorARGB_Combine(ft_rgb32_t rgb, ft_uint8_t a)
-{
-	return (rgb & 0xFFFFFF) | (((ft_argb32_t)a) << 24);
-}
-
-#define ESD_DECOMPOSE_ALPHA(argb) ((argb) >> 24)
-#define ESD_DECOMPOSE_RED(rgb) (((rgb) >> 16) & 0xFF)
-#define ESD_DECOMPOSE_GREEN(rgb) (((rgb) >> 8) & 0xFF)
-#define ESD_DECOMPOSE_BLUE(rgb) ((rgb)&0xFF)
-
-#define ESD_COMPOSE_ARGB4(r, g, b, a) (((a & 0xF0) << 8) | ((r & 0xF0) << 4) | (g & 0xF0) | (b >> 4))
-#define ESD_COMPOSE_RGB565(r, g, b) (((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3))
-#define ESD_COMPOSE_ARGB1555(r, g, b, a) ((((a)&0x80) << 8) | (((r)&0xF8) << 7) | (((g)&0xF8) << 2) | ((b) >> 3))
-#define ESD_COMPOSE_ARGB8888(r, g, b, a) ((a) << 24) | ((r) << 16) | ((g) << 8) | (b)
-
-#define ESD_COLOR_ARGB4(argb) ESD_COMPOSE_ARGB4(ESD_DECOMPOSE_RED(argb), ESD_DECOMPOSE_GREEN(argb), ESD_DECOMPOSE_BLUE(argb), ESD_DECOMPOSE_ALPHA(argb))
-#define ESD_COLOR_RGB565(rgb) ESD_COMPOSE_RGB565(ESD_DECOMPOSE_RED(rgb), ESD_DECOMPOSE_GREEN(rgb), ESD_DECOMPOSE_BLUE(rgb))
-#define ESD_COLOR_ARGB1555(argb) ESD_COMPOSE_ARGB1555(ESD_DECOMPOSE_RED(argb), ESD_DECOMPOSE_GREEN(argb), ESD_DECOMPOSE_BLUE(argb), ESD_DECOMPOSE_ALPHA(argb))
-
-#define ESD_ARGB_WHITE 0xFFFFFFFF
-#define ESD_ARGB_BLACK 0xFF000000
+#define Ft_Esd_ColorARGB_Combine ESD_COMPOSE_RGB_ALPHA
 
 // Rectangular gradient with four colored corners
 ESD_RENDER(Esd_Render_MultiGradient, Type = ft_void_t, DisplayName = "ESD Multi Gradient", Include = "FT_Esd_Primitives.h", Category = EsdPrimitives)
@@ -197,73 +164,6 @@ Ft_Esd_Size16 Ft_Esd_Primitive_GetScaledSize(Ft_Esd_Size16 boundary, Ft_Esd_Size
 
 // Get alignment position
 Ft_Esd_Rect16 Ft_Esd_Primitive_GetAlignedRect(Ft_Esd_Size16 boundary, Ft_Esd_Size16 size, ft_uint8_t align);
-
-ESD_ENUM(Esd_Orientation, Type = ft_uint8_t)
-#define ESD_ORIENTATION_HORIZONTAL (1)
-#define ESD_ORIENTATION_VERTICAL (2)
-ESD_END()
-
-ESD_ENUM(Esd_Direction, Type = ft_uint8_t)
-#define ESD_DIRECTION_NONE (0)
-#define ESD_DIRECTION_HORIZONTAL (1)
-#define ESD_DIRECTION_VERTICAL (2)
-#define ESD_DIRECTION_BOTH (ESD_DIRECTION_HORIZONTAL | ESD_DIRECTION_VERTICAL)
-ESD_END()
-
-ESD_ENUM(Esd_AlignHorizontal, Type = ft_uint8_t)
-#define ESD_ALIGN_LEFTX (0)
-#define ESD_ALIGN_CENTERX (1)
-#define ESD_ALIGN_RIGHTX (2)
-#define ESD_ALIGN_FILLX (3)
-ESD_END()
-
-ESD_ENUM(Esd_AlignVertical, Type = ft_uint8_t)
-#define ESD_ALIGN_TOPY (0)
-#define ESD_ALIGN_CENTERY (4)
-#define ESD_ALIGN_BOTTOMY (8)
-#define ESD_ALIGN_FILLY (12)
-ESD_END()
-
-ESD_ENUM(Esd_Align, Type = ft_uint8_t)
-#define ESD_ALIGN_TOPLEFT (ESD_ALIGN_TOPY | ESD_ALIGN_LEFTX)
-#define ESD_ALIGN_TOPCENTER (ESD_ALIGN_TOPY | ESD_ALIGN_CENTERX)
-#define ESD_ALIGN_TOPRIGHT (ESD_ALIGN_TOPY | ESD_ALIGN_RIGHTX)
-#define ESD_ALIGN_TOPFILL (ESD_ALIGN_TOPY | ESD_ALIGN_FILLX)
-#define ESD_ALIGN_CENTERLEFT (ESD_ALIGN_CENTERY | ESD_ALIGN_LEFTX)
-#define ESD_ALIGN_CENTERCENTER (ESD_ALIGN_CENTERY | ESD_ALIGN_CENTERX)
-#define ESD_ALIGN_CENTERRIGHT (ESD_ALIGN_CENTERY | ESD_ALIGN_RIGHTX)
-#define ESD_ALIGN_CENTERFILL (ESD_ALIGN_CENTERY | ESD_ALIGN_FILLX)
-#define ESD_ALIGN_BOTTOMLEFT (ESD_ALIGN_BOTTOMY | ESD_ALIGN_LEFTX)
-#define ESD_ALIGN_BOTTOMCENTER (ESD_ALIGN_BOTTOMY | ESD_ALIGN_CENTERX)
-#define ESD_ALIGN_BOTTOMRIGHT (ESD_ALIGN_BOTTOMY | ESD_ALIGN_RIGHTX)
-#define ESD_ALIGN_BOTTOMFILL (ESD_ALIGN_BOTTOMY | ESD_ALIGN_FILLX)
-#define ESD_ALIGN_FILLLEFT (ESD_ALIGN_FILLY | ESD_ALIGN_LEFTX)
-#define ESD_ALIGN_FILLCENTER (ESD_ALIGN_FILLY | ESD_ALIGN_CENTERX)
-#define ESD_ALIGN_FILLRIGHT (ESD_ALIGN_FILLY | ESD_ALIGN_RIGHTX)
-#define ESD_ALIGN_FILLFILL (ESD_ALIGN_FILLY | ESD_ALIGN_FILLX)
-ESD_END()
-
-ESD_FUNCTION(ESD_ALIGN_HORIZONTAL, Type = Esd_AlignHorizontal, DisplayName = "Get Horizontal Align", Category = EsdLayoutUtilities, Macro)
-ESD_PARAMETER(align, Type = Esd_Align)
-#define ESD_ALIGN_HORIZONTAL(align) (align & 3)
-
-ESD_FUNCTION(ESD_ALIGN_VERTICAL, Type = Esd_AlignVertical, DisplayName = "Get Vertical Align", Category = EsdLayoutUtilities, Macro)
-ESD_PARAMETER(align, Type = Esd_Align)
-#define ESD_ALIGN_VERTICAL(align) (align & 12)
-
-ESD_ENUM(Esd_Scaling, Type = ft_uint8_t)
-#define ESD_SCALING_ORIGINAL (0)
-#define ESD_SCALING_FILL (1) // Keep Aspect ratio, extend outside rect
-#define ESD_SCALING_FIT (2) // Keep Aspect ratio, stay inside rect
-#define ESD_SCALING_STRETCH (3)
-ESD_END()
-
-ESD_ENUM(Esd_Stroke, Type = ft_uint8_t)
-#define ESD_STROKE_NONE (0)
-#define ESD_STROKE_INNER (1)
-#define ESD_STROKE_OUTER (2)
-#define ESD_STROKE_CENTER (3)
-ESD_END()
 
 #endif /* #ifndef FT_ESD_PRIMITIVES_H */
 

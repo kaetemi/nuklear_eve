@@ -2,6 +2,8 @@
 #ifndef FT_ESD_COMPATIBILITY_DL_H
 #define FT_ESD_COMPATIBILITY_DL_H
 
+#include "ESD_Core.h"
+
 #include <FT_Platform.h>
 #include <FT_CoPro_Cmds.h>
 

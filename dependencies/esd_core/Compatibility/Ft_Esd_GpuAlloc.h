@@ -22,93 +22,21 @@ Either allocation option does not guarantee that memory will remain persistently
 #ifndef FT_ESD_COMPATIBILITY_GPUALLOC_H
 #define FT_ESD_COMPATIBILITY_GPUALLOC_H
 
-#include "EVE_IntTypes.h"
+#include "ESD_GpuAlloc.h"
 
-#define MAX_NUM_ALLOCATIONS 64UL
+#define Ft_Esd_GpuHandle ESD_GpuHandle
+#define Ft_Esd_GpuAllocEntry ESD_GpuAllocEntry
+#define Ft_Esd_GpuAllocRef ESD_GpuAllocRef
+#define Ft_Esd_GpuAlloc ESD_GpuAlloc
 
-// Set the GC flag. This automatically frees the allocation when the USED flag is not set during Update.
-// Using this flag means you must call Ft_Esd_GpuAlloc_Get on each frame to keep the allocation alive
-#define GA_GC_FLAG 1
-
-// Used flag is set whenever Ft_Esd_GpuAlloc_Get is called, reset on every Update
-#define GA_USED_FLAG 2
-
-// Low priority flag is set when the allocation may be discarded when low on RAM (not yet implemented).
-#define GA_LOW_FLAG 4
-
-// Address which is returned when the allocation is invalid (~0).
-#define GA_INVALID ~0UL
-
-// Handle to a gpu memory allocation
-typedef struct
-{
-	/// Id in the allocation reference table
-	uint32_t Id : 8;
-	/// Sequence number used to invalidate handles
-	uint32_t Seq : 24;
-
-} Ft_Esd_GpuHandle;
-
-// Internal information about a gpu memory allocation handle
-typedef struct
-{
-	uint32_t Idx : 8;
-	uint32_t Seq : 24;
-
-} Ft_Esd_GpuAllocRef;
-
-// Internal gpu allocation entry
-typedef struct
-{
-	uint32_t Address;
-	uint32_t Length;
-	uint16_t Id;
-	uint16_t Flags;
-
-} Ft_Esd_GpuAllocEntry;
-
-typedef struct
-{
-	/// Reference to an allocation entry, by allocation Id
-	Ft_Esd_GpuAllocRef AllocRefs[MAX_NUM_ALLOCATIONS];
-	/// Allocation map,
-	Ft_Esd_GpuAllocEntry AllocEntries[MAX_NUM_ALLOCATIONS];
-	/// Number of valid alloc entries
-	uint32_t NbAllocEntries;
-	/// RAM_G size usable by the allocator. Reset GpuAlloc after modifying
-	uint32_t RamGSize;
-
-} Ft_Esd_GpuAlloc;
-
-// Initialize or reset gpu ram allocation mechanism
-void Ft_Esd_GpuAlloc_Reset(Ft_Esd_GpuAlloc *ga);
-
-// Run basic garbage collection and any other mechanisms, call first in the Update cycle, after the frame is fully rendered and swapped
-void Ft_Esd_GpuAlloc_Update(Ft_Esd_GpuAlloc *ga);
-
-// Allocate a gpu ram block
-Ft_Esd_GpuHandle Ft_Esd_GpuAlloc_Alloc(Ft_Esd_GpuAlloc *ga, uint32_t size, uint16_t flags);
-
-// Free a gpu ram block
-void Ft_Esd_GpuAlloc_Free(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle);
-
-// Get ram address from handle. Returns ~0 when invalid.
-uint32_t Ft_Esd_GpuAlloc_Get(Ft_Esd_GpuAlloc *ga, Ft_Esd_GpuHandle handle);
-
-// Get total used GPU RAM
-uint32_t Ft_Esd_GpuAlloc_GetTotalUsed(Ft_Esd_GpuAlloc *ga);
-
-// Get total GPU RAM
-uint32_t Ft_Esd_GpuAlloc_GetTotal(Ft_Esd_GpuAlloc *ga);
-
-#ifndef NDEBUG
-void Ft_Esd_GpuAlloc_Print(Ft_Esd_GpuAlloc *ga);
-#else
-#define Ft_Esd_GpuAlloc_Print(ga) \
-	do                            \
-	{                             \
-	} while (0)
-#endif
+#define Ft_Esd_GpuAlloc_Reset ESD_GpuAlloc_Reset
+#define Ft_Esd_GpuAlloc_Update ESD_GpuAlloc_Update
+#define Ft_Esd_GpuAlloc_Alloc ESD_GpuAlloc_Alloc
+#define Ft_Esd_GpuAlloc_Free ESD_GpuAlloc_Free
+#define Ft_Esd_GpuAlloc_Get ESD_GpuAlloc_Get
+#define Ft_Esd_GpuAlloc_GetTotalUsed ESD_GpuAlloc_GetTotalUsed
+#define Ft_Esd_GpuAlloc_GetTotal ESD_GpuAlloc_GetTotal
+#define Ft_Esd_GpuAlloc_Print ESD_GpuAlloc_Print
 
 #endif /* #ifndef FT_ESD_GPUALLOC_H */
 
