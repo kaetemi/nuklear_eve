@@ -63,7 +63,7 @@ static inline void Esd_Initialize(Esd_Context *ec, Esd_Parameters *ep)
 #define Esd_Loop ESD_Loop
 
 #define Esd_Start ESD_Start
-#define Esd_Update ESD__Update
+#define Esd_Update ESD_Update
 #define Esd_Render ESD_Render
 #define Esd_WaitSwap ESD_WaitSwap
 #define Esd_Stop ESD_Stop

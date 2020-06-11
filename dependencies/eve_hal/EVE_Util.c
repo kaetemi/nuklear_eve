@@ -1208,23 +1208,30 @@ void EVE_Util_selectDeviceInteractive(EVE_CHIPID_T *chipId, size_t *deviceIdx)
 	size_t i;
 
 SelectDevice:
-	buf[0] = '\0';
-	printf("Select a device:\n");
 	deviceCount = EVE_Hal_list();
-	for (i = 0; i < deviceCount; ++i)
+	if (deviceCount > 1)
 	{
-		EVE_Hal_info(&info, i);
-		if (info.Host)
-			printf("- [%d] %s (%s, %s)\n", (unsigned int)i, info.DisplayName, s_HostDisplayNames[info.Host], info.SerialNumber);
+		buf[0] = '\0';
+		printf("Select a device:\n");
+		for (i = 0; i < deviceCount; ++i)
+		{
+			EVE_Hal_info(&info, i);
+			if (info.Host)
+				printf("- [%d] %s (%s, %s)\n", (unsigned int)i, info.DisplayName, s_HostDisplayNames[info.Host], info.SerialNumber);
+		}
+		fgets(buf, sizeof(buf), stdin);
+		if (sscanf_s(buf, "%i", &selectedDeviceIdx) != 1)
+			goto SelectDevice;
+		*deviceIdx = selectedDeviceIdx;
+		EVE_Hal_info(&info, *deviceIdx);
+		if (!info.Host)
+			goto SelectDevice;
+		printf("\n");
 	}
-	fgets(buf, sizeof(buf), stdin);
-	if (sscanf_s(buf, "%i", &selectedDeviceIdx) != 1)
-		goto SelectDevice;
-	*deviceIdx = selectedDeviceIdx;
-	EVE_Hal_info(&info, *deviceIdx);
-	if (!info.Host)
-		goto SelectDevice;
-	printf("\n");
+	else
+	{
+		*deviceIdx = -1;
+	}
 
 #ifdef EVE_MULTI_TARGET
 SelectChipId:
