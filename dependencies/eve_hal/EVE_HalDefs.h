@@ -192,10 +192,12 @@ typedef struct EVE_HalDlState
 	uint32_t ColorRGB;
 	int16_t LineWidth;
 	int16_t PointSize;
+#endif
 #if (EVE_SUPPORT_CHIPID < EVE_FT810) || defined(EVE_MULTI_TARGET)
 	int16_t VertexTranslateX;
 	int16_t VertexTranslateY;
 #endif
+#if (EVE_DL_OPTIMIZE)
 	uint8_t ColorA;
 	uint8_t Handle; // Current handle
 	uint8_t Cell; // Current cell
