@@ -38,8 +38,8 @@
 
 #include "Ft_Esd.h"
 #include "Ft_Esd_GpuAlloc.h"
-#include "FT_Esd_Dl.h"
-#include "FT_Esd_CoCmd.h"
+#include "Ft_Esd_Dl.h"
+#include "Ft_Esd_CoCmd.h"
 #include "Ft_Esd_BitmapHandle.h"
 #include "Ft_Esd_TouchTag.h"
 

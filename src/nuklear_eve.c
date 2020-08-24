@@ -766,8 +766,8 @@ nk_eve_init(struct nk_evefont *evefont)
     ep.Render = nk_eve_cb_render;
     ep.Idle = nk_eve_cb_idle;
     ep.End = nk_eve_cb_end;
-    ESD_Initialize();
-    ESD_Open(&eve.ec, &ep);
+    Esd_Initialize();
+    Esd_Open(&eve.ec, &ep);
     Esd_Start(&eve.ec);
     eve_assert_do(nk_evefont_setup(evefont));
     // eve.ctx.clip.copy = nk_eve_clipboard_copy;
@@ -781,8 +781,8 @@ NK_API void
 nk_eve_shutdown(void)
 {
     Esd_Stop(&eve.ec);
-    Esd_Release(&eve.ec);
-    Esd_Shutdown();
+    Esd_Close(&eve.ec);
+    Esd_Release();
     nk_free(&eve.ctx);
 }
 
