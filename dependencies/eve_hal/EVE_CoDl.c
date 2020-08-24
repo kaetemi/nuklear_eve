@@ -35,7 +35,7 @@
 #include <stdio.h> /* memset */
 #endif
 
-void EVE_CoDlImpl_resetDlState(EVE_HalContext *phost)
+EVE_HAL_EXPORT void EVE_CoDlImpl_resetDlState(EVE_HalContext *phost)
 {
 #if (EVE_DL_OPTIMIZE) || (EVE_SUPPORT_CHIPID < EVE_FT810) || defined(EVE_MULTI_TARGET)
 	phost->DlStateIndex = 0;
@@ -70,7 +70,7 @@ void EVE_CoDlImpl_resetDlState(EVE_HalContext *phost)
 #endif
 }
 
-void EVE_CoDlImpl_resetCoState(EVE_HalContext *phost)
+EVE_HAL_EXPORT void EVE_CoDlImpl_resetCoState(EVE_HalContext *phost)
 {
 #if (EVE_DL_OPTIMIZE)
 	phost->CoFgColor = 0x003870;

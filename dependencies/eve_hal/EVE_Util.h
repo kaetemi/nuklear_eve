@@ -75,6 +75,7 @@ typedef struct EVE_ConfigParameters
 	uint8_t OutBitsR;
 	uint8_t OutBitsG;
 	uint8_t OutBitsB;
+	uint16_t PCLKFreq;
 	bool Dither;
 	/* TODO: 
 	AdaptiveFramerate
@@ -87,7 +88,9 @@ typedef struct EVE_ConfigParameters
 
 } EVE_ConfigParameters;
 
-/* Display resolution presets */
+/* Display resolution presets.
+NOTE: Also update `s_DisplayResolutions` and `s_DisplayNames` in EVE_Util.c around ln 50,
+as well as `EVE_Util_configDefaults` around ln 500, when adding display presets. */
 typedef enum EVE_DISPLAY_T
 {
 	EVE_DISPLAY_DEFAULT = 0,
@@ -96,7 +99,8 @@ typedef enum EVE_DISPLAY_T
 	EVE_DISPLAY_QVGA_320x240_50Hz,
 	EVE_DISPLAY_WQVGA_480x272_60Hz,
 	EVE_DISPLAY_WVGA_800x480_60Hz,
-	EVE_DISPLAY_WXGA_1280x800_60Hz,
+	EVE_DISPLAY_WSVGA_1024x600_83Hz,
+	EVE_DISPLAY_WXGA_1280x800_65Hz,
 
 	/* Portrait */
 	EVE_DISPLAY_HVGA_320x480_60Hz,

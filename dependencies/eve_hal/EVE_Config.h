@@ -98,12 +98,13 @@ ESD_TARGET_GRAPHICS(ME813A_WH50C, DisplayName = "ME813A-WH50C", SupportedDisplay
 // ESD_TARGET_GRAPHICS(ME812AU_WH50R, DisplayName = "ME812AU-WH50R", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "FT4222", SupportedArchitectures = "\bFT4222\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT812)\b")
 // ESD_TARGET_GRAPHICS(ME813AU_WH50C, DisplayName = "ME813AU-WH50C", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "FT4222", SupportedArchitectures = "\bFT4222\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
 // ESD_TARGET_GRAPHICS(PANL35, DisplayName = "PanL35", IntegratedDisplay = "KD2401 (320x480)", IntegratedPlatform = "FT903", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
-ESD_TARGET_GRAPHICS(PANL50, DisplayName = "PanL50", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "MM900EV1B", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
+// ESD_TARGET_GRAPHICS(PANL50, DisplayName = "PanL50", SupportedDisplays = "\b\w+WVGA\w*\b", IntegratedPlatform = "MM900EV1B", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT813)\b")
 // ESD_TARGET_GRAPHICS(PANL70, DisplayName = "PanL70", IntegratedDisplay = "WVGA (800x480)", IntegratedPlatform = "FT930", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
 // ESD_TARGET_GRAPHICS(PANL70PLUS, DisplayName = "PanL70 Plus", IntegratedDisplay = "WVGA (800x480)", IntegratedPlatform = "FT930", SupportedArchitectures = "\bFT32\b", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT811)\b")
 ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM800C, DisplayName = "VM800C", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT80X|FT800)\b")
 ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM810C, DisplayName = "VM810C", SupportedFlash = "(?=a)b", LibraryTargets = "\b(FT81X|FT810)\b")
 ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM816C, DisplayName = "VM816C", IntegratedFlash = "W25Q128", LibraryTargets = "\b(BT81X|BT816)\b")
+ESD_TARGET_GRAPHICS(EVE_GRAPHICS_ME817EV, DisplayName = "ME817EV", IntegratedFlash = "W25Q128", LibraryTargets = "\b(BT81X|BT818)\b")
 
 // ESD_TARGET_GRAPHICS(EVE_GRAPHICS_FT800, DisplayName = "FT800 (Generic)", SupportedDisplays = "\b\w+(QVGA|HVGA|AT043B35)\w*\b", LibraryTargets="\b(FT80X|FT800)\b")
 // ESD_TARGET_GRAPHICS(EVE_GRAPHICS_FT801, DisplayName = "FT801 (Generic)", SupportedDisplays = "\b\w+(QVGA|HVGA|AT043B35)\w*\b", LibraryTargets="\b(FT80X|FT801)\b")
@@ -114,10 +115,15 @@ ESD_TARGET_GRAPHICS(EVE_GRAPHICS_VM816C, DisplayName = "VM816C", IntegratedFlash
 // ESD_TARGET_GRAPHICS(EVE_GRAPHICS_BT815, DisplayName = "BT815 (Generic)", LibraryTargets="\b(BT81X|BT815)\b")
 // ESD_TARGET_GRAPHICS(EVE_GRAPHICS_BT816, DisplayName = "BT816 (Generic)", LibraryTargets="\b(BT81X|BT816)\b")
 
+/* Landscape */
 ESD_TARGET_DISPLAY(EVE_DISPLAY_QVGA, DisplayName = "QVGA (320x240)")
 ESD_TARGET_DISPLAY(EVE_DISPLAY_WQVGA, DisplayName = "WQVGA (480x272)")
 ESD_TARGET_DISPLAY(EVE_DISPLAY_WVGA, DisplayName = "WVGA (800x480)")
+ESD_TARGET_DISPLAY(EVE_DISPLAY_WSVGA, DisplayName = "WSVGA (1024x600)")
+ESD_TARGET_DISPLAY(EVE_DISPLAY_WXGA, DisplayName = "WXGA (1280x800)")
 // ESD_TARGET_DISPLAY(EVE_DISPLAY_AT043B35, DisplayName = "AT043B35 (480x272)")
+
+/* Portrait */ 
 // ESD_TARGET_DISPLAY(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT, DisplayName = "ILI9488 (320x480)")
 // ESD_TARGET_DISPLAY(EVE_DISPLAY_KD2401_HVGA_PORTRAIT, DisplayName = "KD2401 (320x480)")
 
@@ -171,11 +177,12 @@ Platform target:
 - MPSSE_PLATFORM
 
 Display resolution:
-- DISPLAY_RESOLUTION_HVGA_PORTRAIT
-- DISPLAY_RESOLUTION_WVGA
 - DISPLAY_RESOLUTION_QVGA
 - DISPLAY_RESOLUTION_WQVGA
-- DISPLAY_RESOLUTION_1280x120
+- DISPLAY_RESOLUTION_WVGA
+- DISPLAY_RESOLUTION_WSVGA
+- DISPLAY_RESOLUTION_WXGA
+- DISPLAY_RESOLUTION_HVGA_PORTRAIT
 
 Flash, with size in megabytes:
 - EVE_FLASH_AVAILABLE
@@ -225,7 +232,8 @@ Validate the configured options.
 
 #if defined(ME810A_HV35R) || defined(ME812A_WH50R) || defined(ME813A_WV7C) || defined(ME813A_WH50C) \
     || defined(EVE_MODULE_PANL) || defined(PANL50)                                                  \
-    || defined(EVE_GRAPHICS_VM800C) || defined(EVE_GRAPHICS_VM810C) || defined(EVE_GRAPHICS_VM816C) \
+    || defined(EVE_GRAPHICS_VM800C) || defined(EVE_GRAPHICS_VM810C)                                 \
+	|| defined(EVE_GRAPHICS_VM816C) || defined(EVE_GRAPHICS_ME817EV)                                \
     || defined(EVE_GRAPHICS_FT800) || defined(EVE_GRAPHICS_FT801)                                   \
     || defined(EVE_GRAPHICS_FT810) || defined(EVE_GRAPHICS_FT811)                                   \
     || defined(EVE_GRAPHICS_FT812) || defined(EVE_GRAPHICS_FT813)                                   \
@@ -234,10 +242,11 @@ Validate the configured options.
 #define EVE_GRAPHICS_AVAILABLE
 #endif
 
-#if defined(EVE_DISPLAY_QVGA) || defined(EVE_DISPLAY_WQVGA) \
-    || defined(EVE_DISPLAY_WVGA)                            \
-    || defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT)           \
-    || defined(EVE_DISPLAY_KD2401_HVGA_PORTRAIT)
+#if defined(EVE_DISPLAY_QVGA)    || defined(EVE_DISPLAY_WQVGA)   \
+    || defined(EVE_DISPLAY_WVGA) || defined(EVE_DISPLAY_WSVGA)    \
+    || defined(EVE_DISPLAY_WXGA)                                \
+    || defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT)                \
+    || defined(EVE_DISPLAY_KD2401_HVGA_PORTRAIT)                 
 #define EVE_DISPLAY_AVAILABLE
 #endif
 
@@ -356,6 +365,27 @@ It may also set platform, display, and flash values if none are configured.
 
 #define BT816_ENABLE
 // #define ENABLE_SPI_QUAD
+#define RESISTANCE_THRESHOLD (1800)
+
+#ifndef EVE_DISPLAY_AVAILABLE
+#define EVE_DISPLAY_AVAILABLE
+#define DISPLAY_RESOLUTION_WVGA
+#endif
+
+#ifndef EVE_PLATFORM_AVAILABLE
+#define EVE_PLATFORM_AVAILABLE
+#define FT4222_PLATFORM
+#endif
+
+#ifndef EVE_FLASH_AVAILABLE
+#define EVE_FLASH_AVAILABLE
+#define EVE_FLASH_W25Q128
+#endif
+
+#elif defined(EVE_GRAPHICS_ME817EV)
+
+#define BT818_ENABLE
+#define ENABLE_SPI_QUAD
 #define RESISTANCE_THRESHOLD (1800)
 
 #ifndef EVE_DISPLAY_AVAILABLE
@@ -526,7 +556,7 @@ It may also set platform, display, and flash values if none are configured.
 #elif defined(EVE_GRAPHICS_BT815)
 
 #define BT815_ENABLE
-// #define ENABLE_SPI_QUAD
+#define ENABLE_SPI_QUAD
 
 #ifndef EVE_DISPLAY_AVAILABLE
 #define EVE_DISPLAY_AVAILABLE
@@ -541,8 +571,8 @@ It may also set platform, display, and flash values if none are configured.
 #elif defined(EVE_GRAPHICS_BT816)
 
 #define BT816_ENABLE
-// #define ENABLE_SPI_QUAD
-#define RESISTANCE_THRESHOLD (1800)
+#define ENABLE_SPI_QUAD
+#define RESISTANCE_THRESHOLD (-1)
 
 #ifndef EVE_DISPLAY_AVAILABLE
 #define EVE_DISPLAY_AVAILABLE
@@ -561,7 +591,7 @@ It may also set platform, display, and flash values if none are configured.
 
 #ifndef EVE_DISPLAY_AVAILABLE
 #define EVE_DISPLAY_AVAILABLE
-#define DISPLAY_RESOLUTION_1280x800
+#define DISPLAY_RESOLUTION_WVGA
 #endif
 
 #ifndef EVE_FLASH_AVAILABLE
@@ -661,6 +691,10 @@ It may also set platform, display, and flash values if none are configured.
 #define DISPLAY_RESOLUTION_WQVGA
 #elif defined(EVE_DISPLAY_WVGA)
 #define DISPLAY_RESOLUTION_WVGA
+#elif defined(EVE_DISPLAY_WSVGA)
+#define DISPLAY_RESOLUTION_WSVGA
+#elif defined(EVE_DISPLAY_WXGA)
+#define DISPLAY_RESOLUTION_WXGA
 #elif defined(EVE_DISPLAY_ILI9488_HVGA_PORTRAIT)
 #define DISPLAY_RESOLUTION_HVGA_PORTRAIT
 #define ENABLE_ILI9488_HVGA_PORTRAIT
@@ -786,7 +820,7 @@ These may only be set by one of the platform target definitions, and should not 
 
 // Under multi target, the build should create a dynamic library
 // Multi target is used by EVE Screen Editor for uploading to a device
-#ifdef EVE_MULTI_TARGET
+#if defined(EVE_MULTI_TARGET)
 #ifdef EVE_HAL_EXPORT
 #undef EVE_HAL_EXPORT
 #define EVE_HAL_EXPORT _declspec(dllexport)
@@ -794,7 +828,9 @@ These may only be set by one of the platform target definitions, and should not 
 #define EVE_HAL_EXPORT _declspec(dllimport)
 #endif
 #else
+#ifndef EVE_HAL_EXPORT
 #define EVE_HAL_EXPORT
+#endif
 #endif
 
 // Under multi target, enable all desktop functionality.

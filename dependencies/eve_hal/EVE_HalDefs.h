@@ -482,11 +482,7 @@ EVE_HAL_EXPORT void EVE_Host_coreReset(EVE_HalContext *phost);
 For compatibility, set frequency to the EVE_GPU_12MHZ option in the EVE_SETPLLSP1_T table. */
 EVE_HAL_EXPORT void EVE_Host_selectSysClk(EVE_HalContext *phost, EVE_81X_PLL_FREQ_T freq);
 
-/* Power down or up ROMs and ADCs.
-Specified one or more elements in the EVE_81X_ROM_AND_ADC_T 
-table to power down, unspecified elements will be powered up.
-The application must retain the state of the ROMs and ADCs 
-as they're not readable from the device. */
+/* Power down or up ROMs and ADCs.*/
 EVE_HAL_EXPORT void EVE_Host_powerOffComponents(EVE_HalContext *phost, uint8_t val);
 
 /* This API sets the current strength of supported GPIO/IO group(s) */

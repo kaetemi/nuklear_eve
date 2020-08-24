@@ -406,12 +406,6 @@ to be defined. If not, multi target compilation is assumed.
 #define CMD_DLSTART          4294967040UL
 #define CMD_SWAP             4294967041UL
 #define CMD_INTERRUPT        4294967042UL
-/* #define CMD__             4294967043UL */ /* Not documented */
-/* #define CMD__             4294967044UL */ /* Not documented */
-/* #define CMD__             4294967045UL */ /* Not documented */
-/* #define CMD__             4294967046UL */ /* Not documented */
-#define CMD_EXECUTE          4294967047UL /* Not documented */
-#define CMD_GETPOINT         4294967048UL /* Not documented */
 #define CMD_BGCOLOR          4294967049UL
 #define CMD_FGCOLOR          4294967050UL
 #define CMD_GRADIENT         4294967051UL
@@ -435,7 +429,6 @@ to be defined. If not, multi target compilation is assumed.
 #define CMD_MEMCPY           4294967069UL
 #define CMD_APPEND           4294967070UL
 #define CMD_SNAPSHOT         4294967071UL
-#define CMD_TOUCH_TRANSFORM  4294967072UL /* Not documented */
 #define CMD_BITMAP_TRANSFORM 4294967073UL
 #define CMD_INFLATE          4294967074UL
 #define CMD_GETPTR           4294967075UL
@@ -460,7 +453,6 @@ to be defined. If not, multi target compilation is assumed.
 // FT801
 #if defined(FT_80X_ENABLE) || defined(EVE_MULTI_TARGET)
 #define CMD_CSKETCH          4294967093UL
-// #define CMD_DEPRECATED_CSKETCH 4294967093UL
 #endif
 
 // FT810
@@ -472,8 +464,6 @@ to be defined. If not, multi target compilation is assumed.
 #define CMD_PLAYVIDEO        4294967098UL
 #define CMD_SETFONT2         4294967099UL
 #define CMD_SETSCRATCH       4294967100UL
-/* #define CMD__             4294967101UL */ /* Not documented */
-/* #define CMD__             4294967102UL */ /* Not documented */
 #define CMD_ROMFONT          4294967103UL
 #define CMD_VIDEOSTART       4294967104UL
 #define CMD_VIDEOFRAME       4294967105UL
@@ -507,8 +497,6 @@ to be defined. If not, multi target compilation is assumed.
 #define CMD_APPENDF          4294967129UL
 #define CMD_ANIMFRAME        4294967130UL
 #define CMD_NOP              4294967131UL
-/* #define CMD__             4294967132UL */ /* Not documented */
-/* #define CMD_HMAC          4294967133UL */ /* Not documented */
 #define CMD_VIDEOSTARTF      4294967135UL
 #endif
 
@@ -531,6 +519,7 @@ to be defined. If not, multi target compilation is assumed.
 #define CMD_ANIMFRAMERAM     4294967149UL
 #define CMD_ANIMSTARTRAM     4294967150UL
 #define CMD_RUNANIM          4294967151UL
+#define CMD_FLASHPROGRAM     4294967152UL
 #endif
 
 // clang-format on

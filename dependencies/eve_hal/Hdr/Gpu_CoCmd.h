@@ -35,7 +35,6 @@ GPU_DLSwap
 
 #ifndef EVE_COMPAT_COCMD__H
 #define EVE_COMPAT_COCMD__H
-
 #define Cmd_Getimage EVE_CoCmd_getImage
 #define Gpu_CoCmd_Getimage EVE_CoCmd_getImage
 
@@ -254,5 +253,4 @@ static inline bool Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, uint32_t dest, 
 // #define Gpu_CoCmd_GetPoint EVE_CoCmd_getPoint
 
 #endif /* EVE_COMPAT_COCMD__H */
-
 /* end of file */

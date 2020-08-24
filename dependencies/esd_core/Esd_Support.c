@@ -29,14 +29,26 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_COMPATIBILITY_UTILITY_H
-#define FT_ESD_COMPATIBILITY_UTILITY_H
+#include "Esd_Context.h"
 
-#include "Esd_Core.h"
+#ifdef ESD_SIMULATION
 
-#include <FT_Platform.h>
-#include "Ft_Esd.h"
+int Esd_DesignerMode = 0;
 
-#endif /* #ifndef FT_ESD_UTILITY_H */
+uint32_t Esd_GAlloc_GetTotalUsed()
+{
+	if (!Esd_GAlloc)
+		return 0;
+	return Esd_GpuAlloc_GetTotalUsed(Esd_GAlloc);
+}
+
+uint32_t Esd_GAlloc_GetTotal()
+{
+	if (!Esd_GAlloc)
+		return 0;
+	return Esd_GpuAlloc_GetTotal(Esd_GAlloc);
+}
+
+#endif
 
 /* end of file */

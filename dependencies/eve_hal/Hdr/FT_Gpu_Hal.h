@@ -240,7 +240,6 @@ inline static ft_void_t eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`,
 #define FT_GPU_J1BOOT_ROM EVE_J1BOOT_ROM
 #define FT_GPU_ADC EVE_ADC
 #define FT_GPU_POWER_ON_ROM_AND_ADC EVE_POWER_ON_ROM_AND_ADC
-#define FT_GPU_81X_ROM_AND_ADC_T EVE_81X_ROM_AND_ADC_T
 
 #define FT_GPU_5MA EVE_5MA
 #define FT_GPU_10MA EVE_10MA

@@ -29,14 +29,15 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_COMPATIBILITY_UTILITY_H
-#define FT_ESD_COMPATIBILITY_UTILITY_H
+#ifndef ESD_CORE__H
+#define ESD_CORE__H
 
-#include "Esd_Core.h"
+#include "Esd_Base.h"
+#include "Esd_Context.h"
+#include "Esd_Render.h"
+#include "Esd_Utility.h"
+#include "Esd_CoWidget.h"
 
-#include <FT_Platform.h>
-#include "Ft_Esd.h"
-
-#endif /* #ifndef FT_ESD_UTILITY_H */
+#endif /* #ifndef ESD_CORE__H */
 
 /* end of file */

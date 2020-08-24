@@ -731,7 +731,11 @@ void EVE_Millis_initialize()
 	s_TotalMilliseconds = 0;
 #if !defined(PANL_APPLET)
 	sys_enable(sys_device_timer_wdt);
+#if defined(FT900_PLATFORM)
 	timer_prescaler(FT900_TIMER_PRESCALE_VALUE);
+#else
+	timer_prescaler(FT900_FT_MILLIS_TIMER, FT900_TIMER_PRESCALE_VALUE);
+#endif
 	timer_init(FT900_FT_MILLIS_TIMER, FT900_TIMER_OVERFLOW_VALUE, timer_direction_up, timer_prescaler_select_on, timer_mode_continuous);
 
 	interrupt_attach(interrupt_timers, 17, ticker);

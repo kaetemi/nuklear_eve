@@ -41,16 +41,20 @@ static eve_progmem_const uint8_t c_DlCodeBootup[12] = {
 	0, 0, 0, 0, // GPU instruction DISPLAY
 };
 
+/* NOTE: Update `EVE_DISPLAY_T` in `EVE_Util.h` when adding display presets. */
 static const uint16_t s_DisplayResolutions[EVE_DISPLAY_NB][4] = {
 	/* width, height, refreshRate, hsfWidth */
 
 	{ 480, 272, 60, 0 }, /* EVE_DISPLAY_DEFAULT (values ignored) */
 
+	/* Landscape */
 	{ 320, 240, 50, 0 }, /* EVE_DISPLAY_QVGA_320x240_50Hz */
 	{ 480, 272, 60, 0 }, /* EVE_DISPLAY_WQVGA_480x272_60Hz */
 	{ 800, 480, 60, 0 }, /* EVE_DISPLAY_WVGA_800x480_60Hz */
-	{ 1280, 800, 60, 0 }, /* EVE_DISPLAY_WXGA_1280x800_60Hz */
+	{ 1024, 600, 83, 0 }, /* EVE_DISPLAY_WSVGA_1024x600_83Hz */
+	{ 1280, 800, 65, 0 }, /* EVE_DISPLAY_WXGA_1280x800_65Hz */
 
+	/* Portrait */
 	{ 320, 480, 60, 0 }, /* EVE_DISPLAY_HVGA_320x480_60Hz */
 
 };
@@ -64,9 +68,11 @@ static const char *s_DisplayNames[EVE_DISPLAY_NB] = {
 	"QVGA 320x240 50Hz",
 	"WQVGA 480x272 60Hz",
 	"WVGA 800x480 60Hz",
-	"WXGA 1280x800 60Hz",
+	"WSVGA 1024x600 83Hz",
+	"WXGA 1280x800 65Hz",
 
 	"HVGA 320x480 60Hz",
+
 };
 
 #endif
@@ -496,6 +502,7 @@ EVE_HAL_EXPORT void EVE_Util_configDefaults(EVE_HalContext *phost, EVE_ConfigPar
 	uint32_t refreshRate;
 	uint32_t hsfWidth;
 
+	/* NOTE: Update `EVE_DISPLAY_T` in `EVE_Util.h` when adding display presets. */
 	if (!display)
 	{
 		/* Default displays if none was explicitly chosen */
@@ -505,13 +512,15 @@ EVE_HAL_EXPORT void EVE_Util_configDefaults(EVE_HalContext *phost, EVE_ConfigPar
 		display = EVE_DISPLAY_WQVGA_480x272_60Hz;
 #elif defined(DISPLAY_RESOLUTION_WVGA)
 		display = EVE_DISPLAY_WVGA_800x480_60Hz;
+#elif defined(DISPLAY_RESOLUTION_WSVGA)
+		display = EVE_DISPLAY_WSVGA_1024x600_83Hz;
+#elif defined(DISPLAY_RESOLUTION_WXGA)
+		display = EVE_DISPLAY_WXGA_1280x800_65Hz;
 #elif defined(DISPLAY_RESOLUTION_HVGA_PORTRAIT)
 		display = EVE_DISPLAY_HVGA_320x480_60Hz;
-#elif defined(DISPLAY_RESOLUTION_1280x800)
-		display = EVE_DISPLAY_WXGA_1280x800_60Hz;
 #else
 		if (EVE_CHIPID >= EVE_BT817)
-			display = EVE_DISPLAY_WXGA_1280x800_60Hz;
+			display = EVE_DISPLAY_WXGA_1280x800_65Hz;
 		else if (EVE_CHIPID >= EVE_BT815)
 			display = EVE_DISPLAY_WVGA_800x480_60Hz;
 		else if (EVE_CHIPID >= EVE_FT810)
@@ -557,37 +566,69 @@ EVE_HAL_EXPORT void EVE_Util_configDefaults(EVE_HalContext *phost, EVE_ConfigPar
 		}
 #endif
 	}
-	else if (display == EVE_DISPLAY_WXGA_1280x800_60Hz && freq == 72000000)
+	else if (display == EVE_DISPLAY_WXGA_1280x800_65Hz && freq == 72000000)
 	{
 		/*
 		BT817 known values:
-		Display: ?
 		REG_FREQUENCY: 72MHz
-		REG_PCLK: 1
-		REG_HCYCLE: 1440
-		REG_VCYCLE: 838
 		Resolution: 1280x800
-		Refresh rate: 59.67Hz
+		Refresh rate: 65Hz
 		*/
 #if EVE_HARDCODED_DISPLAY_TIMINGS
 		if (supportedResolution)
 		{
 			config->Width = 1280;
 			config->Height = 800;
-			config->HCycle = 1440;
-			config->HOffset = 38;
+			config->HCycle = 1411;
+			config->HOffset = 120;
 			config->HSync0 = 0;
-			config->HSync1 = 16;
-			config->VCycle = 838;
-			config->VOffset = 8;
+			config->HSync1 = 100;
+			config->VCycle = 815;
+			config->VOffset = 14;
 			config->VSync0 = 0;
-			config->VSync1 = 2;
+			config->VSync1 = 10;
 			config->PCLK = 1;
+			config->PCLKFreq = 0x8B1;
 		}
 #endif
-		config->Swizzle = 0;
+		config->CSpread = 0;
+		config->Dither = 0;
 		config->PCLKPol = 0;
-		config->CSpread = 0; /* non-default */
+		config->OutBitsR = 0;
+		config->OutBitsG = 0;
+		config->OutBitsB = 0;
+	}
+	else if (display == EVE_DISPLAY_WSVGA_1024x600_83Hz && freq == 72000000)
+	{
+		/*
+		BT817 known values:
+		REG_FREQUENCY: 72MHz
+		Resolution: 1280x120
+		Refresh rate:83Hz
+		*/
+#if EVE_HARDCODED_DISPLAY_TIMINGS
+		if (supportedResolution)
+		{
+			config->Width = 1024;
+			config->Height = 600;
+			config->HCycle = 1344;
+			config->HOffset = 160;
+			config->HSync0 = 0;
+			config->HSync1 = 100;
+			config->VCycle = 635;
+			config->VOffset = 23;
+			config->VSync0 = 0;
+			config->VSync1 = 10;
+			config->PCLK = 1;
+			config->PCLKFreq = 0xD12; // 51Mhz
+		}
+#endif
+		config->CSpread = 0;
+		config->Dither = 1;
+		config->PCLKPol = 1;
+		config->OutBitsR = 0;
+		config->OutBitsG = 0;
+		config->OutBitsB = 0;
 	}
 
 	eve_printf_debug("Display refresh rate set to %f\n", (float)((double)freq / ((double)config->HCycle * (double)config->VCycle * (double)config->PCLK)));
@@ -843,6 +884,26 @@ EVE_HAL_EXPORT bool EVE_Util_config(EVE_HalContext *phost, EVE_ConfigParameters 
 		phost->Width = config->Width;
 		phost->Height = config->Height;
 	}
+
+#if (EVE_SUPPORT_CHIPID >= EVE_BT817) || defined(EVE_MULTI_TARGET)
+	if (EVE_CHIPID >= EVE_BT817)
+	{
+		if (config->PCLKFreq)
+		{
+			EVE_Hal_wr16(phost, REG_PCLK_FREQ, config->PCLKFreq); // NOTE: If this should use CMD_PCLKFREQ instead, move the PCLKFreq configuration code to just before the HSF configuration below
+			uint32_t bit_8_4 = (config->PCLKFreq & 0b111110000) >> 4; // TODO: Split up PCLKFreq in EVE_ConfigParameters, it may be more user friendly
+			uint32_t bit_3_0 = (config->PCLKFreq & 0b111);
+
+			uint32_t pclkFrequency = bit_8_4 * (12 * 1000 * 1000) / bit_3_0 / 2;
+
+			// Send two pixels per system clock to the EXTSYNC block if PCLK_frequency > SystemClock
+			if (pclkFrequency > EVE_Hal_rd32(phost, REG_FREQUENCY))
+			{
+				EVE_Hal_wr32(phost, REG_PCLK_2X, 1);
+			}
+		}
+	}
+#endif
 
 	/* 
 	TODO:
@@ -1100,7 +1161,7 @@ EVE_HAL_EXPORT bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 		/* Go back into the patched coprocessor main loop */
 		EVE_Hal_wr8(phost, REG_ROMSUB_SEL, 3);
 		EVE_Cmd_startFunc(phost);
-		EVE_Cmd_wr32(phost, CMD_EXECUTE);
+		EVE_Cmd_wr32(phost, (4294967047UL));
 		EVE_Cmd_wr32(phost, EVE_SUBPATCH_PTR);
 		EVE_Cmd_wr32(phost, 0);
 		EVE_Cmd_endFunc(phost);
@@ -1160,7 +1221,9 @@ EVE_HAL_EXPORT bool EVE_Util_resetCoprocessor(EVE_HalContext *phost)
 	if (phost->CbCoprocessorReset) /* Notify */
 		phost->CbCoprocessorReset(phost, !ready);
 
+#ifdef _DEBUG
 	debugRestoreRamG(phost);
+#endif
 	EVE_CoDlImpl_resetCoState(phost);
 	return ready;
 }
@@ -1211,22 +1274,22 @@ SelectDevice:
 	deviceCount = EVE_Hal_list();
 	if (deviceCount > 1)
 	{
-		buf[0] = '\0';
-		printf("Select a device:\n");
-		for (i = 0; i < deviceCount; ++i)
-		{
-			EVE_Hal_info(&info, i);
-			if (info.Host)
-				printf("- [%d] %s (%s, %s)\n", (unsigned int)i, info.DisplayName, s_HostDisplayNames[info.Host], info.SerialNumber);
-		}
-		fgets(buf, sizeof(buf), stdin);
-		if (sscanf_s(buf, "%i", &selectedDeviceIdx) != 1)
-			goto SelectDevice;
-		*deviceIdx = selectedDeviceIdx;
-		EVE_Hal_info(&info, *deviceIdx);
-		if (!info.Host)
-			goto SelectDevice;
-		printf("\n");
+	buf[0] = '\0';
+	printf("Select a device:\n");
+	for (i = 0; i < deviceCount; ++i)
+	{
+		EVE_Hal_info(&info, i);
+		if (info.Host)
+			printf("- [%d] %s (%s, %s)\n", (unsigned int)i, info.DisplayName, s_HostDisplayNames[info.Host], info.SerialNumber);
+	}
+	fgets(buf, sizeof(buf), stdin);
+	if (sscanf_s(buf, "%i", &selectedDeviceIdx) != 1)
+		goto SelectDevice;
+	*deviceIdx = selectedDeviceIdx;
+	EVE_Hal_info(&info, *deviceIdx);
+	if (!info.Host)
+		goto SelectDevice;
+	printf("\n");
 	}
 	else if (deviceCount > 0)
 	{
@@ -1427,6 +1490,7 @@ SelectFlash:
 		emulatorParams.Flags &= (~BT8XXEMU_EmulatorEnableDynamicDegrade & ~BT8XXEMU_EmulatorEnableRegPwmDutyEmulation);
 		// TODO: emulatorParams.Log
 		params.EmulatorParameters = &emulatorParams;
+#if defined(WIN32)
 		if (flashFile)
 		{
 			BT8XXEMU_Flash_defaults(BT8XXEMU_VERSION_API, &flashParams);
@@ -1437,6 +1501,7 @@ SelectFlash:
 			// TODO: flashParams.Log
 			params.EmulatorFlashParameters = &flashParams;
 		}
+#endif
 	}
 #endif
 
@@ -1613,8 +1678,7 @@ SelectFlash:
 						printf("\nFlash upload is ready\n");
 					}
 					printf("\n");
-				}
-				while (false); /* breakable scope */
+				} while (false); /* breakable scope */
 			}
 			else
 			{

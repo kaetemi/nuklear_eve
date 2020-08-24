@@ -29,14 +29,20 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_COMPATIBILITY_UTILITY_H
-#define FT_ESD_COMPATIBILITY_UTILITY_H
+#if _DEBUG
+#include "Esd_Base.h"
+#include "Esd_GpuAlloc.h"
 
-#include "Esd_Core.h"
+#include "Esd_FontInfo.h"
 
-#include <FT_Platform.h>
-#include "Ft_Esd.h"
+void Esd_CheckTypeSizes()
+{
+	eve_printf("sizeof(Esd_GpuHandle): %i\n", (int)sizeof(Esd_GpuHandle));
+	eve_printf("sizeof(Esd_ResourceInfo): %i\n", (int)sizeof(Esd_ResourceInfo));
+	eve_printf("sizeof(Esd_FontInfo): %i\n", (int)sizeof(Esd_FontInfo));
+	eve_printf("sizeof(Esd_RomFontInfo): %i\n", (int)sizeof(Esd_RomFontInfo));
+}
 
-#endif /* #ifndef FT_ESD_UTILITY_H */
+#endif
 
 /* end of file */

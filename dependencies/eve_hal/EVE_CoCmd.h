@@ -159,9 +159,9 @@ static inline void EVE_CoCmd_swap(EVE_HalContext *phost)
 	EVE_CoCmd_d(phost, CMD_SWAP);
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_interrupt, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(ms, Type = int32_t, Default = 0)
+ESD_FUNCTION(EVE_CoCmd_interrupt, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(ms, Type = int32_t, Default = 0)
 /**
 * @brief Send CMD_INTERRUPT
 * 
@@ -172,21 +172,6 @@ static inline void EVE_CoCmd_interrupt(EVE_HalContext *phost, uint32_t ms)
 {
 	EVE_CoCmd_dd(phost, CMD_INTERRUPT, ms);
 }
-
-/* EVE_CoCmd_execute: Not documented */
-
-/**
-* @brief Send CMD_GETPOINT
-* 
-* @param phost Pointer to Hal context
-* @param x x screen
-* @param y y screen
-* @param sx x scale
-* @param sy y scale
-*/
-/* EVE_CoCmd_getPoint: Not documented */
-
-/* EVE_CoCmd_touchTransform: Not documented */
 
 /**
 * @brief Send CMD_COLDSTART
@@ -217,8 +202,8 @@ EVE_HAL_EXPORT void EVE_CoCmd_setRotate(EVE_HalContext *phost, uint32_t r);
 
 #if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 
-#pragma ESD_FUNCTION(EVE_CoCmd_sync, Type = void, Category = _GroupHidden)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_FUNCTION(EVE_CoCmd_sync, Type = void, Category = _GroupHidden)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
 /**
 * @brief Send CMD_SYNC
 * 
@@ -416,11 +401,11 @@ static inline void EVE_CoCmd_memWrite(EVE_HalContext *phost, uint32_t ptr, uint3
 	EVE_CoCmd_ddd(phost, CMD_MEMWRITE, ptr, num);
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_memSet, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(ptr, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
-#pragma ESD_PARAMETER(value, Type = uint32_t, Default = 0)
-#pragma ESD_PARAMETER(num, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
+ESD_FUNCTION(EVE_CoCmd_memSet, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(ptr, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
+ESD_PARAMETER(value, Type = uint32_t, Default = 0)
+ESD_PARAMETER(num, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
 /**
 * @brief Send CMD_MEMSET
 * 
@@ -434,10 +419,10 @@ static inline void EVE_CoCmd_memSet(EVE_HalContext *phost, uint32_t ptr, uint32_
 	EVE_CoCmd_dddd(phost, CMD_MEMSET, ptr, value, num);
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_memZero, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(ptr, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
-#pragma ESD_PARAMETER(num, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
+ESD_FUNCTION(EVE_CoCmd_memZero, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(ptr, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
+ESD_PARAMETER(num, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
 /**
 * @brief Send CMD_MEMZERO
 * 
@@ -450,11 +435,11 @@ static inline void EVE_CoCmd_memZero(EVE_HalContext *phost, uint32_t ptr, uint32
 	EVE_CoCmd_ddd(phost, CMD_MEMZERO, ptr, num);
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_memCpy, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(dest, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
-#pragma ESD_PARAMETER(src, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
-#pragma ESD_PARAMETER(num, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
+ESD_FUNCTION(EVE_CoCmd_memCpy, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(dest, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
+ESD_PARAMETER(src, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
+ESD_PARAMETER(num, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
 /**
 * @brief Send CMD_MEMCPY
 * 
@@ -468,10 +453,10 @@ static inline void EVE_CoCmd_memCpy(EVE_HalContext *phost, uint32_t dest, uint32
 	EVE_CoCmd_dddd(phost, CMD_MEMCPY, dest, src, num);
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_append, Type = void, Category = _GroupHidden)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(ptr, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
-#pragma ESD_PARAMETER(num, Type = uint32_t, Default = 0, Min = 0, Max = 2048)
+ESD_FUNCTION(EVE_CoCmd_append, Type = void, Category = _GroupHidden)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(ptr, Type = uint32_t, Default = 0) // MEMORY_ADDRESS
+ESD_PARAMETER(num, Type = uint32_t, Default = 0, Min = 0, Max = 2048)
 /**
 * @brief Send CMD_APPEND
 * 
@@ -532,7 +517,7 @@ EVE_HAL_EXPORT bool EVE_CoCmd_getPtr(EVE_HalContext *phost, uint32_t *result);
 * @param ptr Destination address
 * @param options Command option
 */
-static inline EVE_CoCmd_loadImage(EVE_HalContext *phost, uint32_t ptr, uint32_t options)
+static inline void EVE_CoCmd_loadImage(EVE_HalContext *phost, uint32_t ptr, uint32_t options)
 {
 	EVE_CoCmd_ddd(phost, CMD_LOADIMAGE, ptr, options);
 }
@@ -919,9 +904,9 @@ EVE_HAL_EXPORT bool EVE_CoCmd_fontCacheQuery(EVE_HalContext *phost, uint32_t *to
 ***********************************************************************
 **********************************************************************/
 
-#pragma ESD_FUNCTION(EVE_CoCmd_bgColor, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(c, Type = esd_rgb32_t, Default = 0) // COLOR
+ESD_FUNCTION(EVE_CoCmd_bgColor, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(c, Type = esd_rgb32_t, Default = 0) // COLOR
 /**
 * @brief Send CMD_BGCOLOR
 * 
@@ -941,9 +926,9 @@ static inline void EVE_CoCmd_bgColor(EVE_HalContext *phost, uint32_t c)
 #endif
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_fgColor, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(c, Type = esd_rgb32_t, Default = 0) // COLOR
+ESD_FUNCTION(EVE_CoCmd_fgColor, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(c, Type = esd_rgb32_t, Default = 0) // COLOR
 /**
 * @brief Send CMD_FGCOLOR
 * 
@@ -984,8 +969,8 @@ static inline void EVE_CoCmd_fgColor(EVE_HalContext *phost, uint32_t c)
  */
 EVE_HAL_EXPORT bool EVE_CoCmd_bitmapTransform(EVE_HalContext *phost, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t tx0, int32_t ty0, int32_t tx1, int32_t ty1, int32_t tx2, int32_t ty2, uint16_t *result);
 
-#pragma ESD_FUNCTION(EVE_CoCmd_loadIdentity, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_FUNCTION(EVE_CoCmd_loadIdentity, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
 /**
 * @brief Send CMD_LOADIDENTITY
 * 
@@ -1000,10 +985,10 @@ static inline void EVE_CoCmd_loadIdentity(EVE_HalContext *phost)
 #endif
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_translate, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(tx, Type = int32_t, Default = 0)
-#pragma ESD_PARAMETER(ty, Type = int32_t, Default = 0)
+ESD_FUNCTION(EVE_CoCmd_translate, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(tx, Type = int32_t, Default = 0)
+ESD_PARAMETER(ty, Type = int32_t, Default = 0)
 /**
 * @brief Send CMD_TRANSLATE
 * 
@@ -1020,10 +1005,10 @@ static inline void EVE_CoCmd_translate(EVE_HalContext *phost, int32_t tx, int32_
 #endif
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_scale, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(sx, Type = int32_t, Default = 0)
-#pragma ESD_PARAMETER(sy, Type = int32_t, Default = 0)
+ESD_FUNCTION(EVE_CoCmd_scale, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(sx, Type = int32_t, Default = 0)
+ESD_PARAMETER(sy, Type = int32_t, Default = 0)
 /**
 * @brief Send CMD_SCALE
 * 
@@ -1040,9 +1025,9 @@ static inline void EVE_CoCmd_scale(EVE_HalContext *phost, int32_t sx, int32_t sy
 #endif
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_rotate, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(a, Type = int32_t, Default = 0)
+ESD_FUNCTION(EVE_CoCmd_rotate, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(a, Type = int32_t, Default = 0)
 /**
 * @brief Send CMD_ROTATE
 * 
@@ -1058,8 +1043,8 @@ static inline void EVE_CoCmd_rotate(EVE_HalContext *phost, int32_t a)
 #endif
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_setMatrix, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_FUNCTION(EVE_CoCmd_setMatrix, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
 /**
 * @brief Send CMD_SETMATRIX
 * 
@@ -1091,9 +1076,9 @@ static inline void EVE_CoCmd_setFont(EVE_HalContext *phost, uint32_t font, uint3
 	EVE_CoCmd_ddd(phost, CMD_SETFONT, font, ptr);
 }
 
-#pragma ESD_FUNCTION(EVE_CoCmd_gradColor, Type = void, Category = _GroupHidden)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(c, Type = esd_rgb32_t, Default = 0) // COLOR
+ESD_FUNCTION(EVE_CoCmd_gradColor, Type = void, Category = _GroupHidden)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(c, Type = esd_rgb32_t, Default = 0) // COLOR
 /**
 * @brief Send CMD_GRADCOLOR
 * 
@@ -1107,9 +1092,9 @@ static inline void EVE_CoCmd_gradColor(EVE_HalContext *phost, uint32_t c)
 
 #if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 
-#pragma ESD_FUNCTION(EVE_CoCmd_setBase, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(base, Type = int32_t, Default = 0)
+ESD_FUNCTION(EVE_CoCmd_setBase, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(base, Type = int32_t, Default = 0)
 /**
 * @brief Send CMD_SETBASE
 * 
@@ -1242,14 +1227,14 @@ static inline void EVE_CoCmd_fillWidth(EVE_HalContext *phost, uint32_t s)
 ***********************************************************************
 **********************************************************************/
 
-#pragma ESD_FUNCTION(EVE_CoCmd_gradient, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x0, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y0, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(rgb0, Type = esd_rgb32_t, Default = 0) // COLOR
-#pragma ESD_PARAMETER(x1, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y1, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(rgb1, Type = esd_rgb32_t, Default = 0) // COLOR
+ESD_FUNCTION(EVE_CoCmd_gradient, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x0, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y0, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(rgb0, Type = esd_rgb32_t, Default = 0) // COLOR
+ESD_PARAMETER(x1, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y1, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(rgb1, Type = esd_rgb32_t, Default = 0) // COLOR
 /**
 * @brief Send CMD_GRADIENT
 * 
@@ -1296,16 +1281,16 @@ EVE_HAL_EXPORT void EVE_CoCmd_text(EVE_HalContext *phost, int16_t x, int16_t y, 
 */
 EVE_HAL_EXPORT void EVE_CoCmd_text_s(EVE_HalContext *phost, int16_t x, int16_t y, int16_t font, uint16_t options, const char *s, uint32_t length);
 
-#pragma ESD_RENDER(EVE_CoCmd_text_ex, Type = void, Category = _GroupHidden)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(font, Type = int16_t, Default = 21, Min = 0, Max = 31) // BITMAP_HANDLE
-#pragma ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
-#pragma ESD_PARAMETER(bottom, Type = bool, Default = 0)
-#pragma ESD_PARAMETER(baseLine, Type = int16_t, Default = 0)
-#pragma ESD_PARAMETER(capsHeight, Type = int16_t, Default = 0)
-#pragma ESD_PARAMETER(s, Type = const char *, Default = "Text")
+ESD_RENDER(EVE_CoCmd_text_ex, Type = void, Category = _GroupHidden)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(font, Type = int16_t, Default = 21, Min = 0, Max = 31) // BITMAP_HANDLE
+ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
+ESD_PARAMETER(bottom, Type = bool, Default = 0)
+ESD_PARAMETER(baseLine, Type = int16_t, Default = 0)
+ESD_PARAMETER(capsHeight, Type = int16_t, Default = 0)
+ESD_PARAMETER(s, Type = const char *, Default = "Text")
 /**
 * @brief Send CMD_TEXT
 * 
@@ -1336,15 +1321,15 @@ EVE_HAL_EXPORT void EVE_CoCmd_text_ex(EVE_HalContext *phost, int16_t x, int16_t 
 */
 EVE_HAL_EXPORT void EVE_CoCmd_button(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char *s, ...);
 
-#pragma ESD_RENDER(EVE_CoCmd_keys, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(width, Type = int16_t, Default = 60) // SCREEN_SIZE
-#pragma ESD_PARAMETER(height, Type = int16_t, Default = 40) // SCREEN_SIZE
-#pragma ESD_PARAMETER(font, Type = int16_t, Default = 21, Min = 0, Max = 31) // BITMAP_HANDLE
-#pragma ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
-#pragma ESD_PARAMETER(s, Type = const char *, Default = "Button")
+ESD_RENDER(EVE_CoCmd_keys, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(width, Type = int16_t, Default = 60) // SCREEN_SIZE
+ESD_PARAMETER(height, Type = int16_t, Default = 40) // SCREEN_SIZE
+ESD_PARAMETER(font, Type = int16_t, Default = 21, Min = 0, Max = 31) // BITMAP_HANDLE
+ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
+ESD_PARAMETER(s, Type = const char *, Default = "Button")
 /**
 * @brief Send CMD_KEYS
 * 
@@ -1359,15 +1344,15 @@ EVE_HAL_EXPORT void EVE_CoCmd_button(EVE_HalContext *phost, int16_t x, int16_t y
 */
 EVE_HAL_EXPORT void EVE_CoCmd_keys(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char *s);
 
-#pragma ESD_RENDER(EVE_CoCmd_progress, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(width, Type = int16_t, Default = 60) // SCREEN_SIZE
-#pragma ESD_PARAMETER(height, Type = int16_t, Default = 40) // SCREEN_SIZE
-#pragma ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
-#pragma ESD_PARAMETER(val, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(range, Type = uint16_t, Default = 0)
+ESD_RENDER(EVE_CoCmd_progress, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(width, Type = int16_t, Default = 60) // SCREEN_SIZE
+ESD_PARAMETER(height, Type = int16_t, Default = 40) // SCREEN_SIZE
+ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
+ESD_PARAMETER(val, Type = uint16_t, Default = 0)
+ESD_PARAMETER(range, Type = uint16_t, Default = 0)
 /**
 * @brief Send CMD_PROGRESS
 * 
@@ -1389,15 +1374,15 @@ static inline void EVE_CoCmd_progress(EVE_HalContext *phost, int16_t x, int16_t 
 #endif
 }
 
-#pragma ESD_RENDER(EVE_CoCmd_slider, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(width, Type = int16_t, Default = 60) // SCREEN_SIZE
-#pragma ESD_PARAMETER(height, Type = int16_t, Default = 40) // SCREEN_SIZE
-#pragma ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
-#pragma ESD_PARAMETER(val, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(range, Type = uint16_t, Default = 0)
+ESD_RENDER(EVE_CoCmd_slider, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(width, Type = int16_t, Default = 60) // SCREEN_SIZE
+ESD_PARAMETER(height, Type = int16_t, Default = 40) // SCREEN_SIZE
+ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
+ESD_PARAMETER(val, Type = uint16_t, Default = 0)
+ESD_PARAMETER(range, Type = uint16_t, Default = 0)
 /**
 * @brief Send CMD_SLIDER
 * 
@@ -1419,16 +1404,16 @@ static inline void EVE_CoCmd_slider(EVE_HalContext *phost, int16_t x, int16_t y,
 #endif
 }
 
-#pragma ESD_RENDER(EVE_CoCmd_scrollbar, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(width, Type = int16_t, Default = 60) // SCREEN_SIZE
-#pragma ESD_PARAMETER(height, Type = int16_t, Default = 40) // SCREEN_SIZE
-#pragma ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
-#pragma ESD_PARAMETER(val, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(size, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(range, Type = uint16_t, Default = 0)
+ESD_RENDER(EVE_CoCmd_scrollbar, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(width, Type = int16_t, Default = 60) // SCREEN_SIZE
+ESD_PARAMETER(height, Type = int16_t, Default = 40) // SCREEN_SIZE
+ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
+ESD_PARAMETER(val, Type = uint16_t, Default = 0)
+ESD_PARAMETER(size, Type = uint16_t, Default = 0)
+ESD_PARAMETER(range, Type = uint16_t, Default = 0)
 /**
 * @brief Send CMD_SCROLLBAR
 * 
@@ -1466,16 +1451,16 @@ static inline void EVE_CoCmd_scrollbar(EVE_HalContext *phost, int16_t x, int16_t
 */
 EVE_HAL_EXPORT void EVE_CoCmd_toggle(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t font, uint16_t options, uint16_t state, const char *s, ...);
 
-#pragma ESD_RENDER(EVE_CoCmd_gauge, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(r, Type = int16_t, Default = 40) // SCREEN_SIZE
-#pragma ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
-#pragma ESD_PARAMETER(major, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(minor, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(val, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(range, Type = uint16_t, Default = 0)
+ESD_RENDER(EVE_CoCmd_gauge, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(r, Type = int16_t, Default = 40) // SCREEN_SIZE
+ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
+ESD_PARAMETER(major, Type = uint16_t, Default = 0)
+ESD_PARAMETER(minor, Type = uint16_t, Default = 0)
+ESD_PARAMETER(val, Type = uint16_t, Default = 0)
+ESD_PARAMETER(range, Type = uint16_t, Default = 0)
 /**
 * @brief Send CMD_GAUGE
 * 
@@ -1498,16 +1483,16 @@ static inline void EVE_CoCmd_gauge(EVE_HalContext *phost, int16_t x, int16_t y, 
 #endif
 }
 
-#pragma ESD_RENDER(EVE_CoCmd_clock, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(r, Type = int16_t, Default = 40) // SCREEN_SIZE
-#pragma ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
-#pragma ESD_PARAMETER(height, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(m, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(s, Type = uint16_t, Default = 0)
-#pragma ESD_PARAMETER(ms, Type = uint16_t, Default = 0)
+ESD_RENDER(EVE_CoCmd_clock, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(r, Type = int16_t, Default = 40) // SCREEN_SIZE
+ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
+ESD_PARAMETER(height, Type = uint16_t, Default = 0)
+ESD_PARAMETER(m, Type = uint16_t, Default = 0)
+ESD_PARAMETER(s, Type = uint16_t, Default = 0)
+ESD_PARAMETER(ms, Type = uint16_t, Default = 0)
 /**
 * @brief Send CMD_CLOCK
 * 
@@ -1530,13 +1515,13 @@ static inline void EVE_CoCmd_clock(EVE_HalContext *phost, int16_t x, int16_t y, 
 #endif
 }
 
-#pragma ESD_RENDER(EVE_CoCmd_dial, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(r, Type = int16_t, Default = 40) // SCREEN_SIZE
-#pragma ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
-#pragma ESD_PARAMETER(val, Type = uint16_t, Default = 0)
+ESD_RENDER(EVE_CoCmd_dial, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(r, Type = int16_t, Default = 40) // SCREEN_SIZE
+ESD_PARAMETER(options, Type = Ft_CoPro_Opt, Default = 0)
+ESD_PARAMETER(val, Type = uint16_t, Default = 0)
 /**
 * @brief Send CMD_DIAL
 * 
@@ -1556,13 +1541,13 @@ static inline void EVE_CoCmd_dial(EVE_HalContext *phost, int16_t x, int16_t y, i
 #endif
 }
 
-#pragma ESD_RENDER(EVE_CoCmd_number, Type = void, Category = _GroupHidden, Inline)
-#pragma ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
-#pragma ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
-#pragma ESD_PARAMETER(font, Type = int16_t, Default = 21, Min = 16, Max = 34) // BITMAP_HANDLE
-#pragma ESD_PARAMETER(options, Type = uint16_t, Default = 256)
-#pragma ESD_PARAMETER(n, Type = int32_t, Default = 0)
+ESD_RENDER(EVE_CoCmd_number, Type = void, Category = _GroupHidden, Inline)
+ESD_PARAMETER(phost, Type = EVE_HalContext *, Default = ESD_GetHost, Hidden, Internal, Static) // PHOST
+ESD_PARAMETER(x, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(y, Type = int16_t, Default = 0) // SCREEN_SIZE
+ESD_PARAMETER(font, Type = int16_t, Default = 21, Min = 16, Max = 34) // BITMAP_HANDLE
+ESD_PARAMETER(options, Type = uint16_t, Default = 256)
+ESD_PARAMETER(n, Type = int32_t, Default = 0)
 /**
 * @brief Send CMD_NUMBER
 * 
@@ -1847,6 +1832,20 @@ static inline void EVE_CoCmd_animFrame(EVE_HalContext *phost, int16_t x, int16_t
 #endif
 
 #if (EVE_SUPPORT_CHIPID >= EVE_BT817)
+
+/**
+* @brief Send CMD_FLASHPROGRAM
+* 
+* @param phost Pointer to Hal context
+* @param dst destination address in flash memory. Must be 4096-byte aligned
+* @param src source data in main memory. Must be 4-byte aligned 
+* @param num number of bytes to write, must be multiple of 4096 
+*/
+static inline void EVE_CoCmd_flashProgram(EVE_HalContext *phost, uint32_t dst, uint32_t src, uint32_t num)
+{
+	EVE_MULTI_TARGET_CHECK(CMD_FLASHPROGRAM, EVE_CHIPID >= EVE_BT817);
+	EVE_CoCmd_dddd(phost, CMD_FLASHPROGRAM, dst, src, num);
+}
 
 /**
 * @brief Send CMD_CALIBRATESUB

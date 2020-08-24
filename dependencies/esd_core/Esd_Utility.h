@@ -29,14 +29,19 @@
 * has no liability in relation to those amendments.
 */
 
-#ifndef FT_ESD_COMPATIBILITY_UTILITY_H
-#define FT_ESD_COMPATIBILITY_UTILITY_H
+#ifndef ESD_UTILITY__H
+#define ESD_UTILITY__H
 
-#include "Esd_Core.h"
+#include "Esd_Base.h"
 
-#include <FT_Platform.h>
-#include "Ft_Esd.h"
+ESD_CORE_EXPORT void Esd_AttachFlashFast();
 
-#endif /* #ifndef FT_ESD_UTILITY_H */
+ESD_CORE_EXPORT void Esd_ShowLogo();
+ESD_CORE_EXPORT void Esd_BeginLogo();
+ESD_CORE_EXPORT void Esd_EndLogo();
+
+ESD_CORE_EXPORT bool Esd_Calibrate();
+
+#endif /* #ifndef ESD_UTILITY__H */
 
 /* end of file */

@@ -319,7 +319,6 @@ inline static eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`, and `EVE_
 #define GPU_J1BOOT_ROM EVE_J1BOOT_ROM
 #define GPU_ADC EVE_ADC
 #define GPU_POWER_ON_ROM_AND_ADC EVE_POWER_ON_ROM_AND_ADC
-#define GPU_81X_ROM_AND_ADC_T EVE_81X_ROM_AND_ADC_T
 
 #define GPU_5MA EVE_5MA
 #define GPU_10MA EVE_10MA
@@ -443,7 +442,6 @@ void Gpu_CoCmd_AnimFrame(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_
 #define App_WrCoStr_Buffer(phost, s) EVE_Cmd_wrString((phost), (s), EVE_CMD_STRING_MAX)
 #define App_Flush_Co_Buffer(phost) EVE_Cmd_waitFlush((phost))
 #define App_Flush_Co_Buffer_nowait(phost) EVE_Cmd_waitFlush((phost))
-
 #define App_Set_CmdBuffer_Index(idx) eve_noop()
 
 #define POLAR_UTIL /* Enable sin()/cos() calculator utilities */
@@ -466,7 +464,7 @@ void Gpu_CoCmd_AnimFrame(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_
 #define pgm_read_byte_near(x) (*(x))
 #define pgm_read_byte(x) (*(x))
 #define pgm_read_word(addr) (*((prog_uint16_t *)(addr)))
-#define delay(x) Gpu_Hal_Sleep(x)
+#define delay(x) EVE_sleep(x)
 #define random(x) (rand() % (x))
 #define DBGPRINT(x) printf(x)
 #endif
