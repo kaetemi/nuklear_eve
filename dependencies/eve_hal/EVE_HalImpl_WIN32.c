@@ -1,33 +1,33 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*/
+ * @file EVE_HalImpl_WIN32.c
+ * @brief Eve_Hal framework APIs for WIN32 host platform
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -42,17 +42,19 @@
 ** UTILITY **
 ************/
 
+/** @name UTILITY */
+///@{
+
 /**
  * @brief Get current system clock of Coprocessor
- * 
+ *
  * @param phost Pointer to Hal context
  * @return uint32_t Frequency of Coprocessor
  */
 uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 {
-	uint32_t t0, t1;
-	uint32_t addr = REG_CLOCK;
-	int32_t r = 15625;
+	uint32_t t0;
+	uint32_t t1;
 
 	t0 = EVE_Hal_rd32(phost, REG_CLOCK); /* t0 read */
 	/* may not be precise */
@@ -61,14 +63,18 @@ uint32_t EVE_Hal_currentFrequency(EVE_HalContext *phost)
 	t1 = EVE_Hal_rd32(phost, REG_CLOCK); /* t1 read */
 	return ((t1 - t0) * 64); /* bitshift 6 places is the same as multiplying 64 */
 }
+///@}
 
 /*********
 ** MISC **
 *********/
 
+/** @name MISC */
+///@{
+
 /**
  * @brief Init host MCU
- * 
+ *
  */
 void EVE_Mcu_initialize()
 {
@@ -77,12 +83,13 @@ void EVE_Mcu_initialize()
 
 /**
  * @brief Release host MCU
- * 
+ *
  */
 void EVE_Mcu_release()
 {
 	/* no-op */
 }
+///@}
 
 /*********
 ** MISC **
@@ -90,10 +97,12 @@ void EVE_Mcu_release()
 
 static DWORD s_Millis_Start;
 static ULONGLONG s_Millis64_Start;
+/** @name MISC */
+///@{
 
 /**
  * @brief Init timer
- * 
+ *
  */
 void EVE_Millis_initialize()
 {
@@ -103,7 +112,7 @@ void EVE_Millis_initialize()
 
 /**
  * @brief Release timer
- * 
+ *
  */
 void EVE_Millis_release()
 {
@@ -112,9 +121,9 @@ void EVE_Millis_release()
 
 /**
  * @brief Get clock in miliseond
- * 
+ *
  * global counter to loopback after ~49.71 days
- * 
+ *
  * @return uint32_t Clock number
  */
 uint32_t EVE_millis()
@@ -123,10 +132,10 @@ uint32_t EVE_millis()
 }
 
 /**
-* @brief Get clock in miliseond
-* 
-* @return uint64_t Clock number
-*/
+ * @brief Get clock in miliseond
+ *
+ * @return uint64_t Clock number
+ */
 uint64_t EVE_millis64()
 {
 	return GetTickCount64() - s_Millis64_Start;
@@ -138,7 +147,7 @@ int Ft_Sleep__ESD(int ms);
 
 /**
  * @brief Sleep in milisecond
- * 
+ *
  * @param ms Milisecond
  */
 void EVE_sleep(uint32_t ms)
@@ -149,6 +158,7 @@ void EVE_sleep(uint32_t ms)
 	Sleep(ms);
 #endif
 }
+///@}
 
 #endif
 

@@ -1,45 +1,39 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*/
-
-/*
-
-Defines EVE hardware values.
-
-This header is separated and included last 
-in case of conflicts with other libraries.
-
-Expects BT_81XA_ENABLE, BT_81X_ENABLE, FT_81X_ENABLE, or FT_80X_ENABLE
-to be defined. If not, multi target compilation is assumed.
-
-*/
+ * @file EVE_GpuDefs.h
+ * @brief Defines EVE hardware values
+ *
+ * This header is separated and included last
+ * in case of conflicts with other libraries.
+ *
+ * Expects BT_81XA_ENABLE, BT_81X_ENABLE, BT_88X_ENABLE, FT_81X_ENABLE, or FT_80X_ENABLE
+ * to be defined. If not, multi target compilation is assumed.
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #ifndef EVE_GPU_DEFS__H
 #define EVE_GPU_DEFS__H
@@ -49,33 +43,42 @@ to be defined. If not, multi target compilation is assumed.
 #define ESD_END()
 #endif
 
-#if !defined(EVE_MULTI_TARGET) \
-    && !defined(FT_80X_ENABLE) \
-    && !defined(FT_81X_ENABLE) \
-    && !defined(BT_81X_ENABLE) \
+#if !defined(EVE_MULTI_GRAPHICS_TARGET) \
+    && !defined(FT_80X_ENABLE)          \
+    && !defined(FT_81X_ENABLE)          \
+    && !defined(BT_88X_ENABLE)          \
+    && !defined(BT_81X_ENABLE)          \
     && !defined(BT_81XA_ENABLE)
-#define EVE_MULTI_TARGET
+#define EVE_MULTI_GRAPHICS_TARGET
 #endif
 
 /* Definitions used for FT800 coprocessor command buffer */
-#define EVE_DL_SIZE (8 * 1024UL) /* 8kB Display List buffer size */
+#define EVE_DL_SIZE (8 * 1024UL) /**< 8kB Display List buffer size */
 #define EVE_DL_COUNT (2 * 1024UL)
-#define EVE_CMD_FIFO_SIZE ((4) * 1024UL) /* 4kB coprocessor FIFO size */
+#define EVE_CMD_FIFO_SIZE ((4) * 1024UL) /**< 4kB coprocessor FIFO size */
 #define EVE_CMD_FIFO_COUNT (1024UL)
 #define EVE_CMD_FIFO_MASK (EVE_CMD_FIFO_SIZE - 1)
 #define EVE_CMD_FIFO_ALIGNMENT_MASK (EVE_CMD_FIFO_SIZE - ((4) - 1))
 
 #define EVE_CMD_FAULT(rp) (rp & 0x3)
 
+#define EVE_FLASH_WRITE_ALIGN (256)
+#define EVE_FLASH_UPDATE_ALIGN (4096)
+#define EVE_FLASH_READ_ALIGN (64)
+#define EVE_FLASH_FIRMWARE_SIZE (4096)
+
 /**************
 ** Addresses **
 **************/
+
+/** @name Addresses */
+///@{
 
 #define RAM_G 0UL
 #define ROM_CHIPID 786432UL
 #define RAM_ERR_REPORT 0x309800UL
 
-#if defined(EVE_MULTI_TARGET)
+#if defined(EVE_MULTI_GRAPHICS_TARGET)
 
 #define EVE_HAL_REG_ID (phost->GpuDefs->RegId)
 #define EVE_HAL_REG_CPURESET (phost->GpuDefs->RegCpuReset)
@@ -105,6 +108,16 @@ to be defined. If not, multi target compilation is assumed.
 
 #if defined(FT_81X_ENABLE) || defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE)
 
+#define RAM_G_SIZE (1024 * 1024L)
+
+#elif defined(FT_80X_ENABLE) || defined(BT_88X_ENABLE)
+
+#define RAM_G_SIZE (256 * 1024L)
+
+#endif
+
+#if defined(FT_81X_ENABLE) || defined(BT_88X_ENABLE) || defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE)
+
 #define EVE_HAL_REG_ID 3153920UL
 #define EVE_HAL_REG_CPURESET 3153952UL
 #define EVE_HAL_REG_J1_INT 3154084UL
@@ -120,8 +133,7 @@ to be defined. If not, multi target compilation is assumed.
 #define RAM_DL 3145728UL
 #define ROMFONT_TABLEADDRESS 3145724UL
 
-#define RAM_G_SIZE (1024 * 1024L)
-#define LOW_FREQ_BOUND 58800000L //98% of 60Mhz
+#define LOW_FREQ_BOUND 58800000L // 98% of 60Mhz
 
 #define SCISSOR_XY_SHIFT 11
 #define SCISSOR_XY_MASK 2047UL
@@ -134,7 +146,7 @@ to be defined. If not, multi target compilation is assumed.
 
 #define BITMAP_ADDR_MASK 16777215UL
 
-#elif defined(FT_81X_ENABLE)
+#elif defined(FT_81X_ENABLE) || defined(BT_88X_ENABLE)
 
 #define BITMAP_ADDR_MASK 4194303UL
 
@@ -155,8 +167,7 @@ to be defined. If not, multi target compilation is assumed.
 #define RAM_DL 1048576UL
 #define ROMFONT_TABLEADDRESS 1048572UL
 
-#define RAM_G_SIZE (256 * 1024L)
-#define LOW_FREQ_BOUND 47040000L // 98% of 48Mhz
+#define LOW_FREQ_BOUND 47040000L /**< 98 % of 48Mhz */
 
 #define BITMAP_ADDR_MASK 1048575UL
 #define SCISSOR_XY_SHIFT 9
@@ -279,7 +290,7 @@ to be defined. If not, multi target compilation is assumed.
 #define REG_TOUCH_TRANSFORM_D (REG_TOUCH_TRANSFORM_A + 12UL)
 #define REG_TOUCH_TRANSFORM_E (REG_TOUCH_TRANSFORM_A + 16UL)
 #define REG_TOUCH_TRANSFORM_F (REG_TOUCH_TRANSFORM_A + 20UL)
-#define REG_CYA_TOUCH (REG_TOUCH_TRANSFORM_A + 24UL)
+#define REG_TOUCH_CONFIG (REG_TOUCH_TRANSFORM_A + 24UL)
 #define REG_ANALOG (REG_TOUCH_TRANSFORM_A + 28UL)
 #define REG_CTOUCH_GESTURE (REG_TOUCH_TRANSFORM_A + 28UL)
 #define REG_CTOUCH_TOUCH4_X (REG_TOUCH_TRANSFORM_A + 28UL)
@@ -338,8 +349,7 @@ to be defined. If not, multi target compilation is assumed.
 #define REG_FULLBUSYBITS (REG_CMDB_SPACE + 128UL)
 #define REG_SHA1KEY (REG_CMDB_SPACE + 144UL)
 
-#if defined(BT_81XA_ENABLE) || defined(EVE_MULTI_TARGET)
-#define REG_LINECLOCKS (REG_CMDB_SPACE + 148UL)
+#if defined(BT_81XA_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
 #define REG_UNDERRUN (REG_CMDB_SPACE + 152UL)
 #define REG_AH_HCYCLE_MAX (REG_CMDB_SPACE + 156UL)
 #define REG_PCLK_FREQ (REG_CMDB_SPACE + 160UL)
@@ -395,6 +405,7 @@ to be defined. If not, multi target compilation is assumed.
 	                          LOW_FREQ_BOUND,        \
 	                          BITMAP_ADDR_MASK,      \
 	                          SCISSOR_SIZE_SHIFT
+///@}
 
 /*************
 ** Commands **
@@ -402,7 +413,8 @@ to be defined. If not, multi target compilation is assumed.
 
 // clang-format off
 
-// FT800
+/** @name Commands for FT800 */
+///@{
 #define CMD_DLSTART          4294967040UL
 #define CMD_SWAP             4294967041UL
 #define CMD_INTERRUPT        4294967042UL
@@ -449,14 +461,18 @@ to be defined. If not, multi target compilation is assumed.
 #define CMD_COLDSTART        4294967090UL
 #define CMD_GETMATRIX        4294967091UL
 #define CMD_GRADCOLOR        4294967092UL
+///@}
 
-// FT801
-#if defined(FT_80X_ENABLE) || defined(EVE_MULTI_TARGET)
+/** @name Commands for FT801 */
+///@{
+#if defined(FT_80X_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
 #define CMD_CSKETCH          4294967093UL
 #endif
+///@}
 
-// FT810
-#if defined(FT_81X_ENABLE) || defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE) || defined(EVE_MULTI_TARGET)
+/** @name Commands for FT810 */
+///@{
+#if defined(FT_81X_ENABLE) || defined(BT_88X_ENABLE) || defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
 #define CMD_SETROTATE        4294967094UL
 #define CMD_SNAPSHOT2        4294967095UL
 #define CMD_SETBASE          4294967096UL
@@ -470,9 +486,11 @@ to be defined. If not, multi target compilation is assumed.
 #define CMD_SYNC             4294967106UL
 #define CMD_SETBITMAP        4294967107UL
 #endif
+///@}
 
-// BT815
-#if defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE) || defined(EVE_MULTI_TARGET)
+/** @name Commands for BT815 */
+///@{
+#if defined(BT_81X_ENABLE) || defined(BT_81XA_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
 #define CMD_FLASHERASE       4294967108UL
 #define CMD_FLASHWRITE       4294967109UL
 #define CMD_FLASHREAD        4294967110UL
@@ -499,10 +517,11 @@ to be defined. If not, multi target compilation is assumed.
 #define CMD_NOP              4294967131UL
 #define CMD_VIDEOSTARTF      4294967135UL
 #endif
+///@}
 
-// BT817
-#if defined(BT_81XA_ENABLE) || defined(EVE_MULTI_TARGET)
-#define CMD_LINETIME         4294967134UL
+/** @name Commands for BT817 */
+///@{
+#if defined(BT_81XA_ENABLE) || defined(EVE_MULTI_GRAPHICS_TARGET)
 #define CMD_CALIBRATESUB     4294967136UL
 #define CMD_TESTCARD         4294967137UL
 #define CMD_HSF              4294967138UL
@@ -523,10 +542,14 @@ to be defined. If not, multi target compilation is assumed.
 #endif
 
 // clang-format on
+///@}
 
 /*****************
 ** Display List **
 *****************/
+
+/** @name Display List */
+///@{
 
 #define VERTEX2F(x, y) ((1UL << 30) | (((x)&32767UL) << 15) | (((y)&32767UL) << 0))
 #define VERTEX2II(x, y, handle, cell) ((2UL << 30) | (((x)&511UL) << 21) | (((y)&511UL) << 12) | (((handle)&31UL) << 7) | (((cell)&127UL) << 0))
@@ -569,11 +592,7 @@ to be defined. If not, multi target compilation is assumed.
 #define COLOR_MASK(r, g, b, a) ((32UL << 24) | (((r)&1UL) << 3) | (((g)&1UL) << 2) | (((b)&1UL) << 1) | (((a)&1UL) << 0))
 #define CLEAR(c, s, t) ((38UL << 24) | (((c)&1UL) << 2) | (((s)&1UL) << 1) | (((t)&1UL) << 0))
 #define VERTEX_FORMAT(frac) ((39UL << 24) | (((frac)&7UL) << 0))
-#if defined(BT_81XA_ENABLE) || defined(EVE_MULTI_TARGET)
-#define BITMAP_LAYOUT_H(linestride, height) ((40UL << 24) | (((linestride)&7UL) << 2) | (((height)&3UL) << 0))
-#else
 #define BITMAP_LAYOUT_H(linestride, height) ((40UL << 24) | (((linestride)&3UL) << 2) | (((height)&3UL) << 0))
-#endif
 #define BITMAP_SIZE_H(width, height) ((41UL << 24) | (((width)&3UL) << 2) | (((height)&3UL) << 0))
 #define PALETTE_SOURCE(addr) ((42UL << 24) | (((addr)&4194303UL) << 0))
 #define VERTEX_TRANSLATE_X(x) ((43UL << 24) | (((x)&131071UL) << 0))
@@ -588,10 +607,14 @@ to be defined. If not, multi target compilation is assumed.
 #define RETURN() ((36UL << 24))
 #define MACRO(m) ((37UL << 24) | (((m)&1UL) << 0))
 #define DISPLAY() ((0UL << 24))
+///@}
 
 /************
 ** Options **
 ************/
+
+/** @name Options */
+///@{
 
 #ifdef POINTS
 #undef POINTS
@@ -601,7 +624,7 @@ to be defined. If not, multi target compilation is assumed.
 #define DLSWAP_LINE 1UL
 #define DLSWAP_FRAME 2UL
 
-ESD_ENUM(Ft_CoPro_Opt, Type = uint16_t, Include = "EVE_Platform.h", Flags)
+ESD_ENUM(Ft_CoPro_Opt, Type = uint16_t, Include = "EVE_Hal.h", Flags)
 #define OPT_MONO 1UL
 #define OPT_NODL 2UL
 #define OPT_NOTEAR 4UL
@@ -627,6 +650,7 @@ ESD_ENUM(Ft_CoPro_Opt, Type = uint16_t, Include = "EVE_Platform.h", Flags)
 #define OPT_RIGHTX 2048UL
 ESD_END()
 
+///@}
 #define ANIM_ONCE 0UL
 #define ANIM_LOOP 1UL
 #define ANIM_HOLD 2UL

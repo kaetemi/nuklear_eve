@@ -23,12 +23,34 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 extern ESD_CORE_EXPORT EVE_HalContext *Esd_Host;
 extern ESD_CORE_EXPORT Esd_GpuAlloc *Esd_GAlloc;
 
-ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32_t *imageFormat)
+ESD_CORE_EXPORT void Esd_LoadResourceMetadata(Esd_ResourceInfo *resourceInfo, uint8_t *metadata)
+{
+	if (metadata && metadata[ESD_METADATA_SIGNATURE])
+	{
+		// Update compression and extracted size from metadata
+		ESD_METADATA_SET(uint8_t, resourceInfo, Compressed, metadata[ESD_METADATA_COMPRESSION], resourceInfo->File);
+		ESD_METADATA_SET(uint32_t, resourceInfo, RawSize, ESD_RD32_LE(metadata, ESD_METADATA_RAWSIZE), resourceInfo->File);
+	}
+}
+
+#ifdef ESD_LITTLEFS_FLASH
+ESD_CORE_EXPORT void Esd_ResourceInfo_LoadFlashAddressEx(Esd_ResourceInfo *resourceInfo, uint8_t *metadata)
+{
+	Esd_LittleFs_LoadFlashAddress(&resourceInfo->FlashAddress, resourceInfo->File, metadata);
+	Esd_LoadResourceMetadata(resourceInfo, metadata);
+}
+#endif
+
+ESD_CORE_EXPORT uint32_t Esd_LoadResourceEx(Esd_ResourceInfo *resourceInfo, uint8_t *metadata, uint32_t *imageFormat)
 {
 	EVE_HalContext *phost = Esd_GetHost();
+	int32_t flashAddr = FA_INVALID;
 	uint32_t addr;
 	bool loaded;
 	(void)phost;
+
+	if (metadata)
+		metadata[ESD_METADATA_SIGNATURE] = '\0';
 
 	if (!resourceInfo)
 	{
@@ -41,10 +63,15 @@ ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32
 #ifdef EVE_FLASH_AVAILABLE
 		// Just get the flash address if that's what we want
 		// Calling function may need to ensure that it's not getting a flash address when it's not supported by the resource
-		uint32_t addr = resourceInfo->FlashAddress;
-		if (addr != FA_INVALID)
-			return ESD_DL_FLASH_ADDRESS(addr);
-		return GA_INVALID;
+		flashAddr = Esd_LittleFs_LoadFlashAddress(&resourceInfo->FlashAddress, resourceInfo->File, metadata);
+		Esd_LoadResourceMetadata(resourceInfo, metadata);
+		if (!resourceInfo->Compressed)
+		{
+			// If no metadata, or the metadata still specifies uncompressed data, return as direct flash address
+			if (flashAddr != FA_INVALID)
+				return ESD_DL_FLASH_ADDRESS(flashAddr);
+			return GA_INVALID;
+		}
 #else
 		esd_resourceinfo_printf("Flash storage not supported on this platform\n");
 		return GA_INVALID;
@@ -77,13 +104,31 @@ ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32
 		break;
 	case ESD_RESOURCE_FLASH:
 	case ESD_RESOURCE_DIRECTFLASH:
-		if (resourceInfo->FlashAddress == FA_INVALID)
+		if ((flashAddr = Esd_LittleFs_LoadFlashAddress(&resourceInfo->FlashAddress, resourceInfo->File, metadata)) == FA_INVALID)
 		{
 			esd_resourceinfo_printf("Resource flash address is invalid\n");
 			return GA_INVALID;
 		}
 		break;
 	}
+
+	// Load metadata from file on SD card
+	if (metadata && resourceInfo->Type == ESD_RESOURCE_FILE)
+	{
+		// Generate metafile name
+		size_t nameLen = strlen(resourceInfo->File);
+		if (nameLen + 6 > 128) // ".esdm" NUL
+			return GA_INVALID;
+		char metaFile[128];
+		strcpy_s(metaFile, sizeof(metaFile), resourceInfo->File);
+		strcpy_s(&metaFile[nameLen], sizeof(metaFile) - nameLen, ".esdm");
+
+		// Try to load
+		EVE_Util_readFile(phost, metadata, ESD_METADATA_MAX, metaFile);
+	}
+
+	// Load metadata
+	Esd_LoadResourceMetadata(resourceInfo, metadata);
 
 	// Allocate gpu memory
 	resourceInfo->GpuHandle = Esd_GpuAlloc_Alloc(Esd_GAlloc, resourceInfo->RawSize,
@@ -99,8 +144,7 @@ ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32
 	loaded = false;
 	switch (resourceInfo->Type)
 	{
-	case ESD_RESOURCE_FILE:
-	{
+	case ESD_RESOURCE_FILE: {
 		switch (resourceInfo->Compressed)
 		{
 		case ESD_RESOURCE_RAW:
@@ -115,8 +159,7 @@ ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32
 		}
 		break;
 	}
-	case ESD_RESOURCE_PROGMEM:
-	{
+	case ESD_RESOURCE_PROGMEM: {
 		switch (resourceInfo->Compressed)
 		{
 		case ESD_RESOURCE_RAW:
@@ -134,19 +177,18 @@ ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32
 	}
 #ifdef EVE_FLASH_AVAILABLE
 	case ESD_RESOURCE_FLASH:
-	case ESD_RESOURCE_DIRECTFLASH:
-	{
+	case ESD_RESOURCE_DIRECTFLASH: {
 		switch (resourceInfo->Compressed)
 		{
 		case ESD_RESOURCE_RAW:
-			EVE_CoCmd_flashRead(phost, addr, resourceInfo->FlashAddress, resourceInfo->StorageSize << 2);
+			EVE_CoCmd_flashRead(phost, addr, flashAddr, resourceInfo->StorageSize << 2);
 			loaded = EVE_Cmd_waitFlush(phost);
 			break;
 		case ESD_RESOURCE_DEFLATE:
-			loaded = EVE_CoCmd_inflate_flash(phost, addr, resourceInfo->FlashAddress);
+			loaded = EVE_CoCmd_inflate_flash(phost, addr, flashAddr);
 			break;
 		case ESD_RESOURCE_IMAGE:
-			loaded = EVE_CoCmd_loadImage_flash(phost, addr, resourceInfo->FlashAddress, imageFormat);
+			loaded = EVE_CoCmd_loadImage_flash(phost, addr, flashAddr, imageFormat);
 			break;
 		}
 		break;
@@ -173,15 +215,20 @@ ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32
 	// If flash source, we can use directly from flash (if supported)
 	if (supportDirectFlash && resourceInfo->Type == ESD_RESOURCE_FLASH)
 	{
-		uint32_t addr = resourceInfo->FlashAddress;
-		if (addr != FA_INVALID)
-			return ESD_DL_FLASH_ADDRESS(addr);
+	    if (flashAddr != FA_INVALID)
+	        return ESD_DL_FLASH_ADDRESS(flashAddr);
 	}
 #endif
 	*/
 
 	// Fail to load
 	return GA_INVALID;
+}
+
+ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32_t *imageFormat)
+{
+	uint8_t metadata[ESD_METADATA_MAX];
+	return Esd_LoadResourceEx(resourceInfo, metadata, imageFormat);
 }
 
 ESD_CORE_EXPORT void Esd_FreeResource(Esd_ResourceInfo *resourceInfo)
@@ -191,6 +238,9 @@ ESD_CORE_EXPORT void Esd_FreeResource(Esd_ResourceInfo *resourceInfo)
 
 	Esd_GpuAlloc_Free(Esd_GAlloc, resourceInfo->GpuHandle);
 	resourceInfo->GpuHandle.Id = MAX_NUM_ALLOCATIONS;
+#ifdef ESD_LITTLEFS_FLASH
+	resourceInfo->FlashAddress = FA_INVALID;
+#endif
 }
 
 ESD_CORE_EXPORT void Esd_ResourcePersist(Esd_ResourceInfo *resourceInfo)

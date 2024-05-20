@@ -66,8 +66,7 @@ ESD_CORE_EXPORT uint32_t Esd_LoadFont(Esd_FontInfo *fontInfo)
 			(void)format;
 			switch (fontInfo->Type)
 			{
-			case ESD_FONT_LEGACY:
-			{
+			case ESD_FONT_LEGACY: {
 				format = EVE_Hal_rd32(Esd_Host, fontAddr + 128);
 				fontInfo->FontHeight = EVE_Hal_rd32(Esd_Host, fontAddr + 140);
 				esd_resourceinfo_printf("Set legacy glyph address to %i\n", (int)glyphAddr);
@@ -75,13 +74,16 @@ ESD_CORE_EXPORT uint32_t Esd_LoadFont(Esd_FontInfo *fontInfo)
 				fontInfo->BitmapHandle = ESD_BITMAPHANDLE_INVALID;
 				break;
 			}
-			case ESD_FONT_EXTENDED:
-			{
+			case ESD_FONT_EXTENDED: {
 				format = EVE_Hal_rd32(Esd_Host, fontAddr + 8);
 				fontInfo->FontHeight = EVE_Hal_rd32(Esd_Host, fontAddr + 28);
 				esd_resourceinfo_printf("Set extended glyph address to %i\n", (int)glyphAddr);
 				EVE_Hal_wr32(Esd_Host, fontAddr + 32, glyphAddr);
 				fontInfo->BitmapHandle = ESD_BITMAPHANDLE_INVALID;
+				break;
+			}
+			default: {
+				format = 0;
 				break;
 			}
 			}

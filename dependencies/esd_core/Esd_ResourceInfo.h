@@ -13,23 +13,50 @@ Resource info structure
 
 #include "Esd_Base.h"
 #include "Esd_GpuAlloc.h"
+#include "Esd_LittleFS.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Resource loading mechanisms
+// (2-bit enum, see Esd_ResourceInfo::Type)
 ESD_ENUM(Esd_ResourceType, DisplayName = "Resource Type")
+// Load from host SD card
 #define ESD_RESOURCE_FILE 0
+// Load from embedded data
 #define ESD_RESOURCE_PROGMEM 1
+// Load from flash connected to EVE chip
 #define ESD_RESOURCE_FLASH 2
+// Use asset directly from EVE chip connected flash (only available on BT81x)
 #define ESD_RESOURCE_DIRECTFLASH 3
 ESD_END()
 
+// Resource compression
+// (2-bit enum, see Esd_ResourceInfo::Compressed)
 ESD_ENUM(Esd_ResourceCompression, DisplayName = "Resource Compression")
+// Data is uncompressed and can be used as-is
 #define ESD_RESOURCE_RAW 0
+// Load to RAM using CMD_INFLATE
 #define ESD_RESOURCE_DEFLATE 1
+// Load to RAM using CMD_LOADIMAGE
 #define ESD_RESOURCE_IMAGE 2
+// Load to RAM using CMD_VIDEOFRAME
+// TBD: #define ESD_RESOURCE_VIDEOFRAME 3
 ESD_END()
 
 // Both flash and direct flash have the same type bit set on purpose
 #define ESD_RESOURCE_IS_FLASH(resourceType) ((resourceType & ESD_RESOURCE_FLASH) == ESD_RESOURCE_FLASH)
+#define ESD_RESOURCE_IS_PREFERRAM(resourceType) (resourceType == ESD_RESOURCE_FLASH) // When not ESD_RESOURCE_DIRECTFLASH, prefer loading to graphics RAM
+
+#ifdef ESD_LITTLEFS_FLASH
+#define ESD_RESOURCE_DEFAULTS   \
+	.FlashAddress = FA_INVALID, \
+	.GpuHandle = GA_HANDLE_INIT
+#else
+#define ESD_RESOURCE_DEFAULTS \
+	.GpuHandle = GA_HANDLE_INIT
+#endif
 
 ESD_TYPE(Esd_ResourceInfo, Native = Struct)
 typedef struct Esd_ResourceInfo // (16 bytes) (24 bytes on 64 bit)
@@ -37,9 +64,14 @@ typedef struct Esd_ResourceInfo // (16 bytes) (24 bytes on 64 bit)
 	// Source of data
 	union
 	{
-		const char *File;
-		int32_t FlashAddress;
 		eve_progmem_const uint8_t *ProgMem;
+		const char *File;
+#ifdef ESD_LITTLEFS_FLASH
+	};
+	union
+	{
+#endif
+		int32_t FlashAddress;
 	};
 
 	// (Runtime) Handle pointing to the address in RAM_G if it is allocated
@@ -68,10 +100,14 @@ ESD_TYPE(Esd_ResourceInfo *, Native = Pointer, Edit = Library)
 #if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 #ifdef EVE_FLASH_AVAILABLE
 /// Transform flash address to BITMAP_SOURCE address parameter
-#define ESD_DL_FLASH_ADDRESS(address) ((address >> 5) | 0x800000)
+#define ESD_DL_FLASH_ADDRESS(address) ((address >> 5) | 0x800000L)
+/// Check if the address parameter is a flash address
+#define ESD_DL_IS_FLASH_ADDRESS(address) ((address & 0x800000L) != 0)
+/// Get the flash address from a BITMAP_SOURCE address parameter
+#define ESD_DL_GET_FLASH_ADDRESS(address) ((address & ~0x800000L) << 5)
 #endif
 /// Transform RAM_G address to BITMAP_SOURCE address paramter
-#define ESD_DL_RAM_G_ADDRESS(address) (EVE_CHIPID >= EVE_FT810 ? (address & 0x3FFFFF) : (address & 0xFFFFF))
+#define ESD_DL_RAM_G_ADDRESS(address) (EVE_CHIPID >= EVE_FT810 ? (address & 0x3FFFFFL) : (address & 0xFFFFFL))
 #else
 /// Transform RAM_G address to BITMAP_SOURCE address paramter
 #define ESD_DL_RAM_G_ADDRESS(address) (address & 0xFFFFF)
@@ -80,9 +116,80 @@ ESD_TYPE(Esd_ResourceInfo *, Native = Pointer, Edit = Library)
 /// Flash address invalid
 #define FA_INVALID 0
 
+/// Largest size of resource metadata file
+#define ESD_METADATA_MAX 64
+
+/// Resource signatures
+#define ESD_RESOURCE_RES 0x534552
+#define ESD_RESOURCE_BMP 0x504D42
+#define ESD_RESOURCE_FNT 0x544E46
+#define ESD_RESOURCE_ANI 0x494E41
+
+/// Offsets for the first 12 bytes
+#define ESD_METADATA_SIGNATURE 0
+#define ESD_METADATA_VERSION 4
+#define ESD_METADATA_SIZE 5
+#define ESD_METADATA_COMPRESSION 6
+#define ESD_METADATA_EXTLEN 7
+#define ESD_METADATA_RAWSIZE 8
+#define ESD_METADATA_DATA 12
+
+/*
+
+Resource metadata format (little-endian):
+
+0 uint32 esdSignature; // Serialized byte sequence equals "RES", "ANI", "BMP" or "FNT", NUL-terminated
+4 uint8 version; // Version of the metadata format
+5 uint8 size; // Size of the metadata structure
+6 uint8 compression; // The Compression option in ResourceInfo
+7 uint8 extLen; // The string length of the complete file extension of the resource
+8 uint32 rawSize; // The uncompressed size of the resource, RawSize in ResourceInfo
+
+Type-specific data follows immediately after
+
+*/
+
+/// Read utility
+#define ESD_RD32_LE(buffer, offset) ((uint32_t)buffer[offset] | (((uint32_t)buffer[offset + 1]) << 8) | (((uint32_t)buffer[offset + 2]) << 16) | (((uint32_t)buffer[offset + 3]) << 24))
+#define ESD_RD16_LE(buffer, offset) ((uint16_t)buffer[offset] | (((uint16_t)buffer[offset + 1]) << 8))
+#define ESD_RD32I_LE(buffer, offset) ((int32_t)ESD_RD32_LE(buffer, offset))
+#define ESD_RD16I_LE(buffer, offset) ((int16_t)ESD_RD16_LE(buffer, offset))
+#define ESD_WR32_LE(buffer, offset, value)                       \
+	do                                                           \
+	{                                                            \
+		buffer[offset] = (uint32_t)(value)&0xFF;                 \
+		buffer[offset + 1] = (((uint32_t)(value)) >> 8) & 0xFF;  \
+		buffer[offset + 2] = (((uint32_t)(value)) >> 16) & 0xFF; \
+		buffer[offset + 3] = (((uint32_t)(value)) >> 24) & 0xFF; \
+	} while (0)
+#define ESD_WR16_LE(buffer, offset, value)                      \
+	do                                                          \
+	{                                                           \
+		buffer[offset] = (uint16_t)(value)&0xFF;                \
+		buffer[offset + 1] = (((uint16_t)(value)) >> 8) & 0xFF; \
+	} while (0)
+#define ESD_WR32I_LE(buffer, offset, value) ESD_WR32_LE(buffer, offset, (int32_t)(value))
+#define ESD_WR16I_LE(buffer, offset, value) ESD_WR16_LE(buffer, offset, (int16_t)(value))
+
+/// Set utility with logging
+#define ESD_METADATA_SET_EX(type, info, member, value, filename, expression)                                                                                           \
+	do                                                                                                                                                                 \
+	{                                                                                                                                                                  \
+		type value_ = (value);                                                                                                                                         \
+		if (((info)->member) != (value_))                                                                                                                              \
+		{                                                                                                                                                              \
+			eve_printf_debug("Metadata %s in resource %s changed from %i to %i\n", (#member), (filename) ? (filename) : "NULL", (int)((info)->member), (int)(value_)); \
+			expression;                                                                                                                                                \
+			(info)->member = (value_);                                                                                                                                 \
+		}                                                                                                                                                              \
+	} while (0)
+#define ESD_METADATA_SET(type, info, member, value, filename) ESD_METADATA_SET_EX( \
+	type, info, member, value, filename, do {} while (0))
+
 /// A function to load resource data into RAM_G (or to use the resource from flash directly)
 /// Returns address in the format as specified by the BITMAP_SOURCE command (see ESD_DL_FLASH_ADDRESS and ESD_DL_RAM_G_ADDRESS macros)
 /// Returns the output image format if the resource is an image loaded through the coprocessor
+ESD_CORE_EXPORT uint32_t Esd_LoadResourceEx(Esd_ResourceInfo *resourceInfo, uint8_t *metadata, uint32_t *imageFormat);
 ESD_CORE_EXPORT uint32_t Esd_LoadResource(Esd_ResourceInfo *resourceInfo, uint32_t *imageFormat);
 
 /// Free a currently loaded resource from RAM_G. Can be used to enforce reloading a resource.
@@ -107,6 +214,28 @@ ESD_CORE_EXPORT void Esd_ResourcePersist(Esd_ResourceInfo *resourceInfo);
 
 /// Check if a format is an ASTC format
 #define ESD_IS_FORMAT_ASTC(format) ((format & 0xFFF0) == 0x93B0)
+
+#ifdef ESD_LITTLEFS_FLASH
+ESD_CORE_EXPORT void Esd_ResourceInfo_LoadFlashAddressEx(Esd_ResourceInfo *resourceInfo, uint8_t *metadata);
+#else
+#define Esd_ResourceInfo_LoadFlashAddressEx(resourceInfo)
+#endif
+
+// Preload LittleFS flash address for a resource, call once
+ESD_FUNCTION(Esd_ResourceInfo_LoadFlashAddress, DisplayName = "ESD ResourceInfo LoadFlashAddress", Category = EsdUtilities, Inline)
+ESD_PARAMETER(resourceInfo, Type = Esd_ResourceInfo *)
+static inline void Esd_ResourceInfo_LoadFlashAddress(Esd_ResourceInfo *resourceInfo)
+{
+#ifdef ESD_LITTLEFS_FLASH
+	uint8_t metadata[ESD_METADATA_MAX];
+	metadata[ESD_METADATA_SIGNATURE] = '\0';
+	Esd_ResourceInfo_LoadFlashAddressEx(resourceInfo, metadata);
+#endif
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* #ifndef ESD_FONTINFO__H */
 

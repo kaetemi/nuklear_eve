@@ -1,46 +1,50 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*/
+ * @file EVE_CoCmd_Widgets.c
+ * @brief EVE's co-processor command
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "EVE_Platform.h"
 
 #include <stdarg.h>
 
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
-/* Count number of arguments in Cmd_Text for string format*/
+/** @brief Count number of arguments in Cmd_Text for string format
+ *
+ * @param str
+ * @return count
+ */
 static uint8_t countArgs(const char *str)
 {
 	uint8_t count = 0;
 	const char *tmp = str;
 
-	while (tmp = strstr(tmp, "%"))
+	while ((tmp = strstr(tmp, "%")))
 	{
 		if (*(tmp + 1) == '%')
 		{
@@ -60,7 +64,7 @@ EVE_HAL_EXPORT void EVE_CoCmd_text(EVE_HalContext *phost, int16_t x, int16_t y, 
 {
 	va_list args;
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
-	uint8_t i, num;
+	uint8_t num;
 #endif
 
 #if EVE_CMD_HOOKS
@@ -89,7 +93,7 @@ EVE_HAL_EXPORT void EVE_CoCmd_text(EVE_HalContext *phost, int16_t x, int16_t y, 
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815)
 	{
-		for (i = 0; i < num; i++)
+		for (uint8_t i = 0; i < num; i++)
 			EVE_Cmd_wr32(phost, (uint32_t)va_arg(args, uint32_t));
 	}
 #endif
@@ -129,7 +133,7 @@ EVE_HAL_EXPORT void EVE_CoCmd_text_s(EVE_HalContext *phost, int16_t x, int16_t y
 #endif
 }
 
-EVE_HAL_EXPORT void EVE_CoCmd_text_ex(EVE_HalContext *phost, int16_t x, int16_t y, int16_t font, uint16_t options, bool bottom, int16_t baseLine, int16_t capsHeight, const char *s)
+EVE_HAL_EXPORT void EVE_CoCmd_text_ex(EVE_HalContext *phost, int16_t x, int16_t y, int16_t font, uint16_t options, bool bottom, int16_t baseLine, int16_t capsHeight, int16_t xOffset, const char *s)
 {
 	int16_t yOffset;
 	if (options & OPT_CENTERY)
@@ -138,14 +142,20 @@ EVE_HAL_EXPORT void EVE_CoCmd_text_ex(EVE_HalContext *phost, int16_t x, int16_t 
 		yOffset = baseLine;
 	else
 		yOffset = baseLine - capsHeight;
-	EVE_CoCmd_text(phost, x, y - yOffset, font, options & ~OPT_CENTERY, s);
+	/*
+	if (options & OPT_RIGHTX)
+	    xOffset = 0;
+	else if (options & OPT_CENTERX)
+	    xOffset >>= 1;
+	*/
+	EVE_CoCmd_text(phost, x - xOffset, y - yOffset, font, options & ~OPT_CENTERY, s);
 }
 
 EVE_HAL_EXPORT void EVE_CoCmd_button(EVE_HalContext *phost, int16_t x, int16_t y, int16_t w, int16_t h, int16_t font, uint16_t options, const char *s, ...)
 {
 	va_list args;
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
-	uint8_t i, num;
+	uint8_t num;
 #endif
 
 #if EVE_CMD_HOOKS
@@ -174,7 +184,7 @@ EVE_HAL_EXPORT void EVE_CoCmd_button(EVE_HalContext *phost, int16_t x, int16_t y
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815)
 	{
-		for (i = 0; i < num; i++)
+		for (uint8_t i = 0; i < num; i++)
 			EVE_Cmd_wr32(phost, (uint32_t)va_arg(args, uint32_t));
 	}
 #endif
@@ -220,7 +230,7 @@ EVE_HAL_EXPORT void EVE_CoCmd_toggle(EVE_HalContext *phost, int16_t x, int16_t y
 {
 	va_list args;
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
-	uint8_t i, num;
+	uint8_t num;
 #endif
 
 #if EVE_CMD_HOOKS
@@ -237,7 +247,7 @@ EVE_HAL_EXPORT void EVE_CoCmd_toggle(EVE_HalContext *phost, int16_t x, int16_t y
 
 	va_start(args, s);
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815) /* OPT_FORMAT not defined in FT8xx chip */
-	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); //Only check % characters if option OPT_FORMAT is set
+	num = (options & OPT_FORMAT) ? (countArgs(s)) : (0); // Only check % characters if option OPT_FORMAT is set
 #endif
 
 	EVE_Cmd_startFunc(phost);
@@ -252,7 +262,7 @@ EVE_HAL_EXPORT void EVE_CoCmd_toggle(EVE_HalContext *phost, int16_t x, int16_t y
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
 	if (EVE_CHIPID >= EVE_BT815)
 	{
-		for (i = 0; i < num; i++)
+		for (uint8_t i = 0; i < num; i++)
 			EVE_Cmd_wr32(phost, (uint32_t)va_arg(args, uint32_t));
 	}
 #endif

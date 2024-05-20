@@ -38,13 +38,10 @@
 
 #include "Ft_Esd.h"
 #include "Ft_Esd_GpuAlloc.h"
-#include "Ft_Esd_Dl.h"
-#include "Ft_Esd_CoCmd.h"
+#include "FT_Esd_Dl.h"
+#include "FT_Esd_CoCmd.h"
 #include "Ft_Esd_BitmapHandle.h"
 #include "Ft_Esd_TouchTag.h"
-
-#define Ft_Esd_Host Esd_Host
-#define Ft_Esd_GAlloc Esd_GAlloc
 
 #endif /* #ifndef ESD_CORE__H */
 

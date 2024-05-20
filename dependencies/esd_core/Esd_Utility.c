@@ -7,7 +7,6 @@
 #include "Esd_TouchTag.h"
 #include "Esd_Context.h"
 
-extern ESD_CORE_EXPORT EVE_HalContext *Esd_Host;
 extern ESD_CORE_EXPORT Esd_GpuAlloc *Esd_GAlloc;
 
 #if defined(EVE_FLASH_AVAILABLE)
@@ -42,7 +41,7 @@ ESD_CORE_EXPORT void Esd_AttachFlashFast()
 	while (!(flashStatus = EVE_Hal_rd32(phost, REG_FLASH_STATUS)))
 	{
 #ifndef NDEBUG
-		eve_printf_debug("Waiting for REG_FLASH_STATUS (%u)\n", flashStatus);
+		eve_printf_debug("Waiting for REG_FLASH_STATUS (%u)\n", (unsigned int)flashStatus);
 #endif
 		EVE_sleep(100);
 	}
@@ -86,7 +85,7 @@ ESD_CORE_EXPORT void Esd_AttachFlashFast()
 				eve_printf_debug("Failed full-speed flash test. Check board wiring\n");
 				break;
 			default:
-				eve_printf_debug("Unknown flash error (%u)\n", error);
+				eve_printf_debug("Unknown flash error (%u)\n", (unsigned int)error);
 			}
 		}
 #endif
@@ -98,6 +97,10 @@ ESD_CORE_EXPORT void Esd_AttachFlashFast()
 
 ESD_CORE_EXPORT void Esd_BeginLogo()
 {
+	/* ---- */
+	/* NOTE: Bypassed CoDl optimizer on purpose due to coprocessor logo behaviour */
+	/* ---- */
+
 	EVE_HalContext *phost = Esd_GetHost();
 	Esd_GpuAlloc_Reset(Esd_GAlloc);
 	Esd_GpuAlloc_Alloc(Esd_GAlloc, RAM_G_SIZE, 0); // Block allocation
@@ -164,11 +167,32 @@ ESD_CORE_EXPORT bool Esd_Calibrate()
 	eve_printf_debug("Esd_Calibrate: End Frame\n");
 
 	// Print the configured values
-	EVE_Hal_rdMem(phost, (uint8_t *)transMatrix, REG_TOUCH_TRANSFORM_A, 4 * 6); //read all the 6 coefficients
+	EVE_Hal_rdMem(phost, (uint8_t *)transMatrix, REG_TOUCH_TRANSFORM_A, 4 * 6); // read all the 6 coefficients
 	eve_printf_debug("Touch screen transform values are A 0x%lx,B 0x%lx,C 0x%lx,D 0x%lx,E 0x%lx, F 0x%lx\n",
-	    transMatrix[0], transMatrix[1], transMatrix[2], transMatrix[3], transMatrix[4], transMatrix[5]);
+	    (unsigned long)transMatrix[0], (unsigned long)transMatrix[1], (unsigned long)transMatrix[2],
+	    (unsigned long)transMatrix[3], (unsigned long)transMatrix[4], (unsigned long)transMatrix[5]);
 
 	return result != 0;
+}
+
+ESD_CORE_EXPORT void Esd_DeferredFree(void *ptr)
+{
+	// eve_printf_debug("Request free\n");
+	(*(void **)ptr) = Esd_CurrentContext->DeferredFree;
+	Esd_CurrentContext->DeferredFree = ptr;
+}
+
+ESD_CORE_EXPORT void Esd_ProcessFree()
+{
+	void *current = Esd_CurrentContext->DeferredFree;
+	Esd_CurrentContext->DeferredFree = NULL;
+	while (current)
+	{
+		void *next = (*(void **)current);
+		// eve_printf_debug("Free deferred\n");
+		esd_free(current);
+		current = next;
+	}
 }
 
 /* end of file */

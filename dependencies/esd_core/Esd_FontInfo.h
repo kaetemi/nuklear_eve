@@ -15,6 +15,10 @@ Font info structure
 #include "Esd_GpuAlloc.h"
 #include "Esd_ResourceInfo.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ESD_ENUM(Esd_FontType, DisplayName = "Bitmap Format")
 #define ESD_FONT_ROM 0
 #define ESD_FONT_LEGACY 1
@@ -23,9 +27,29 @@ ESD_END()
 
 // Preset font formats
 ESD_ENUM(_FontResourceFormat, DisplayName = "Font Resource Format")
-// ESD_IDENTIFIER(LEGACY_L1)
-// ESD_IDENTIFIER(LEGACY_L8)
 ESD_IDENTIFIER(EXTENDED_ASTC)
+ESD_IDENTIFIER(EXTENDED_ASTC_4x4)
+ESD_IDENTIFIER(EXTENDED_ASTC_5x5)
+ESD_IDENTIFIER(EXTENDED_ASTC_5x4)
+ESD_IDENTIFIER(EXTENDED_ASTC_6x5)
+ESD_IDENTIFIER(EXTENDED_ASTC_6x6)
+ESD_IDENTIFIER(EXTENDED_ASTC_8x5)
+ESD_IDENTIFIER(EXTENDED_ASTC_8x6)
+ESD_IDENTIFIER(EXTENDED_ASTC_8x8)
+ESD_IDENTIFIER(EXTENDED_ASTC_10x5)
+ESD_IDENTIFIER(EXTENDED_ASTC_10x6)
+ESD_IDENTIFIER(EXTENDED_ASTC_10x8)
+ESD_IDENTIFIER(EXTENDED_ASTC_10x10)
+ESD_IDENTIFIER(EXTENDED_ASTC_12x10)
+ESD_IDENTIFIER(EXTENDED_ASTC_12x12)
+ESD_IDENTIFIER(EXTENDED_L1)
+ESD_IDENTIFIER(EXTENDED_L2)
+ESD_IDENTIFIER(EXTENDED_L4)
+ESD_IDENTIFIER(EXTENDED_L8)
+ESD_IDENTIFIER(LEGACY_L1)
+ESD_IDENTIFIER(LEGACY_L2)
+ESD_IDENTIFIER(LEGACY_L4)
+ESD_IDENTIFIER(LEGACY_L8)
 ESD_END()
 
 // Structure providing information on how a font is loaded, as well as it's current loaded state
@@ -44,11 +68,14 @@ typedef struct Esd_FontInfo // (40 bytes) (56 bytes on 64 bit)
 	// (Runtime) Font height
 	uint16_t FontHeight;
 
-	// (Runtime) Baseline, from top of font glyph
-	uint16_t BaseLine;
+	// Baseline, from top of font glyph
+	uint32_t BaseLine : 11;
 
-	// (Runtime) Caps height of font, measured from baseline
-	uint16_t CapsHeight;
+	// Caps height of font, measured from baseline
+	uint32_t CapsHeight : 11;
+
+	// Offset of left edge of characters in the bitmap
+	uint32_t XOffset : 10;
 
 	// (Runtime) The glyph address as specified in the loaded font resource
 	uint32_t GlyphAddress;
@@ -79,10 +106,13 @@ typedef struct Esd_RomFontInfo // (8 bytes)
 	uint16_t FontHeight;
 
 	// (Runtime) Baseline, from top of font glyph
-	uint16_t BaseLine;
+	uint32_t BaseLine : 11;
 
 	// (Runtime) Caps height of font, measured from baseline
-	uint16_t CapsHeight;
+	uint32_t CapsHeight : 11;
+
+	// (Runtime) Offset of left edge of characters in the bitmap
+	uint32_t XOffset : 10;
 
 } Esd_RomFontInfo;
 
@@ -94,6 +124,23 @@ ESD_CORE_EXPORT uint32_t Esd_LoadFont(Esd_FontInfo *fontInfo);
 ESD_UPDATE(Esd_FontPersist, DisplayName = "Persist Font", Category = EsdUtilities)
 ESD_PARAMETER(fontInfo, Type = Esd_FontInfo *)
 ESD_CORE_EXPORT void Esd_FontPersist(Esd_FontInfo *fontInfo);
+
+// Preload LittleFS flash address for a font, call once
+ESD_FUNCTION(Esd_FontInfo_LoadFlashAddress, DisplayName = "ESD FontInfo LoadFlashAddress", Category = EsdUtilities, Inline)
+ESD_PARAMETER(fontInfo, Type = Esd_FontInfo *)
+static inline void Esd_FontInfo_LoadFlashAddress(Esd_FontInfo *fontInfo)
+{
+	if (fontInfo->Type != ESD_FONT_ROM)
+	{
+		// TODO: Load metadata for fonts!!!
+		Esd_ResourceInfo_LoadFlashAddress(&fontInfo->FontResource);
+		Esd_ResourceInfo_LoadFlashAddress(&fontInfo->GlyphResource);
+	}
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* #ifndef ESD_FONTINFO__H */
 

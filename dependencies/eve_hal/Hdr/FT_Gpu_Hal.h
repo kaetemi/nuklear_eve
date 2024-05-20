@@ -1,38 +1,34 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*
-* File Description:
-*    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
-*    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
-*    In addition, there are some helper functions defined for FT800 coprocessor engine as well as phost commands.
-*
+ * @file FT_Gpu_Hal.h
+ * @brief This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
+ *        Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
+ *        In addition, there are some helper functions defined for FT800 coprocessor engine as well as phost commands.
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ * 
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
 */
 
 #ifndef FT_GPU_HAL__H
@@ -95,7 +91,7 @@
 
 typedef struct
 {
-	ft_uint32_t TotalChannelNum; //< Total number channels for libmpsse
+	ft_uint32_t TotalChannelNum; /**< Total number channels for libmpsse */
 } Ft_Gpu_HalInit_t;
 
 #define Ft_Gpu_Hal_Context_t EVE_HalContext
@@ -106,7 +102,7 @@ typedef struct
 static inline eve_deprecated("Use `EVE_Hal_initialize`") bool Ft_Gpu_Hal_Init(Ft_Gpu_HalInit_t *halinit)
 {
 	EVE_HalPlatform *platform = EVE_Hal_initialize();
-	halinit->TotalChannelNum = EVE_Hal_list();
+	halinit->TotalChannelNum = (uint32_t)EVE_Hal_list();
 	return !!platform;
 }
 
@@ -117,6 +113,8 @@ static inline eve_deprecated("Use `EVE_Hal_open`") bool Ft_Gpu_Hal_Open(EVE_HalC
 	return EVE_Hal_open(phost, &parameters);
 }
 
+/** @name The basic APIs Level 1 */
+///@{
 #define Ft_Gpu_Hal_Close EVE_Hal_close
 #define Ft_Gpu_Hal_DeInit EVE_Hal_release
 
@@ -137,7 +135,7 @@ static inline eve_deprecated("Use `EVE_Hal_open`") bool Ft_Gpu_Hal_Open(EVE_HalC
 
 #define Ft_Gpu_Hal_WrMem EVE_Hal_wrMem
 #define Ft_Gpu_Hal_WrMem_ProgMem EVE_Hal_wrProgMem
-
+///@}
 static inline eve_deprecated("Use `EVE_Hal_rdMem` (note: buffer and addr are swapped)") ft_void_t Ft_Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
 {
 	EVE_Hal_rdMem(phost, buffer, addr, length);
@@ -145,18 +143,20 @@ static inline eve_deprecated("Use `EVE_Hal_rdMem` (note: buffer and addr are swa
 
 /*******************************************************************************/
 /*******************************************************************************/
-/* APIs for coprocessor Fifo read/write and space management */
+/** @name APIs for coprocessor Fifo read/write and space management */
+///@{
 #define Ft_Gpu_Hal_WrCmd32 EVE_Cmd_wr32
 
-/// Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FT_FALSE in case a coprocessor fault occurred
+/** Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FT_FALSE in case a coprocessor fault occurred */
 #define Ft_Gpu_Hal_WrCmdBuf EVE_Cmd_wrMem
 #define Ft_Gpu_Hal_WrCmdBuf_ProgMem EVE_Cmd_wrProgMem
 
-/// Wait for the command buffer to fully empty. Returns FT_FALSE in case a coprocessor fault occurred
+/** Wait for the command buffer to fully empty. Returns FT_FALSE in case a coprocessor fault occurred */
 #define Ft_Gpu_Hal_WaitCmdFifoEmpty EVE_Cmd_waitFlush
 
-/// Wait for the command buffer to have at least the requested amount of free space
+/** Wait for the command buffer to have at least the requested amount of free space */
 #define Ft_Gpu_Hal_WaitCmdFreespace EVE_Cmd_waitSpace
+///@}
 
 /*
 // Use the provided wait functions!
@@ -171,13 +171,13 @@ static inline ft_void_t Ft_Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t 
 /*******************************************************************************/
 
 #ifdef _MSC_VER
-#pragma deprecated(Ft_Gpu_CoCmd_SendCmd) /* Use EVE_Cmd_wr32 */
-#pragma deprecated(Eve_CoCmd_SendCmd) /* Use EVE_Cmd_wr32 */
-#pragma deprecated(Ft_Gpu_Copro_SendCmd) /* Use EVE_Cmd_wr32 */
-#pragma deprecated(Eve_CoCmd_StartFrame) /* Remove */
-#pragma deprecated(Eve_CoCmd_EndFrame) /* Remove */
-#pragma deprecated(Ft_Gpu_CoCmd_StartFrame) /* Remove */
-#pragma deprecated(Ft_Gpu_CoCmd_EndFrame) /* Remove */
+#pragma deprecated(Ft_Gpu_CoCmd_SendCmd) /**< Use EVE_Cmd_wr32 */
+#pragma deprecated(Eve_CoCmd_SendCmd) /**< Use EVE_Cmd_wr32 */
+#pragma deprecated(Ft_Gpu_Copro_SendCmd) /**< Use EVE_Cmd_wr32 */
+#pragma deprecated(Eve_CoCmd_StartFrame) /**< Remove */
+#pragma deprecated(Eve_CoCmd_EndFrame) /**< Remove */
+#pragma deprecated(Ft_Gpu_CoCmd_StartFrame) /**< Remove */
+#pragma deprecated(Ft_Gpu_CoCmd_EndFrame) /**< Remove */
 #endif
 
 #define Ft_Gpu_CoCmd_SendCmd EVE_Cmd_wr32
@@ -208,7 +208,9 @@ inline static ft_void_t eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`,
 
 /*******************************************************************************/
 /*******************************************************************************/
-/* APIs for Host Commands */
+/** @name APIs for Host Commands */
+///@{
+
 #define FT_GPU_INTERNAL_OSC EVE_INTERNAL_OSC
 #define FT_GPU_EXTERNAL_OSC EVE_EXTERNAL_OSC
 #define FT_GPU_PLL_SOURCE_T EVE_PLL_SOURCE_T
@@ -232,14 +234,6 @@ inline static ft_void_t eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`,
 #define FT_GPU_SYSCLK_36M EVE_SYSCLK_36M
 #define FT_GPU_SYSCLK_24M EVE_SYSCLK_24M
 #define FT_GPU_81X_PLL_FREQ_T EVE_81X_PLL_FREQ_T
-
-#define FT_GPU_MAIN_ROM EVE_MAIN_ROM
-#define FT_GPU_RCOSATAN_ROM EVE_RCOSATAN_ROM
-#define FT_GPU_SAMPLE_ROM EVE_SAMPLE_ROM
-#define FT_GPU_JABOOT_ROM EVE_JABOOT_ROM
-#define FT_GPU_J1BOOT_ROM EVE_J1BOOT_ROM
-#define FT_GPU_ADC EVE_ADC
-#define FT_GPU_POWER_ON_ROM_AND_ADC EVE_POWER_ON_ROM_AND_ADC
 
 #define FT_GPU_5MA EVE_5MA
 #define FT_GPU_10MA EVE_10MA
@@ -293,7 +287,7 @@ inline static ft_void_t eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`,
 #define ft_delay EVE_sleep
 
 #define Ft_Gpu_Hal_WaitLogo_Finish EVE_Cmd_waitLogo
-
+///@}
 inline static ft_int16_t Ft_Gpu_Hal_TransferString(EVE_HalContext *phost, const ft_char8_t *str)
 {
 	return EVE_Hal_transferString(phost, str, 0, EVE_CMD_STRING_MAX, 0) - 1;
@@ -303,6 +297,8 @@ inline static ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, cons
 {
 	return EVE_Hal_transferString(phost, str, 0, length, 0) - 1;
 }
+/** @name APIs for Host Commands */
+///@{
 #define Ft_Gpu_Hal_Sleep EVE_sleep
 
 #define Ft_Gpu_HostCommand EVE_Hal_hostCommand
@@ -325,7 +321,7 @@ inline static ft_int16_t Ft_Gpu_Hal_TransferString_S(EVE_HalContext *phost, cons
 #define Ft_Gpu_81X_ResetActive EVE_Host_resetActive
 #define Ft_Gpu_81X_ResetRemoval EVE_Host_resetRemoval
 #endif
-
+///@}
 #define ft_millis_init eve_noop
 #define ft_millis_exit eve_noop
 #define ft_millis EVE_millis

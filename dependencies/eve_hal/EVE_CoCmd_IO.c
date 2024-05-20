@@ -1,33 +1,33 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*/
+ * @file EVE_CoCmd_IO.c
+ * @brief EVE's co-processor IO commmands
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "EVE_Platform.h"
 
@@ -94,7 +94,13 @@ EVE_HAL_EXPORT bool EVE_CoCmd_inflate_progMem(EVE_HalContext *phost, uint32_t ds
 	return EVE_Cmd_waitFlush(phost); // Resource failed to load
 }
 
-/* Get the end memory address of data inflated by CMD_INFLATE */
+/** @brief Get the end memory address of data inflated by CMD_INFLATE and CMD_INFLATE2
+ * At API level 2, the allocation pointer is also advanced by:
+ *  - cmd_loadimage
+ *  - cmd_playvideo
+ *  - cmd_videoframe
+ *  - cmd_endlist
+ */
 EVE_HAL_EXPORT bool EVE_CoCmd_getPtr(EVE_HalContext *phost, uint32_t *result)
 {
 	uint16_t resAddr;
@@ -106,7 +112,7 @@ EVE_HAL_EXPORT bool EVE_CoCmd_getPtr(EVE_HalContext *phost, uint32_t *result)
 
 	EVE_Cmd_startFunc(phost);
 	EVE_Cmd_wr32(phost, CMD_GETPTR);
-	resAddr = EVE_Cmd_moveWp(phost, 12);
+	resAddr = EVE_Cmd_moveWp(phost, 4); // move write pointer to result location
 	EVE_Cmd_endFunc(phost);
 
 	/* Read result */
@@ -186,7 +192,7 @@ EVE_HAL_EXPORT bool EVE_CoCmd_flashErase_flush(EVE_HalContext *phost)
 
 EVE_HAL_EXPORT bool EVE_CoCmd_flashRead_flush(EVE_HalContext *phost, uint32_t dest, uint32_t src, uint32_t num)
 {
-	EVE_MULTI_TARGET_CHECK_RETURN(CMD_FLASHERASE, EVE_CHIPID >= EVE_BT815, false);
+	EVE_MULTI_TARGET_CHECK_RETURN(CMD_FLASHREAD, EVE_CHIPID >= EVE_BT815, false);
 
 	if (!EVE_Cmd_waitFlush(phost))
 		return false; // Coprocessor must be ready
@@ -196,11 +202,13 @@ EVE_HAL_EXPORT bool EVE_CoCmd_flashRead_flush(EVE_HalContext *phost, uint32_t de
 	return EVE_Cmd_waitFlush(phost);
 }
 
-/// Attach flash. Return new FLASH_STATUS
+/**
+ * @brief Attach flash.
+ */
 EVE_HAL_EXPORT uint32_t EVE_CoCmd_flashAttach(EVE_HalContext *phost)
 {
 	uint32_t flashStatus;
-	EVE_MULTI_TARGET_CHECK_RETURN(CMD_FLASHERASE, EVE_CHIPID >= EVE_BT815, 0);
+	EVE_MULTI_TARGET_CHECK_RETURN(CMD_FLASHATTACH, EVE_CHIPID >= EVE_BT815, 0);
 	if (!EVE_Cmd_waitFlush(phost))
 		return EVE_Hal_rd32(phost, REG_FLASH_STATUS); // Coprocessor must be ready
 	flashStatus = EVE_Hal_rd32(phost, REG_FLASH_STATUS);
@@ -211,13 +219,18 @@ EVE_HAL_EXPORT uint32_t EVE_CoCmd_flashAttach(EVE_HalContext *phost)
 	return EVE_Hal_rd32(phost, REG_FLASH_STATUS); // Return current status
 }
 
-/// Enter fast flash state. Return new FLASH_STATUS
+/**
+ * @brief Enter fast flash state.
+ * @param phost Pointer to Hal context
+ * @param result
+ * @return new FLASH_STATUS
+ */
 EVE_HAL_EXPORT uint32_t EVE_CoCmd_flashFast(EVE_HalContext *phost, uint32_t *result)
 {
 	uint16_t resAddr;
 	uint32_t flashStatus;
 
-	EVE_MULTI_TARGET_CHECK_RETURN(CMD_FLASHERASE, EVE_CHIPID >= EVE_BT815, 0);
+	EVE_MULTI_TARGET_CHECK_RETURN(CMD_FLASHFAST, EVE_CHIPID >= EVE_BT815, 0);
 
 	if (!EVE_Cmd_waitFlush(phost))
 	{

@@ -4,6 +4,10 @@
 
 #include "Esd_Base.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Utility for managing touch tag identifiers. Create one instance for each tag you need to handle
 ESD_ACTOR(Esd_TouchTag, Callback, Include = "Esd_TouchTag.h", DisplayName = "Touch Tag", Category = EsdUtilities, Icon = ":/icons/hand-point-090.png")
 typedef struct
@@ -16,15 +20,15 @@ typedef struct
 	//
 
 	// Called when the touch interaction is started on this tag.
-ESD_SIGNAL(Down)
+	ESD_SIGNAL(Down)
 	void (*Down)(void *context);
 
 	// Up is called when the touch ends, even if the touch ended outside the tag. One Up is guaranteed to be called for every Down.
-ESD_SIGNAL(Up)
+	ESD_SIGNAL(Up)
 	void (*Up)(void *context);
 
 	// Tap is called when both Down and Up events were called while on the tag.
-ESD_SIGNAL(Tap)
+	ESD_SIGNAL(Tap)
 	void (*Tap)(void *context);
 
 	//
@@ -114,6 +118,10 @@ ESD_FUNCTION(Esd_TouchTag_TouchYDelta, Attributes = ESD_CORE_EXPORT, DisplayName
 ESD_PARAMETER(context, Type = Esd_TouchTag *, Static)
 
 ESD_TYPE(Esd_TouchTag *, Native = Pointer, Edit = None)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* Esd_TOUCHTAG__H */
 

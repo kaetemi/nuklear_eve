@@ -14,9 +14,8 @@ ESD_CORE_EXPORT void Esd_Render_RectF(esd_int32_f4_t x, esd_int32_f4_t y, esd_in
 	EVE_CoDl_colorArgb_ex(phost, color);
 	EVE_CoDl_lineWidth(phost, width);
 	EVE_CoDl_begin(phost, RECTS);
-	EVE_CoDl_vertexFormat(phost, 4);
-	EVE_CoCmd_dl(phost, VERTEX2F(x0, y0));
-	EVE_CoCmd_dl(phost, VERTEX2F(x1, y1));
+	EVE_CoDl_vertex2f_4(phost, x0, y0);
+	EVE_CoDl_vertex2f_4(phost, x1, y1);
 	EVE_CoDl_end(phost);
 }
 
@@ -93,11 +92,7 @@ ESD_CORE_EXPORT void Esd_Render_Rect_Stroke(
 	EVE_CoDl_begin(phost, RECTS);
 	EVE_CoDl_colorArgb_ex(phost, color);
 	int vertexFormat = 4;
-	while (vertexFormat > 0 && (
-		x0 < EVE_VERTEX2F_MIN || x0 > EVE_VERTEX2F_MAX
-		|| x1 < EVE_VERTEX2F_MIN || x1 > EVE_VERTEX2F_MAX
-		|| x0 < EVE_VERTEX2F_MIN || x0 > EVE_VERTEX2F_MAX
-		|| y1 < EVE_VERTEX2F_MIN || y1 > EVE_VERTEX2F_MAX))
+	while (vertexFormat > 0 && (x0 < EVE_VERTEX2F_MIN || x0 > EVE_VERTEX2F_MAX || x1 < EVE_VERTEX2F_MIN || x1 > EVE_VERTEX2F_MAX || x0 < EVE_VERTEX2F_MIN || x0 > EVE_VERTEX2F_MAX || y1 < EVE_VERTEX2F_MIN || y1 > EVE_VERTEX2F_MAX))
 	{
 		--vertexFormat;
 		x0 >>= 1;
@@ -106,6 +101,11 @@ ESD_CORE_EXPORT void Esd_Render_Rect_Stroke(
 		y1 >>= 1;
 	}
 	EVE_CoDl_vertexFormat(phost, vertexFormat);
+
+	/* ---- */
+	/* NOTE: Bypassing CoDl optimizer on purpose inside a SAVE_CONTEXT block */
+	/* ---- */
+
 	EVE_CoCmd_dl(phost, SAVE_CONTEXT());
 
 	// Outer reset
@@ -148,6 +148,11 @@ ESD_CORE_EXPORT void Esd_Render_Rect_Stroke(
 
 	// Restore rendering context, ESD display list optimizations functions should be used again after this.
 	EVE_CoCmd_dl(phost, RESTORE_CONTEXT());
+
+	/* ---- */
+	/* NOTE: Bypassed CoDl optimizer on purpose inside a SAVE_CONTEXT block */
+	/* ---- */
+
 	EVE_CoDl_end(phost);
 }
 

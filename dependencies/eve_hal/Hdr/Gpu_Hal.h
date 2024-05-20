@@ -1,38 +1,34 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*
-* File Description:
-*    This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
-*    Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
-*    In addition, there are some helper functions defined for FT800 coprocessor engine as well as phost commands.
-*
+ * @file Gpu_Hal.h
+ * @brief This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
+ *        Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
+ *        In addition, there are some helper functions defined for FT800 coprocessor engine as well as phost commands.
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ * 
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
 */
 
 #ifndef GPU_HAL__H
@@ -46,7 +42,6 @@
 #include <stdlib.h>
 
 #ifdef BT8XXEMU_PLATFORM
-#define MSVC_FT800EMU
 void setupComp();
 void loop();
 #define setup                               \
@@ -81,7 +76,7 @@ void loop();
 #define FIFO_BYTE_ALIGNMENT_MASK EVE_FIFO_BYTE_ALIGNMENT_MASK
 #define CMD_SIZE 4
 
-#define char8_t uint8_t
+#define char8_t int8_t
 #define bool_t bool
 #define uchar8_t uint8_t
 typedef float float_t;
@@ -106,12 +101,6 @@ typedef double double_t;
 typedef eve_progmem uint16_t prog_uint16_t;
 typedef eve_progmem char prog_uchar8_t;
 typedef eve_progmem char prog_char8_t;
-
-/*
-extern int16_t ESD_DispWidth, ESD_DispHeight;
-#define DispWidth ESD_DispWidth
-#define DispHeight ESD_DispHeight
-*/
 
 #define DispWidth phost->Width
 #define DispHeight phost->Height
@@ -139,7 +128,7 @@ extern int16_t ESD_DispWidth, ESD_DispHeight;
 
 typedef struct
 {
-	ft_uint32_t TotalChannelNum; //< Total number channels for libmpsse
+	ft_uint32_t TotalChannelNum; /**< Total number channels for libmpsse */
 } Gpu_HalInit_t;
 
 #define Gpu_Hal_Context_t EVE_HalContext
@@ -162,20 +151,24 @@ typedef struct
 
 typedef struct Fifo_t
 {
-	uint32_t fifo_buff; //fifo buffer address
-	int32_t fifo_len; //fifo length
-	int32_t fifo_wp; //fifo write pointer - maintained by host
-	int32_t fifo_rp; //fifo read point - maintained by device
-	/* FT800 series specific registers */
-	uint32_t HW_Read_Reg; //hardware fifo read register
-	uint32_t HW_Write_Reg; //hardware fifo write register
+	uint32_t fifo_buff; /**< fifo buffer address */
+	int32_t fifo_len; /**< fifo length */
+	int32_t fifo_wp; /**< fifo write pointer - maintained by host */
+	int32_t fifo_rp; /**< fifo read point - maintained by device */
+	/** @name FT800 series specific registers */
+	///@{
+	uint32_t HW_Read_Reg; /**< hardware fifo read register */
+	uint32_t HW_Write_Reg; /**< hardware fifo write register */
+	///@}
 } Fifo_t;
 
-/* Type of file to load from SDCard or Windows file system */
-#define LOADIMAGE 1 //loadimage command takes destination address and options before the actual bitmap data
-#define INFLATE 2 //inflate command takes destination address before the actual bitmap
-#define LOAD 3 //load bitmaps directly
+/** @name Type of file to load from SDCard or Windows file system */
+///@{
+#define LOADIMAGE 1 /**< loadimage command takes destination address and options before the actual bitmap data */
+#define INFLATE 2 /**< inflate command takes destination address before the actual bitmap */
+#define LOAD 3 /**< load bitmaps directly */
 #define INFLATE2 4
+///@}
 
 /*******************************************************************************/
 /*******************************************************************************/
@@ -184,7 +177,7 @@ typedef struct Fifo_t
 static inline eve_deprecated("Use `EVE_Hal_initialize`") bool Gpu_Hal_Init(Gpu_HalInit_t *halinit)
 {
 	EVE_HalPlatform *platform = EVE_Hal_initialize();
-	halinit->TotalChannelNum = EVE_Hal_list();
+	halinit->TotalChannelNum = (uint32_t)EVE_Hal_list();
 	return !!platform;
 }
 
@@ -195,6 +188,8 @@ static inline eve_deprecated("Use `EVE_Hal_open`") bool Gpu_Hal_Open(EVE_HalCont
 	return EVE_Hal_open(phost, &parameters);
 }
 
+/** @name The basic APIs Level 1 */
+///@{
 #define Gpu_Hal_Close EVE_Hal_close
 #define Gpu_Hal_DeInit EVE_Hal_release
 
@@ -216,6 +211,7 @@ static inline eve_deprecated("Use `EVE_Hal_open`") bool Gpu_Hal_Open(EVE_HalCont
 #define Gpu_Hal_WrMem EVE_Hal_wrMem
 #define Gpu_Hal_WrMem_ProgMem EVE_Hal_wrProgMem
 #define Gpu_Hal_WrMemFromFlash EVE_Hal_wrProgMem
+///@}
 
 static inline eve_deprecated("Use `EVE_Hal_rdMem` (note: buffer and addr are swapped)") ft_void_t Gpu_Hal_RdMem(EVE_HalContext *phost, ft_uint32_t addr, ft_uint8_t *buffer, ft_uint32_t length)
 {
@@ -224,22 +220,30 @@ static inline eve_deprecated("Use `EVE_Hal_rdMem` (note: buffer and addr are swa
 
 /*******************************************************************************/
 /*******************************************************************************/
-/* APIs for coprocessor Fifo read/write and space management */
+/** @name APIs for coprocessor Fifo read/write and space management */
+///@{
 #define Gpu_Hal_WrCmd32 EVE_Cmd_wr32
+///@}
 
-/// Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FALSE in case a coprocessor fault occurred
+/** @name Write a buffer to the command buffer. Waits if there is not enough space in the command buffer. Returns FALSE in case a coprocessor fault occurred */
+///@{
 #define Gpu_Hal_WrCmdBuf EVE_Cmd_wrMem
 #define Gpu_Hal_WrCmdBuf_nowait EVE_Cmd_wrMem
 
 #define Gpu_Hal_WrCmdBuf_ProgMem EVE_Cmd_wrProgMem
 #define Gpu_Hal_WrCmdBufFromFlash EVE_Cmd_wrProgMem
+///@}
 
-/// Wait for the command buffer to fully empty. Returns FALSE in case a coprocessor fault occurred
+/**@name Wait for the command buffer to fully empty. Returns FALSE in case a coprocessor fault occurred */
+///@{
 #define Gpu_Hal_WaitCmdFifoEmpty EVE_Cmd_waitFlush
 #define Gpu_Hal_WaitCmdfifo_empty EVE_Cmd_waitFlush
+///@}
 
-/// Wait for the command buffer to have at least the requested amount of free space
+/** @name Wait for the command buffer to have at least the requested amount of free space */
+///@{
 #define Gpu_Hal_WaitCmdFreespace EVE_Cmd_waitSpace
+///@}
 
 /*
 // Use the provided wait functions!
@@ -254,12 +258,12 @@ static inline ft_void_t Gpu_Hal_RdCmdRpWp(EVE_HalContext *phost, ft_uint16_t *rp
 /*******************************************************************************/
 
 #ifdef _MSC_VER
-#pragma deprecated(Gpu_CoCmd_SendCmd) /* Use EVE_Cmd_wr32 */
-#pragma deprecated(Gpu_Copro_SendCmd) /* Use EVE_Cmd_wr32 */
-#pragma deprecated(Gpu_CoCmd_StartFrame) /* Remove */
-#pragma deprecated(Gpu_CoCmd_EndFrame) /* Remove */
-#pragma deprecated(Gpu_CoCmd_StartFunc) /* Use EVE_Cmd_startFunc */
-#pragma deprecated(Gpu_CoCmd_EndFunc) /* Use EVE_Cmd_endFunc */
+#pragma deprecated(Gpu_CoCmd_SendCmd) /**< Use EVE_Cmd_wr32 */
+#pragma deprecated(Gpu_Copro_SendCmd) /**< Use EVE_Cmd_wr32 */
+#pragma deprecated(Gpu_CoCmd_StartFrame) /**< Remove */
+#pragma deprecated(Gpu_CoCmd_EndFrame) /**< Remove */
+#pragma deprecated(Gpu_CoCmd_StartFunc) /**< Use EVE_Cmd_startFunc */
+#pragma deprecated(Gpu_CoCmd_EndFunc) /**< Use EVE_Cmd_endFunc */
 #endif
 
 #define Gpu_CoCmd_SendCmd EVE_Cmd_wr32
@@ -287,7 +291,8 @@ inline static eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`, and `EVE_
 
 /*******************************************************************************/
 /*******************************************************************************/
-/* APIs for Host Commands */
+/** @name APIs for Host Commands */
+///@{
 #define GPU_INTERNAL_OSC EVE_INTERNAL_OSC
 #define GPU_EXTERNAL_OSC EVE_EXTERNAL_OSC
 #define GPU_PLL_SOURCE_T EVE_PLL_SOURCE_T
@@ -311,14 +316,6 @@ inline static eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`, and `EVE_
 #define GPU_SYSCLK_36M EVE_SYSCLK_36M
 #define GPU_SYSCLK_24M EVE_SYSCLK_24M
 #define GPU_81X_PLL_FREQ_T EVE_81X_PLL_FREQ_T
-
-#define GPU_MAIN_ROM EVE_MAIN_ROM
-#define GPU_RCOSATAN_ROM EVE_RCOSATAN_ROM
-#define GPU_SAMPLE_ROM EVE_SAMPLE_ROM
-#define GPU_JABOOT_ROM EVE_JABOOT_ROM
-#define GPU_J1BOOT_ROM EVE_J1BOOT_ROM
-#define GPU_ADC EVE_ADC
-#define GPU_POWER_ON_ROM_AND_ADC EVE_POWER_ON_ROM_AND_ADC
 
 #define GPU_5MA EVE_5MA
 #define GPU_10MA EVE_10MA
@@ -372,6 +369,7 @@ inline static eve_deprecated("Use `EVE_Cmd_startFunc`, `EVE_Cmd_wr32`, and `EVE_
 #define ft_delay EVE_sleep
 
 #define Gpu_Hal_WaitLogo_Finish EVE_Cmd_waitLogo
+///@}
 
 inline static ft_int16_t Gpu_Hal_TransferString(EVE_HalContext *phost, const ft_char8_t *str)
 {
@@ -382,6 +380,8 @@ inline static ft_int16_t Gpu_Hal_TransferString_S(EVE_HalContext *phost, const f
 {
 	return EVE_Hal_transferString(phost, str, 0, length, 0) - 1;
 }
+/** @name APIs for Host Commands */
+///@{
 #define Gpu_Hal_Sleep EVE_sleep
 
 #define Gpu_HostCommand EVE_Hal_hostCommand
@@ -404,55 +404,56 @@ inline static ft_int16_t Gpu_Hal_TransferString_S(EVE_HalContext *phost, const f
 #define Gpu_81X_ResetActive EVE_Host_resetActive
 #define Gpu_81X_ResetRemoval EVE_Host_resetRemoval
 #endif
-
+///@}
 #define Hal_LoadSDCard() EVE_Util_loadSdCard(NULL)
 
 #define Gpu_ClearScreen EVE_Util_clearScreen
 
 typedef enum
 {
-	FLASH_CMD_SUCCESS = 0,
-	FLASH_CMD_ALIGNED_ERR
+	FLASH_CMD_SUCCESS = 0, /**< 0 */
+	FLASH_CMD_ALIGNED_ERR /**< 1 */
 } Flash_Cmd_Status_t;
 
 #define FLASH_WRITE_ALIGN_BYTE (256)
 #define FLASH_UPDATE_ALIGN_BYTE (4096)
 #define FLASH_READ_ALIGN_BYTE (64)
 
-/* Flash section */
+/** @name Flash section */
+///@{
 void Gpu_CoCmd_FlashHelper_Init(Gpu_Hal_Context_t *phost);
 uint32_t Gpu_CoCmd_FlashHelper_SwitchState(Gpu_Hal_Context_t *phost, uint8_t nextState);
 uint32_t Gpu_CoCmd_FlashHelper_SwitchFullMode(Gpu_Hal_Context_t *phost);
-Flash_Cmd_Status_t Gpu_CoCmd_FlashHelper_Write(Gpu_Hal_Context_t *phost, uint32_t dest_flash, uint32_t num, uint8_t *write_data);
+Flash_Cmd_Status_t Gpu_CoCmd_FlashHelper_Write(Gpu_Hal_Context_t *phost, uint32_t dest_flash, uint32_t num, const uint8_t *write_data);
 Flash_Cmd_Status_t Gpu_CoCmd_FlashHelper_Update(Gpu_Hal_Context_t *phost, uint32_t dest_flash, uint32_t src_ram, uint32_t num);
-Flash_Cmd_Status_t Gpu_CoCmd_FlashHelper_Read(Gpu_Hal_Context_t *phost, uint32_t dest_ram, uint32_t src_flash, uint32_t num, uint8_t *read_data);
+Flash_Cmd_Status_t Gpu_CoCmd_FlashHelper_Read(Gpu_Hal_Context_t *phost, uint32_t dest_ram, uint32_t src_flash, uint32_t num, const uint8_t *read_data);
 void Gpu_CoCmd_FlashHelper_Erase(Gpu_Hal_Context_t *phost);
 void Gpu_CoCmd_FlashHelper_ClearCache(Gpu_Hal_Context_t *phost);
 uint8_t Gpu_CoCmd_FlashHelper_GetState(Gpu_Hal_Context_t *phost);
+///@}
 
-/* Animation section */
-bool Gpu_CoCmd_AnimStart(Gpu_Hal_Context_t *phost, int32_t ch, uint32_t aoptr, uint32_t loop);
-void Gpu_CoCmd_AnimStop(Gpu_Hal_Context_t *phost, int32_t ch);
-void Gpu_CoCmd_AnimXY(Gpu_Hal_Context_t *phost, int32_t ch, int16_t x, int16_t y);
-void Gpu_CoCmd_AnimDraw(Gpu_Hal_Context_t *phost, int32_t ch);
-void Gpu_CoCmd_AnimFrame(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_t aoptr, uint32_t frame);
-
-/* Definitions to ensure these don't get redefined */
+/**@name Definitions to ensure these don't get redefined */
+///@{
 #define App_WrCoCmd_Buffer(phost, cmd) EVE_Cmd_wr32((phost), (cmd))
 #define App_WrCoStr_Buffer(phost, s) EVE_Cmd_wrString((phost), (s), EVE_CMD_STRING_MAX)
 #define App_Flush_Co_Buffer(phost) EVE_Cmd_waitFlush((phost))
 #define App_Flush_Co_Buffer_nowait(phost) EVE_Cmd_waitFlush((phost))
 #define App_Set_CmdBuffer_Index(idx) eve_noop()
+///@}
 
-#define POLAR_UTIL /* Enable sin()/cos() calculator utilities */
+#define POLAR_UTIL /**< Enable sin()/cos() calculator utilities */
 
 #ifdef RGB //Undefine RGB from wingdi.h in Visual Studio
 #undef RGB
 #endif
 #define RGB(r, g, b) ((((vc_int32_t)(r)) << 16) | (((vc_int32_t)(g)) << 8) | (b))
 #define SQ(v) ((v) * (v))
+#ifndef MIN
 #define MIN(x, y) ((x) > (y) ? (y) : (x))
+#endif
+#ifndef MAX
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
 #define PLAYCOLOR 0x00A0A080
 #define NOTE(n, sharp) (((n) - 'C') + ((sharp)*128))
 #define F16(s) ((int32_t)((s)*65536))
@@ -469,25 +470,17 @@ void Gpu_CoCmd_AnimFrame(Gpu_Hal_Context_t *phost, int16_t x, int16_t y, uint32_
 #define DBGPRINT(x) printf(x)
 #endif
 
-#if defined(MSVC_PLATFORM) || defined(MSVC_FT800EMU)
-/* strcpy_P and strlen_P only support Arduino */
+#if defined(MSVC_PLATFORM) || defined(BT8XXEMU_PLATFORM)
+/** strcpy_P and strlen_P only support Arduino */
 #define strcpy_P strcpy
 #define strlen_P strlen
 #endif
 
-void fadeout(Gpu_Hal_Context_t *phost);
-void fadein(Gpu_Hal_Context_t *phost);
 void GPU_DLSwap(Gpu_Hal_Context_t *phost, uint8_t DL_Swap_Type);
-float_t cal_average(float_t *ptr_elements, uint16_t elements);
-int16_t Math_Qsin(uint16_t a);
-int16_t Math_Qcos(uint16_t a);
-float_t Math_Da(float_t i, int16_t degree);
-
-void Math_Polarxy(int32_t r, float_t th, int32_t *x, int32_t *y, int32_t ox, int32_t oy);
 
 #if defined(FT9XX_PLATFORM)
 #define GET_CURR_MILLIS() EVE_millis()
-#elif defined(MSVC_PLATFORM) || defined(MSVC_FT800EMU)
+#elif defined(MSVC_PLATFORM) || defined(BT8XXEMU_PLATFORM)
 #define GET_CURR_MILLIS() time(NULL)
 #elif defined(ARDUINO_PLATFORM)
 #define GET_CURR_MILLIS() millis()
@@ -496,7 +489,7 @@ void Math_Polarxy(int32_t r, float_t th, int32_t *x, int32_t *y, int32_t ox, int
 #endif
 
 uint32_t GET_ASTC_FORMAT(uint16_t w, uint16_t h);
-void astc_tile2(uint8_t *iData, uint16_t bw, uint16_t bh, uint32_t size, uint8_t *oData);
+void astc_tile2(uint8_t *iData, uint16_t bw, uint16_t bh, uint32_t size, const uint8_t *oData);
 #ifdef FT81X_ENABLE
 void Set_GpuClock(Gpu_Hal_Context_t *phost);
 uint32_t Get_GpuClock(Gpu_Hal_Context_t *phost);
@@ -505,9 +498,13 @@ uint32_t Get_GpuClock(Gpu_Hal_Context_t *phost);
 static int32_t Gpu_Hal_Dec2Ascii(char8_t *pSrc, int32_t value)
 {
 	int16_t Length;
-	char8_t *pdst, charval;
-	int32_t CurrVal = value, tmpval, i;
-	char8_t tmparray[16], idx = 0;
+	char8_t *pdst;
+	char8_t charval;
+	int32_t CurrVal = value;
+	int32_t tmpval;
+	int32_t i;
+	char8_t tmparray[16];
+	char8_t idx = 0;
 
 	Length = (int16_t)strlen((char *)pSrc);
 	pdst = pSrc + Length;
@@ -543,7 +540,7 @@ static int32_t Gpu_Hal_Dec2Ascii(char8_t *pSrc, int32_t value)
 	return 0;
 }
 
-static void Gpu_Hal_LoadImageToMemory(Gpu_Hal_Context_t *phost, char *fileName, int32_t destination, uint8_t type)
+static void Gpu_Hal_LoadImageToMemory(Gpu_Hal_Context_t *phost, const char *fileName, int32_t destination, uint8_t type)
 {
 	if (type == LOADIMAGE)
 	{

@@ -1,3 +1,33 @@
+/**
+ * @file Gpu_CoCmd.h
+ * @brief Co-processor command definitions
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ * 
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+*/
 
 /*
 
@@ -10,7 +40,6 @@ Ft_QueueCmd
 Ft_QueueString                      
 Ft_FlushCmd                         
 
-Ft_Gpu_PrintLinetimeClk             
 Ft_Gpu_HorizontalScanoutFilter      
 Ft_Gpu_CoCmd_FlashWriteExt          
 Ft_Gpu_CoCmd_FlashHelper_Erase      
@@ -47,7 +76,6 @@ GPU_DLSwap
 #define Gpu_CoCmd_FlashUpdate EVE_CoCmd_flashUpdate
 #define Gpu_CoCmd_Fontcache EVE_CoCmd_fontCache
 #define Gpu_CoCmd_Fontcachequery EVE_CoCmd_fontCacheQuery
-#define Gpu_CoCmd_Linetime EVE_CoCmd_lineTime
 #define Gpu_CoCmd_VideoStartF EVE_CoCmd_videoStartF
 #define Gpu_CoCmd_FlashSource EVE_CoCmd_flashSource
 #define Gpu_CoCmd_Nop EVE_CoCmd_nop
@@ -75,6 +103,7 @@ GPU_DLSwap
 #define Ft_Gpu_CoCmd_AppendF EVE_CoCmd_appendF
 #define Ft_Gpu_CoCmd_BgColor EVE_CoCmd_bgColor
 #define Ft_Gpu_CoCmd_Bitmap_Transform EVE_CoCmd_bitmapTransform
+#define Ft_Gpu_CoCmd_BitmapTransform EVE_CoCmd_bitmapTransform
 #define Ft_Gpu_CoCmd_Button EVE_CoCmd_button
 #define Ft_Gpu_CoCmd_Calibrate EVE_CoCmd_calibrate
 #define Ft_Gpu_CoCmd_Calibratesub EVE_CoCmd_calibrateSub
@@ -119,7 +148,6 @@ static inline bool Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, uint32_t dest, 
 #define Ft_Gpu_CoCmd_Inflate2 EVE_CoCmd_inflate2
 #define Ft_Gpu_CoCmd_Interrupt EVE_CoCmd_interrupt
 #define Ft_Gpu_CoCmd_Keys EVE_CoCmd_keys
-#define Ft_Gpu_CoCmd_Linetime EVE_CoCmd_lineTime
 #define Ft_Gpu_CoCmd_LoadIdentity EVE_CoCmd_loadIdentity
 #define Ft_Gpu_CoCmd_LoadImage EVE_CoCmd_loadImage
 #define Ft_Gpu_CoCmd_Logo EVE_CoCmd_logo
@@ -212,6 +240,7 @@ static inline bool Ft_Gpu_CoCmd_FlashRead(EVE_HalContext *phost, uint32_t dest, 
 #define Gpu_CoCmd_Calibrate(phost, r) Ft_Gpu_CoCmd_Calibrate((phost))
 #define Gpu_CoCmd_SetFont Ft_Gpu_CoCmd_SetFont
 #define Gpu_CoCmd_Bitmap_Transform Ft_Gpu_CoCmd_Bitmap_Transform
+#define Gpu_CoCmd_BitmapTransform Ft_Gpu_CoCmd_Bitmap_Transform
 #define Gpu_CoCmd_GradColor Ft_Gpu_CoCmd_GradColor
 #define Gpu_CoCmd_Append Ft_Gpu_CoCmd_Append
 #define Gpu_CoCmd_MemZero Ft_Gpu_CoCmd_MemZero

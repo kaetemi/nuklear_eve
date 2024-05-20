@@ -8,6 +8,28 @@ Bitmap info structure
 #include "Esd_Base.h"
 #include "Esd_GpuAlloc.h"
 #include "Esd_ResourceInfo.h"
+#include "Esd_LittleFS.h"
+
+// #define ESD_COMPATIBILITY_ADDITIONALFILE // Compatibility with deprecated AdditionalFile field for old DXT1 structure format
+#define ESD_COMPATIBILITY_FLASHPREFERRAM // Compatibility with deprecated Flash and PreferRam fields replaced by Type field
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef ESD_LITTLEFS_FLASH
+#define ESD_BITMAP_DEFAULTS            \
+	.FlashAddress = FA_INVALID,        \
+	.GpuHandle = GA_HANDLE_INIT,       \
+	.BitmapHandle = ~0,                \
+	.PaletteFlashAddress = FA_INVALID, \
+	.PaletteGpuHandle = GA_HANDLE_INIT
+#else
+#define ESD_BITMAP_DEFAULTS      \
+	.GpuHandle = GA_HANDLE_INIT, \
+	.BitmapHandle = ~0,          \
+	.PaletteGpuHandle = GA_HANDLE_INIT
+#endif
 
 ESD_TYPE(Esd_BitmapInfo, Native = Struct) // TODO: Struct support, expose values
 typedef struct Esd_BitmapInfo
@@ -16,10 +38,46 @@ typedef struct Esd_BitmapInfo
 	int32_t Height;
 	int32_t Stride;
 	uint32_t Format;
+
+	// Size of data in storage, divided by 4, rounded up ((size + 3) >> 2) (size in int32)
+	// Required only for Type ESD_RESOURCE_PROGMEM
+	uint32_t StorageSize : 27;
+
+	// (Esd_ResourceType) Source of data
+	// Replaces options Flash and PreferRam
+	uint32_t Type : 2;
+
+	// When this is set, the allocated ram is not free'd automatically
+	// Use Esd_GpuAlloc_Free(GpuAlloc, GpuHandle) to free the GPU ram manually
+	uint32_t Persistent : 1;
+
+#ifdef ESD_COMPATIBILITY_FLASHPREFERRAM
+	// (To be deprecated, use Type instead) Load from flash. Struscture has flash addresses et, rather than file names, if there is no flash filesystem
+	// TODO and FIXME: Replaced by Type, but maybe keep for compatibility, if flagged, change Type to ESD_RESOURCE_FLASH
+	// TODO and FIXME: Do not output these fields anymore in Bitmap converter once Type is handled everywhere
+	uint32_t Flash : 1;
+
+	// (To be deprecated, use Type instead) Prefer loading the bitmap into RAM_G, even if it's an ASTC stored on Flash
+	// TODO and FIXME: Replaced by Type, but maybe keep for compatibility, if flagged and Flash is flagged, change Type to ESD_RESOURCE_DIRECTFLASH, and unflag both
+	// TODO and FIXME: Do not output these fields anymore in Bitmap converter once Type is handled everywhere
+	uint32_t PreferRam : 1;
+#endif
+
+	// 27 + 2 + 1 + 1 + 1 = 32 bits
+
+	// Size of bitmap when decompressed into RAM_G
 	int32_t Size;
+
+// Source of data
 	union
 	{
+		eve_progmem_const uint8_t *ProgMem;
 		const char *File;
+#ifdef ESD_LITTLEFS_FLASH
+	};
+	union
+	{
+#endif
 		int32_t FlashAddress;
 	};
 
@@ -29,21 +87,37 @@ typedef struct Esd_BitmapInfo
 	// (Runtime) Bitmap handle that is being used
 	uint32_t BitmapHandle;
 
+	// Used for DXT1 format
+	struct Esd_BitmapInfo *AdditionalInfo;
+
 	// Used for paletted format
 	union
 	{
+		eve_progmem_const uint8_t *PaletteProgMem;
 		const char *PaletteFile;
+#ifdef ESD_LITTLEFS_FLASH
+	};
+	union
+	{
+#endif
 		int32_t PaletteFlashAddress;
 	};
 	Esd_GpuHandle PaletteGpuHandle;
 
 	// Used for DXT1 format
+	// AdditionalFile and AdditionalFlashAddress are deprecated
+	// DXT1 is now loaded from a single file per bitmap resource
+#ifdef ESD_COMPATIBILITY_ADDITIONALFILE
+#ifndef ESD_LITTLEFS_FLASH
 	union
 	{
+#endif
 		const char *AdditionalFile;
 		int32_t AdditionalFlashAddress;
+#ifndef ESD_LITTLEFS_FLASH
 	};
-	struct Esd_BitmapInfo *AdditionalInfo;
+#endif
+#endif
 
 	// Number of cells usable by the user. There may be additional internally used cells after this
 	uint16_t Cells;
@@ -56,24 +130,23 @@ typedef struct Esd_BitmapInfo
 	uint16_t SwizzleA : 3;
 
 	// Use swizzle
-	bool Swizzle : 1;
+	uint16_t Swizzle : 1;
 #endif
 
 	// Load file from compressed format using inflate
-	bool Compressed : 1;
-
-	// When this is set, the allocated ram is not free'd automatically
-	// Use Esd_GpuAlloc_Free(GpuAlloc, GpuHandle) to free the GPU ram manually
-	bool Persistent : 1;
-
-	// Load from flash. Structure has flash addresses set, rather than file names
-	bool Flash : 1;
-
-	// Prefer loading the bitmap into RAM_G, even if it's an ASTC stored on Flash
-	bool PreferRam : 1;
+	uint16_t Compressed : 1;
 
 	// Load image using coprocessor (for JPEG and PNG)
-	bool CoLoad : 1;
+	// Flagged at runtime whenever Format is JPEG, PNG, or AVI
+	// When set, the Format field may be read out from the coprocessor
+	uint16_t CoLoad : 1;
+
+	// This is a video (for AVI)
+	// Flagged at runtime whenever Format is AVI
+	uint16_t Video : 1;
+
+	// 4x3 + 4x1 = 16 bits
+	// + 16 bits (cells) = 32 bits (aligned)
 
 } Esd_BitmapInfo;
 
@@ -87,6 +160,8 @@ typedef struct
 } Esd_BitmapCell;
 
 ESD_TYPE(Esd_BitmapCell *, Native = Pointer, Edit = Library)
+
+#define ESD_IS_FORMAT_PALETTED(format) (format >= PALETTED565 && format <= PALETTED8)
 
 /// A function to load bitmap data(not including palette data) into RAM_G
 ESD_FUNCTION(Esd_LoadBitmap, Type = uint32_t, Attributes = ESD_CORE_EXPORT, Include = "Esd_BitmapInfo.h", DisplayName = "Load Bitmap to RAM_G", Category = EsdUtilities)
@@ -114,6 +189,8 @@ ESD_IDENTIFIER(PALETTED4444)
 ESD_IDENTIFIER(PALETTED8)
 // Specially loaded bitmap formats
 #define DXT1 0x81
+#define DXT1L2 0x82
+#define DXT1PALETTED 0x83
 #define JPEG 0x91
 #define PNG 0x92
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
@@ -133,6 +210,8 @@ ESD_IDENTIFIER(COMPRESSED_RGBA_ASTC_12x10_KHR)
 ESD_IDENTIFIER(COMPRESSED_RGBA_ASTC_12x12_KHR)
 #endif
 ESD_END()
+// Internal bitmap formats
+#define AVI 0x93
 
 ///  Switch bitmap cell number
 ESD_FUNCTION(Esd_BitmapCell_Switched, Type = Esd_BitmapCell, DisplayName = "Switch Bitmap Cell", Category = EsdUtilities, Inline)
@@ -176,6 +255,24 @@ static inline int32_t Esd_BitmapInfo_GetHeight(Esd_BitmapInfo *bitmapInfo)
 		return 1;
 	return bitmapInfo->Height;
 }
+
+#ifdef ESD_LITTLEFS_FLASH
+ESD_CORE_EXPORT void Esd_BitmapInfo_LoadFlashAddress(Esd_BitmapInfo *bitmapInfo);
+#else
+#define Esd_BitmapInfo_LoadFlashAddress(bitmapInfo)
+#endif
+
+// Preload LittleFS flash address for a bitmap, call once
+ESD_FUNCTION(Esd_BitmapCell_LoadFlashAddress, DisplayName = "ESD BitmapCell LoadFlashAddress", Category = EsdUtilities, Inline)
+ESD_PARAMETER(bitmapCell, Type = Esd_BitmapCell)
+static inline void Esd_BitmapCell_LoadFlashAddress(Esd_BitmapCell bitmapCell)
+{
+	Esd_BitmapInfo_LoadFlashAddress(bitmapCell.Info);
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* #ifndef ESD_BITMAPINFO__H */
 

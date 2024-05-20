@@ -22,12 +22,12 @@ Author: Jan Boon <jan.boon@kaetemi.be>
 // #define ESD_ROMFONT_NB 35UL
 // uint8_t Esd_RomFontHandles[ESD_ROMFONT_NB - ESD_FONTHANDLE_NB] = { 0 };
 
-#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+#ifdef EVE_SUPPORT_LARGEFONT
 #define ESD_ROMFONT_CAP 35UL // Max, rom font handle, exclusive
 #else
 #define ESD_ROMFONT_CAP 32UL // Max, rom font handle, exclusive
 #endif
-#define ESD_ROMFONT_MAX (phost ? ((EVE_CHIPID >= EVE_FT810) ? 35UL : 32UL) : ESD_ROMFONT_CAP)
+#define ESD_ROMFONT_MAX (phost ? (EVE_Hal_supportLargeFont(phost) ? 35UL : 32UL) : ESD_ROMFONT_CAP)
 #define ESD_ROMFONT_MIN 16UL // Min, rom font handle, inclusive
 #define ESD_ROMFONT_NBCAP (ESD_ROMFONT_CAP - ESD_ROMFONT_MIN)
 #define ESD_ROMFONT_NB (ESD_ROMFONT_MAX - ESD_ROMFONT_MIN)
@@ -50,7 +50,7 @@ static Esd_RomFontInfo s_RomFonts[ESD_ROMFONT_NBCAP] = {
 	{ 0, ESD_FONT_ROM, 29UL, 0, 0, 0 },
 	{ 0, ESD_FONT_ROM, 30UL, 0, 0, 0 },
 	{ 0, ESD_FONT_ROM, 31UL, 0, 0, 0 },
-#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+#ifdef EVE_SUPPORT_LARGEFONT
 	{ 0, ESD_FONT_ROM, 32UL, 0, 0, 0 },
 	{ 0, ESD_FONT_ROM, 33UL, 0, 0, 0 },
 	{ 0, ESD_FONT_ROM, 34UL, 0, 0, 0 },
@@ -74,7 +74,7 @@ static Esd_RomFontInfo s_RomFonts[ESD_ROMFONT_NBCAP] = {
 	{ .Type = ESD_FONT_ROM, .RomFont = 29UL },
 	{ .Type = ESD_FONT_ROM, .RomFont = 30UL },
 	{ .Type = ESD_FONT_ROM, .RomFont = 31UL },
-#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+#ifdef EVE_SUPPORT_LARGEFONT
 	{ .Type = ESD_FONT_ROM, .RomFont = 32UL },
 	{ .Type = ESD_FONT_ROM, .RomFont = 33UL },
 	{ .Type = ESD_FONT_ROM, .RomFont = 34UL },
@@ -115,6 +115,13 @@ ESD_CORE_EXPORT uint16_t Esd_GetFontCapsHeight(Esd_FontInfo *fontInfo)
 {
 	if (fontInfo)
 		return fontInfo->CapsHeight;
+	return 0;
+}
+
+ESD_CORE_EXPORT uint16_t Esd_GetFontXOffset(Esd_FontInfo *fontInfo)
+{
+	if (fontInfo)
+		return fontInfo->XOffset;
 	return 0;
 }
 
@@ -203,7 +210,7 @@ ESD_CORE_EXPORT void Esd_CoDl_PagedBitmapSource(uint8_t handle, uint8_t page)
 		if (EVE_CHIPID >= EVE_BT815 && ESD_IS_FORMAT_ASTC(info->Format))
 			pageOffset /= c_AstcBlockHeight[info->Format & 0xF]; // Stride under ASTC is by block row
 		pageAddr = addr + pageOffset;
-		EVE_CoCmd_dl(phost, BITMAP_SOURCE(pageAddr));
+		EVE_CoDl_bitmapSource(phost, pageAddr);
 		Esd_CurrentContext->HandleState.Page[handle] = page;
 	}
 }
@@ -230,6 +237,7 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupBitmap(Esd_BitmapInfo *bitmapInfo)
 	if (!(ESD_BITMAPHANDLE_VALID(handle)
 	        && (handle != ESD_SCRATCHHANDLE)
 	        && (Esd_CurrentContext->HandleState.Info[handle] == bitmapInfo)
+	        && (Esd_CurrentContext->HandleState.Address[handle] == addr)
 	        && (Esd_CurrentContext->HandleState.GpuHandle[handle].Id == bitmapInfo->GpuHandle.Id)
 	        && (Esd_CurrentContext->HandleState.GpuHandle[handle].Seq == bitmapInfo->GpuHandle.Seq)))
 	{
@@ -254,14 +262,30 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupBitmap(Esd_BitmapInfo *bitmapInfo)
 				// Attach this handle to the bitmap info
 				handle = i;
 				Esd_CurrentContext->HandleState.Info[i] = bitmapInfo;
+				Esd_CurrentContext->HandleState.Address[i] = addr;
 				Esd_CurrentContext->HandleState.GpuHandle[i] = bitmapInfo->GpuHandle;
 				break;
 			}
 		}
 
+#ifdef ESD_LITTLEFS_FLASH
+		eve_printf_debug("Use handle %i, addr %i%s, gpu alloc %i, %i, file %s%s\n",
+		    (int)handle, (int)addr, ESD_DL_IS_FLASH_ADDRESS(addr) ? " (flash)" : "",
+		    (int)bitmapInfo->GpuHandle.Id, (int)bitmapInfo->GpuHandle.Seq,
+		    bitmapInfo->Type == ESD_RESOURCE_PROGMEM ? "<progmem>" : (bitmapInfo->File ? bitmapInfo->File : "<no file>"),
+			ESD_RESOURCE_IS_FLASH(bitmapInfo->Type) ? " (flash)" : "");
+#elif defined(EVE_FLASH_AVAILABLE)
+		eve_printf_debug("Use handle %i, addr %i%s, gpu alloc %i, %i, file %s\n",
+		    (int)handle, (int)addr,
+		    ESD_DL_IS_FLASH_ADDRESS(addr) ? " (flash)" : "",
+		    (int)bitmapInfo->GpuHandle.Id, (int)bitmapInfo->GpuHandle.Seq,
+		    bitmapInfo->Type == ESD_RESOURCE_PROGMEM ? "<progmem>" : ((!ESD_RESOURCE_IS_FLASH(bitmapInfo->Type) && bitmapInfo->File) ? bitmapInfo->File : "<no file>"));
+#else
 		eve_printf_debug("Use handle %i, addr %i, gpu alloc %i, %i, file %s\n",
-		    (int)handle, (int)addr, (int)bitmapInfo->GpuHandle.Id, (int)bitmapInfo->GpuHandle.Seq,
-		    (!bitmapInfo->Flash && bitmapInfo->File) ? bitmapInfo->File : "<no file>");
+		    (int)handle, (int)addr,
+		    (int)bitmapInfo->GpuHandle.Id, (int)bitmapInfo->GpuHandle.Seq,
+		    bitmapInfo->Type == ESD_RESOURCE_PROGMEM ? "<progmem>" : ((!ESD_RESOURCE_IS_FLASH(bitmapInfo->Type) && bitmapInfo->File) ? bitmapInfo->File : "<no file>"));
+#endif
 
 		bitmapInfo->BitmapHandle = handle;
 
@@ -270,14 +294,38 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupBitmap(Esd_BitmapInfo *bitmapInfo)
 		format = bitmapInfo->Format;
 		if (format == DXT1)
 			format = L1;
-		else if (format == JPEG)
+		else if (format == DXT1L2)
+			format = L2;
+		else if (format == JPEG) // This case only occurs if the format wasn't loaded by the coprocessor
 			format = RGB565; // TODO: Support for grayscale
-		else if (format == PNG)
+		else if (format == PNG) // This case only occurs if the format wasn't loaded by the coprocessor
 			format = RGB565; // TODO: Support for other PNG formats
 
+		if (ESD_IS_FORMAT_PALETTED(bitmapInfo->Format))
+		{
+			bool hasPalette = true;
+#ifndef ESD_LITTLEFS_FLASH
+			if (ESD_RESOURCE_IS_FLASH(bitmapInfo->Type))
+			{
+				if (bitmapInfo->PaletteFlashAddress == FA_INVALID)
+					hasPalette = false;
+			}
+			else
+#endif
+			    if (!bitmapInfo->PaletteFile)
+			{
+				hasPalette = false;
+			}
+
+			if (!hasPalette)
+				addr += 512;
+		}
+
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 		if (EVE_CHIPID >= EVE_FT810)
 			EVE_CoCmd_setBitmap(phost, addr, format, bitmapInfo->Width, bitmapInfo->Height); // TODO: What with stride?
 		else
+#endif
 			eve_assert_ex(false, "No support yet in ESD for bitmaps for FT800 target");
 
 #if (EVE_SUPPORT_CHIPID >= EVE_BT815)
@@ -285,9 +333,9 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupBitmap(Esd_BitmapInfo *bitmapInfo)
 		{
 			// Important. Bitmap swizzle not reset by SETBITMAP
 			if (bitmapInfo->Swizzle)
-				EVE_CoCmd_dl(phost, BITMAP_SWIZZLE(bitmapInfo->SwizzleR, bitmapInfo->SwizzleG, bitmapInfo->SwizzleB, bitmapInfo->SwizzleA));
+				EVE_CoDl_bitmapSwizzle(phost, bitmapInfo->SwizzleR & 0xFF, bitmapInfo->SwizzleG & 0xFF, bitmapInfo->SwizzleB & 0xFF, bitmapInfo->SwizzleA & 0xFF);
 			else
-				EVE_CoCmd_dl(phost, BITMAP_SWIZZLE(RED, GREEN, BLUE, ALPHA));
+				EVE_CoDl_bitmapSwizzle(phost, RED, GREEN, BLUE, ALPHA);
 		}
 #endif
 
@@ -313,9 +361,16 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupBitmap(Esd_BitmapInfo *bitmapInfo)
 	{
 		// Use palette if available
 		uint32_t paletteAddr = Esd_LoadPalette(bitmapInfo);
-		if (paletteAddr != GA_INVALID && bitmapInfo->Format != PALETTED8) // PALETTED8 uses custom palette setup
+		if (bitmapInfo->Format != PALETTED8) // PALETTED8 uses custom palette setup
 		{
-			EVE_CoDl_paletteSource(phost, paletteAddr);
+			if (paletteAddr != GA_INVALID)
+			{
+				EVE_CoDl_paletteSource(phost, paletteAddr);
+			}
+			else if (ESD_IS_FORMAT_PALETTED(bitmapInfo->Format))
+			{
+				EVE_CoDl_paletteSource(phost, addr);
+			}
 		}
 	}
 
@@ -330,12 +385,18 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupRomFont(uint8_t font)
 ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupFont(Esd_FontInfo *fontInfo)
 {
 	EVE_HalContext *phost = Esd_GetHost();
+	eve_assert(phost);
+
+	if (!fontInfo)
+		return ESD_BITMAPHANDLE_INVALID;
+
 	uint32_t handle = fontInfo->BitmapHandle;
 	if (fontInfo->Type == ESD_FONT_ROM)
 	{
 		// Get rom font
 		Esd_RomFontInfo *romFontInfo = (Esd_RomFontInfo *)(void *)fontInfo;
 		uint8_t font = romFontInfo->RomFont;
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 		if (EVE_CHIPID >= EVE_FT810)
 		{
 			if (!(font >= ESD_ROMFONT_MIN && font < ESD_ROMFONT_MAX))
@@ -359,17 +420,27 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupFont(Esd_FontInfo *fontInfo)
 				}
 
 				// Find a free handle
-				handle = ESD_SCRATCHHANDLE; // Fallback to scratch handle
-				for (i = 0; i < ESD_BITMAPHANDLE_NB; ++i)
+				handle = font;
+				if (handle < ESD_BITMAPHANDLE_NB && (handle != ESD_SCRATCHHANDLE) && (!Esd_CurrentContext->HandleState.Use[handle]))
 				{
-					if ((i != ESD_SCRATCHHANDLE) && (!Esd_CurrentContext->HandleState.Use[i]))
+					Esd_CurrentContext->HandleState.Info[handle] = romFontInfo;
+					Esd_CurrentContext->HandleState.GpuHandle[handle].Id = MAX_NUM_ALLOCATIONS;
+					Esd_CurrentContext->HandleState.GpuHandle[handle].Seq = font;
+				}
+				else
+				{
+					handle = ESD_SCRATCHHANDLE; // Fallback to scratch handle
+					for (i = 0; i < ESD_BITMAPHANDLE_NB; ++i)
 					{
-						// Attach this handle to the bitmap info
-						handle = i;
-						Esd_CurrentContext->HandleState.Info[i] = romFontInfo;
-						Esd_CurrentContext->HandleState.GpuHandle[i].Id = MAX_NUM_ALLOCATIONS;
-						Esd_CurrentContext->HandleState.GpuHandle[i].Seq = font;
-						break;
+						if ((i != ESD_SCRATCHHANDLE) && (!Esd_CurrentContext->HandleState.Use[i]))
+						{
+							// Attach this handle to the bitmap info
+							handle = i;
+							Esd_CurrentContext->HandleState.Info[i] = romFontInfo;
+							Esd_CurrentContext->HandleState.GpuHandle[i].Id = MAX_NUM_ALLOCATIONS;
+							Esd_CurrentContext->HandleState.GpuHandle[i].Seq = font;
+							break;
+						}
 					}
 				}
 
@@ -379,14 +450,14 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupFont(Esd_FontInfo *fontInfo)
 				// Set the font
 				romFontInfo->BitmapHandle = handle;
 				EVE_CoCmd_romFont(Esd_Host, handle, font);
-#if ESD_DL_OPTIMIZE
-				Esd_STATE.Handle = handle;
-#endif
+
+				eve_assert(handle < ESD_BITMAPHANDLE_CAP); // FIXME: Remove this, C6386 false positive
 				Esd_CurrentContext->HandleState.Resized[handle] = 0;
 				Esd_CurrentContext->HandleState.Page[handle] = 0;
 			}
 		}
 		else
+#endif
 		{
 			romFontInfo->BitmapHandle = font;
 			return font;
@@ -402,6 +473,7 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupFont(Esd_FontInfo *fontInfo)
 		if (!ESD_BITMAPHANDLE_VALID(handle)
 		    || (handle == ESD_SCRATCHHANDLE)
 		    || (Esd_CurrentContext->HandleState.Info[handle] != fontInfo)
+		    || (Esd_CurrentContext->HandleState.Address[handle] != addr)
 		    || (Esd_CurrentContext->HandleState.GpuHandle[handle].Id != fontInfo->FontResource.GpuHandle.Id)
 		    || (Esd_CurrentContext->HandleState.GpuHandle[handle].Seq != fontInfo->FontResource.GpuHandle.Seq))
 		{
@@ -424,11 +496,22 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupFont(Esd_FontInfo *fontInfo)
 					// Attach this handle to the font info
 					handle = i;
 					Esd_CurrentContext->HandleState.Info[i] = fontInfo;
+					Esd_CurrentContext->HandleState.Address[i] = addr;
 					Esd_CurrentContext->HandleState.GpuHandle[i] = fontInfo->FontResource.GpuHandle;
 					break;
 				}
 			}
 
+#ifdef ESD_LITTLEFS_FLASH
+			eve_printf_debug("Use handle %i, addr %i, %i, gpu alloc %i, %i, %i, %i, file %s%s, %s%s\n",
+			    (int)handle, (int)addr, (int)Esd_GpuAlloc_Get(Esd_GAlloc, fontInfo->GlyphResource.GpuHandle),
+			    (int)fontInfo->FontResource.GpuHandle.Id, (int)fontInfo->FontResource.GpuHandle.Seq,
+			    (int)fontInfo->GlyphResource.GpuHandle.Id, (int)fontInfo->GlyphResource.GpuHandle.Seq,
+			    (fontInfo->FontResource.Type == ESD_RESOURCE_FILE) ? fontInfo->FontResource.File : "<no file>",
+			    (ESD_RESOURCE_IS_FLASH(fontInfo->FontResource.Type) ? " (flash)" : ""),
+			    (fontInfo->GlyphResource.Type == ESD_RESOURCE_FILE) ? fontInfo->GlyphResource.File : "<no file>",
+			    (ESD_RESOURCE_IS_FLASH(fontInfo->GlyphResource.Type) ? " (flash)" : ""));
+#else
 			eve_printf_debug("Use handle %i, addr %i, %i, gpu alloc %i, %i, %i, %i, file %s, %s, flash %i, %i\n",
 			    (int)handle, (int)addr, (int)Esd_GpuAlloc_Get(Esd_GAlloc, fontInfo->GlyphResource.GpuHandle),
 			    (int)fontInfo->FontResource.GpuHandle.Id, (int)fontInfo->FontResource.GpuHandle.Seq,
@@ -437,16 +520,18 @@ ESD_CORE_EXPORT uint8_t Esd_CoDl_SetupFont(Esd_FontInfo *fontInfo)
 			    (fontInfo->GlyphResource.Type == ESD_RESOURCE_FILE) ? fontInfo->GlyphResource.File : "<no file>",
 			    (ESD_RESOURCE_IS_FLASH(fontInfo->FontResource.Type) ? (int)fontInfo->FontResource.FlashAddress : 0),
 			    (ESD_RESOURCE_IS_FLASH(fontInfo->GlyphResource.Type) ? (int)fontInfo->GlyphResource.FlashAddress : 0));
+#endif
 
 			// Set the font
 			fontInfo->BitmapHandle = handle;
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 			if (EVE_CHIPID >= EVE_FT810)
 				EVE_CoCmd_setFont2(Esd_Host, handle, addr, fontInfo->FirstChar);
 			else
-				eve_assert_ex(false, "No support yet in ESD for custom fonts");
-#if ESD_DL_OPTIMIZE
-			Esd_STATE.Handle = handle;
 #endif
+				eve_assert_ex(false, "No support yet in ESD for custom fonts for FT800 target");
+
+			eve_assert(handle < ESD_BITMAPHANDLE_CAP); // FIXME: Remove this, C6386 false positive
 			Esd_CurrentContext->HandleState.Resized[handle] = 0;
 			Esd_CurrentContext->HandleState.Page[handle] = 0;
 		}

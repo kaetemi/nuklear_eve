@@ -1,41 +1,47 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*/
+ * @file EVE_MediaFifo.c
+ * @brief EVE's mediafifo controller
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "EVE_MediaFifo.h"
 #include "EVE_Platform.h"
 
 #ifdef EVE_SUPPORT_MEDIAFIFO
 
-/* Set the media FIFO. 
-Returns false in case a coprocessor fault occurred */
+/**
+ * @brief Set the media FIFO.
+ *
+ * @param phost Pointer to Hal context
+ * @param address
+ * @param size
+ * @returns false in case a coprocessor fault occurred
+ */
 bool EVE_MediaFifo_set(EVE_HalContext *phost, uint32_t address, uint32_t size)
 {
 	bool res;
@@ -59,7 +65,7 @@ bool EVE_MediaFifo_set(EVE_HalContext *phost, uint32_t address, uint32_t size)
 	}
 	else
 	{
-		res = false;
+		res = true;
 	}
 
 	if (res)
@@ -78,21 +84,45 @@ bool EVE_MediaFifo_set(EVE_HalContext *phost, uint32_t address, uint32_t size)
 	return res;
 }
 
-/* Get the current read pointer. */
+void EVE_MediaFifo_close(EVE_HalContext *phost)
+{
+	phost->MediaFifoAddress = 0;
+	phost->MediaFifoSize = 0;
+}
+
+/**
+ * @brief Get the current read pointer.
+ *
+ * @param phost Pointer to Hal context
+ * @return uint32_t read pointer
+ */
 uint32_t EVE_MediaFifo_rp(EVE_HalContext *phost)
 {
 	return EVE_Hal_rd32(phost, REG_MEDIAFIFO_READ);
 }
 
-/* Get the current write pointer. */
+/**
+ * @brief Get the current write pointer.
+ *
+ * @param phost Pointer to Hal context
+ * @return uint32_t write pointer
+ */
 uint32_t EVE_MediaFifo_wp(EVE_HalContext *phost)
 {
 	return EVE_Hal_rd32(phost, REG_MEDIAFIFO_WRITE);
 }
 
-/* Get the currently available space. */
+/**
+ * @brief Get the currently available space.
+ *
+ * @param phost Pointer to Hal context
+ * @return uint32_t available space
+ */
 uint32_t EVE_MediaFifo_space(EVE_HalContext *phost)
 {
+	if (!phost->MediaFifoSize)
+		return 0;
+
 	int32_t rp = EVE_Hal_rd32(phost, REG_MEDIAFIFO_READ);
 	int32_t wp = EVE_Hal_rd32(phost, REG_MEDIAFIFO_WRITE);
 #if 1
@@ -108,9 +138,16 @@ uint32_t EVE_MediaFifo_space(EVE_HalContext *phost)
 #endif
 }
 
-/* Write a buffer to the media FIFO. 
-Waits if there is not enough space in the media FIFO. 
-Returns false in case a coprocessor fault occurred */
+/**
+ * @brief Write a buffer to the media FIFO.
+ * Waits if there is not enough space in the media FIFO.
+ *
+ * @param phost Pointer to Hal context
+ * @param buffer
+ * @param size
+ * @param transfered
+ * @returns false in case a coprocessor fault occurred
+ */
 bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size, uint32_t *transfered)
 {
 	if (!EVE_Hal_supportMediaFifo(phost))
@@ -119,8 +156,14 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 		return false;
 	}
 
+	if (!phost->MediaFifoSize)
+	{
+		eve_printf_debug("EVE Media FIFO has not been set, cannot write\n");
+		return false;
+	}
+
 #if 1
-	/* Two strategies. 
+	/* Two strategies.
 	- Wait for entire space and write the entire buffer.
 	- Wait for half the fifo to be available, and write in parts. */
 
@@ -130,18 +173,21 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 		uint32_t wp;
 		int32_t overflow;
 
-		if (!EVE_MediaFifo_waitSpace(phost, size))
+		if (!EVE_MediaFifo_waitSpace(phost, size, transfered))
 			return false;
 
 		wp = EVE_Hal_rd32(phost, REG_MEDIAFIFO_WRITE);
 		overflow = (int32_t)(wp + size) - (int32_t)(phost->MediaFifoSize);
 		if (overflow > 0)
 		{
+			eve_assert(phost->MediaFifoAddress + wp + size - overflow <= RAM_G_SIZE);
+			eve_assert(phost->MediaFifoAddress + overflow <= RAM_G_SIZE);
 			EVE_Hal_wrMem(phost, phost->MediaFifoAddress + wp, buffer, size - overflow);
 			EVE_Hal_wrMem(phost, phost->MediaFifoAddress, &buffer[size - overflow], overflow);
 		}
 		else
 		{
+			eve_assert(phost->MediaFifoAddress + wp + size <= RAM_G_SIZE);
 			EVE_Hal_wrMem(phost, phost->MediaFifoAddress + wp, buffer, size);
 		}
 		wp += size;
@@ -166,17 +212,20 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 		{
 			uint32_t transfer = min(halfSize, remaining);
 			int32_t overflow;
-			if (!EVE_MediaFifo_waitSpace(phost, transfer))
+			if (!EVE_MediaFifo_waitSpace(phost, transfer, transfered))
 				return false;
 
 			overflow = (int32_t)(wp + transfer) - (int32_t)(phost->MediaFifoSize);
 			if (overflow > 0)
 			{
+				eve_assert(phost->MediaFifoAddress + wp + transfer - overflow <= RAM_G_SIZE);
+				eve_assert(phost->MediaFifoAddress + overflow <= RAM_G_SIZE);
 				EVE_Hal_wrMem(phost, phost->MediaFifoAddress + wp, &buffer[done], transfer - overflow);
 				EVE_Hal_wrMem(phost, phost->MediaFifoAddress, &buffer[done + transfer - overflow], overflow);
 			}
 			else
 			{
+				eve_assert(phost->MediaFifoAddress + wp + transfer <= RAM_G_SIZE);
 				EVE_Hal_wrMem(phost, phost->MediaFifoAddress + wp, &buffer[done], transfer);
 			}
 			wp += transfer;
@@ -198,7 +247,7 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 		return true;
 	}
 #else
-	scope
+	eve_scope()
 	{
 		uint32_t halfSize = ((phost->MediaFifoSize >> 3) << 2) - 4;
 		uint32_t remaining = size;
@@ -213,7 +262,7 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 			    EVE_MediaFifo_waitSpace(phost, 4),
 			    min(halfSize, remaining));
 			if (!transfer)
-				return false;
+				return false; // !phost->CmdFault;
 			int32_t overflow = (int32_t)(wp + transfer) - (int32_t)(phost->MediaFifoSize);
 			if (overflow > 0)
 			{
@@ -245,7 +294,7 @@ bool EVE_MediaFifo_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t 
 #endif
 }
 
-#ifdef _DEBUG
+#if defined(_DEBUG)
 void debugBackupRamG(EVE_HalContext *phost);
 #endif
 
@@ -295,35 +344,50 @@ static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 	EVE_Hal_idle(phost);
 
 	/* Process user idling */
-	if (phost->CbCmdWait)
+	if (phost->CbCmdWait
+	    && !phost->CbCmdWait(phost))
 	{
-		if (!phost->CbCmdWait(phost))
-		{
-			/* Wait aborted */
-			phost->CmdWaiting = false;
-			eve_printf_debug("Wait for media FIFO aborted\n");
-			return false;
-		}
+		/* Wait aborted */
+		phost->CmdWaiting = false;
+		eve_printf_debug("Wait for media FIFO aborted\n");
+		return false;
 	}
 	return true;
 }
 
-/* Wait for the media FIFO to fully empty.
-Returns false in case a coprocessor fault occurred */
-bool EVE_MediaFifo_waitFlush(EVE_HalContext *phost)
+/**
+ * @brief Wait for the media FIFO to fully empty.
+ *
+ * @param phost Pointer to Hal context
+ * @param orCmdFlush
+ * @returns false in case a coprocessor fault occurred
+ */
+bool EVE_MediaFifo_waitFlush(EVE_HalContext *phost, bool orCmdFlush)
 {
-	return EVE_MediaFifo_waitSpace(phost, phost->MediaFifoSize - 4);
+	return EVE_MediaFifo_waitSpace(phost, phost->MediaFifoSize - 4, orCmdFlush);
 }
 
-/* Wait for the media FIFO to have at least the requested amount of free space.
-Returns 0 in case a coprocessor fault occurred */
-uint32_t EVE_MediaFifo_waitSpace(EVE_HalContext *phost, uint32_t size)
+/**
+ * @brief Wait for the media FIFO to have at least the requested amount of free space.
+ *
+ * @param phost Pointer to Hal context
+ * @param size
+ * @param orCmdFlush
+ * @returns 0 in case a coprocessor fault occurred
+ */
+uint32_t EVE_MediaFifo_waitSpace(EVE_HalContext *phost, uint32_t size, bool orCmdFlush)
 {
 	uint32_t space;
 
 	if (!EVE_Hal_supportMediaFifo(phost))
 	{
 		eve_assert_ex(false, "EVE_MediaFifo_waitSpace is not available on the current graphics platform\n");
+		return 0;
+	}
+
+	if (!phost->MediaFifoSize)
+	{
+		eve_printf_debug("EVE Media FIFO has not been set, cannot wait for space\n");
 		return 0;
 	}
 
@@ -345,11 +409,14 @@ uint32_t EVE_MediaFifo_waitSpace(EVE_HalContext *phost, uint32_t size)
 	do
 	{
 		space = EVE_MediaFifo_space(phost);
-		if (!handleWait(phost, space))
+		if (!handleWait(phost, (uint16_t)space))
 			return 0;
 		phost->CmdWaiting = false;
-		if (!EVE_Cmd_waitSpace(phost, 0))
+		uint32_t cmdSpace = EVE_Cmd_waitSpace(phost, 0);
+		if (!cmdSpace)
 			return 0; /* Check for coprocessor error */
+		if (orCmdFlush && cmdSpace == (EVE_CMD_FIFO_SIZE - 4))
+			return 0; /* Processed */
 		phost->CmdWaiting = true;
 	} while (space < size);
 

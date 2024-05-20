@@ -1,3 +1,34 @@
+/**
+ * @file diskio_ft9xx.c
+ * @brief FT9XX implementation of the diskIO
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ * 
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+*/
+
 /*-----------------------------------------------------------------------*/
 /* Low level disk I/O module skeleton for FatFs     (C)ChaN, 2014        */
 /*-----------------------------------------------------------------------*/
@@ -7,13 +38,21 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
+#if defined(__FT900__) || defined(__FT930__)
+
+#include "ff.h"		/* FatFs lower layer API */
 #include "diskio.h"		/* FatFs lower layer API */
 #include "ft900_sdhost.h"
 #include <string.h>
 
+#define _USE_WRITE	1	/* 1: Enable disk_write function */
+#define _USE_IOCTL	1	/* 1: Enable disk_ioctl fucntion */
+
+
 // ============================================================================================== //
 //                     				G L O B A L   V A R I A B L E S		   			  			  //
 // ============================================================================================== //
+static int sd_init = 1; // Already initialized externally, only reinitialize when lost
 static int sd_ready = 0;
 
 // A 32 bit aligned buffer of 512 bytes to copy non-aligned sectors to/from FatFs
@@ -28,10 +67,21 @@ static unsigned long __attribute__ ((aligned (32))) temp[128];
  *  @return Disk Status */
 DSTATUS disk_initialize(BYTE pdrv) {
 	DSTATUS stat = 0;
-	SDHOST_STATUS sdHostStatus;
 
-	if (SDHOST_OK != sdhost_card_init()) {
+	if (sd_ready || !sd_init) {
+		// sdhost_sys_init();
+		sdhost_init();
+		sd_init = 1;
+		sd_ready = 0;
+	}
+
+	if (sdhost_card_detect() != SDHOST_CARD_INSERTED) {
+		return STA_NOINIT | STA_NODISK;
+	}
+
+	if (sdhost_card_init() != SDHOST_OK) {
 		stat = STA_NOINIT;
+		sd_init = 0;
 	} else {
 		sd_ready = 1;
 	}
@@ -44,12 +94,26 @@ DSTATUS disk_initialize(BYTE pdrv) {
  *  @return Disk Status */
 DSTATUS disk_status(BYTE pdrv) {
 	DSTATUS stat = 0;
+	SDHOST_STATUS sdHostStatus;
 
-	if (0 == sd_ready) {
+	if (!sd_init) {
+		return STA_NOINIT;
+	}
+
+	sdHostStatus = sdhost_card_detect();
+
+	if (sdHostStatus != SDHOST_CARD_INSERTED) {
+		if (sd_ready) {
+			sd_ready = 0;
+			sdhost_init();
+		}
+	}
+
+	if (!sd_ready) {
 		stat |= STA_NOINIT;
 	}
 
-	if (sdhost_card_detect() == SDHOST_CARD_REMOVED) {
+	if (sdHostStatus == SDHOST_CARD_REMOVED) {
 		stat |= STA_NODISK;
 	}
 
@@ -99,7 +163,7 @@ DRESULT disk_read(BYTE pdrv, BYTE* buff, DWORD sector, UINT count) {
 DRESULT disk_write(BYTE pdrv, const BYTE* buff, DWORD sector, UINT count) {
 	DRESULT res = RES_OK;
 	// Non-aligned writes are inefficient because of this additional move to temp buffer. But thankfully they are rate in FatFS
-	SDHOST_STATUS sdHostStatus;
+	SDHOST_STATUS sdHostStatus = SDHOST_OK;
 	int i;
 
 	if (((unsigned int) buff & 3) != 0) {
@@ -204,6 +268,7 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) {
 		break;
 
 	case MMC_GET_CSD: /* Receive CSD as a data block (16 bytes) */
+		csd = (BYTE*) &sd_context->CSD[0];
 		for (int i = 0; i < 16; i++) {
 			*((BYTE*) buff + i) = *(csd + i);
 		}
@@ -254,7 +319,9 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff) {
  *          bit[15:11] = Hour (0..23),
  *          bit[10:5]  = Minute (0..59),
  *          bit[4..0]  = Second / 2 (0..29) */
-DWORD get_fattime(void) {
-	return 0; /* Invalid timestamp */
-}
+//DWORD get_fattime(void) {
+//	return 0; /* Invalid timestamp */
+//}
 #endif
+#endif //deffined(__FT900__) || defined(__FT930__)
+

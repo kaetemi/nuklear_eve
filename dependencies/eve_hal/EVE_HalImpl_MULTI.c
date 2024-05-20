@@ -1,37 +1,37 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*/
+ * @file EVE_HalImpl_MULTI.c
+ * @brief Eve_Hal framework APIs for generic host platform
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #include "EVE_HalImpl.h"
 #include "EVE_Platform.h"
-#if defined(EVE_MULTI_TARGET)
+#if defined(EVE_MULTI_PLATFORM_TARGET)
 
 static size_t s_TotalDeviceCount = 0;
 static size_t s_DeviceCountBT8XXEMU = 0;
@@ -43,6 +43,9 @@ DWORD g_NumDevsD2XX = 0;
 /*********
 ** INIT **
 *********/
+
+/** @name INIT */
+///@{
 
 /* Initialize HAL platform */
 void EVE_HalImpl_BT8XXEMU_initialize();
@@ -143,15 +146,15 @@ bool EVE_HalImpl_defaults(EVE_HalParameters *parameters, size_t deviceIdx)
 		res = EVE_HalImpl_FT4222_defaults(parameters, deviceIdx - s_DeviceCountBT8XXEMU - s_DeviceCountMPSSE);
 		parameters->Host = EVE_HOST_FT4222;
 	}
-	else if (res = EVE_HalImpl_FT4222_defaults(parameters, deviceIdx - s_DeviceCountBT8XXEMU - s_DeviceCountMPSSE))
+	else if ((res = EVE_HalImpl_FT4222_defaults(parameters, deviceIdx - s_DeviceCountBT8XXEMU - s_DeviceCountMPSSE)))
 	{
 		parameters->Host = EVE_HOST_FT4222;
 	}
-	else if (res = EVE_HalImpl_MPSSE_defaults(parameters, deviceIdx - s_DeviceCountBT8XXEMU))
+	else if ((res = EVE_HalImpl_MPSSE_defaults(parameters, deviceIdx - s_DeviceCountBT8XXEMU)))
 	{
 		parameters->Host = EVE_HOST_MPSSE;
 	}
-	else if (res = EVE_HalImpl_BT8XXEMU_defaults(parameters, deviceIdx))
+	else if ((res = EVE_HalImpl_BT8XXEMU_defaults(parameters, deviceIdx)))
 	{
 		parameters->Host = EVE_HOST_BT8XXEMU;
 	}
@@ -201,6 +204,8 @@ void EVE_HalImpl_close(EVE_HalContext *phost)
 	case EVE_HOST_MPSSE:
 		EVE_HalImpl_MPSSE_close(phost);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -221,12 +226,18 @@ void EVE_HalImpl_idle(EVE_HalContext *phost)
 	case EVE_HOST_MPSSE:
 		EVE_HalImpl_MPSSE_idle(phost);
 		break;
+	default:
+		break;
 	}
 }
+///@}
 
 /*************
 ** TRANSFER **
 *************/
+
+/** @name TRANSFER */
+///@{
 
 void EVE_Hal_BT8XXEMU_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr);
 void EVE_Hal_FT4222_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T rw, uint32_t addr);
@@ -243,6 +254,8 @@ EVE_HAL_EXPORT void EVE_Hal_startTransfer(EVE_HalContext *phost, EVE_TRANSFER_T 
 		break;
 	case EVE_HOST_MPSSE:
 		EVE_Hal_MPSSE_startTransfer(phost, rw, addr);
+		break;
+	default:
 		break;
 	}
 }
@@ -263,6 +276,8 @@ EVE_HAL_EXPORT void EVE_Hal_endTransfer(EVE_HalContext *phost)
 	case EVE_HOST_MPSSE:
 		EVE_Hal_MPSSE_endTransfer(phost);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -282,6 +297,8 @@ EVE_HAL_EXPORT void EVE_Hal_flush(EVE_HalContext *phost)
 	case EVE_HOST_MPSSE:
 		EVE_Hal_MPSSE_flush(phost);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -298,6 +315,8 @@ EVE_HAL_EXPORT uint8_t EVE_Hal_transfer8(EVE_HalContext *phost, uint8_t value)
 		return EVE_Hal_FT4222_transfer8(phost, value);
 	case EVE_HOST_MPSSE:
 		return EVE_Hal_MPSSE_transfer8(phost, value);
+	default:
+		break;
 	}
 	return 0;
 }
@@ -315,6 +334,8 @@ EVE_HAL_EXPORT uint16_t EVE_Hal_transfer16(EVE_HalContext *phost, uint16_t value
 		return EVE_Hal_FT4222_transfer16(phost, value);
 	case EVE_HOST_MPSSE:
 		return EVE_Hal_MPSSE_transfer16(phost, value);
+	default:
+		break;
 	}
 	return 0;
 }
@@ -332,6 +353,8 @@ EVE_HAL_EXPORT uint32_t EVE_Hal_transfer32(EVE_HalContext *phost, uint32_t value
 		return EVE_Hal_FT4222_transfer32(phost, value);
 	case EVE_HOST_MPSSE:
 		return EVE_Hal_MPSSE_transfer32(phost, value);
+	default:
+		break;
 	}
 	return 0;
 }
@@ -352,6 +375,8 @@ EVE_HAL_EXPORT void EVE_Hal_transferMem(EVE_HalContext *phost, uint8_t *result, 
 	case EVE_HOST_MPSSE:
 		EVE_Hal_MPSSE_transferMem(phost, result, buffer, size);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -371,6 +396,8 @@ EVE_HAL_EXPORT void EVE_Hal_transferProgMem(EVE_HalContext *phost, uint8_t *resu
 	case EVE_HOST_MPSSE:
 		EVE_Hal_MPSSE_transferProgMem(phost, result, buffer, size);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -387,13 +414,19 @@ EVE_HAL_EXPORT uint32_t EVE_Hal_transferString(EVE_HalContext *phost, const char
 		return EVE_Hal_FT4222_transferString(phost, str, index, size, padMask);
 	case EVE_HOST_MPSSE:
 		return EVE_Hal_MPSSE_transferString(phost, str, index, size, padMask);
+	default:
+		break;
 	}
 	return 0;
 }
+///@}
 
 /************
 ** UTILITY **
 ************/
+
+/** @name UTILITY */
+///@{
 
 void EVE_Hal_BT8XXEMU_hostCommand(EVE_HalContext *phost, uint8_t cmd);
 void EVE_Hal_FT4222_hostCommand(EVE_HalContext *phost, uint8_t cmd);
@@ -410,6 +443,8 @@ EVE_HAL_EXPORT void EVE_Hal_hostCommand(EVE_HalContext *phost, uint8_t cmd)
 		break;
 	case EVE_HOST_MPSSE:
 		EVE_Hal_MPSSE_hostCommand(phost, cmd);
+		break;
+	default:
 		break;
 	}
 }
@@ -431,27 +466,32 @@ EVE_HAL_EXPORT void EVE_Hal_hostCommandExt3(EVE_HalContext *phost, uint32_t cmd)
 	case EVE_HOST_MPSSE:
 		EVE_Hal_MPSSE_hostCommandExt3(phost, cmd);
 		break;
+	default:
+		break;
 	}
 }
 
 /* Toggle PD_N pin of FT800 board for a power cycle */
-void EVE_Hal_BT8XXEMU_powerCycle(EVE_HalContext *phost, bool up);
-void EVE_Hal_FT4222_powerCycle(EVE_HalContext *phost, bool up);
-void EVE_Hal_MPSSE_powerCycle(EVE_HalContext *phost, bool up);
-EVE_HAL_EXPORT void EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
+bool EVE_Hal_BT8XXEMU_powerCycle(EVE_HalContext *phost, bool up);
+bool EVE_Hal_FT4222_powerCycle(EVE_HalContext *phost, bool up);
+bool EVE_Hal_MPSSE_powerCycle(EVE_HalContext *phost, bool up);
+EVE_HAL_EXPORT bool EVE_Hal_powerCycle(EVE_HalContext *phost, bool up)
 {
 	switch (phost->Host)
 	{
 	case EVE_HOST_BT8XXEMU:
-		EVE_Hal_BT8XXEMU_powerCycle(phost, up);
+		return EVE_Hal_BT8XXEMU_powerCycle(phost, up);
 		break;
 	case EVE_HOST_FT4222:
-		EVE_Hal_FT4222_powerCycle(phost, up);
+		return EVE_Hal_FT4222_powerCycle(phost, up);
 		break;
 	case EVE_HOST_MPSSE:
-		EVE_Hal_MPSSE_powerCycle(phost, up);
+		return EVE_Hal_MPSSE_powerCycle(phost, up);
+		break;
+	default:
 		break;
 	}
+	return false;
 }
 
 void EVE_Hal_BT8XXEMU_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T numchnls, uint8_t numdummy);
@@ -470,12 +510,39 @@ EVE_HAL_EXPORT void EVE_Hal_setSPI(EVE_HalContext *phost, EVE_SPI_CHANNELS_T num
 	case EVE_HOST_MPSSE:
 		EVE_Hal_MPSSE_setSPI(phost, numchnls, numdummy);
 		break;
+	default:
+		break;
 	}
 }
+
+void EVE_Hal_BT8XXEMU_restoreSPI(EVE_HalContext *phost);
+void EVE_Hal_FT4222_restoreSPI(EVE_HalContext *phost);
+void EVE_Hal_MPSSE_restoreSPI(EVE_HalContext *phost);
+EVE_HAL_EXPORT void EVE_Hal_restoreSPI(EVE_HalContext *phost)
+{
+	switch (phost->Host)
+	{
+	case EVE_HOST_BT8XXEMU:
+		EVE_Hal_BT8XXEMU_restoreSPI(phost);
+		break;
+	case EVE_HOST_FT4222:
+		EVE_Hal_FT4222_restoreSPI(phost);
+		break;
+	case EVE_HOST_MPSSE:
+		EVE_Hal_MPSSE_restoreSPI(phost);
+		break;
+	default:
+		break;
+	}
+}
+///@}
 
 /*********
 ** MISC **
 *********/
+
+/** @name MISC */
+///@{
 
 bool EVE_UtilImpl_BT8XXEMU_bootupDisplayGpio(EVE_HalContext *phost);
 bool EVE_UtilImpl_FT4222_bootupDisplayGpio(EVE_HalContext *phost);
@@ -490,9 +557,12 @@ bool EVE_UtilImpl_bootupDisplayGpio(EVE_HalContext *phost)
 		return EVE_UtilImpl_FT4222_bootupDisplayGpio(phost);
 	case EVE_HOST_MPSSE:
 		return EVE_UtilImpl_MPSSE_bootupDisplayGpio(phost);
+	default:
+		break;
 	}
 	return false;
 }
+///@}
 
 #endif /* #if defined(BT8XXEMU_PLATFORM) */
 

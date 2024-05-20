@@ -1,33 +1,33 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*/
+ * This source code ("the Software") is provided by Bridgetek Pte Ltd
+ * ("Bridgetek") subject to the licence terms set out
+ *   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
+ * You must read the Licence Terms before downloading or using the Software.
+ * By installing or using the Software you agree to the Licence Terms. If you
+ * do not agree to the Licence Terms then do not download or use the Software.
+ *
+ * Without prejudice to the Licence Terms, here is a summary of some of the key
+ * terms of the Licence Terms (and in the event of any conflict between this
+ * summary and the Licence Terms then the text of the Licence Terms will
+ * prevail).
+ *
+ * The Software is provided "as is".
+ * There are no warranties (or similar) in relation to the quality of the
+ * Software. You use it at your own risk.
+ * The Software should not be used in, or for, any medical device, system or
+ * appliance. There are exclusions of Bridgetek liability for certain types of loss
+ * such as: special loss or damage; incidental loss or damage; indirect or
+ * consequential loss or damage; loss of income; loss of business; loss of
+ * profits; loss of revenue; loss of contracts; business interruption; loss of
+ * the use of money or anticipated savings; loss of information; loss of
+ * opportunity; loss of goodwill or reputation; and/or loss of, damage to or
+ * corruption of data.
+ * There is a monetary cap on Bridgetek's liability.
+ * The Software may have subsequently been amended by another user and then
+ * distributed by that other user ("Adapted Software").  If so that user may
+ * have additional licence terms that apply to those amendments. However, Bridgetek
+ * has no liability in relation to those amendments.
+ */
 
 #ifndef ESD_BASE__H
 #define ESD_BASE__H
@@ -114,6 +114,10 @@ ESD_PARAMETER(dl, Type = uint32_t)
 
 #include <EVE_Hal.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ESD_TYPE(void, Native = Void)
 ESD_TYPE(char, Native = Char, Edit = String)
 ESD_TYPE(signed char, Native = Int8, Edit = Integer)
@@ -175,8 +179,14 @@ typedef uint32_t esd_argb32_t;
 ESD_TYPE(esd_rgb32_t, Native = UInt32, Edit = ColorRGB)
 typedef uint32_t esd_rgb32_t;
 
+ESD_TYPE(esd_fonticon_t, Native = FontIcon, Edit = String)
+typedef const char *esd_fonticon_t;
+
 ESD_TYPE(esd_classid_t, Native = UInt32, Edit = Library)
 typedef uint32_t esd_classid_t;
+
+ESD_TYPE(cstring, Native = CString, Edit = String)
+typedef const char *cstring;
 
 #ifdef ESD_EXTERN_LIBARY
 #ifdef ESD_CORE_EXPORT
@@ -184,16 +194,49 @@ typedef uint32_t esd_classid_t;
 #endif
 #define ESD_CORE_EXPORT ESD_EXTERN_LIBARY
 #else
-#ifdef EVE_MULTI_TARGET
+#if defined(EVE_MULTI_TARGET) && defined(WIN32)
 #ifdef ESD_CORE_EXPORT
 #undef ESD_CORE_EXPORT
 #define ESD_CORE_EXPORT _declspec(dllexport)
 #else
 #define ESD_CORE_EXPORT _declspec(dllimport)
 #endif
+#elif defined(EVE_MULTI_TARGET) && defined(__linux__)
+#ifdef ESD_CORE_EXPORT
+#undef ESD_CORE_EXPORT
+#define ESD_CORE_EXPORT __attribute__((visibility("default")))
 #else
 #define ESD_CORE_EXPORT
 #endif
+#else
+#define ESD_CORE_EXPORT
+#endif
+#endif
+
+#ifdef ESD_MEMORYPOOL_ALLOCATOR
+#ifndef esd_malloc
+#define esd_malloc(size) Esd_MemoryPool_Alloc(Esd_MP, size)
+#endif
+#ifndef esd_free
+#define esd_free(ptr) Esd_MemoryPool_Free(Esd_MP, ptr)
+#endif
+#endif
+
+#ifdef ESD_LITTLEFS_FLASH
+#ifndef EVE_FLASH_AVAILABLE
+#undef ESD_LITTLEFS_FLASH
+#endif
+#endif
+
+#ifndef esd_malloc
+#define esd_malloc(size) malloc(size)
+#endif
+#ifndef esd_free
+#define esd_free(ptr) free(ptr)
+#endif
+
+#ifndef esd_scope
+#define esd_scope eve_scope
 #endif
 
 ESD_TYPE(EVE_HalContext *, Native = Pointer, Edit = Library)
@@ -216,25 +259,29 @@ ESD_CORE_EXPORT void Esd_Noop(void *context);
 
 #ifdef ESD_SIMULATION
 // Functions provided by ESD environment
-void logMessage__ESD(const char *str);
-void logWarning__ESD(const char *str);
-void logError__ESD(const char *str);
-#define Esd_LogMessage(s) logMessage__ESD(s)
-#define Esd_LogWarning(s) logWarning__ESD(s)
-#define Esd_LogError(s) logError__ESD(s)
+void LogMessage__ESD(const char *str);
+void LogWarning__ESD(const char *str);
+void LogError__ESD(const char *str);
+#define Esd_LogMessage(s) LogMessage__ESD(s)
+#define Esd_LogWarning(s) LogWarning__ESD(s)
+#define Esd_LogError(s) LogError__ESD(s)
 #else
 #define Esd_LogMessage(s) \
-	do                       \
-	{                        \
+	do                    \
+	{                     \
 	} while (0)
 #define Esd_LogWarning(s) \
-	do                       \
-	{                        \
+	do                    \
+	{                     \
 	} while (0)
 #define Esd_LogError(s) \
-	do                     \
-	{                      \
+	do                  \
+	{                   \
 	} while (0)
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* #ifndef ESD_BASE__H */

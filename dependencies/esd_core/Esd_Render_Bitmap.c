@@ -14,26 +14,65 @@ void Esd_CoDl_Bitmap_Vertex(int16_t x, int16_t y, uint8_t handle, uint16_t cell)
 		EVE_CoDl_bitmapHandle(phost, handle);
 		Esd_CoDl_PagedBitmapSource(handle, cell >> 7);
 		EVE_CoDl_cell(phost, cell & 0x7F);
-		EVE_CoCmd_dl(phost, VERTEX2F(x, y));
+		EVE_CoDl_vertex2f(phost, x, y);
 	}
 	else
 	{
 		Esd_CoDl_PagedBitmapSource(handle, cell >> 7);
-		EVE_CoCmd_dl(phost, VERTEX2II(x, y, handle, cell));
+		EVE_CoDl_vertex2ii(phost, x, y, handle, cell & 0x7F);
 	}
 }
 
+/*
+// TODO: Can we use an L8 bitmap to render a bayer dithered alpha into the STENCIL buffer, to allow fading out DXT1?
+// TODO: Can we use the same trick with an additional L1 map rendered into the STENCIL buffer to allow DXT1 to have a fake alpha channel?
+void Esd_CoDl_Bitmap_GenerateDither()
+{
+    static const uint8_t offsets[16] = {
+        0, 10, 2, 8, 5, 15, 7, 13, 1, 11, 3, 9, 4, 14, 6, 12
+    };
+    uint8_t matrix256[256];
+    uint8_t v = 0;
+    for (uint8_t i = 0; i < 16; ++i)
+    {
+        for (uint8_t j = 0; j < 16; ++j)
+        {
+            uint8_t o =
+                ((j & 0xC) << 4)
+                | ((j & 0x3) << 2)
+                | ((i & 0xC) << 2)
+                | (i & 0x3);
+            matrix256[o] = v;
+            ++v;
+        }
+    }
+}
+*/
+
 // NOTE: This function may only be used within a EVE_CoDl_saveContext block, because it does not clean up state, and bypasses some EVE_CoDl optimizations
 // Also EVE_CoCmd_loadIdentity must be called afterwards to fully restore the context
-void Esd_CoDl_Bitmap_Vertex_DXT1(int16_t x, int16_t y, uint8_t handle, uint8_t additional, uint16_t cell, uint16_t cells)
+void Esd_CoDl_Bitmap_Vertex_DXT1(int16_t x, int16_t y, uint8_t handle, uint8_t additional, uint8_t format, uint16_t cell, uint16_t cells)
 {
+	/* ---- */
+	/* NOTE: Partially bypassing CoDl optimizer on purpose inside a saveContext block */
+	/* ---- */
+
 	EVE_HalContext *phost = Esd_GetHost();
+	EVE_CoCmd_dl(phost, ALPHA_FUNC(ALWAYS, 0));
 	EVE_CoCmd_dl(phost, BLEND_FUNC(ONE, ZERO));
-	EVE_CoCmd_dl(phost, COLOR_A(0x55));
-	Esd_CoDl_Bitmap_Vertex(x, y, handle, cell);
-	EVE_CoCmd_dl(phost, BLEND_FUNC(ONE, ONE));
-	EVE_CoCmd_dl(phost, COLOR_A(0xAA));
-	Esd_CoDl_Bitmap_Vertex(x, y, handle, cell + cells);
+	if (format == DXT1L2)
+	{
+		EVE_CoCmd_dl(phost, COLOR_A(0xFF));
+		Esd_CoDl_Bitmap_Vertex(x, y, handle, cell);
+	}
+	else
+	{
+		EVE_CoCmd_dl(phost, COLOR_A(0x55));
+		Esd_CoDl_Bitmap_Vertex(x, y, handle, cell);
+		EVE_CoCmd_dl(phost, BLEND_FUNC(ONE, ONE));
+		EVE_CoCmd_dl(phost, COLOR_A(0xAA));
+		Esd_CoDl_Bitmap_Vertex(x, y, handle, cell + cells);
+	}
 	EVE_CoCmd_dl(phost, COLOR_MASK(1, 1, 1, 0));
 	EVE_CoCmd_scale(phost, 4UL * 65536UL, 4UL * 65536UL); // Color pass, scaled up 4x, nearest
 	EVE_CoCmd_setMatrix(phost);
@@ -47,10 +86,13 @@ void Esd_CoDl_Bitmap_Vertex_DXT1(int16_t x, int16_t y, uint8_t handle, uint8_t a
 // NOTE: This function may only be used within a Esd_CoDl_SAVE_CONTEXT block, because it does not clean up state
 void Esd_CoDl_Bitmap_Vertex_PALETTED8(int16_t x, int16_t y, uint8_t handle, uint16_t cell, uint32_t paletteAddr)
 {
+	/* ---- */
+	/* NOTE: Partially bypassing CoDl optimizer on purpose inside a saveContext block */
+	/* ---- */
+
 	EVE_HalContext *phost = Esd_GetHost();
 	if (EVE_CHIPID >= EVE_FT810)
 	{
-		EVE_HalContext *phost = Esd_GetHost();
 		EVE_CoDl_alphaFunc(phost, ALWAYS, 0);
 		EVE_CoCmd_dl(phost, BLEND_FUNC(ONE, ZERO));
 		EVE_CoCmd_dl(phost, COLOR_MASK(0, 0, 0, 1));
@@ -97,6 +139,7 @@ ESD_CORE_EXPORT void Esd_Render_Bitmap(int16_t x, int16_t y, Esd_BitmapCell bitm
 		Esd_CoDl_BitmapSizeReset(handle);
 		EVE_CoDl_colorArgb_ex(phost, c);
 		EVE_CoDl_begin(phost, BITMAPS);
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 		if (EVE_CHIPID >= EVE_FT810 && bitmapInfo->Format == PALETTED8)
 		{
 			uint32_t paletteAddr;
@@ -107,11 +150,13 @@ ESD_CORE_EXPORT void Esd_Render_Bitmap(int16_t x, int16_t y, Esd_BitmapCell bitm
 				Esd_CoDl_Bitmap_Vertex_PALETTED8(x, y, additional, cell, paletteAddr);
 			EVE_CoDl_restoreContext(phost);
 		}
-		else if (bitmapInfo->Format == DXT1 && ESD_BITMAPHANDLE_VALID(additional))
+		else
+#endif
+		    if ((bitmapInfo->Format == DXT1 || bitmapInfo->Format == DXT1L2) && ESD_BITMAPHANDLE_VALID(additional))
 		{
 			Esd_CoDl_BitmapWidthHeight(additional, bitmapInfo->Width, bitmapInfo->Height);
 			EVE_CoDl_saveContext(phost);
-			Esd_CoDl_Bitmap_Vertex_DXT1(x, y, handle, additional, cell, bitmapInfo->Cells);
+			Esd_CoDl_Bitmap_Vertex_DXT1(x, y, handle, additional, bitmapInfo->Format, cell, bitmapInfo->Cells);
 			EVE_CoCmd_loadIdentity(Esd_Host);
 			EVE_CoDl_restoreContext(phost);
 		}
@@ -146,7 +191,7 @@ ESD_CORE_EXPORT void Esd_Render_Bitmap_Scaled(int16_t x, int16_t y, Esd_BitmapCe
 		    ? Esd_CoDl_SetupBitmap(bitmapInfo->AdditionalInfo)
 		    : ESD_BITMAPHANDLE_INVALID;
 
-		if (bitmapInfo->Format == DXT1)
+		if (bitmapInfo->Format == DXT1 || bitmapInfo->Format == DXT1L2)
 			Esd_CoDl_BitmapWidthHeight(handle, width, height);
 		else
 			Esd_CoDl_BitmapSize(handle, BILINEAR, BORDER, BORDER, width, height);
@@ -156,6 +201,7 @@ ESD_CORE_EXPORT void Esd_Render_Bitmap_Scaled(int16_t x, int16_t y, Esd_BitmapCe
 		EVE_CoCmd_scale(Esd_Host, xscale, yscale);
 		EVE_CoCmd_setMatrix(Esd_Host);
 		EVE_CoDl_begin(phost, BITMAPS);
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
 		if ((EVE_CHIPID >= EVE_FT810) && (bitmapInfo->Format == PALETTED8))
 		{
 			uint32_t paletteAddr = Esd_LoadPalette(bitmapInfo);
@@ -163,10 +209,12 @@ ESD_CORE_EXPORT void Esd_Render_Bitmap_Scaled(int16_t x, int16_t y, Esd_BitmapCe
 			if (ESD_BITMAPHANDLE_VALID(additional))
 				Esd_CoDl_Bitmap_Vertex_PALETTED8(x, y, additional, cell, paletteAddr);
 		}
-		else if (bitmapInfo->Format == DXT1 && ESD_BITMAPHANDLE_VALID(additional))
+		else
+#endif
+		    if ((bitmapInfo->Format == DXT1 || bitmapInfo->Format == DXT1L2) && ESD_BITMAPHANDLE_VALID(additional))
 		{
 			Esd_CoDl_BitmapWidthHeight(additional, width, height);
-			Esd_CoDl_Bitmap_Vertex_DXT1(x, y, handle, additional, cell, bitmapInfo->Cells);
+			Esd_CoDl_Bitmap_Vertex_DXT1(x, y, handle, additional, bitmapInfo->Format, cell, bitmapInfo->Cells);
 		}
 		else
 		{
@@ -261,7 +309,7 @@ ESD_CORE_EXPORT void Esd_Render_Bitmap_RotateScaled(Esd_BitmapCell bitmapCell, e
 		EVE_CoCmd_setMatrix(Esd_Host);
 		EVE_CoCmd_loadIdentity(Esd_Host);
 		EVE_CoDl_begin(phost, BITMAPS);
-		EVE_CoCmd_dl(Esd_Host, VERTEX2F(x * 16, y * 16));
+		EVE_CoDl_vertex2f_4(Esd_Host, x * 16, y * 16);
 		EVE_CoDl_end(phost);
 		EVE_CoDl_restoreContext(phost);
 	}
@@ -290,42 +338,42 @@ ESD_CORE_EXPORT void Esd_Render_Bitmap_Rotate(Esd_BitmapCell bitmapCell, esd_arg
 		int16_t y = globalRect.Y + y_center;
 
 		int16_t radius = bitmapInfo->Width / 2;
-		
-		//eve_printf_debug("x=%d,y=%d,x_center_x=%d,certer_y = %d, radius = %d\n",x,y,x_center,y_center,radius);
+
+		// eve_printf_debug("x=%d,y=%d,x_center_x=%d,certer_y = %d, radius = %d\n",x,y,x_center,y_center,radius);
 
 		int tilenumber = 0;
-		const int TITLE_SIZE = 64; //Magic number, DONOT CHANGE
+		const int TITLE_SIZE = 64; // Magic number, DONOT CHANGE
 		EVE_CoDl_colorArgb_ex(phost, c);
+		EVE_CoDl_vertexFormat(phost, 4);
 		EVE_CoDl_saveContext(phost);
 
-		Esd_CoDl_BitmapSize(handle, BILINEAR, BORDER, BORDER, TITLE_SIZE, TITLE_SIZE); //Bitmap_Size command
+		Esd_CoDl_BitmapSize(handle, BILINEAR, BORDER, BORDER, TITLE_SIZE, TITLE_SIZE); // Bitmap_Size command
 
 		EVE_CoDl_begin(phost, BITMAPS);
 
-		EVE_CoDl_vertexFormat(phost, 4);
 		Esd_CoDl_PagedCell(handle, cell);
-		scope
+		eve_scope()
 		{
 			int dx, dy;
 			for (dx = (x - radius); dx < (x + radius); dx += TITLE_SIZE)
 			{
 				for (dy = (y - radius); dy < (y + radius); dy += TITLE_SIZE)
 				{
-					//eve_printf_debug("draw tile %d\n",tilenumber ++);
+					// eve_printf_debug("draw tile %d\n",tilenumber ++);
 					tilenumber++;
 					EVE_CoCmd_loadIdentity(Esd_Host);
 					EVE_CoCmd_translate(Esd_Host, (x - dx) << 16, (y - dy) << 16);
 
 					EVE_CoCmd_rotate(Esd_Host, rotateAngle);
 					EVE_CoCmd_translate(Esd_Host, -x_center << 16, -y_center << 16);
-					//EVE_CoCmd_translate(Esd_Host, -x_center, -y_center);
+					// EVE_CoCmd_translate(Esd_Host, -x_center, -y_center);
 
 					EVE_CoCmd_setMatrix(Esd_Host);
-					EVE_CoCmd_dl(Esd_Host, VERTEX2F(dx * 16, dy * 16));
+					EVE_CoDl_vertex2f_4(Esd_Host, dx * 16, dy * 16);
 				}
 			}
 		}
-		//eve_printf_debug("draw tile %d\n",tilenumber);
+		// eve_printf_debug("draw tile %d\n",tilenumber);
 		EVE_CoCmd_loadIdentity(Esd_Host);
 		EVE_CoDl_restoreContext(phost);
 	}

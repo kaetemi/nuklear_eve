@@ -1,34 +1,36 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-*/
+ * @file EVE_LoadFile.h
+ * @brief Eve_Hal framework APIs for loading file
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
+#ifndef EVE_LOADFILE__H
+#define EVE_LOADFILE__H
 #include "EVE_Platform.h"
 
 /*
@@ -38,39 +40,84 @@ On Linux platform, filenames are assumed to be in UTF-8.
 On embedded platforms, filename character set depends on the filesystem library.
 */
 
-/* Load SD card */
+#if defined(RP2040_PLATFORM)
+typedef enum
+{
+	SDHOST_OK = 0, /**< 0, OK */
+	SDHOST_ERROR, /**< general error */
+	SDHOST_CARD_INSERTED, /**< card inserted */
+	SDHOST_CARD_REMOVED, /**< card removed */
+	SDHOST_INVALID_RESPONSE_TYPE, /**< invalid response */
+	SDHOST_CMD_TIMEOUT, /**< command timeout */
+	SDHOST_UNUSABLE_CARD, /**< card is unusable */
+	SDHOST_CMD2_FAILED, /**< command 2 (get CID) failed */
+	SDHOST_CMD3_FAILED, /**< command 3 (get RCA) failed */
+	SDHOST_CMD8_FAILED, /**< command 8 (voltage check) failed */
+	SDHOST_CMD9_FAILED, /**< command 9 (send CSD) failed */
+	SDHOST_CMD55_FAILED, /**< command 55 (app cmd) failed */
+	SDHOST_ACMD41_FAILED, /**< command 41 failed */
+	SDHOST_CANNOT_ENTER_TRANSFER_STATE, /**< cannot enter transfer state */
+	SDHOST_CANNOT_SET_CARD_BUS_WIDTH, /**< cannot set bus width */
+	SDHOST_RESPONSE_ERROR, /**< response error */
+	SDHOST_WRITE_ERROR, /**< read error */
+	SDHOST_READ_ERROR, /**< write error */
+	SDHOST_NOT_INITIALISED, /**< host is not initialised by driver */
+	SDHOST_CARD_NOT_INITIALISED, /**< card is not initialised by driver */
+} SDHOST_STATUS;
+#endif
+
+/** Load SD card */
 EVE_HAL_EXPORT bool EVE_Util_loadSdCard(EVE_HalContext *phost);
+EVE_HAL_EXPORT bool EVE_Util_sdCardReady(EVE_HalContext *phost);
 
 EVE_HAL_EXPORT bool EVE_Util_loadRawFile(EVE_HalContext *phost, uint32_t address, const char *filename);
 EVE_HAL_EXPORT bool EVE_Util_loadInflateFile(EVE_HalContext *phost, uint32_t address, const char *filename);
 
-/* Load a file using CMD_LOADIMAGE.
+/** Load a file using CMD_LOADIMAGE.
 The image format is provided as output to the optional format argument */
 EVE_HAL_EXPORT bool EVE_Util_loadImageFile(EVE_HalContext *phost, uint32_t address, const char *filename, uint32_t *format);
 
-/* Load a file into the coprocessor FIFO */
+/** Load a file into the coprocessor FIFO */
 EVE_HAL_EXPORT bool EVE_Util_loadCmdFile(EVE_HalContext *phost, const char *filename, uint32_t *transfered);
 
-/* Load a file into the media FIFO.
-If transfered is set, the file may be streamed partially, and stop once the coprocessor has processed it */
+/** Read a file into a buffer, returns the number of bytes read */
+EVE_HAL_EXPORT size_t EVE_Util_readFile(EVE_HalContext *phost, uint8_t *buffer, size_t size, const char *filename);
+
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+/** Load a file into the media FIFO.
+If transfered is set, the file may be streamed partially,
+and will be kept open until EVE_Util_closeFile is called,
+and stop once the coprocessor has processed it.
+Filename may be omitted in subsequent calls */
 EVE_HAL_EXPORT bool EVE_Util_loadMediaFile(EVE_HalContext *phost, const char *filename, uint32_t *transfered);
 
-#ifdef WIN32
+EVE_HAL_EXPORT void EVE_Util_closeFile(EVE_HalContext *phost);
+#endif
+
+#ifdef _WIN32
 
 EVE_HAL_EXPORT bool EVE_Util_loadRawFileW(EVE_HalContext *phost, uint32_t address, const wchar_t *filename);
 EVE_HAL_EXPORT bool EVE_Util_loadInflateFileW(EVE_HalContext *phost, uint32_t address, const wchar_t *filename);
 
-/* Load a file using CMD_LOADIMAGE.
+/** Load a file using CMD_LOADIMAGE.
 The image format is provided as output to the optional format argument */
 EVE_HAL_EXPORT bool EVE_Util_loadImageFileW(EVE_HalContext *phost, uint32_t address, const wchar_t *filename, uint32_t *format);
 
-/* Load a file into the coprocessor FIFO */
+/** Load a file into the coprocessor FIFO */
 EVE_HAL_EXPORT bool EVE_Util_loadCmdFileW(EVE_HalContext *phost, const wchar_t *filename, uint32_t *transfered);
 
-/* Load a file into the media FIFO.
-If transfered is set, the file may be streamed partially, and stop once the coprocessor has processed it  */
-EVE_HAL_EXPORT bool EVE_Util_loadMediaFileW(EVE_HalContext *phost, const wchar_t *filename, uint32_t *transfered);
+/** Read a file into a buffer, returns the number of bytes read */
+EVE_HAL_EXPORT size_t EVE_Util_readFileW(EVE_HalContext *phost, uint8_t *buffer, size_t size, const wchar_t *filename);
 
+#if (EVE_SUPPORT_CHIPID >= EVE_FT810)
+/** Load a file into the media FIFO.
+If transfered is set, the file may be streamed partially,
+and will be kept open until EVE_Util_closeFile is called,
+and stop once the coprocessor has processed it.
+Filename may be omitted in subsequent calls  */
+EVE_HAL_EXPORT bool EVE_Util_loadMediaFileW(EVE_HalContext *phost, const wchar_t *filename, uint32_t *transfered);
 #endif
 
+#endif
+#endif
 /* end of file */
