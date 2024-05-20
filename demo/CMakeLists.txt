@@ -44,11 +44,19 @@ IF(NUKLEAR_EVE_DEMO_PLATFORM STREQUAL "FT4222" OR NUKLEAR_EVE_DEMO_PLATFORM STRE
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_SOURCE_DIR}/dependencies/ft4222/lib/amd64/LibFT4222-64.dll
         ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/LibFT4222-64.dll)
+      ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/dependencies/ftd2xx/amd64/ftd2xx.dll
+        ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/ftd2xx.dll)
     ELSE()
       ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_SOURCE_DIR}/dependencies/ft4222/lib/i386/LibFT4222.dll
         ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/LibFT4222.dll)
+      ADD_CUSTOM_COMMAND(TARGET nuklear_eve_demo POST_BUILD 
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/dependencies/ftd2xx/i386/ftd2xx.dll
+        ${CMAKE_BINARY_DIR}/bin/\$\(Configuration\)/ftd2xx.dll)
     ENDIF()
   ENDIF()
 ENDIF()
