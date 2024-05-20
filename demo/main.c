@@ -12,6 +12,7 @@ This C source file demonstrates the Nuklear EVE implementation.
 #include <string.h>
 #include <time.h>
 #include <limits.h>
+#include <math.h>
 
 #ifndef NK_ASSERT
 #include <assert.h>
@@ -20,24 +21,27 @@ This C source file demonstrates the Nuklear EVE implementation.
 
 #include "nuklear_eve.h"
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4996)
 #pragma warning(disable : 4477)
 #pragma warning(disable : 4244)
+#endif
 /*#include "demo/style.c"*/
 #include "demo/calculator.c"
 #include "demo/overview.c"
 #include "demo/node_editor.c"
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 #include "Ft_Esd_Utility.h"
 
 int main(void)
 {
+    EVE_HalContext *phost;
     struct nk_evefont *font;
-#if (EVE_MODEL >= EVE_FT810)
     struct nk_evefont *font_large;
-#endif
     struct nk_context *ctx;
 
     int show_calculator = 0;
@@ -49,10 +53,9 @@ int main(void)
     /* Initialize Nuklear EVE */
     font = nk_evefont_create_rom(27);
     ctx = nk_eve_init(font);
+    phost = nk_eve_hal();
 
-#if (EVE_MODEL >= EVE_FT810)
-    font_large = nk_evefont_create_rom(32);
-#endif
+    font_large = (EVE_CHIPID >= EVE_FT810) ? nk_evefont_create_rom(32) : NULL;
     
     /* style.c */
     /*set_style(ctx, THEME_WHITE);*/
@@ -70,6 +73,7 @@ int main(void)
         if (nk_begin(ctx, "Nuklear EVE", nk_rect(50, 50, 300, 400),
                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
         {
+        	/*
             enum
             {
                 EASY,
@@ -77,6 +81,7 @@ int main(void)
             };
             static int op = EASY;
             static int property = 20;
+            */
 
             nk_layout_row_static(ctx, 30, 200, 1);
             nk_checkbox_label(ctx, "Show Calculator", &show_calculator);
@@ -94,16 +99,17 @@ int main(void)
             nk_layout_row_static(ctx, 30, 200, 1);
             if (nk_button_label(ctx, "Play Sound"))
             {
-                EVE_Hal_wr32(nk_eve_hal(), REG_SOUND, (60 << 8) | 0x46);
-                EVE_Hal_wr32(nk_eve_hal(), REG_PLAY, 1);
+                EVE_Hal_wr32(phost, REG_SOUND, (60 << 8) | 0x46);
+                EVE_Hal_wr32(phost, REG_PLAY, 1);
             }
             
-#if (EVE_MODEL >= EVE_FT810)
-            nk_eve_set_font(font_large);
-            nk_layout_row_static(ctx, 50, 210, 1);
-            nk_label(ctx, "Big Font", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_TOP);
-            nk_eve_set_font(font);
-#endif
+            if (EVE_CHIPID >= EVE_FT810)
+            {
+                nk_eve_set_font(font_large);
+                nk_layout_row_static(ctx, 50, 210, 1);
+                nk_label(ctx, "Big Font", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_TOP);
+                nk_eve_set_font(font);
+            }
         }
         nk_end(ctx);
 
@@ -139,9 +145,10 @@ int main(void)
 
     /* Release Nuklear EVE */
     nk_evefont_del(font);
-#if (EVE_MODEL >= EVE_FT810)
-    nk_evefont_del(font_large);
-#endif
+    if (EVE_CHIPID >= EVE_FT810)
+    {
+        nk_evefont_del(font_large);
+    }
     nk_eve_shutdown();
 
     return EXIT_SUCCESS;

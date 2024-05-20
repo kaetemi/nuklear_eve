@@ -1,49 +1,67 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
+ * @file EVE_Cmd.c
+ * @brief EVE's command read/write
+
+ * This file defines the generic APIs of phost access layer for the FT800 or EVE compatible silicon.
+ * Application shall access FT800 or EVE resources over these APIs,regardless of I2C or SPI protocol.
+ * In addition, there are some helper functions defined for FT800 coprocessor engine as well as phost commands.
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
 */
 
 #include "EVE_Cmd.h"
 #include "EVE_Platform.h"
 
+/**
+ * @brief End read/write to Coprocessor
+ *
+ * @param phost Pointer to Hal context
+ */
 static inline void endFunc(EVE_HalContext *phost)
 {
 	if (phost->Status == EVE_STATUS_WRITING)
 	{
 		EVE_Hal_endTransfer(phost);
-#if !defined(EVE_SUPPORT_CMDB)
-		EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
+#if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_GRAPHICS_TARGET)
+		if (!EVE_Hal_supportCmdB(phost))
+		{
+			EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
+		}
 #endif
 	}
 }
 
-uint16_t EVE_Cmd_rp(EVE_HalContext *phost)
+/**
+ * @brief Read from Coprocessor
+ *
+ * @param phost Pointer to Hal context
+ * @return uint16_t Read pointer
+ */
+EVE_HAL_EXPORT uint16_t EVE_Cmd_rp(EVE_HalContext *phost)
 {
 	uint16_t rp;
 	endFunc(phost);
@@ -53,39 +71,123 @@ uint16_t EVE_Cmd_rp(EVE_HalContext *phost)
 	return rp;
 }
 
-uint16_t EVE_Cmd_wp(EVE_HalContext *phost)
+/**
+ * @brief Write to Coprocessor
+ *
+ * @param phost Pointer to Hal context
+ * @return uint16_t Write pointer
+ */
+EVE_HAL_EXPORT uint16_t EVE_Cmd_wp(EVE_HalContext *phost)
 {
 	endFunc(phost);
-#if defined(EVE_SUPPORT_CMDB)
-	return EVE_Hal_rd16(phost, REG_CMD_WRITE) & EVE_CMD_FIFO_MASK;
+	if (EVE_Hal_supportCmdB(phost))
+	{
+		return EVE_Hal_rd16(phost, REG_CMD_WRITE) & EVE_CMD_FIFO_MASK;
+	}
+	else
+	{
+#if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_GRAPHICS_TARGET)
+		phost->CmdWp = EVE_Hal_rd16(phost, REG_CMD_WRITE) & EVE_CMD_FIFO_MASK;
+		return phost->CmdWp;
 #else
-	phost->CmdWp = EVE_Hal_rd16(phost, REG_CMD_WRITE) & EVE_CMD_FIFO_MASK;
-	return phost->CmdWp;
+		eve_assert(false);
+		return 0xffff;
 #endif
+	}
 }
 
-uint16_t EVE_Cmd_space(EVE_HalContext *phost)
+/**
+ * @brief Get free space of Coprocessor's command buffer
+ *
+ * @param phost Pointer to Hal context
+ * @return uint16_t Free space in Bytes
+ */
+EVE_HAL_EXPORT uint16_t EVE_Cmd_space(EVE_HalContext *phost)
 {
 	uint16_t space;
-#if !defined(EVE_SUPPORT_CMDB)
-	uint16_t wp, rp;
-#endif
+	uint16_t wp;
+	uint16_t rp;
 	endFunc(phost);
-#if defined(EVE_SUPPORT_CMDB)
-	space = EVE_Hal_rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
-	if (EVE_CMD_FAULT(space))
-		phost->CmdFault = true;
-	phost->CmdSpace = space;
-	return space;
-#else
-	wp = EVE_Cmd_wp(phost);
-	rp = EVE_Cmd_rp(phost);
-	space = (rp - wp - 4) & EVE_CMD_FIFO_MASK;
-	phost->CmdSpace = space;
-	return space;
-#endif
+	if (EVE_Hal_supportCmdB(phost))
+	{
+		space = EVE_Hal_rd16(phost, REG_CMDB_SPACE) & EVE_CMD_FIFO_MASK;
+		if (EVE_CMD_FAULT(space))
+			phost->CmdFault = true;
+		phost->CmdSpace = space;
+		return space;
+	}
+	else
+	{
+		wp = EVE_Cmd_wp(phost);
+		rp = EVE_Cmd_rp(phost);
+		space = (rp - wp - 4) & EVE_CMD_FIFO_MASK;
+		phost->CmdSpace = space;
+		return space;
+	}
 }
 
+/**
+ * @brief Start transfer data to EVE
+ *
+ * @param phost Pointer to Hal context
+ */
+static void startBufferTransfer(EVE_HalContext *phost)
+{
+	if (phost->Status != EVE_STATUS_WRITING)
+	{
+		if (EVE_Hal_supportCmdB(phost))
+		{
+			EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, REG_CMDB_WRITE);
+		}
+		else
+		{
+#if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_GRAPHICS_TARGET)
+			EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + phost->CmdWp);
+#else
+			eve_assert(false);
+#endif
+		}
+	}
+}
+
+/**
+ * @brief Write string to Coprocessor's comand fifo
+ *
+ * @param phost Pointer to Hal context
+ * @param buffer Data pointer
+ * @param size Size to write
+ * @param transfer Byte to transfer
+ * @param transfered Byte transfered
+ * @return transfer Byte to transfer
+ */
+static uint32_t wrString(EVE_HalContext *phost, const void *buffer, uint32_t *size, uint32_t transfered, uint32_t transfer)
+{
+	uint32_t t;
+	eve_assert(transfered == 0);
+	eve_assert(transfer == *size); /* Cannot split string transfers */
+	eve_assert(transfer <= phost->CmdSpace);
+	t = EVE_Hal_transferString(phost, (const char *)buffer, transfered, transfer, 0x3);
+	if (t != transfer) /* End of string */
+	{
+		eve_assert(t <= phost->CmdSpace);
+		transfer = t;
+		*size = (transfered + transfer);
+	}
+	eve_assert((transfered + transfer) == *size);
+
+	return transfer;
+}
+
+/**
+ * @brief Write buffer to Coprocessor's comand fifo
+ *
+ * @param phost Pointer to Hal context
+ * @param buffer Data pointer
+ * @param size Size to write
+ * @param progmem True if ProgMem
+ * @param string True is string
+ * @return uint32_t Byte transfered
+ */
 static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t size, bool progmem, bool string)
 {
 	uint32_t transfered = 0;
@@ -107,31 +209,14 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 		eve_assert(transfer <= EVE_CMD_FIFO_SIZE - 4);
 		if (transfer)
 		{
-			if (phost->Status != EVE_STATUS_WRITING)
-			{
-#if defined(EVE_SUPPORT_CMDB)
-				EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, REG_CMDB_WRITE);
-#else
-				EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + phost->CmdWp);
-#endif
-			}
+			startBufferTransfer(phost);
 			if (string)
 			{
-				eve_assert(transfered == 0);
-				eve_assert(transfer == size); /* Cannot split string transfers */
-				eve_assert(transfer <= phost->CmdSpace);
-				uint32_t t = EVE_Hal_transferString(phost, (const char *)buffer, transfered, transfer, 0x3);
-				if (t != transfer) /* End of string */
-				{
-					eve_assert(t <= phost->CmdSpace);
-					transfer = t;
-					size = (transfered + transfer);
-				}
-				eve_assert((transfered + transfer) == size);
+				transfer = wrString(phost, buffer, &size, transfered, transfer);
 			}
 			else if (progmem)
 			{
-				EVE_Hal_transferProgmem(phost, NULL, (eve_progmem_const uint8_t *)(uintptr_t)(&((uint8_t *)buffer)[transfered]), transfer);
+				EVE_Hal_transferProgMem(phost, NULL, (eve_progmem_const uint8_t *)(uintptr_t)(&((uint8_t *)buffer)[transfered]), transfer);
 			}
 			else
 			{
@@ -139,9 +224,9 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			}
 			if (!string && (transfer & 0x3))
 			{
-				eve_assert((transfered + transfer) == size);
 				uint32_t pad = 4 - (transfer & 0x3);
 				uint8_t padding[4] = { 0 };
+				eve_assert((transfered + transfer) == size);
 				EVE_Hal_transferMem(phost, NULL, padding, pad);
 				transfer += pad;
 				eve_assert(!(transfer & 0x3));
@@ -153,12 +238,15 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 			}
 			eve_assert(phost->CmdSpace >= transfer);
 			phost->CmdSpace -= (uint16_t)transfer;
-#if !defined(EVE_SUPPORT_CMDB)
-			phost->CmdWp += (uint16_t)transfer;
-			phost->CmdWp &= EVE_CMD_FIFO_MASK;
-			if (!phost->CmdFunc) /* Defer write pointer */
+#if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_GRAPHICS_TARGET)
+			if (!EVE_Hal_supportCmdB(phost))
 			{
-				EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
+				phost->CmdWp += (uint16_t)transfer;
+				phost->CmdWp &= EVE_CMD_FIFO_MASK;
+				if (!phost->CmdFunc) /* Defer write pointer */
+				{
+					EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
+				}
 			}
 #endif
 		}
@@ -166,16 +254,24 @@ static uint32_t wrBuffer(EVE_HalContext *phost, const void *buffer, uint32_t siz
 	return transfered;
 }
 
-/* Begin writing a function, keeps the transfer open */
-void EVE_Cmd_startFunc(EVE_HalContext *phost)
+/**
+ * @brief Begin writing a function, keeps the transfer open
+ *
+ * @param phost Pointer to Hal context
+ */
+EVE_HAL_EXPORT void EVE_Cmd_startFunc(EVE_HalContext *phost)
 {
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
 	phost->CmdFunc = true;
 }
 
-/* End writing a function, closes the transfer */
-void EVE_Cmd_endFunc(EVE_HalContext *phost)
+/**
+ * @brief End writing a function, closes the transfer
+ *
+ * @param phost Pointer to Hal context
+ */
+EVE_HAL_EXPORT void EVE_Cmd_endFunc(EVE_HalContext *phost)
 {
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
@@ -183,21 +279,47 @@ void EVE_Cmd_endFunc(EVE_HalContext *phost)
 	phost->CmdFunc = false;
 }
 
-bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
+/**
+ * @brief Write buffer to Coprocessor's comand fifo
+ *
+ * @param phost Pointer to Hal context
+ * @param buffer Data pointer
+ * @param size Size to write
+ * @return true Write ok
+ * @return false Write error
+ */
+EVE_HAL_EXPORT bool EVE_Cmd_wrMem(EVE_HalContext *phost, const uint8_t *buffer, uint32_t size)
 {
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
 	return wrBuffer(phost, buffer, size, false, false) == size;
 }
 
-bool EVE_Cmd_wrProgmem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size)
+/**
+ * @brief Write buffer in ProgMem to Coprocessor's comand fifo
+ *
+ * @param phost Pointer to Hal context
+ * @param buffer Data buffer
+ * @param size Size to write
+ * @return true True if ok
+ * @return false False if error
+ */
+EVE_HAL_EXPORT bool EVE_Cmd_wrProgMem(EVE_HalContext *phost, eve_progmem_const uint8_t *buffer, uint32_t size)
 {
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
 	return wrBuffer(phost, (void *)(uintptr_t)buffer, size, true, false) == size;
 }
 
-uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength)
+/**
+ * @brief Write a string into Coprocessor's command fifo
+ *
+ * @param phost Pointer to Hal context
+ * @param str String to write
+ * @param maxLength Length to write, up to EVE_CMD_STRING_MAX
+ * @return uint32_t Number of bytes transfered
+ */
+EVE_HAL_EXPORT uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLength)
 {
 	uint32_t transfered;
 	eve_assert(!phost->CmdWaiting);
@@ -206,12 +328,23 @@ uint32_t EVE_Cmd_wrString(EVE_HalContext *phost, const char *str, uint32_t maxLe
 	return transfered;
 }
 
-bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value)
+/**
+ * @brief Write a byte to Coprocessor's command fifo
+ *
+ * @param phost Pointer to Hal context
+ * @param value Byte to write
+ * @return true True if ok
+ * @return false False if error
+ */
+EVE_HAL_EXPORT bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value)
 {
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex < 4);
 
-	phost->CmdBuffer[phost->CmdBufferIndex++] = value;
+	if (phost->CmdBufferIndex < 4)
+	{
+		phost->CmdBuffer[phost->CmdBufferIndex++] = value;
+	}
 
 	if (phost->CmdBufferIndex == 4)
 	{
@@ -222,13 +355,24 @@ bool EVE_Cmd_wr8(EVE_HalContext *phost, uint8_t value)
 	return true;
 }
 
-bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value)
+/**
+ * @brief Write 2 bytes to Coprocessor's command fifo
+ *
+ * @param phost Pointer to Hal context
+ * @param value Data to write
+ * @return true True if ok
+ * @return false False if error
+ */
+EVE_HAL_EXPORT bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value)
 {
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex < 3);
 
-	phost->CmdBuffer[phost->CmdBufferIndex++] = value & 0xFF;
-	phost->CmdBuffer[phost->CmdBufferIndex++] = value >> 8;
+	if (phost->CmdBufferIndex < 3)
+	{
+		phost->CmdBuffer[phost->CmdBufferIndex++] = value & 0xFF;
+		phost->CmdBuffer[phost->CmdBufferIndex++] = value >> 8;
+	}
 
 	if (phost->CmdBufferIndex == 4)
 	{
@@ -239,7 +383,15 @@ bool EVE_Cmd_wr16(EVE_HalContext *phost, uint16_t value)
 	return true;
 }
 
-bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
+/**
+ * @brief Write 4 bytes to Coprocessor's command fifo
+ *
+ * @param phost Pointer to Hal context
+ * @param value Data to write
+ * @return true True if ok
+ * @return false False if error
+ */
+EVE_HAL_EXPORT bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 {
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
@@ -249,11 +401,18 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 
 	if (phost->Status != EVE_STATUS_WRITING)
 	{
-#if defined(EVE_SUPPORT_CMDB)
-		EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, REG_CMDB_WRITE);
+		if (EVE_Hal_supportCmdB(phost))
+		{
+			EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, REG_CMDB_WRITE);
+		}
+		else
+		{
+#if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_GRAPHICS_TARGET)
+			EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + phost->CmdWp);
 #else
-		EVE_Hal_startTransfer(phost, EVE_TRANSFER_WRITE, RAM_CMD + phost->CmdWp);
+			eve_assert(false);
 #endif
+		}
 	}
 	EVE_Hal_transfer32(phost, value);
 	if (!phost->CmdFunc) /* Keep alive while writing function */
@@ -262,22 +421,32 @@ bool EVE_Cmd_wr32(EVE_HalContext *phost, uint32_t value)
 	}
 	eve_assert(phost->CmdSpace >= 4);
 	phost->CmdSpace -= 4;
-#if !defined(EVE_SUPPORT_CMDB)
-	phost->CmdWp += 4;
-	phost->CmdWp &= EVE_CMD_FIFO_MASK;
-	if (!phost->CmdFunc) /* Defer write pointer */
+#if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_GRAPHICS_TARGET)
+	if (!EVE_Hal_supportCmdB(phost))
 	{
-		EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
+		phost->CmdWp += 4;
+		phost->CmdWp &= EVE_CMD_FIFO_MASK;
+		if (!phost->CmdFunc) /* Defer write pointer */
+		{
+			EVE_Hal_wr16(phost, REG_CMD_WRITE, phost->CmdWp);
+		}
 	}
 #endif
 
 	return true;
 }
 
-/* Move the write pointer forward by the specified number of bytes. Returns the previous write pointer */
-uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
+/**
+ * @brief Move the write pointer forward by the specified number of bytes. Returns the previous write pointer
+ *
+ * @param phost Pointer to Hal context
+ * @param bytes Number of bytes to move
+ * @return uint16_t Previous write pointer
+ */
+EVE_HAL_EXPORT uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
 {
-	uint16_t wp, prevWp;
+	uint16_t wp;
+	uint16_t prevWp;
 	eve_assert(!phost->CmdWaiting);
 	eve_assert(phost->CmdBufferIndex == 0);
 
@@ -286,65 +455,76 @@ uint16_t EVE_Cmd_moveWp(EVE_HalContext *phost, uint16_t bytes)
 
 	prevWp = EVE_Cmd_wp(phost);
 	wp = (prevWp + bytes) & EVE_CMD_FIFO_MASK;
-#if !defined(EVE_SUPPORT_CMDB)
-	phost->CmdWp = wp;
+#if !defined(EVE_SUPPORT_CMDB) || defined(EVE_MULTI_GRAPHICS_TARGET)
+	if (!EVE_Hal_supportCmdB(phost))
+	{
+		phost->CmdWp = wp;
+	}
 #endif
 	EVE_Hal_wr16(phost, REG_CMD_WRITE, wp);
 
 	return prevWp;
 }
 
-#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
-static void displayError(EVE_HalContext *phost, char *err)
-{
-	uint32_t addr = RAM_G + RAM_G_SIZE - 128;
-	uint32_t dl = 0;
-
-	/* Abuse back of RAM_G to store error */
-	/* May invalidate user data... */
-	EVE_Hal_wrMem(phost, addr, err, 128);
-
-	/* Generate bluescreen */
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR_COLOR_RGB(0x00, 0x20, 0x40));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), CLEAR(1, 1, 1));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_HANDLE(15)); /* Scratch handle will reset anyway after reset */
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SOURCE(addr));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SIZE_H(0, 0));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SIZE(NEAREST, BORDER, BORDER, 256, 32));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_LAYOUT_H(0, 0));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_LAYOUT(TEXT8X8, 32, 32));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BEGIN(BITMAPS));
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), VERTEX2II(32, 32, 15, 0));
-	/* EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), BITMAP_SOURCE(RAM_ERR_REPORT)); */
-	/* EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), VERTEX2II(32, 96, 15, 0)); */
-	EVE_Hal_wr32(phost, RAM_DL + ((dl++) << 2), DISPLAY());
-	EVE_Hal_wr8(phost, REG_DLSWAP, DLSWAP_FRAME);
-}
+#if defined(_DEBUG)
+void debugBackupRamG(EVE_HalContext *phost);
 #endif
 
+/**
+ * @brief Check for coprocessor fault
+ *
+ * @param phost Pointer to Hal context
+ * @param rpOrSpace Read pointer or space
+ * @return true True if ok
+ * @return false False if coprocessor fault
+ */
 static bool checkWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 {
 	/* Check for coprocessor fault */
 	if (EVE_CMD_FAULT(rpOrSpace))
 	{
-#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
 		char err[128];
-#endif
+		err[0] = '\0';
 		/* Coprocessor fault */
 		phost->CmdWaiting = false;
-		eve_printf_debug("Coprocessor fault\n");
-#if defined(_DEBUG) && (EVE_MODEL >= EVE_BT815)
-		EVE_Hal_rdMem(phost, err, RAM_ERR_REPORT, 128);
-		eve_printf_debug("%s\n", err);
-		displayError(phost, err);
+#if defined(_DEBUG)
+		if (!phost->DebugMessageVisible)
+		{
+			eve_printf_debug("Coprocessor fault\n");
+			debugBackupRamG(phost);
+			if (EVE_CHIPID >= EVE_BT815)
+			{
+				EVE_Hal_rdMem(phost, (uint8_t *)err, RAM_ERR_REPORT, 128);
+				eve_printf_debug("%s\n", err);
+				EVE_Hal_displayMessage(phost, err, 128);
+			}
+			else
+			{
+				EVE_Hal_displayMessage(phost, "Coprocessor fault ", sizeof("Coprocessor fault "));
+			}
+		}
 #endif
-		/* eve_debug_break(); */
+		return false;
+	}
+
+	if (phost->Status == EVE_STATUS_ERROR || phost->Status == EVE_STATUS_CLOSED)
+	{
+		phost->CmdWaiting = false;
+		eve_printf_debug("Host error\n");
 		return false;
 	}
 
 	return true;
 }
 
+/**
+ * @brief Wait handler
+ *
+ * @param phost Pointer to Hal context
+ * @param rpOrSpace Read pointer or space
+ * @return true True if ok
+ * @return false False if error
+ */
 static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 {
 	/* Check for coprocessor fault */
@@ -355,74 +535,101 @@ static bool handleWait(EVE_HalContext *phost, uint16_t rpOrSpace)
 	EVE_Hal_idle(phost);
 
 	/* Process user idling */
-	if (phost->Parameters.CbCmdWait)
+	if (phost->CbCmdWait && !phost->CbCmdWait(phost))
 	{
-		if (!phost->Parameters.CbCmdWait(phost))
-		{
-			/* Wait aborted */
-			phost->CmdWaiting = false;
-			eve_printf_debug("Wait for coprocessor aborted\n");
-			return false;
-		}
+		/* Wait aborted */
+		phost->CmdWaiting = false;
+		eve_printf_debug("Wait for coprocessor aborted\n");
+		return false;
 	}
 	return true;
 }
 
-bool EVE_Cmd_waitFlush(EVE_HalContext *phost)
+/**
+ * @brief Wait till Command FIFO buffer empty
+ *
+ * @param phost Pointer to Hal context
+ * @return true True if ok
+ * @return false False if error
+ */
+EVE_HAL_EXPORT bool EVE_Cmd_waitFlush(EVE_HalContext *phost)
 {
-	uint16_t rp, wp;
+	uint16_t rp;
+	uint16_t wp;
 
 	eve_assert(!phost->CmdWaiting);
 	phost->CmdWaiting = true;
 	while ((rp = EVE_Cmd_rp(phost)) != (wp = EVE_Cmd_wp(phost)))
 	{
-		// eve_printf_debug("Waiting for CoCmd FIFO... rp: %i, wp: %i\n", (int)rp, (int)wp);
 		if (!handleWait(phost, rp))
+		{
+			phost->CmdSpace = (rp - wp - 4) & EVE_CMD_FIFO_MASK;
 			return false;
+		}
 	}
 
 	/* Command buffer empty */
+	phost->CmdSpace = EVE_CMD_FIFO_SIZE - 4;
 	phost->CmdWaiting = false;
 	return true;
 }
 
-bool EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size)
+/** Wait for the command buffer to have at least the requested amount of free space.
+ * @return 0 in case a coprocessor fault occurred
+ */
+EVE_HAL_EXPORT uint32_t EVE_Cmd_waitSpace(EVE_HalContext *phost, uint32_t size)
 {
 	uint16_t space;
 
 	if (size > (EVE_CMD_FIFO_SIZE - 4))
 	{
 		eve_printf_debug("Requested free space exceeds coprocessor FIFO\n");
-		return false;
+		return 0;
 	}
 
 	eve_assert(!phost->CmdWaiting);
 	phost->CmdWaiting = true;
 
 	space = phost->CmdSpace;
-	if (space < size)
+
+#if 1
+	/* Optimization.
+	Only update space if more space is needed than already known available,
+	or when not actually waiting for any space */
+	if (space < size || !size)
 		space = EVE_Cmd_space(phost);
 	if (!checkWait(phost, space))
-		return false;
+		return 0;
+#endif
 
+	/* Wait until there's sufficient space */
 	while (space < size)
 	{
-		if (!handleWait(phost, space))
-			return false;
 		space = EVE_Cmd_space(phost);
+		if (!handleWait(phost, space))
+			return 0;
 	}
 
 	/* Sufficient space */
 	phost->CmdWaiting = false;
-	return true;
+	return space;
 }
 
-bool EVE_Cmd_waitLogo(EVE_HalContext *phost)
+/**
+ * @brief Wait until Coprocessor finished logo animation
+ *
+ * @param phost Pointer to Hal context
+ * @return true True if ok
+ * @return false False if error
+ */
+EVE_HAL_EXPORT bool EVE_Cmd_waitLogo(EVE_HalContext *phost)
 {
+	uint16_t rp;
+	uint16_t wp;
+
 	eve_assert(!phost->CmdWaiting);
 	phost->CmdWaiting = true;
 
-	uint16_t rp, wp;
 	do
 	{
 		rp = EVE_Cmd_rp(phost);
@@ -434,6 +641,49 @@ bool EVE_Cmd_waitLogo(EVE_HalContext *phost)
 
 	phost->CmdWaiting = false;
 	return true;
+}
+
+/** Wait for a 32-bit value that was set by `EVE_CoCmd_memWrite32(phost, ptr, value)`.
+ * @return true when the value is found.
+ * @return false otherwise
+ * when the coprocessor has flushed, or a coprocessor fault occured.
+ */
+EVE_HAL_EXPORT bool EVE_Cmd_waitRead32(EVE_HalContext *phost, uint32_t ptr, uint32_t value)
+{
+	uint16_t rp;
+	uint16_t wp;
+
+	eve_assert(!phost->CmdWaiting);
+	phost->CmdWaiting = true;
+	while ((rp = EVE_Cmd_rp(phost)) != (wp = EVE_Cmd_wp(phost)))
+	{
+		if (EVE_Hal_rd32(phost, ptr) == value)
+		{
+			/* Expected value has been read */
+			phost->CmdWaiting = false;
+			return true;
+		}
+		if (!handleWait(phost, rp))
+		{
+			phost->CmdSpace = (rp - wp - 4) & EVE_CMD_FIFO_MASK;
+			return false;
+		}
+	}
+
+	/* Command buffer empty */
+	phost->CmdSpace = EVE_CMD_FIFO_SIZE - 4;
+	phost->CmdWaiting = false;
+	return EVE_Hal_rd32(phost, ptr) == value;
+}
+
+/** Restore the internal state of EVE_Cmd.
+ * Call this after manually writing to the coprocessor buffer
+ */
+EVE_HAL_EXPORT void EVE_Cmd_restore(EVE_HalContext *phost)
+{
+	EVE_Cmd_rp(phost);
+	EVE_Cmd_wp(phost);
+	EVE_Cmd_space(phost);
 }
 
 /* end of file */

@@ -69,9 +69,7 @@ struct nk_evefont
     union
     {
         EVE_Gpu_Fonts *font_block;
-#ifdef EVE_SUPPORT_UNICODE
-        EVE_Gpu_FontsExt *font_ext_block;
-#endif
+        //EVE_Gpu_FontsExt *font_ext_block;
     };
 };
 
@@ -94,6 +92,7 @@ nk_evefont_get_text_width(nk_handle handle, float height, const char *text, int 
 static bool
 nk_evefont_setup(struct nk_evefont *evefont)
 {
+    EVE_HalContext *phost = Ft_Esd_Host;
     struct nk_user_font *font = &evefont->nk;
     eve_assert(evefont->font_info);
     eve_assert(font);
@@ -103,7 +102,7 @@ nk_evefont_setup(struct nk_evefont *evefont)
         if (evefont->font_info->Type == ESD_FONT_ROM)
         {
             Esd_RomFontInfo *romfont = (Esd_RomFontInfo *)evefont->font_info;
-            uint32_t ft = Ft_Gpu_Hal_Rd32(Ft_Esd_Host, ROMFONT_TABLEADDRESS);
+            uint32_t ft = Ft_Gpu_Hal_Rd32(phost, ROMFONT_TABLEADDRESS);
             fontAddr = ft + (FT_GPU_FONT_TABLE_SIZE * (romfont->RomFont - 16));
             eve_assert(sizeof(EVE_Gpu_Fonts) == FT_GPU_FONT_TABLE_SIZE);
         }
@@ -199,12 +198,6 @@ nk_eve_color_rgba(EVE_HalContext *phost, struct nk_color col)
     Esd_Dl_COLOR_A(col.a);
 }
 
-#if (EVE_MODEL >= EVE_FT810)
-#define nk_eve_vertex(x, y) Esd_Dl_VERTEX2F((x), (y))
-#else
-#define nk_eve_vertex(x, y) Esd_Dl_VERTEX2F((x) << 4, (y) << 4)
-#endif
-
 static void
 nk_eve_scissor(EVE_HalContext *phost, float x, float y, float w, float h)
 {
@@ -221,21 +214,23 @@ nk_eve_placeholder(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
     nk_eve_color_rgba(phost, col);
+    /* 
+    EVE_CoDl_colorRgb(phost, 255, 127, 0);
+    EVE_CoDl_colorA(phost, 255);
+    */
     Esd_Dl_LINE_WIDTH(8);
     Esd_Dl_BEGIN(LINE_STRIP);
-#if (EVE_MODEL >= EVE_FT810)
-    Esd_Dl_VERTEX_FORMAT(0);
-#endif
-    nk_eve_vertex(x, y);
-    nk_eve_vertex(x, y + h);
-    nk_eve_vertex(x + w, y + h);
-    nk_eve_vertex(x + w, y);
-    nk_eve_vertex(x, y);
-    nk_eve_vertex(x + w, y + h);
+    EVE_CoDl_vertexFormat(phost, 0);
+    EVE_CoDl_vertex2f(phost, x, y);
+    EVE_CoDl_vertex2f(phost, x, y + h);
+    EVE_CoDl_vertex2f(phost, x + w, y + h);
+    EVE_CoDl_vertex2f(phost, x + w, y);
+    EVE_CoDl_vertex2f(phost, x, y);
+    EVE_CoDl_vertex2f(phost, x + w, y + h);
     Esd_Dl_END();
     Esd_Dl_BEGIN(LINES);
-    nk_eve_vertex(x, y + h);
-    nk_eve_vertex(x + w, y);
+    EVE_CoDl_vertex2f(phost, x, y + h);
+    EVE_CoDl_vertex2f(phost, x + w, y);
     Esd_Dl_END();
 }
 
@@ -246,11 +241,9 @@ nk_eve_stroke_line(EVE_HalContext *phost, short x0, short y0, short x1,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINES);
-#if (EVE_MODEL >= EVE_FT810)
-    Esd_Dl_VERTEX_FORMAT(0);
-#endif
-    nk_eve_vertex(x0, y0);
-    nk_eve_vertex(x1, y1);
+    EVE_CoDl_vertexFormat(phost, 0);
+    EVE_CoDl_vertex2f(phost, x0, y0);
+    EVE_CoDl_vertex2f(phost, x1, y1);
     Esd_Dl_END();
 }
 
@@ -258,6 +251,7 @@ static void
 nk_eve_stroke_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
     unsigned short h, unsigned short r, unsigned short line_thickness, struct nk_color col)
 {
+    /* return nk_eve_placeholder(phost, x, y, w, h, col); */
     int offset = (line_thickness & 1) ? 0 : 8;
     Esd_Render_Rect_Stroke(
         ((int)x << 4) - offset, ((int)y << 4) - offset,
@@ -273,7 +267,7 @@ nk_eve_fill_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
     if (r < 1)
         r = 1;
 
-    scope
+    eve_scope()
     {
         ft_int32_t radius = (int)r << 4;
         ft_int32_t width = radius + 8;
@@ -284,11 +278,9 @@ nk_eve_fill_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
         nk_eve_color_rgba(phost, col);
         Esd_Dl_LINE_WIDTH(width);
         Esd_Dl_BEGIN(RECTS);
-#if (EVE_MODEL >= EVE_FT810)
-        Esd_Dl_VERTEX_FORMAT(0);
-#endif
-        nk_eve_vertex(x0, y0);
-        nk_eve_vertex(x1, y1);
+        EVE_CoDl_vertexFormat(phost, 0);
+        EVE_CoDl_vertex2f(phost, x0, y0);
+        EVE_CoDl_vertex2f(phost, x1, y1);
         Esd_Dl_END();
     }
 }
@@ -339,9 +331,7 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     scissor = Esd_Dl_Scissor_Set(boundary);
 
     /* Prepare state */
-#if (EVE_MODEL >= EVE_FT810)
-    Esd_Dl_VERTEX_FORMAT(0);
-#endif
+    EVE_CoDl_vertexFormat(phost, 0);
     Esd_Dl_SAVE_CONTEXT();
     Esd_Dl_CLEAR(0, 1, 0);
 
@@ -352,7 +342,7 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     Esd_Dl_BEGIN(EDGE_STRIP_B);
     for (i = 0; i < count; ++i)
     {
-        nk_eve_vertex(pnts[i].x, pnts[i].y);
+        EVE_CoDl_vertex2f(phost, pnts[i].x, pnts[i].y);
     }
     Esd_Dl_END();
 
@@ -360,8 +350,8 @@ nk_eve_fill_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int coun
     Eve_CoCmd_SendCmd(phost, COLOR_MASK(1, 1, 1, 1));
     Eve_CoCmd_SendCmd(phost, STENCIL_FUNC(EQUAL, 255, 255));
     Esd_Dl_BEGIN(RECTS);
-    nk_eve_vertex(xmin, ymin);
-    nk_eve_vertex(xmax, ymax);
+    EVE_CoDl_vertex2f(phost, xmin, ymin);
+    EVE_CoDl_vertex2f(phost, xmax, ymax);
     Esd_Dl_END();
 
     /* Restore state */
@@ -388,13 +378,11 @@ nk_eve_fill_triangle(EVE_HalContext *phost, short x0, short y0, short x1,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(8);
     Esd_Dl_BEGIN(LINE_STRIP);
-#if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
-#endif
-    nk_eve_vertex(x0, y0);
-    nk_eve_vertex(x1, y1);
-    nk_eve_vertex(x2, y2);
-    nk_eve_vertex(x0, y0);
+    EVE_CoDl_vertex2f(phost, x0, y0);
+    EVE_CoDl_vertex2f(phost, x1, y1);
+    EVE_CoDl_vertex2f(phost, x2, y2);
+    EVE_CoDl_vertex2f(phost, x0, y0);
     Esd_Dl_END();
     */
 }
@@ -411,12 +399,10 @@ nk_eve_stroke_polygon(EVE_HalContext *phost, const struct nk_vec2i *pnts, int co
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
-#if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
-#endif
     for (i = 0; i < count; ++i)
     {
-        nk_eve_vertex(pnts[i].x, pnts[i].y);
+        EVE_CoDl_vertex2f(phost, pnts[i].x, pnts[i].y);
     }
     // TODO: Validate if it's necessary to close the polygon
     // nk_eve_vertex(pnts[0].x, pnts[0].x);
@@ -436,12 +422,10 @@ nk_eve_stroke_polyline(EVE_HalContext *phost, const struct nk_vec2i *pnts,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
-#if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
-#endif
     for (i = 0; i < count; ++i)
     {
-        nk_eve_vertex(pnts[i].x, pnts[i].y);
+        EVE_CoDl_vertex2f(phost, pnts[i].x, pnts[i].y);
     }
     // TODO: Validate if it's necessary to close the polygon
     // nk_eve_vertex(pnts[0].x, pnts[0].x));
@@ -455,13 +439,11 @@ nk_eve_stroke_triangle(EVE_HalContext *phost, short x0, short y0, short x1,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
     Esd_Dl_BEGIN(LINE_STRIP);
-#if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(0);
-#endif
-    nk_eve_vertex(x0, y0);
-    nk_eve_vertex(x1, y1);
-    nk_eve_vertex(x2, y2);
-    nk_eve_vertex(x0, y0);
+    EVE_CoDl_vertex2f(phost, x0, y0);
+    EVE_CoDl_vertex2f(phost, x1, y1);
+    EVE_CoDl_vertex2f(phost, x2, y2);
+    EVE_CoDl_vertex2f(phost, x0, y0);
     Esd_Dl_END();
 }
 
@@ -476,12 +458,8 @@ nk_eve_fill_circle(EVE_HalContext *phost, short x, short y, unsigned short w,
     nk_eve_color_rgba(phost, col);
     Esd_Dl_POINT_SIZE(r);
     Esd_Dl_BEGIN(POINTS);
-#if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(1);
     Esd_Dl_VERTEX2F(xc, yc);
-#else
-    Esd_Dl_VERTEX2F(xc << 3, yc << 3);
-#endif
     Esd_Dl_END();
 }
 
@@ -514,9 +492,7 @@ nk_eve_stroke_curve(EVE_HalContext *phost,
 
     nk_eve_color_rgba(phost, col);
     Esd_Dl_LINE_WIDTH(line_thickness << 3);
-#if (EVE_MODEL >= EVE_FT810)
     Esd_Dl_VERTEX_FORMAT(4);
-#endif
 
     Esd_Dl_BEGIN(LINE_STRIP);
     Esd_Dl_VERTEX2F(p1.x << 4, p1.y << 4);
@@ -549,10 +525,12 @@ nk_eve_draw_text(EVE_HalContext *phost, short x, short y, unsigned short w, unsi
         return;
 
     y = y - evefont->font_info->BaseLine + evefont->font_info->CapsHeight;
-    Esd_Dl_COLOR_RGB((((cfg.r) & 255UL) << 16) | (((cfg.g) & 255UL) << 8) | ((cfg.b) & 255UL));
-    Esd_Dl_COLOR_A(cfg.a);
-    Ft_Gpu_CoCmd_Text_S(phost, x, y, handle, 0, text, len);
+    // Esd_Dl_COLOR_RGB((((cfg.r) & 255UL) << 16) | (((cfg.g) & 255UL) << 8) | ((cfg.b) & 255UL));
+    // Esd_Dl_COLOR_A(cfg.a);
+    // Ft_Gpu_CoCmd_Text_S(phost, x, y, handle, 0, text, len);
     // Ft_Gpu_CoCmd_Text(phost, x, y, handle, 0, text);
+    nk_eve_color_rgba(phost, cfg);
+    EVE_CoCmd_text_s(phost, x, y, handle, 0, text, len);
 }
 
 static void
@@ -572,7 +550,7 @@ static void
 nk_eve_cb_update(void *context)
 {
     nk_input_begin(&eve.ctx);
-    scope
+    eve_scope()
     {
         ft_bool_t touching = !!Ft_Esd_TouchTag_CurrentTag(NULL);
         ft_int16_t touchX = Ft_Esd_TouchTag_TouchX(NULL);
@@ -663,7 +641,7 @@ nk_eve_cb_render(void *context)
                     short outer_y1 = r->y + r->h + half_thickness;
                     nk_eve_fill_rect(phost, outer_x0, outer_y0, outer_x1 - outer_x0, outer_y1 - outer_y0,
                         outer_rounding, rs->color);
-                    scope
+                    eve_scope()
                     {
                         short inner_x0 = outer_x0 + rs->line_thickness;
                         short inner_y0 = outer_y0 + rs->line_thickness;
@@ -788,7 +766,8 @@ nk_eve_init(struct nk_evefont *evefont)
     ep.Render = nk_eve_cb_render;
     ep.Idle = nk_eve_cb_idle;
     ep.End = nk_eve_cb_end;
-    Esd_Initialize(&eve.ec, &ep);
+    Esd_Initialize();
+    Esd_Open(&eve.ec, &ep);
     Esd_Start(&eve.ec);
     eve_assert_do(nk_evefont_setup(evefont));
     // eve.ctx.clip.copy = nk_eve_clipboard_copy;
@@ -802,8 +781,8 @@ NK_API void
 nk_eve_shutdown(void)
 {
     Esd_Stop(&eve.ec);
-    Esd_Release(&eve.ec);
-    Esd_Shutdown();
+    Esd_Close(&eve.ec);
+    Esd_Release();
     nk_free(&eve.ctx);
 }
 

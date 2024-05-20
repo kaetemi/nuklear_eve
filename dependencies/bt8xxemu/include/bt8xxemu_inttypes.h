@@ -1,3 +1,36 @@
+/**
+ * @file bt8xxemu_inttypes.h
+ * @brief BT8XX Emulator Library
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ * 
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+*/
+
+#include <stddef.h>
+#include <wchar.h>
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
 #ifndef _STDINT
 
@@ -140,7 +173,6 @@ typedef unsigned long long uintmax_t;
 #else
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #endif
 #if defined(_MSC_VER) && (_MSC_VER >= 1900)
 #ifdef __cplusplus
@@ -158,8 +190,8 @@ typedef uint32_t argb8888;
 #ifndef BT8XXEMU_INTTYPES_DEFINED_FORCEINLINE
 #define BT8XXEMU_INTTYPES_DEFINED_FORCEINLINE
 #ifdef _MSC_VER
-#	define BT8XXEMU_FORCE_INLINE __forceinline
+#define BT8XXEMU_FORCE_INLINE __forceinline
 #else
-#	define BT8XXEMU_FORCE_INLINE inline __attribute__((always_inline))
+#define BT8XXEMU_FORCE_INLINE inline __attribute__((always_inline))
 #endif
 #endif

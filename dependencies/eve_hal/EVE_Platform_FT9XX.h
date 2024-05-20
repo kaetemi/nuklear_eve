@@ -1,43 +1,33 @@
 /**
-* This source code ("the Software") is provided by Bridgetek Pte Ltd
-* ("Bridgetek") subject to the licence terms set out
-*   http://brtchip.com/BRTSourceCodeLicenseAgreement/ ("the Licence Terms").
-* You must read the Licence Terms before downloading or using the Software.
-* By installing or using the Software you agree to the Licence Terms. If you
-* do not agree to the Licence Terms then do not download or use the Software.
-*
-* Without prejudice to the Licence Terms, here is a summary of some of the key
-* terms of the Licence Terms (and in the event of any conflict between this
-* summary and the Licence Terms then the text of the Licence Terms will
-* prevail).
-*
-* The Software is provided "as is".
-* There are no warranties (or similar) in relation to the quality of the
-* Software. You use it at your own risk.
-* The Software should not be used in, or for, any medical device, system or
-* appliance. There are exclusions of Bridgetek liability for certain types of loss
-* such as: special loss or damage; incidental loss or damage; indirect or
-* consequential loss or damage; loss of income; loss of business; loss of
-* profits; loss of revenue; loss of contracts; business interruption; loss of
-* the use of money or anticipated savings; loss of information; loss of
-* opportunity; loss of goodwill or reputation; and/or loss of, damage to or
-* corruption of data.
-* There is a monetary cap on Bridgetek's liability.
-* The Software may have subsequently been amended by another user and then
-* distributed by that other user ("Adapted Software").  If so that user may
-* have additional licence terms that apply to those amendments. However, Bridgetek
-* has no liability in relation to those amendments.
-
-Author : BRIDGETEK
-
-Revision History:
-0.1 - date 2013.04.24 - Initial version
-0.2 - date 2014.04.28 - Split in individual files according to platform
-1.0 - date 2014.11.24 - Addition of FT81X
-1.1 - date 2015.01.15 - Addition of module specific configurations switches. Especially for MM900 modules
-1.2 - data 2017.03.24 - Addition of GPIOs pin definitions
-
-*/
+ * @file EVE_Platform_FT9XX.h
+ * @brief EVE platform for FT9XX
+ *
+ * @author Bridgetek
+ *
+ * @date 2018
+ *
+ * MIT License
+ *
+ * Copyright (c) [2019] [Bridgetek Pte Ltd (BRTChip)]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #ifndef EVE_PLATFORM_FT900__H
 #define EVE_PLATFORM_FT900__H
@@ -63,11 +53,12 @@ Revision History:
 
 #define GPIO_ILI9488_CS1 (33)
 #define GPIO_ILI9488_DCX (34)
-#define GPIO_PWD (43)
 
-#define pad_ili9488_dcx (pad_gpio34)
-#define pad_ili9488_cs1 (pad_gpio33)
-#define pad_pwd (pad_func_0)
+#define GPIO_FT800_INT (42)
+#define GPIO_FT800_PWD (43)
+
+#define pad_ili9488_dcx (pad_func_0)
+#define pad_ili9488_cs1 (pad_func_0)
 
 #define GPIO_SD_CLK (19)
 #define GPIO_SD_CMD (20)
@@ -84,7 +75,7 @@ Revision History:
 #define GPIO_UART0_RX (22)
 
 #define GPIO_SPIM_CLK (34)
-#define GPIO_SPIM_SS0 (30)
+#define GPIO30_SPIM_SS0 (30)
 #define GPIO_SPIM_MOSI (36)
 #define GPIO_SPIM_MISO (35)
 
@@ -97,11 +88,12 @@ Revision History:
 
 #define GPIO_ILI9488_CS1 (31)
 #define GPIO_ILI9488_DCX (8)
-#define GPIO_PWD (15)
 
-#define pad_ili9488_dcx (pad_gpio8)
-#define pad_ili9488_cs1 (pad_gpio31)
-#define pad_pwd (pad_gpio15)
+#define GPIO_FT800_INT (14)
+#define GPIO_FT800_PWD (15)
+
+#define pad_ili9488_dcx (pad_func_0)
+#define pad_ili9488_cs1 (pad_func_0)
 
 #define GPIO_SD_CLK (0)
 #define GPIO_SD_CMD (1)
@@ -121,44 +113,44 @@ Revision History:
 #define FT900_TIMER_OVERFLOW_VALUE (1000)
 
 /* Hardware or Module specific macros for gpio line numbers  */
-#if defined(MM900EV1A) || defined(MM900EV1B) || defined(MM900EV2A) || defined(MM900EV3A) || defined(MM900EV_LITE)
+#if defined(CLEO35)
 
-#define FT800_PD_N (GPIO_PWD)
-
-#elif defined(MM930MINI) || defined(MM930LITE) || defined(MM932LC)
-
-#define FT800_PD_N (GPIO_PWD)
-
-#elif defined(CLEO35)
-
-#define FT800_PD_N (66) //for cleo35 module
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_PWD (66) /**< for cleo35 module */
 
 #elif defined(CLEO50)
 
-#define FT800_PD_N (0) //for cleo50 module
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_PWD (0) /**< for cleo50 module */
 
 #elif defined(FT900DEMOBOARD)
 
-#define FT800_PD_N (32)
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_PWD (32)
 
 #elif defined(PANL35)
 
-#define FT800_PD_N (1)
-#define FT800_INT (0)
+#undef GPIO_FT800_INT
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_INT (0)
+#define GPIO_FT800_PWD (1)
 
 #elif defined(PANL70)
 
-#define FT800_PD_N (1)
-#define FT800_INT (0)
-#define GOODIXGPIO (33)
-#define pad_pwd (pad_gpio15)
+#undef GPIO_FT800_INT
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_INT (0)
+#define GPIO_FT800_PWD (1)
+#define GPIO_GOODIX (33)
 
 #elif defined(PANL70PLUS)
 
-#define FT800_PD_N (1)
-#define FT800_INT (0)
-#define GOODIXGPIO (33)
-#define pad_goodixgpio (pad_gpio33)
+#undef GPIO_FT800_INT
+#undef GPIO_FT800_PWD
+#define GPIO_FT800_INT (0)
+#define GPIO_FT800_PWD (1)
+#define GPIO_GOODIX (33)
+#define pad_gpio_goodix (pad_func_0)
 
 #endif
 
@@ -169,7 +161,7 @@ Revision History:
 #endif /* RTC_PRESENT */
 
 /* Standard C libraries */
-#define ESD_USING_NEW_LIB // Using NewLib C Library for runtime
+#define ESD_USING_NEW_LIB /**< Using NewLib C Library for runtime */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -188,10 +180,6 @@ Revision History:
 #include "ft900_i2cm.h"
 #include "ft900.h"
 #include "ft900_delay.h"
-
-#if defined(EVE_MODULE_PANL)
-#include "panl.h"
-#endif
 
 #define eve_printf(fmt, ...) iprintf(fmt, ##__VA_ARGS__)
 #define eve_sprintf(str, fmt, ...) siprintf(str, fmt, ##__VA_ARGS__)
