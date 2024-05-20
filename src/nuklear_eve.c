@@ -267,7 +267,7 @@ nk_eve_fill_rect(EVE_HalContext *phost, short x, short y, unsigned short w,
     if (r < 1)
         r = 1;
 
-    scope
+    eve_scope()
     {
         ft_int32_t radius = (int)r << 4;
         ft_int32_t width = radius + 8;
@@ -550,7 +550,7 @@ static void
 nk_eve_cb_update(void *context)
 {
     nk_input_begin(&eve.ctx);
-    scope
+    eve_scope()
     {
         ft_bool_t touching = !!Ft_Esd_TouchTag_CurrentTag(NULL);
         ft_int16_t touchX = Ft_Esd_TouchTag_TouchX(NULL);
@@ -641,7 +641,7 @@ nk_eve_cb_render(void *context)
                     short outer_y1 = r->y + r->h + half_thickness;
                     nk_eve_fill_rect(phost, outer_x0, outer_y0, outer_x1 - outer_x0, outer_y1 - outer_y0,
                         outer_rounding, rs->color);
-                    scope
+                    eve_scope()
                     {
                         short inner_x0 = outer_x0 + rs->line_thickness;
                         short inner_y0 = outer_y0 + rs->line_thickness;
